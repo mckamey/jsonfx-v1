@@ -188,6 +188,44 @@ namespace PseudoCode.Web.UI.WebControls
 			set { this.Attributes["marginwidth"] = value.ToString(); }
 		}
 
+		/// <summary>
+		/// Sets and gets the AllowTransparency property.
+		/// </summary>
+		/// <remarks>Requires IE 5.5 or later.  Need to set the body color on the target document to transparent: <code>&gt;body style="background-color:transparent;"&lt;</code></remarks>
+		[Browsable(true)]
+		[DefaultValue(true)]
+		[Category(" HtmlInlineFrame")]
+		[Description("Determines the transparency of the frame.")]
+		public bool AllowTransparency
+		{
+			get { return (this.Attributes["allowtransparency"] == true.ToString().ToLower()); }
+			set { this.Attributes["allowtransparency"] = value.ToString().ToLower(); }
+		}
+
+		/// <summary>
+		/// Sets and gets the value of the z-index style property.
+		/// </summary>
+		/// <remarks>Requires IE 5.5 or later.</remarks>
+		[Browsable(true)]
+		[DefaultValue(true)]
+		[Category(" HtmlInlineFrame")]
+		[Description("Determines the z-index of the frame.")]
+		public int ZIndex
+		{
+			get
+			{
+				try { return Convert.ToInt32(this.Style["z-index"]); }
+				catch { return 0; }
+			}
+			set
+			{
+				if (value == 0)
+					this.Style["z-index"] = "auto";
+				else
+					this.Style["z-index"] = value.ToString();
+			}
+		}
+
 		#endregion Properties
 	}
 
