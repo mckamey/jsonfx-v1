@@ -56,7 +56,7 @@ namespace PseudoCode.Web.UI.WebControls
 			set
 			{
 				this.EnsureChildControls();
-				this.Attributes["src"] = this.altLink.HRef = Common.Helper.ResolveAppRelative(value);
+				this.Attributes["src"] = this.altLink.HRef = WebHelper.ResolveAppRelative(value);
 			}
 		}
 
