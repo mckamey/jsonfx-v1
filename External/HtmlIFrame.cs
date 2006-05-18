@@ -1,27 +1,29 @@
 using System;
+using System.Web.UI.WebControls;
 using System.ComponentModel;
 
-namespace PseudoCode.Web.UI.WebControls
+namespace PseudoCode.Web.Controls
 {
 	/// <summary>
 	/// Represents an inline frame element.
+	/// http://www.w3.org/TR/xhtml-modularization/dtd_module_defs.html#a_module_Iframe
 	/// http://www.w3.org/TR/REC-html40/present/frames.html#h-16.5
 	/// </summary>
-	public class HtmlInlineFrame : System.Web.UI.WebControls.WebControl
+	public class InlineFrame : System.Web.UI.WebControls.WebControl
 	{
 		#region Fields
 
-		private const string DefaultAltText = "[ Your browser does not support IFrames. ]";
-		System.Web.UI.HtmlControls.HtmlAnchor altLink;
+		private const string DefaultAltText = "Your browser does not support IFrames.";
+		System.Web.UI.HtmlControls.HtmlAnchor altLink = new System.Web.UI.HtmlControls.HtmlAnchor();
 
 		#endregion Fields
 
 		#region Ctor
 
 		/// <summary>
-		/// CTor.  Uses iframe as tag name.
+		/// Ctor.  Uses iframe as tag name.
 		/// </summary>
-		public HtmlInlineFrame() : base(System.Web.UI.HtmlTextWriterTag.Iframe) { }
+		public InlineFrame() : base(System.Web.UI.HtmlTextWriterTag.Iframe) { }
 
 		#endregion Ctor
 
@@ -32,10 +34,9 @@ namespace PseudoCode.Web.UI.WebControls
 		/// </summary>
 		protected override void CreateChildControls()
 		{
-			base.CreateChildControls ();
+			base.CreateChildControls();
 
-			this.altLink = new System.Web.UI.HtmlControls.HtmlAnchor();
-			this.altLink.InnerText = this.AltText;
+			this.AlternateText = InlineFrame.DefaultAltText;
 			this.Controls.Add(this.altLink);
 		}
 
@@ -48,26 +49,39 @@ namespace PseudoCode.Web.UI.WebControls
 		/// </summary>
 		[Browsable(true)]
 		[DefaultValue("")]
-		[Category(" HtmlInlineFrame")]
-		[Description("Determines the source Url.")]
+		[Category(" InlineFrame")]
+		[Description("Gets and sets the source Url.")]
 		public string SourceUrl
 		{
 			get { return this.Attributes["src"]; }
 			set
 			{
 				this.EnsureChildControls();
-				this.Attributes["src"] = this.altLink.HRef = WebHelper.ResolveAppRelative(value);
+				this.Attributes["src"] = this.altLink.HRef = this.ResolveUrl(value);
 			}
+		}
+
+		/// <summary>
+		/// This is the URL to be the displayed content.
+		/// </summary>
+		[Browsable(true)]
+		[DefaultValue("")]
+		[Category(" InlineFrame")]
+		[Description("Gets and sets the log description Url.")]
+		public string LongDescriptionUrl
+		{
+			get { return this.Attributes["longdesc"]; }
+			set { this.Attributes["longdesc"] = this.ResolveUrl(value); }
 		}
 
 		/// <summary>
 		/// Text shown if the browser does not support IFrames.
 		/// </summary>
 		[Browsable(true)]
-		[DefaultValue(HtmlInlineFrame.DefaultAltText)]
-		[Category(" HtmlInlineFrame")]
-		[Description("Determines the text to be displayed if browser doesn't support the iframe tag.")]
-		public string AltText
+		[DefaultValue(InlineFrame.DefaultAltText)]
+		[Category(" InlineFrame")]
+		[Description("Gets and sets the text to be displayed if browser doesn't support the iframe tag.")]
+		public string AlternateText
 		{
 			get { return System.Web.HttpUtility.HtmlDecode(this.altLink.InnerText); }
 			set
@@ -81,8 +95,8 @@ namespace PseudoCode.Web.UI.WebControls
 		/// 
 		/// </summary>
 		[Browsable(true)]
-		[Category(" HtmlInlineFrame")]
-		[Description("Determines the height of the frame.")]
+		[Category(" InlineFrame")]
+		[Description("Gets and sets the height of the frame.")]
 		public override System.Web.UI.WebControls.Unit Height
 		{
 			get
@@ -97,8 +111,8 @@ namespace PseudoCode.Web.UI.WebControls
 		/// 
 		/// </summary>
 		[Browsable(true)]
-		[Category(" HtmlInlineFrame")]
-		[Description("Determines the width of the frame.")]
+		[Category(" InlineFrame")]
+		[Description("Gets and sets the width of the frame.")]
 		public override System.Web.UI.WebControls.Unit Width
 		{
 			get
@@ -114,9 +128,9 @@ namespace PseudoCode.Web.UI.WebControls
 		/// </summary>
 		[Browsable(true)]
 		[DefaultValue(true)]
-		[Category(" HtmlInlineFrame")]
-		[Description("Determines the state of frame border.")]
-		public bool FrameBorders
+		[Category(" InlineFrame")]
+		[Description("Gets and sets the state of frame border.")]
+		public bool FrameBorder
 		{
 			get
 			{
@@ -131,8 +145,8 @@ namespace PseudoCode.Web.UI.WebControls
 		/// </summary>
 		[Browsable(true)]
 		[DefaultValue(InlineFrameScrollingType.Auto)]
-		[Category(" HtmlInlineFrame")]
-		[Description("Determines the state of frame scrollbar.")]
+		[Category(" InlineFrame")]
+		[Description("Gets and sets the state of frame scrollbar.")]
 		public InlineFrameScrollingType Scrolling
 		{
 			get
@@ -148,20 +162,34 @@ namespace PseudoCode.Web.UI.WebControls
 		/// </summary>
 		[Browsable(true)]
 		[DefaultValue(null)]
-		[Category(" HtmlInlineFrame")]
-		[Description("Determines the iframe alignment.")]
-		public string Align
+		[Category(" InlineFrame")]
+		[Description("Gets and sets the iframe alignment.")]
+		public HorizontalAlign HorizontalAlign
 		{
-			get { return this.Attributes["align"]; }
-			set { this.Attributes["align"] = value; }
+			get
+			{
+				try { return (HorizontalAlign)Enum.Parse(typeof(HorizontalAlign),this.Attributes["align"],true); }
+				catch { return HorizontalAlign.NotSet; }
+			}
+			set
+			{
+				if (value == HorizontalAlign.NotSet ||
+					value == HorizontalAlign.Justify)
+				{
+					this.Attributes.Remove("align");
+					return;
+				}
+
+				this.Attributes["align"] = value.ToString("G");
+			}
 		}
 
 		/// <summary>
 		/// Margin around the content.
 		/// </summary>
 		[Browsable(true)]
-		[Category(" HtmlInlineFrame")]
-		[Description("Determines the margin height in pixels.")]
+		[Category(" InlineFrame")]
+		[Description("Gets and sets the margin height in pixels.")]
 		public int MarginHeight
 		{
 			get
@@ -176,8 +204,8 @@ namespace PseudoCode.Web.UI.WebControls
 		/// Margin around the content.
 		/// </summary>
 		[Browsable(true)]
-		[Category(" HtmlInlineFrame")]
-		[Description("Determines the margin width in pixels.")]
+		[Category(" InlineFrame")]
+		[Description("Gets and sets the margin width in pixels.")]
 		public int MarginWidth
 		{
 			get
@@ -189,13 +217,13 @@ namespace PseudoCode.Web.UI.WebControls
 		}
 
 		/// <summary>
-		/// Sets and gets the AllowTransparency property.
+		/// Gets and sets the AllowTransparency property.
 		/// </summary>
 		/// <remarks>Requires IE 5.5 or later.  Need to set the body color on the target document to transparent: <code>&gt;body style="background-color:transparent;"&lt;</code></remarks>
 		[Browsable(true)]
 		[DefaultValue(true)]
-		[Category(" HtmlInlineFrame")]
-		[Description("Determines the transparency of the frame.")]
+		[Category(" InlineFrame")]
+		[Description("Gets and sets the transparency of the frame.")]
 		public bool AllowTransparency
 		{
 			get { return (this.Attributes["allowtransparency"] == true.ToString().ToLower()); }
@@ -203,13 +231,13 @@ namespace PseudoCode.Web.UI.WebControls
 		}
 
 		/// <summary>
-		/// Sets and gets the value of the z-index style property.
+		/// Gets and sets the value of the z-index style property.
 		/// </summary>
 		/// <remarks>Requires IE 5.5 or later.</remarks>
 		[Browsable(true)]
 		[DefaultValue(true)]
-		[Category(" HtmlInlineFrame")]
-		[Description("Determines the z-index of the frame.")]
+		[Category(" InlineFrame")]
+		[Description("Gets and sets the z-index of the frame.")]
 		public int ZIndex
 		{
 			get
@@ -220,7 +248,7 @@ namespace PseudoCode.Web.UI.WebControls
 			set
 			{
 				if (value == 0)
-					this.Style["z-index"] = "auto";
+					this.Style.Remove("z-index");
 				else
 					this.Style["z-index"] = value.ToString();
 			}
