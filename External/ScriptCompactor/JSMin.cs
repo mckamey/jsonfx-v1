@@ -1,13 +1,10 @@
 using System;
 using System.IO;
 
-/* Originally written in 'C', this code has been converted to the C# language.
- * The author's copyright message is reproduced below.
- * All modifications from the original to C# are placed in the public domain.
- */
-
-/* jsmin.c
-   2003-04-21
+/*
+	Originally written in C and then converted to C#.
+	jsmin.c
+	2003-04-21
 
 Copyright (c) 2002 Douglas Crockford  (www.crockford.com)
 
@@ -34,38 +31,49 @@ SOFTWARE.
 
 namespace ScriptCompactor
 {
-	public class JavaScriptMinifier
+	public class JSMinifier
 	{
 		#region Constants
 
-		private const int EOF = -1;
+		private const char EOF = Char.MinValue;
 
 		#endregion Constants
 
 		#region Fields
 
-		private StreamReader sr;
-		private StreamWriter sw;
-		private int theA;
-		private int theB;
-		private int theLookahead = JavaScriptMinifier.EOF;
+		private StreamReader reader;
+		private StreamWriter writer;
+		private char theA;
+		private char theB;
+		private char theLookahead = JSMinifier.EOF;
+		private char lastWritten = JSMinifier.EOF;
 
 		#endregion Fields
 
 		#region Public Methods
 
-		public void Minify(string src, string dst)
+		public void Minify(string inputFile, string outputFile, bool overwrite)
 		{
-			if (!File.Exists(src))
-				throw new FileNotFoundException(String.Format("File (\"{0}\") not found.", src), src);
+			this.Minify(inputFile, outputFile, overwrite, null);
+		}
 
-			if (File.Exists(dst))
-				throw new AccessViolationException(String.Format("File (\"{0}\") already exists.", dst));
+		public void Minify(string inputFile, string outputFile, bool overwrite, string copyright)
+		{
+			if (!File.Exists(inputFile))
+				throw new FileNotFoundException(String.Format("File (\"{0}\") not found.", inputFile), inputFile);
 
-			using (this.sr = new StreamReader(src))
+			if (!overwrite && File.Exists(outputFile))
+				throw new AccessViolationException(String.Format("File (\"{0}\") already exists.", outputFile));
+
+			using (this.reader = new StreamReader(inputFile))
 			{
-				using (this.sw = new StreamWriter(dst))
+				using (this.writer = new StreamWriter(outputFile))
 				{
+					if (!String.IsNullOrEmpty(copyright))
+					{
+						this.writer.WriteLine(copyright);
+					}
+
 					this.JSMin();
 				}
 			}
@@ -85,7 +93,7 @@ namespace ScriptCompactor
 		{
 			this.theA = '\n';
 			this.Do(Action.Read);
-			while (this.theA != JavaScriptMinifier.EOF)
+			while (this.theA != JSMinifier.EOF)
 			{
 				switch (this.theA)
 				{
@@ -222,7 +230,7 @@ namespace ScriptCompactor
 								break;
 
 							if (this.theA <= '\n')
-								throw new Exception(string.Format("Error: JSMIN unterminated string literal: {0}\n", this.theA));
+								throw new Exception(String.Format("Unterminated string literal: {0}", (int)this.theA));
 
 							if (this.theA == '\\')
 							{
@@ -255,7 +263,7 @@ namespace ScriptCompactor
 							}
 							else if (this.theA <= '\n')
 							{
-								throw new Exception(string.Format("Error: JSMIN unterminated Regular Expression literal : {0}.\n", this.theA));
+								throw new Exception(String.Format("Unterminated Regular Expression literal : {0}.", (int)this.theA));
 							}
 							this.Put(this.theA);
 						}
@@ -265,7 +273,7 @@ namespace ScriptCompactor
 				}
 				default:
 				{
-					throw new Exception("Unknown action command.");
+					throw new Exception("Unknown Action.");
 				}
 			}
 		}
@@ -275,9 +283,9 @@ namespace ScriptCompactor
 		///		if a '/' is followed by a '/' or '*'.
 		/// </summary>
 		/// <returns></returns>
-		private int Next()
+		private char Next()
 		{
-			int c = this.Get();
+			char c = this.Get();
 			if (c == '/')
 			{
 				switch (this.Peek())
@@ -307,9 +315,9 @@ namespace ScriptCompactor
 									}
 									break;
 								}
-								case JavaScriptMinifier.EOF:
+								case JSMinifier.EOF:
 								{
-									throw new Exception("Error: JSMIN Unterminated comment.\n");
+									throw new Exception("Unterminated comment.");
 								}
 							}
 						}
@@ -327,27 +335,37 @@ namespace ScriptCompactor
 		/// Get the next character without getting it.
 		/// </summary>
 		/// <returns>the next character without getting it</returns>
-		private int Peek()
+		private char Peek()
 		{
 			this.theLookahead = this.Get();
 			return this.theLookahead;
 		}
 
 		/// <summary>
-		/// Return the next character from stdin. Watch out for lookahead. If
+		/// Return the next character from input. Watch out for lookahead. If
 		///		the character is a control character, translate it to a space or
 		///		linefeed.
 		/// </summary>
-		/// <returns>the next character from stdin</returns>
-		private int Get()
+		/// <returns>the next character from input</returns>
+		private char Get()
 		{
-			int c = this.theLookahead;
-			this.theLookahead = JavaScriptMinifier.EOF;
+			// shift char from look ahead
+			char c = this.theLookahead;
+			this.theLookahead = JSMinifier.EOF;
 
-			if (c == JavaScriptMinifier.EOF)
-				c = this.sr.Read();
+			if (c == JSMinifier.EOF)
+			{
+				// this is the only place where we use int for char
+				// StreamReader.Read returns -1 for EOF
+				// we are using Char.MinValue since it usually isn't valid anyway
+				// so must first check if we actually found our EOF and replace it
+				int ch = this.reader.Read();
+				if (ch == JSMinifier.EOF)
+					ch = ' ';
+				c = (ch == -1) ? JSMinifier.EOF : (char)ch;
+			}
 
-			if (c >= ' ' || c == '\n' || c == JavaScriptMinifier.EOF)
+			if (c >= ' ' || c == '\n' || c == JSMinifier.EOF)
 				return c;
 
 			if (c == '\r')
@@ -357,12 +375,58 @@ namespace ScriptCompactor
 		}
 
 		/// <summary>
-		/// 
+		/// Writes a character to output
+		///		- writes '\n' as platform StreamWriter.NewLine
+		///		- removes unnecessary line endings
 		/// </summary>
 		/// <param name="c"></param>
-		private void Put(int c)
+		private void Put(char c)
 		{
-			this.sw.Write((char)c);
+			if (c == '\n')
+			{
+				switch (this.lastWritten)
+				{
+					case JSMinifier.EOF:
+					case ',':
+					case '.':
+					case ';':
+					case ':':
+					case '{':
+					case '}':
+					case '(':
+					case '[':
+					case '=':
+					case '<':
+					case '>':
+					case '?':
+					case '!':
+					case '+':
+					case '-':
+					case '*':
+					case '/':
+					case '%':
+					case '~':
+					case '^':
+					case '|':
+					case '&':
+					{
+						// safely suppress NewLine
+						// (as per JSLint http://www.jslint.com)
+						break;
+					}
+					default:
+					{
+						this.writer.WriteLine();
+						break;
+					}
+				}
+			}
+			else
+			{
+				this.writer.Write(c);
+			}
+
+			this.lastWritten = c;
 		}
 
 		/// <summary>
@@ -371,11 +435,9 @@ namespace ScriptCompactor
 		/// </summary>
 		/// <param name="c"></param>
 		/// <returns></returns>
-		private bool IsAlphaNum(int c)
+		private bool IsAlphaNum(char c)
 		{
-			return ((c >= 'a' && c <= 'z') || (c >= '0' && c <= '9') ||
-				(c >= 'A' && c <= 'Z') || c == '_' || c == '$' || c == '\\' ||
-				c > 126);
+			return (Char.IsLetterOrDigit(c) || c == '_' || c == '$' || c == '\\' || c > 126);
 		}
 
 		#endregion Private Methods
