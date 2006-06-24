@@ -52,12 +52,12 @@ namespace ScriptCompactor
 
 		#region Public Methods
 
-		public void Minify(string inputFile, string outputFile, bool overwrite)
+		public void Minify(string inputFile, string outputFile, bool overwrite, bool addTimeStamp)
 		{
-			this.Minify(inputFile, outputFile, overwrite, null);
+			this.Minify(inputFile, outputFile, overwrite, addTimeStamp, null);
 		}
 
-		public void Minify(string inputFile, string outputFile, bool overwrite, string copyright)
+		public void Minify(string inputFile, string outputFile, bool overwrite, bool addTimeStamp, string copyright)
 		{
 			if (!File.Exists(inputFile))
 				throw new FileNotFoundException(String.Format("File (\"{0}\") not found.", inputFile), inputFile);
@@ -70,11 +70,16 @@ namespace ScriptCompactor
 				JSMinifier.PrepSavePath(outputFile);
 				using (this.writer = new StreamWriter(outputFile, false))
 				{
-					if (!String.IsNullOrEmpty(copyright))
+					if (!String.IsNullOrEmpty(copyright) || addTimeStamp)
 					{
-						this.writer.WriteLine(copyright);
-					}
+						this.writer.WriteLine("/*----------------------------------------------------------------------*\\", copyright);
+						if (!String.IsNullOrEmpty(copyright))
+							this.writer.WriteLine("\t"+(copyright.Replace("*/","")));
 
+						if (addTimeStamp)
+							this.writer.WriteLine(DateTime.Now.ToString("'\tScript Compacted 'yyyy-MM-dd @ HH:mm:ss"));
+						this.writer.WriteLine("\\*----------------------------------------------------------------------*/", copyright);
+					}
 					this.JSMin();
 				}
 			}
