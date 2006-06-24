@@ -48,11 +48,11 @@ namespace ScriptCompactor
 		private StreamWriter sw;
 		private int theA;
 		private int theB;
-		private int theLookahead = EOF;
+		private int theLookahead = JavaScriptMinifier.EOF;
 
 		#endregion Fields
 
-		#region Methods
+		#region Public Methods
 
 		public void Minify(string src, string dst)
 		{
@@ -71,6 +71,10 @@ namespace ScriptCompactor
 			}
 		}
 
+		#endregion Public Methods
+
+		#region Private Methods
+
 		/// <summary>
 		/// Copy the input to the output, deleting the characters which are
 		///		insignificant to JavaScript. Comments will be removed. Tabs will be
@@ -80,8 +84,8 @@ namespace ScriptCompactor
 		private void JSMin()
 		{
 			this.theA = '\n';
-			this.Action(ActionCommand.Action3);
-			while (this.theA != EOF)
+			this.Do(Action.Read);
+			while (this.theA != JavaScriptMinifier.EOF)
 			{
 				switch (this.theA)
 				{
@@ -89,11 +93,11 @@ namespace ScriptCompactor
 					{
 						if (this.IsAlphaNum(this.theB))
 						{
-							this.Action(ActionCommand.Action1);
+							this.Do(Action.Output);
 						}
 						else
 						{
-							this.Action(ActionCommand.Action2);
+							this.Do(Action.Shift);
 						}
 						break;
 					}
@@ -107,23 +111,23 @@ namespace ScriptCompactor
 							case '+':
 							case '-':
 							{
-								this.Action(ActionCommand.Action1);
+								this.Do(Action.Output);
 								break;
 							}
 							case ' ':
 							{
-								this.Action(ActionCommand.Action3);
+								this.Do(Action.Read);
 								break;
 							}
 							default:
 							{
 								if (this.IsAlphaNum(this.theB))
 								{
-									this.Action(ActionCommand.Action1);
+									this.Do(Action.Output);
 								}
 								else
 								{
-									this.Action(ActionCommand.Action2);
+									this.Do(Action.Shift);
 								}
 								break;
 							}
@@ -138,10 +142,10 @@ namespace ScriptCompactor
 							{
 								if (this.IsAlphaNum(this.theA))
 								{
-									this.Action(ActionCommand.Action1);
+									this.Do(Action.Output);
 									break;
 								}
-								this.Action(ActionCommand.Action3);
+								this.Do(Action.Read);
 								break;
 							}
 							case '\n':
@@ -156,18 +160,18 @@ namespace ScriptCompactor
 									case '"':
 									case '\'':
 									{
-										this.Action(ActionCommand.Action1);
+										this.Do(Action.Output);
 										break;
 									}
 									default:
 									{
 										if (this.IsAlphaNum(this.theA))
 										{
-											this.Action(ActionCommand.Action1);
+											this.Do(Action.Output);
 										}
 										else
 										{
-											this.Action(ActionCommand.Action3);
+											this.Do(Action.Read);
 										}
 										break;
 									}
@@ -176,7 +180,7 @@ namespace ScriptCompactor
 							}
 							default:
 							{
-								this.Action(ActionCommand.Action1);
+								this.Do(Action.Output);
 								break;
 							}
 						}
@@ -191,20 +195,21 @@ namespace ScriptCompactor
 		///		1   Output A. Copy B to A. Get the next B.
 		///		2   Copy B to A. Get the next B. (Delete A).
 		///		3   Get the next B. (Delete B).
-		///   Action treats a string as a single character. Wow!
-		///   Action recognizes a regular expression if it is preceded by ( or , or =. 
+		///   Treats a string as a single character. Wow!
+		///   Recognizes a regular expression if it is preceded by ( or , or =. 
 		/// </summary>
 		/// <param name="d"></param>
-		private void Action(ActionCommand d)
+		private void Do(Action action)
 		{
-			switch (d)
+			switch (action)
 			{
-				case ActionCommand.Action1:
+				case Action.Output:
 				{
 					this.Put(this.theA);
-					goto case ActionCommand.Action2;
+					this.Do(Action.Shift);
+					break;
 				}
-				case ActionCommand.Action2:
+				case Action.Shift:
 				{
 					this.theA = this.theB;
 					if (this.theA == '\'' || this.theA == '"')
@@ -226,11 +231,12 @@ namespace ScriptCompactor
 							}
 						}
 					}
-					goto case ActionCommand.Action3;
+					this.Do(Action.Read);
+					break;
 				}
-				case ActionCommand.Action3:
+				case Action.Read:
 				{
-					this.theB = this.next();
+					this.theB = this.Next();
 					if (this.theB == '/' && (this.theA == '(' || this.theA == ',' || this.theA == '='))
 					{
 						this.Put(this.theA);
@@ -253,7 +259,7 @@ namespace ScriptCompactor
 							}
 							this.Put(this.theA);
 						}
-						this.theB = this.next();
+						this.theB = this.Next();
 					}
 					break;
 				}
@@ -265,11 +271,11 @@ namespace ScriptCompactor
 		}
 
 		/// <summary>
-		/// next -- Get the next character, excluding comments. Peek() is used to see
+		/// Get the next character, excluding comments. Peek() is used to see
 		///		if a '/' is followed by a '/' or '*'.
 		/// </summary>
 		/// <returns></returns>
-		private int next()
+		private int Next()
 		{
 			int c = this.Get();
 			if (c == '/')
@@ -278,7 +284,7 @@ namespace ScriptCompactor
 				{
 					case '/':
 					{
-						for (; ; )
+						while (true)
 						{
 							c = this.Get();
 							if (c <= '\n')
@@ -301,7 +307,7 @@ namespace ScriptCompactor
 									}
 									break;
 								}
-								case EOF:
+								case JavaScriptMinifier.EOF:
 								{
 									throw new Exception("Error: JSMIN Unterminated comment.\n");
 								}
@@ -336,12 +342,12 @@ namespace ScriptCompactor
 		private int Get()
 		{
 			int c = this.theLookahead;
-			this.theLookahead = EOF;
+			this.theLookahead = JavaScriptMinifier.EOF;
 
-			if (c == EOF)
+			if (c == JavaScriptMinifier.EOF)
 				c = this.sr.Read();
 
-			if (c >= ' ' || c == '\n' || c == EOF)
+			if (c >= ' ' || c == '\n' || c == JavaScriptMinifier.EOF)
 				return c;
 
 			if (c == '\r')
@@ -372,15 +378,26 @@ namespace ScriptCompactor
 				c > 126);
 		}
 
-		#endregion Methods
+		#endregion Private Methods
 
 		#region Enums
 
-		enum ActionCommand
+		private enum Action
 		{
-			Action1 = 1,
-			Action2 = 2,
-			Action3 = 3
+			/// <summary>
+			/// Output A. Copy B to A. Get the next B.
+			/// </summary>
+			Output = 1,
+
+			/// <summary>
+			/// Copy B to A. Get the next B. (Delete A)
+			/// </summary>
+			Shift = 2,
+
+			/// <summary>
+			/// Get the next B. (Delete B)
+			/// </summary>
+			Read = 3
 		}
 
 		#endregion Enums
