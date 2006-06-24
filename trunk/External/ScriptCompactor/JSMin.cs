@@ -67,7 +67,8 @@ namespace ScriptCompactor
 
 			using (this.reader = new StreamReader(inputFile))
 			{
-				using (this.writer = new StreamWriter(outputFile))
+				JSMinifier.PrepSavePath(outputFile);
+				using (this.writer = new StreamWriter(outputFile, false))
 				{
 					if (!String.IsNullOrEmpty(copyright))
 					{
@@ -76,6 +77,26 @@ namespace ScriptCompactor
 
 					this.JSMin();
 				}
+			}
+		}
+
+		/// <summary>
+		/// Makes sure directory exists and if file exists is not readonly.
+		/// </summary>
+		/// <param name="filename"></param>
+		protected static void PrepSavePath(string filename)
+		{
+			if (File.Exists(filename))
+			{
+				// make sure not readonly
+				FileAttributes attributes = File.GetAttributes(filename);
+				attributes &= ~FileAttributes.ReadOnly;
+				File.SetAttributes(filename, attributes);
+			}
+			else if (!Directory.Exists(Path.GetDirectoryName(filename)))
+			{
+				// make sure directories exist
+				Directory.CreateDirectory(Path.GetDirectoryName(filename));
 			}
 		}
 
