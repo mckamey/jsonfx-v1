@@ -10,6 +10,7 @@
 			<capability name="browser" value="W3C Validator" />
 			<capability name="version" value="${version}" />
 			<capability name="ecmaScriptVersion" value="1.2" />
+			<capability name="htmlTextWriter" value="System.Web.UI.XhtmlTextWriter" />
 			<capability name="javaScript" value="true" />
 			<capability name="supportsCss" value="true" />
 			<capability name="tables" value="true" />
