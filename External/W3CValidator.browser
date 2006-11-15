@@ -12,6 +12,9 @@
 			<capability name="ecmaScriptVersion" value="1.2" />
 			<capability name="htmlTextWriter" value="System.Web.UI.XhtmlTextWriter" />
 			<capability name="javaScript" value="true" />
+			<capability name="preferredRenderingMime" value="application/xhtml+xml" />
+			<capability name="preferredRequestEncoding" value="UTF-8" />
+			<capability name="preferredResponseEncoding" value="UTF-8" />
 			<capability name="supportsCss" value="true" />
 			<capability name="tables" value="true" />
 			<capability name="tagWriter" value="System.Web.UI.HtmlTextWriter" />
