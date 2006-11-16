@@ -1,0 +1,29 @@
+I want to create a code generator which will take a normal service class and allow it to be decorated with attributes to generate a JSON-RPC interface.
+It would be similar to what VS2005 does for WebServices so that Ajax apps could just call it.
+
+JSON-RPC is to SOAP WebService, as JSON is to XML
+- JSON-RPC spec: http://json-rpc.org/wd/JSON-RPC-1-1-WD-20060807.html
+- JSON spec: http://www.ietf.org/rfc/rfc4627.txt
+
+I think others are working on it but I'd want it to be as seamless as possible and most others don't do a good job.
+There are three out there which I should prob look at first:
+- ASP.NET AJAX: http://ajax.asp.net/docs/default.aspx
+- Jayrock: http://jayrock.berlios.de/
+- JSON.NET: http://www.newtonsoft.com/products/json/
+
+It will be C# based and generate Javascript stubs from C# services
+And it will have a JS layer to abstract away the communication
+It will basically create a service object that is just a proxy javascript object for marshalling like the WebServices are in C#
+Then an Ajax app can just reference it as if it is a local class
+
+ASP.NET creates a WebServiceContract class which is a generic communication block with a WebService of any sort
+Then they inherit from it and put all the methods that apply to [webmethod] decorated functions in the actual web service implementation
+This will have to do something similar but generate it for the Javascript side.
+
+Ultimately it is part of an Ajax framework that is really lightweight but powerful
+At first at least, it will require the UI to be built in XHTML/CSS with JS glue and the services to be in C#
+I want it to be independent of any app but more like what ASP.NET does for web services
+Then I will be able to build my stuff without the need to rely upon the complexity/limitations of these other frameworks
+An Ajax framework shouldn't try to shield you from OO-Javascript, it should leverage it.
+
+XML Serialization Restrictions: ms-help://MS.VSCC.v80/MS.MSDN.v80/MS.VisualStudio.v80.en/dv_fxserialization/html/8c63200d-db63-4a03-a93d-21641623df62.htm

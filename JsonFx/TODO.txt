@@ -1,0 +1,15 @@
+2006-11-09 @ 02:17
+
+- Find a way to copy generated marker file for .ascx files into output directory
+- Add property to HostedUserControlAttribute to set the ID on the loaded control
+
+- Implement class hinting
+- Implement proxy JavaScript Classes
+- Implement better test page with actual argument lists
+- Implement history state
+- Implement centralized error handling
+
+- Implement arrays for arguments in JSON-RPC for HTTP GET.
+- Convert reader so can read from stream rather than from complete string
+- Add IFrame support for downlevel browsers?
+- Fix intelisense & syntax coloring in JsonService

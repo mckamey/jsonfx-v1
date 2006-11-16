@@ -1,0 +1,129 @@
+﻿<Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProductVersion>8.0.50727</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{5A84EB39-D30B-4085-8365-E1C05590F3BF}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>JsonFx</RootNamespace>
+    <AssemblyName>JsonFx</AssemblyName>
+    <SccProjectName>SAK</SccProjectName>
+    <SccLocalPath>SAK</SccLocalPath>
+    <SccAuxPath>SAK</SccAuxPath>
+    <SccProvider>SAK</SccProvider>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="System" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Web" />
+    <Reference Include="System.Web.RegularExpressions" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Compilation\JsonServiceBuildProvider.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="UI\HostableUserControlAttribute.cs" />
+    <Compile Include="Handlers\JsonServiceHandlerFactory.cs" />
+    <Compile Include="Handlers\JsonServiceProxyHandler.cs" />
+    <Compile Include="Handlers\UserControlHandler.cs">
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Scripts\ClientScript.cs" />
+    <Compile Include="Handlers\ClientScriptHandler.cs" />
+    <Compile Include="Services\JsonServiceInfo.cs" />
+    <Compile Include="Services\IJsonService.cs" />
+    <Compile Include="Services\JsonServiceAttribute.cs" />
+    <Compile Include="Services\JsonDocsAttribute.cs" />
+    <Compile Include="Services\Discovery\JsonNamedParameterDescription.cs" />
+    <Compile Include="Services\Discovery\JsonServiceDescription.cs" />
+    <Compile Include="Services\Discovery\JsonDescriptionBase.cs" />
+    <Compile Include="Services\Discovery\JsonParameterType.cs" />
+    <Compile Include="Services\JsonMethodAttribute.cs" />
+    <Compile Include="Services\Discovery\JsonParameterDescription.cs" />
+    <Compile Include="Services\Discovery\JsonMethodDescription.cs" />
+    <Compile Include="Services\JsonError.cs" />
+    <Compile Include="Services\JsonMessage.cs" />
+    <Compile Include="Services\JsonResponse.cs" />
+    <Compile Include="Services\JsonRequest.cs" />
+    <Compile Include="Handlers\JsonServiceHandler.cs" />
+    <Compile Include="Services\JsonServiceException.cs" />
+    <Compile Include="Serialization\JsonIgnoreAttribute.cs" />
+    <Compile Include="Serialization\IJsonSerializable.cs" />
+    <Compile Include="Serialization\JsonNameAttribute.cs" />
+    <Compile Include="Serialization\JsonObject.cs" />
+    <Compile Include="Serialization\JsonSerializationException.cs" />
+    <Compile Include="Serialization\JsonReader.cs" />
+    <Compile Include="Serialization\JsonWriter.cs" />
+    <Compile Include="Serialization\JsonToken.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Services\Proxy\JsonServiceProxy.cs" />
+    <Compile Include="UI\HtmlScriptControl.cs" />
+    <Compile Include="UI\IJsonControl.cs" />
+    <Compile Include="UI\JsonControl.cs" />
+    <Compile Include="UI\JsonControlBuilder.cs" />
+    <Compile Include="UI\JsonControlCollection.cs" />
+    <Compile Include="UI\JsonXhtmlTextWriter.cs" />
+    <Compile Include="UI\JsonLiteral.cs" />
+    <Compile Include="UI\NullTextWriter.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Scripts\Compacted\IO.js" />
+    <EmbeddedResource Include="Scripts\Compacted\JSON.js" />
+    <EmbeddedResource Include="Scripts\Compacted\Trace.js" />
+    <EmbeddedResource Include="Scripts\Compacted\Utility.js" />
+    <EmbeddedResource Include="Scripts\IO.js" />
+    <EmbeddedResource Include="Scripts\JSON.js" />
+    <EmbeddedResource Include="Scripts\Trace.js" />
+    <EmbeddedResource Include="Scripts\Utility.js" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Scripts\JsonML.js" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Scripts\Compacted\JsonML.js" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Scripts\UI.js" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Scripts\Compacted\UI.js" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Scripts\JSON_Alt.js" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Scripts\Core.js" />
+  </ItemGroup>
+  <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+  <PropertyGroup>
+    <PreBuildEvent>("$(SolutionDir)Soln Items\ScriptCompactor\ScriptCompactor.exe" "$(ProjectDir)Scripts\IO.js" "$(ProjectDir)Scripts\Compacted\IO.js" "Copyright (c)2006 Stephen M. McKamey. All rights reserved.") &amp; ("$(SolutionDir)Soln Items\ScriptCompactor\ScriptCompactor.exe" "$(ProjectDir)Scripts\JsonML.js" "$(ProjectDir)Scripts\Compacted\JsonML.js" "http://JsonML.org" -F) &amp; ("$(SolutionDir)Soln Items\ScriptCompactor\ScriptCompactor.exe" "$(ProjectDir)Scripts\UI.js" "$(ProjectDir)Scripts\Compacted\UI.js" "Copyright (c)2006 Stephen M. McKamey. All rights reserved.") &amp; ("$(SolutionDir)Soln Items\ScriptCompactor\ScriptCompactor.exe" "$(ProjectDir)Scripts\JSON.js" "$(ProjectDir)Scripts\Compacted\JSON.js" "http://json.org/js.html" -F) &amp; ("$(SolutionDir)Soln Items\ScriptCompactor\ScriptCompactor.exe" "$(ProjectDir)Scripts\Trace.js" "$(ProjectDir)Scripts\Compacted\Trace.js" "Copyright (c)2006 Stephen M. McKamey. All rights reserved.") &amp; ("$(SolutionDir)Soln Items\ScriptCompactor\ScriptCompactor.exe" "$(ProjectDir)Scripts\Utility.js" "$(ProjectDir)Scripts\Compacted\Utility.js" "Copyright (c)2006 Stephen M. McKamey. All rights reserved." -F)</PreBuildEvent>
+    <PostBuildEvent>(xcopy "$(ProjectDir)Scripts\JsonML.js" "$(SolutionDir)JsonML\JsonML.js" /Y) &amp; (xcopy "$(ProjectDir)Scripts\Compacted\JsonML.js" "$(SolutionDir)JsonML\JsonML_min.js" /Y)</PostBuildEvent>
+  </PropertyGroup>
+</Project>
