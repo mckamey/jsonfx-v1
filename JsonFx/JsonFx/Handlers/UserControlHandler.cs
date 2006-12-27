@@ -9,7 +9,7 @@ namespace JsonFx.Handlers
 	{
 		#region Fields
 
-		private UserControl userControl = null;
+		private Control userControl = null;
 
 		#endregion Fields
 
@@ -58,14 +58,30 @@ namespace JsonFx.Handlers
 			this.EnableViewState = false;
 			this.MaintainScrollPositionOnPostBack = false;
 
-			this.userControl = this.LoadControl(this.Request.Path) as UserControl;
-			if (!HostableUserControlAttribute.IsHostable(this.userControl))
+			// instantiate the usercontrol
+			Control control = this.LoadControl(this.Request.Path);
+			if (control == null)
+			{
+				throw new System.Web.HttpException(500, "Error creating UserControl.");
+			}
+
+			// add the control to the hosted page
+			this.userControl = control;
+			this.userControl.ID = "_";
+			this.Form.Controls.Add(this.userControl);
+
+			// if is a cached usercontrol then need to get reference to actual usercontrol
+			PartialCachingControl cachedControl = control as PartialCachingControl;
+			if (cachedControl != null)
+			{
+				control = cachedControl.CachedControl;
+			}
+
+			// check the security on user control class
+			if (!HostableUserControlAttribute.IsHostable(control))
 			{
 				throw new System.Web.HttpException(403, String.Format("UserControl \"{0}\" is forbidden.  In order to enable direct access, mark with a {1}.", this.Request.Path, typeof(HostableUserControlAttribute).FullName));
 			}
-
-			this.userControl.ID = "_";
-			this.Form.Controls.Add(this.userControl);
 		}
 
 		protected override void Render(HtmlTextWriter writer)

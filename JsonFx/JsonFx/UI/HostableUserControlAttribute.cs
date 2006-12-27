@@ -26,7 +26,7 @@ namespace JsonFx.UI
 		/// </summary>
 		/// <param name="value"></param>
 		/// <returns></returns>
-		public static bool IsHostable(System.Web.UI.UserControl control)
+		public static bool IsHostable(System.Web.UI.Control control)
 		{
 			if (control == null)
 				return false;
