@@ -2,10 +2,10 @@
 // ======================================================
 //	class JsonFx.IO (Singleton)
 //=======================================================
-if ("undefined" == typeof JsonFx) {
+if ("undefined" === typeof JsonFx) {
 	JsonFx = {};
 }
-if ("undefined" == typeof JsonFx.IO) {
+if ("undefined" === typeof JsonFx.IO) {
 	JsonFx.IO = {};
 
 	JsonFx.IO.userAgent = "JsonFx/1.0 beta";
@@ -22,29 +22,33 @@ if ("undefined" == typeof JsonFx.IO) {
 
 		function cb_decodeResponse(response, context) {
 			var data = response.responseText;
-			if (typeof(data) == "string") {
-				data = data.parseJSON();
+			if (typeof(data) === "string") {
+				try {
+					data = data.parseJSON();
+				} catch (ex) {}
 			}
 			cb_responseComplete(data, context);
 		}
 
-		if (params && typeof(params) != "object") {
+		if (params && typeof(params) !== "object") {
 			params = [ params ];
 		}
 		
 		var rpcRequest = { "version":"1.1", "method":method, "params":params, "id":id };
 
-		// JSON encode request		
-		rpcRequest = rpcRequest.toJSONString();
-		
-		var headers = {
-			"User-Agent" : JsonFx.IO.userAgent,
-			"Content-Type" : "application/json",
-			"Content-Length" : rpcRequest.length,
-			"Accept" : "application/json"
-		};
+		try {
+			// JSON encode request
+			rpcRequest = rpcRequest.toJSONString();
+			
+			var headers = {
+				"User-Agent" : JsonFx.IO.userAgent,
+				"Content-Type" : "application/json",
+				"Content-Length" : rpcRequest.length,
+				"Accept" : "application/json"
+			};
 
-		JsonFx.IO.SendRequest(serviceUrl, rpcRequest, "POST", true, headers, cb_decodeResponse, context);
+			JsonFx.IO.SendRequest(serviceUrl, rpcRequest, "POST", true, headers, cb_decodeResponse, context);
+		} catch (ex) {}
 	};
 
 	/*void*/ JsonFx.IO.GetJsonRequest = function(
@@ -56,13 +60,10 @@ if ("undefined" == typeof JsonFx.IO) {
 
 		function cb_decodeResponse(response, context) {
 			var data = response.responseText;
-			if (typeof(data) == "string") {
-				data = data.parseJSON();
-				/*DEBUG*/
-				if (!data) {
-					alert(response.responseText);
-				}
-				/*DEBUG*/
+			if (typeof(data) === "string") {
+				try {
+					data = data.parseJSON();
+				} catch (ex) { }
 			}
 			cb_responseComplete(data, context);
 		}
@@ -136,9 +137,9 @@ if ("undefined" == typeof JsonFx.IO) {
 		var request = JsonFx.IO.GetXMLHttpRequest();
 
 		function cb_readyStateChanged() {
-			if (request && request.readyState == 4 /*complete*/) {
+			if (request && request.readyState === 4 /*complete*/) {
 				/* If the data was retrieved successfully */ 
-				if (request.status == 200) 
+				if (request.status === 200) 
 				{ 
 					if (cb_responseComplete) {
 						cb_responseComplete(request, context);
@@ -164,11 +165,11 @@ if ("undefined" == typeof JsonFx.IO) {
 				request.setRequestHeader("Cache-Control", "no-cache");
 				if (headers) {
 					for (var header in headers) {
-						if (typeof(headers[header])=="string") {
+						if (typeof(headers[header]) === "string") {
 							request.setRequestHeader(header, headers[header]);
 						}
 					}
-				} else if (HttpMethod == "POST") {
+				} else if (HttpMethod === "POST") {
 					request.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
 				}
 				request.send(params);
@@ -181,7 +182,7 @@ if ("undefined" == typeof JsonFx.IO) {
 	};
 }
 
-if (typeof(JsonFx.IO.JsonServiceBase) == "undefined") {
+if (typeof(JsonFx.IO.JsonServiceBase) === "undefined") {
 
 	/* Ctor */
 	JsonFx.IO.JsonServiceBase = function() {

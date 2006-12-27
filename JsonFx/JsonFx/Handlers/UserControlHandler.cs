@@ -86,20 +86,27 @@ namespace JsonFx.Handlers
 
 		protected override void Render(HtmlTextWriter writer)
 		{
-			if (this.userControl != null)
+			try
 			{
-				if (this.userControl.Controls.Count > 1)
+				if (this.userControl != null)
 				{
-					writer.RenderBeginTag(HtmlTextWriterTag.Div);
+					if (this.userControl.Controls.Count > 1)
+					{
+						writer.RenderBeginTag(HtmlTextWriterTag.Div);
 
-					this.userControl.RenderControl(writer);
+						this.userControl.RenderControl(writer);
 
-					writer.RenderEndTag();//Div
+						writer.RenderEndTag();//Div
+					}
+					else
+					{
+						this.userControl.RenderControl(writer);
+					}
 				}
-				else
-				{
-					this.userControl.RenderControl(writer);
-				}
+			}
+			finally
+			{
+				writer.Close();
 			}
 		}
 

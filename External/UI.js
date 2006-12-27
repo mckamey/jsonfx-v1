@@ -1,8 +1,8 @@
 /*extern JsonFx */
-if (typeof(JsonFx) == "undefined") {
+if (typeof(JsonFx) === "undefined") {
 	JsonFx = {};
 }
-if (typeof(JsonFx.UI) == "undefined") {
+if (typeof(JsonFx.UI) === "undefined") {
 	JsonFx.UI = {};
 }
 /*void*/ JsonFx.UI.Clear = function(/*element*/ el) {
@@ -15,11 +15,11 @@ if (typeof(JsonFx.UI) == "undefined") {
 
 /*void*/ JsonFx.UI.DisplayJsonML = function(/*JsonML*/ jml, /*element or string*/ container) {
 	// either DOM element or id
-	container = (typeof(container) != "string") ?
+	container = (typeof(container) !== "string") ?
 		container : document.getElementById(container);
 
 	if (container) {
-		if (jml && typeof(jml.parseJsonML) == "function") {
+		if (jml && typeof(jml.parseJsonML) === "function") {
 			jml = jml.parseJsonML();
 			if (jml) {
 				JsonFx.UI.Clear(container);
@@ -39,7 +39,7 @@ if (typeof(JsonFx.UI) == "undefined") {
 };
 
 /*string*/ JsonFx.UI.GetStyle = function(/*elem*/ el, /*string*/ style) {
-	if (typeof(el)=="string") {
+	if (typeof(el) === "string") {
 		el = document.getElementById(el);
 	}
 	if (window.getComputedStyle) {
@@ -59,7 +59,7 @@ if (typeof(JsonFx.UI) == "undefined") {
 
 /*function*/ JsonFx.UI.Maximize = function(/*element or string*/ elem, /*JsonFx.UI.Dir*/ dir) {
 
-	if (typeof(elem) == "string") {
+	if (typeof(elem) === "string") {
 		// either DOM element or id
 		elem = document.getElementById(elem);
 	}
@@ -98,7 +98,7 @@ if (typeof(JsonFx.UI) == "undefined") {
 			saveShape();
 		}
 		// store the latest requested state
-		if (typeof(newState) == "boolean") {
+		if (typeof(newState) === "boolean") {
 			state = newState;
 		} else {
 			state = !state;
@@ -135,7 +135,7 @@ JsonFx.UI.Dir = {
 
 /*function*/ JsonFx.UI.Minimize = function(/*element or string*/ elem, /*JsonFx.UI.Dir*/ dir) {
 
-	if (typeof(elem) == "string") {
+	if (typeof(elem) === "string") {
 		// either DOM element or id
 		elem = document.getElementById(elem);
 	}
@@ -157,9 +157,9 @@ JsonFx.UI.Dir = {
 		userOverflow = es.overflow;
 		userHeight = es.height;
 		userWidth = es.width;
-		pxHeight = typeof(elem.offsetHeight) != "undefined" ?
+		pxHeight = typeof(elem.offsetHeight) !== "undefined" ?
 				elem.offsetHeight : parseFloat(JsonFx.UI.GetStyle(elem, "height"));
-		pxWidth = typeof(elem.offsetWidth) != "undefined" ?
+		pxWidth = typeof(elem.offsetWidth) !== "undefined" ?
 				elem.offsetWidth : parseFloat(JsonFx.UI.GetStyle(elem, "width"));
 	}
 
@@ -167,7 +167,7 @@ JsonFx.UI.Dir = {
 	return /*void*/ function min(/*bool*/ newState) {
 	
 		// store the latest requested state
-		if (typeof(newState) == "boolean") {
+		if (typeof(newState) === "boolean") {
 			state = newState;
 		} else {
 			state = !state;

@@ -88,10 +88,11 @@ namespace JsonFx.UI
 		//    base.BeginRender();
 		//}
 
-		//public override void Close()
-		//{
-		//    base.Close();
-		//}
+		public override void Close()
+		{
+			base.Close();
+			this.Dispose();
+		}
 
 		//public override System.Runtime.Remoting.ObjRef CreateObjRef(Type requestedType)
 		//{
@@ -100,8 +101,14 @@ namespace JsonFx.UI
 
 		protected override void Dispose(bool disposing)
 		{
-			base.Dispose(disposing);
-			this.builder.Dispose();
+			try
+			{
+				base.Dispose(disposing);
+			}
+			finally
+			{
+				this.builder.Dispose();
+			}
 		}
 
 		protected override string EncodeAttributeValue(HtmlTextWriterAttribute attrKey, string value)
