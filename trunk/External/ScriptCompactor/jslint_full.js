@@ -1,5 +1,5 @@
 // jslint.js
-// 2006-11-15
+// 2006-12-13
 /*
 Copyright (c) 2002 Douglas Crockford  (www.JSLint.com)
 
@@ -43,6 +43,7 @@ SOFTWARE.
         browser    : true if the standard browser globals should be predefined
         cap        : true if upper case HTML should be allowed
         debug      : true if debugger statements should be allowed
+        eqeqeq     : true if === should be required
         evil       : true if eval should be allowed
         jscript    : true if jscript deviations should be allowed
         laxLineEnd : true if line breaks should not be checked
@@ -356,13 +357,13 @@ JSLINT = function () {
                 t = syntax[value];
             } else if (type === '(identifier)') {
                 t = syntax[value];
-                if (!t || typeof t != 'object') {
+                if (!t || typeof t !== 'object') {
                     t = syntax[type];
                 }
             } else {
                 t = syntax[type];
             }
-            if (!t || typeof t != 'object') {
+            if (!t || typeof t !== 'object') {
                 error("Unrecognized symbol: '" + value + "' " + type);
             }
             t = object(t);
@@ -385,7 +386,7 @@ JSLINT = function () {
             init: function (source) {
                 if (typeof source === 'string') {
                     lines = source.split('\n');
-                    if (lines.length == 1) {
+                    if (lines.length === 1) {
                         lines = lines[0].split('\r');
                     }
                 } else {
@@ -410,7 +411,7 @@ JSLINT = function () {
                         l = r[0].length;
                         s = s.substr(l);
                         character += l;
-                        if (xmode == 'script') {
+                        if (xmode === 'script') {
                             if (t.indexOf('<\/') >= 0) {
                                 warning(
     'Expected "...<\\/..." and instead saw "...<\/...".', token);
@@ -660,7 +661,7 @@ JSLINT = function () {
 
     function peek(i) {
         var j = 0, t;
-        if (token == syntax['(error)']) {
+        if (token === syntax['(error)']) {
             return token;
         }
         if (typeof i === 'undefined') {
@@ -705,7 +706,7 @@ JSLINT = function () {
             anonname = prevtoken.value;
         }
 
-        if (id && token.value != id) {
+        if (id && token.value !== id) {
             if (t) {
                 if (token.id === '(end)') {
                     warning("Unmatched '" + t.id + "'.", t);
@@ -754,8 +755,8 @@ JSLINT = function () {
                 error("Missing '" + xmode + "'.", prevtoken);
             }
             l = !xmode && !option.laxLineEnd &&
-                (prevtoken.type == '(string)' || prevtoken.type == '(number)' ||
-                prevtoken.type == '(identifier)' || badbreak[prevtoken.id]);
+                (prevtoken.type === '(string)' || prevtoken.type === '(number)' ||
+                prevtoken.type === '(identifier)' || badbreak[prevtoken.id]);
         }
         if (l) {
             switch (token.id) {
@@ -824,9 +825,9 @@ JSLINT = function () {
     function parse(rbp, initial) {
         var l, left, o;
         if (token.id && token.id === '/') {
-            if (prevtoken.id != '(' && prevtoken.id != '=' &&
-                    prevtoken.id != ':' && prevtoken.id != ',' &&
-                    prevtoken.id != '=' && prevtoken.id != '[') {
+            if (prevtoken.id !== '(' && prevtoken.id !== '=' &&
+                    prevtoken.id !== ':' && prevtoken.id !== ',' &&
+                    prevtoken.id !== '=' && prevtoken.id !== '[') {
                 warning(
 "Expected to see a '(' or '=' or ':' or ',' or '[' preceding a regular expression literal, and instead saw '" +
                         prevtoken.value + "'.", prevtoken);
@@ -970,7 +971,7 @@ JSLINT = function () {
                     parse(19);
                     return left;
                 }
-                if (left == syntax['function']) {
+                if (left === syntax['function']) {
                     if (option.jscript) {
                         parse(19);
                         return left;
@@ -1026,7 +1027,7 @@ JSLINT = function () {
 
     function reachable(s) {
         var i = 0, t;
-        if (token.id != ';' || noreach) {
+        if (token.id !== ';' || noreach) {
             return;
         }
         for (;;) {
@@ -1034,7 +1035,7 @@ JSLINT = function () {
             if (t.reach) {
                 return;
             }
-            if (t.id != '(endline)') {
+            if (t.id !== '(endline)') {
                 if (t.id === 'function') {
                     warning(
 "Inner functions should be listed at the top of the outer function.", t);
@@ -1068,7 +1069,7 @@ JSLINT = function () {
                         "' on unlabelable statement '" + token.value + "'.",
                         token);
             }
-            if (t.value.toLowerCase() == 'javascript') {
+            if (t.value.toLowerCase() === 'javascript') {
                 warning("Label '" + t.value +
                         "' looks like a javascript url.",
                         token);
@@ -1078,7 +1079,7 @@ JSLINT = function () {
         }
         parse(0, true);
         if (!t.block) {
-            if (token.id != ';') {
+            if (token.id !== ';') {
                 warning("Missing ';'", prevtoken.line,
                         prevtoken.from + prevtoken.value.length);
             } else {
@@ -1228,6 +1229,7 @@ JSLINT = function () {
                 body:     {parent: ' html noframes '},
                 br:       {empty: true},
                 button:   {},
+                canvas:   {parent: ' body p div th td '},
                 caption:  {parent: ' table '},
                 center:   {},
                 cite:     {},
@@ -1396,7 +1398,7 @@ JSLINT = function () {
                 minLength: {parent: ' preference '},
                 missingSrc: {parent: ' image '},
                 modifier: {parent: ' hotkey '},
-                name: {parent: ' frame hotkey image preference preferenceGroup text textarea timer widget window '},
+                name: {parent: ' frame hotkey image preference preferenceGroup scrollbar text textarea timer widget window '},
                 notSaved: {parent: ' preference '},
                 onContextMenu: {parent: ' frame image text textarea window ', script: true},
                 onDragDrop: {parent: ' frame image text textarea ', script: true},
@@ -1433,7 +1435,7 @@ JSLINT = function () {
                 scrollX: {parent: ' frame '},
                 scrollY: {parent: ' frame '},
                 secure: {parent: ' preference textarea '},
-                scrollbar: {parent: ' text textarea '},
+                scrollbar: {parent: ' text textarea window '},
                 scrolling: {parent: ' text '},
                 shadow: {parent: ' about-text about-version text window '},
                 size: {parent: ' about-text about-version text textarea '},
@@ -1456,7 +1458,7 @@ JSLINT = function () {
                 trigger: {parent: ' action '},
                 truncation: {parent: ' text '},
                 type: {parent: ' preference '},
-                url: {parent: ' about-box about-text '},
+                url: {parent: ' about-box about-text about-version '},
                 useFileIcon: {parent: ' image '},
                 vAlign: {parent: ' frame image scrollbar text textarea '},
                 value: {parent: ' preference scrollbar '},
@@ -1521,6 +1523,9 @@ JSLINT = function () {
                     if (option.cap && xtype === 'html') {
                         n = n.toLowerCase();
                     }
+                    if (stack.length === 0) {
+                        error("What the hell is this?", token);
+                    }
                     e = xmltype[xtype].doTagName(n,
                             stack[stack.length - 1].type);
                 }
@@ -1555,8 +1560,8 @@ JSLINT = function () {
                     case 'value':
                         advance('=');
                         if (!token.identifier &&
-                                token.type != '(string)' &&
-                                token.type != '(number)') {
+                                token.type !== '(string)' &&
+                                token.type !== '(number)') {
                             error('Bad value: ' + token.value);
                         }
                         advance();
@@ -1596,8 +1601,8 @@ JSLINT = function () {
                         if (token.id === '=') {
                             advance('=');
                             if (!token.identifier &&
-                                    token.type != '(string)' &&
-                                    token.type != '(number)') {
+                                    token.type !== '(string)' &&
+                                    token.type !== '(number)') {
                             }
                             advance();
                         }
@@ -1608,6 +1613,9 @@ JSLINT = function () {
                     xmode = 'script';
                     advance('>');
                     statements();
+                    if (token.id !== '</') {
+                        warning("Unexpected token.", token);
+                    }
                     xmode = 'xml';
                     break;
                 case 'special':
@@ -1631,14 +1639,18 @@ JSLINT = function () {
                 if (!t) {
                     error('Unexpected close tag: </' + n + '>');
                 }
-                if (t.name != n) {
+                if (t.name !== n) {
                     error('Expected </' + t.name +
                             '> and instead saw </' + n + '>');
                 }
                 if (token.id !== '>') {
                     error("Expected '>'");
                 }
-                lex.skip('>');
+                if (stack.length > 0) {
+                    lex.skip('>');
+                } else {
+                    advance('>');
+                }
                 break;
             case '<!':
                 for (;;) {
@@ -1679,12 +1691,12 @@ JSLINT = function () {
             case '(end)':
                 return;
             }
-            if (!lex.skip('')) {
-                if (stack.length) {
-                    t = stack.pop();
-                    error('Missing </' + t.name + '>', t);
-                }
+            if (stack.length === 0) {
                 return;
+            }
+            if (!lex.skip('')) {
+                t = stack.pop();
+                error('Missing </' + t.name + '>', t);
             }
             advance();
         }
@@ -1790,7 +1802,9 @@ JSLINT = function () {
     infix('&', 'bitand', 90);
     infix('==', function (left) {
         var t = token;
-        if (    (t.type === '(number)' && !+t.value) ||
+        if (option.eqeqeq) {
+            warning("Use '===' instead of '=='.", t);
+        } else if (    (t.type === '(number)' && !+t.value) ||
                 (t.type === '(string)' && !t.value) ||
                 t.type === 'true' || t.type === 'false' ||
                 t.type === 'undefined' || t.type === 'null') {
@@ -1801,7 +1815,9 @@ JSLINT = function () {
     infix('===', 'equalexact', 100);
     infix('!=', function (left) {
         var t = token;
-        if (    (t.type === '(number)' && !+t.value) ||
+        if (option.eqeqeq) {
+            warning("Use '!==' instead of '!='.", t);
+        } else if (    (t.type === '(number)' && !+t.value) ||
                 (t.type === '(string)' && !t.value) ||
                 t.type === 'true' || t.type === 'false' ||
                 t.type === 'undefined' || t.type === 'null') {
@@ -1936,11 +1952,11 @@ JSLINT = function () {
         }
         advance(')');
         if (typeof left === 'object') {
-            if (left.value == 'parseInt' && n == 1) {
+            if (left.value === 'parseInt' && n === 1) {
                 warning("Missing radix parameter", left);
             }
             if (!option.evil) {
-                if (left.value == 'eval' || left.value == 'Function') {
+                if (left.value === 'eval' || left.value === 'Function') {
                     warning("eval is evil", left);
                 } else if (p[0] && p[0].id === '(string)' &&
                        (left.value === 'setTimeout' ||
@@ -2280,7 +2296,7 @@ JSLINT = function () {
             block();
             return;
         } else {
-            if (token.id != ';') {
+            if (token.id !== ';') {
                 if (token.id === 'var') {
                     advance('var');
                     varstatement();
@@ -2295,14 +2311,14 @@ JSLINT = function () {
                 }
             }
             advance(';');
-            if (token.id != ';') {
+            if (token.id !== ';') {
                 parse(20);
             }
             advance(';');
             if (token.id === ';') {
                 error("Expected to see ')' and instead saw ';'.");
             }
-            if (token.id != ')') {
+            if (token.id !== ')') {
                 for (;;) {
                     parse(0);
                     if (token.id !== ',') {
@@ -2344,7 +2360,7 @@ JSLINT = function () {
 
     stmt('return', function () {
         nolinebreak(this);
-        if (token.id != ';' && !token.reach) {
+        if (token.id !== ';' && !token.reach) {
             parse(20);
         }
         reachable('return');
@@ -2419,8 +2435,8 @@ JSLINT = function () {
                 xml();
             } else {
                 statements();
-                advance('(end)');
             }
+            advance('(end)');
         } catch (e) {
             if (e) {
                 JSLINT.errors.push({
@@ -2450,7 +2466,7 @@ JSLINT = function () {
         k = JSLINT.errors.length;
         if (k) {
             o.push(
-                '<div style="background-color: mistyrose;">Error:<blockquote>');
+                '<div id=errors>Error:<blockquote>');
             for (i = 0; i < k; i += 1) {
                 c = JSLINT.errors[i];
                 if (c) {
@@ -2538,7 +2554,7 @@ JSLINT = function () {
                         f['(line)'] + '><tt>' + (f['(name)'] || '') + '</tt>');
                 s = [];
                 for (k in f) {
-                    if (k.charAt(0) != '(') {
+                    if (k.charAt(0) !== '(') {
                         switch (f[k]) {
                         case 'parameter':
                             s.push('<tt>' + k + '</tt>');
@@ -2553,7 +2569,7 @@ JSLINT = function () {
                 detail('Parameter');
                 s = [];
                 for (k in f) {
-                    if (k.charAt(0) != '(') {
+                    if (k.charAt(0) !== '(') {
                         switch(f[k]) {
                         case 'var':
                             s.push('<tt>' + k +
@@ -2577,7 +2593,7 @@ JSLINT = function () {
                 s = [];
                 c = f['(context)'];
                 for (k in f) {
-                    if (k.charAt(0) != '(' && f[k].substr(0, 6) === 'global') {
+                    if (k.charAt(0) !== '(' && f[k].substr(0, 6) === 'global') {
                         if (f[k] === 'global?') {
                             s.push('<tt>' + k +
                                     '</tt><small>&nbsp;(?)</small>');
@@ -2589,7 +2605,7 @@ JSLINT = function () {
                 detail('Global');
                 s = [];
                 for (k in f) {
-                    if (k.charAt(0) != '(' && f[k] === 'label') {
+                    if (k.charAt(0) !== '(' && f[k] === 'label') {
                        s.push(k);
                     }
                 }
