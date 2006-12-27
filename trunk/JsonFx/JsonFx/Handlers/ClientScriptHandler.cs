@@ -29,6 +29,10 @@ namespace JsonFx.Handlers
 				context.Response.ContentType = JsonFx.Scripts.ClientScript.JavaScriptContentType;
 				context.Response.AddHeader("Content-Disposition", "inline;filename="+script);
 
+#if DEBUG
+				context.Response.Cache.SetCacheability(HttpCacheability.NoCache);
+#endif
+
 				// buffered write to response
 				byte[] buffer = new byte[ClientScriptHandler.BufferSize];
 				Stream output = context.Response.OutputStream;

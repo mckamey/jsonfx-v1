@@ -20,6 +20,7 @@ namespace JsonFx.UI
 		bool allowLiteralsInRoot = false;
 		bool normalizeWhitespace = true;
 		private bool dirty = false;
+		private bool disposed = false;
 
 		#endregion Fields
 
@@ -121,10 +122,10 @@ namespace JsonFx.UI
 		public void PopTag()
 		{
 			if (this.next != null)
-				throw new InvalidOperationException("Pop mismatch?");
+				throw new InvalidOperationException("Pop mismatch? (Next is null)");
 
 			if (this.current == null)
-				throw new InvalidOperationException("Pop mismatch?");
+				throw new InvalidOperationException("Pop mismatch? (Current is null)");
 
 			this.current = this.current.Parent;
 
@@ -278,18 +279,23 @@ namespace JsonFx.UI
 
 		public void Dispose()
 		{
-			if (this.next != null)
-				throw new InvalidOperationException("Pop mismatch?");
-
-			if (this.current == null)
-				throw new InvalidOperationException("Pop mismatch?");
-
-			if (this.writer != null)
+			if (!this.disposed)
 			{
-				using (this.writer)
+				this.disposed = true;
+
+				if (this.writer != null)
 				{
-					this.writer.Flush();
-					this.writer.Close();
+					using (this.writer)
+					{
+						while (this.current != null)
+						{
+							this.PopTag();
+						}
+
+						this.writer.Flush();
+						this.writer.Close();
+						this.writer = null;
+					}
 				}
 			}
 		}
