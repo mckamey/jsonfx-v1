@@ -2,10 +2,7 @@
 // ======================================================
 //	class JsonFx.IO (Singleton)
 //=======================================================
-if ("undefined" === typeof JsonFx) {
-	JsonFx = {};
-}
-if ("undefined" === typeof JsonFx.IO) {
+if ("undefined" !== typeof JsonFx) {
 	JsonFx.IO = {};
 
 	JsonFx.IO.userAgent = "JsonFx/1.0 beta";
@@ -180,48 +177,48 @@ if ("undefined" === typeof JsonFx.IO) {
 			}
 		}
 	};
-}
 
-if (typeof(JsonFx.IO.JsonServiceBase) === "undefined") {
+	if (typeof(JsonFx.IO.JsonServiceBase) === "undefined") {
 
-	/* Ctor */
-	JsonFx.IO.JsonServiceBase = function() {
-	};
+		/* Ctor */
+		JsonFx.IO.JsonServiceBase = function() {
+		};
 
-	/*event*/ JsonFx.IO.JsonServiceBase.prototype.onBeginRequest = null;
+		/*event*/ JsonFx.IO.JsonServiceBase.prototype.onBeginRequest = null;
 
-	/*event*/ JsonFx.IO.JsonServiceBase.prototype.onEndRequest = null;
+		/*event*/ JsonFx.IO.JsonServiceBase.prototype.onEndRequest = null;
 
-	/*void*/ JsonFx.IO.JsonServiceBase.prototype.callService = function(
-		/*string*/ method,
-		/*object*/ params,
-		/*function(string,object)*/ callback,
-		/*object*/ context) {
+		/*void*/ JsonFx.IO.JsonServiceBase.prototype.callService = function(
+			/*string*/ method,
+			/*object*/ params,
+			/*function(string,object)*/ callback,
+			/*object*/ context) {
 
-		var self = this;
+			var self = this;
 
-		if (this.onBeginRequest) {
-			this.onBeginRequest(context);
-		}
+			if (this.onBeginRequest) {
+				this.onBeginRequest(context);
+			}
 
-		JsonFx.IO.PostJsonRequest(
-			this.address,
-			method,
-			params,
-			null,
-			function(data,ctxt){
-				if (self.onEndRequest) {
-					self.onEndRequest(ctxt);
-				}
-				callback(data,ctxt);
-			},
-			context);
-	};
+			JsonFx.IO.PostJsonRequest(
+				this.address,
+				method,
+				params,
+				null,
+				function(data,ctxt){
+					if (self.onEndRequest) {
+						self.onEndRequest(ctxt);
+					}
+					callback(data,ctxt);
+				},
+				context);
+		};
 
-	/*string*/ JsonFx.IO.JsonServiceBase.prototype["system.describe"] = function(
-		/*function(string,object)*/ callback,
-		/*object*/ context) {
+		/*string*/ JsonFx.IO.JsonServiceBase.prototype["system.describe"] = function(
+			/*function(string,object)*/ callback,
+			/*object*/ context) {
 
-		this.callService("system.describe", null, callback, context);
-	};
+			this.callService("system.describe", null, callback, context);
+		};
+	}
 }

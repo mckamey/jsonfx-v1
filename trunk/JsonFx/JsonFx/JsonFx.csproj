@@ -114,6 +114,9 @@
   <ItemGroup>
     <EmbeddedResource Include="Scripts\Core.js" />
   </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Scripts\Compacted\Core.js" />
+  </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
@@ -123,7 +126,7 @@
   </Target>
   -->
   <PropertyGroup>
-    <PreBuildEvent>("$(SolutionDir)Soln Items\ScriptCompactor\ScriptCompactor.exe" "$(ProjectDir)Scripts\IO.js" "$(ProjectDir)Scripts\Compacted\IO.js" "Copyright (c)2006 Stephen M. McKamey. All rights reserved.") &amp; ("$(SolutionDir)Soln Items\ScriptCompactor\ScriptCompactor.exe" "$(ProjectDir)Scripts\JsonML.js" "$(ProjectDir)Scripts\Compacted\JsonML.js" "http://JsonML.org" -F) &amp; ("$(SolutionDir)Soln Items\ScriptCompactor\ScriptCompactor.exe" "$(ProjectDir)Scripts\UI.js" "$(ProjectDir)Scripts\Compacted\UI.js" "Copyright (c)2006 Stephen M. McKamey. All rights reserved.") &amp; ("$(SolutionDir)Soln Items\ScriptCompactor\ScriptCompactor.exe" "$(ProjectDir)Scripts\JSON.js" "$(ProjectDir)Scripts\Compacted\JSON.js" "http://json.org/js.html" -F) &amp; ("$(SolutionDir)Soln Items\ScriptCompactor\ScriptCompactor.exe" "$(ProjectDir)Scripts\Trace.js" "$(ProjectDir)Scripts\Compacted\Trace.js" "Copyright (c)2006 Stephen M. McKamey. All rights reserved.") &amp; ("$(SolutionDir)Soln Items\ScriptCompactor\ScriptCompactor.exe" "$(ProjectDir)Scripts\Utility.js" "$(ProjectDir)Scripts\Compacted\Utility.js" "Copyright (c)2006 Stephen M. McKamey. All rights reserved." -F)</PreBuildEvent>
+    <PreBuildEvent>("$(SolutionDir)Soln Items\ScriptCompactor\ScriptCompactor.exe" "$(ProjectDir)Scripts\Core.js" "$(ProjectDir)Scripts\Compacted\Core.js" "Copyright (c)2006 Stephen M. McKamey. All rights reserved.") &amp; ("$(SolutionDir)Soln Items\ScriptCompactor\ScriptCompactor.exe" "$(ProjectDir)Scripts\IO.js" "$(ProjectDir)Scripts\Compacted\IO.js" "Copyright (c)2006 Stephen M. McKamey. All rights reserved.") &amp; ("$(SolutionDir)Soln Items\ScriptCompactor\ScriptCompactor.exe" "$(ProjectDir)Scripts\JsonML.js" "$(ProjectDir)Scripts\Compacted\JsonML.js" "http://JsonML.org" -F) &amp; ("$(SolutionDir)Soln Items\ScriptCompactor\ScriptCompactor.exe" "$(ProjectDir)Scripts\UI.js" "$(ProjectDir)Scripts\Compacted\UI.js" "Copyright (c)2006 Stephen M. McKamey. All rights reserved.") &amp; ("$(SolutionDir)Soln Items\ScriptCompactor\ScriptCompactor.exe" "$(ProjectDir)Scripts\JSON.js" "$(ProjectDir)Scripts\Compacted\JSON.js" "http://json.org/js.html" -F) &amp; ("$(SolutionDir)Soln Items\ScriptCompactor\ScriptCompactor.exe" "$(ProjectDir)Scripts\Trace.js" "$(ProjectDir)Scripts\Compacted\Trace.js" "Copyright (c)2006 Stephen M. McKamey. All rights reserved.") &amp; ("$(SolutionDir)Soln Items\ScriptCompactor\ScriptCompactor.exe" "$(ProjectDir)Scripts\Utility.js" "$(ProjectDir)Scripts\Compacted\Utility.js" "Copyright (c)2006 Stephen M. McKamey. All rights reserved." -F)</PreBuildEvent>
     <PostBuildEvent>(xcopy "$(ProjectDir)Scripts\JsonML.js" "$(SolutionDir)JsonML\JsonML.js" /Y /R) &amp; (xcopy "$(ProjectDir)Scripts\Compacted\JsonML.js" "$(SolutionDir)JsonML\JsonML_min.js" /Y /R)</PostBuildEvent>
   </PropertyGroup>
 </Project>

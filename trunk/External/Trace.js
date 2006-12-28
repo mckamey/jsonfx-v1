@@ -2,12 +2,7 @@
 // =========================================================
 //	class JsonFx.Trace (Singleton)
 //=======================================================
-if ("undefined" == typeof JsonFx) {
-	JsonFx = {};
-}
-
-if ("undefined" == typeof JsonFx.Trace) {
-	// Create singleton object
+if ("undefined" !== typeof JsonFx) {
 	JsonFx.Trace = {};
 
 	/*element*/ JsonFx.Trace.GetTraceElement = function() {
