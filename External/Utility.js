@@ -2,11 +2,7 @@
 // ======================================================
 //	class JsonFx.Utility (Singleton)
 //=======================================================
-if (typeof(JsonFx) == "undefined") {
-	JsonFx = {};
-}
-if (typeof(JsonFx.Utility) == "undefined") {
-	// Create singleton object
+if ("undefined" !== typeof JsonFx) {
 	JsonFx.Utility = {};
 
 	/* DataDump ----------------------------------------------------*/
