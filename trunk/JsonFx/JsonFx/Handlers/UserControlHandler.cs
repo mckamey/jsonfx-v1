@@ -67,7 +67,6 @@ namespace JsonFx.Handlers
 
 			// add the control to the hosted page
 			this.userControl = control;
-			this.userControl.ID = "_";
 			this.Form.Controls.Add(this.userControl);
 
 			// if is a cached usercontrol then need to get reference to actual usercontrol
@@ -82,6 +81,7 @@ namespace JsonFx.Handlers
 			{
 				throw new System.Web.HttpException(403, String.Format("UserControl \"{0}\" is forbidden.  In order to enable direct access, mark with a {1}.", this.Request.Path, typeof(HostableUserControlAttribute).FullName));
 			}
+			this.userControl.ID = HostableUserControlAttribute.GetUserControlID(control);
 		}
 
 		protected override void Render(HtmlTextWriter writer)
