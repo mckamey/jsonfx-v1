@@ -48,8 +48,9 @@ if ("undefined" !== typeof JsonFx) {
 		}
 	};
 
-	/*void*/ JsonFx.UI.LoadJsonML = function(/*string*/ url, /*element or string*/ container, /*function*/ callback, /*object*/ context) {
-		JsonFx.IO.GetJsonRequest(url, null, null,
+	/* returns true if request was sent */
+	/*bool*/ JsonFx.UI.LoadJsonML = function(/*string*/ url, /*element or string*/ container, /*function*/ callback, /*object*/ context) {
+		return JsonFx.IO.GetJsonRequest(url, null, null,
 				function(jml,obj) {
 					JsonFx.UI.DisplayJsonML(jml,container);
 					if (callback) { callback(context); }

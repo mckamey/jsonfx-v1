@@ -6,25 +6,26 @@ if ("undefined" !== typeof JsonFx) {
 	JsonFx.IO = {};
 
 	JsonFx.IO.userAgent = "JsonFx/1.0 beta";
-	JsonFx.IO.callTimeout = 10000;// 10 seconds
+	JsonFx.IO.callTimeout = 10000;// 10 sec
 
 	/* JsonRequest ----------------------------------------------------*/
 
-	/*void*/ JsonFx.IO.PostJsonRequest = function(
+	/*void*/ JsonFx.IO.onRequestFailed = function(/*XMLHTTP*/response, /*object*/context) {
+		if (response) {
+			window.alert("JsonFx.IO ERROR: "+response.statusText+" ("+response.status+")");
+		} else {
+			window.alert("JsonFx.IO ERROR: Timeout");
+		}
+	};
+
+	/* returns true if request was sent */
+	/*bool*/ JsonFx.IO.PostJsonRequest = function(
 		/*string*/ serviceUrl,
 		/*string*/ method,
 		/*object*/ params,
 		/*object*/ id,
 		/*function(data,context)*/ cb_responseSuccess,
 		/*object*/ context) {
-
-		function cb_reportError(response, context) {
-			if (!response) {
-				window.alert("JsonFx.IO ERROR: Timeout");
-			} else {
-				window.alert("JsonFx.IO ERROR: "+response.statusText+" ("+response.status+")");
-			}
-		}
 
 		function cb_decodeResponse(response, context) {
 			var data = response.responseText;
@@ -53,24 +54,19 @@ if ("undefined" !== typeof JsonFx) {
 				"Accept" : "application/json"
 			};
 
-			JsonFx.IO.SendRequest(serviceUrl, rpcRequest, "POST", true, headers, cb_decodeResponse, cb_reportError, context);
-		} catch (ex) {}
+			return JsonFx.IO.SendRequest(serviceUrl, rpcRequest, "POST", true, headers, cb_decodeResponse, JsonFx.IO.onRequestFailed, context);
+		} catch (ex) {
+			return false;
+		}
 	};
 
-	/*void*/ JsonFx.IO.GetJsonRequest = function(
+	/* returns true if request was sent */
+	/*bool*/ JsonFx.IO.GetJsonRequest = function(
 		/*string*/ serviceUrl,
 		/*string*/ method,
 		/*object*/ params,
 		/*function(data,context)*/ cb_responseSuccess,
 		/*object*/ context) {
-
-		function cb_reportError(response, context) {
-			if (!response) {
-				window.alert("JsonFx.IO ERROR: Timeout");
-			} else {
-				window.alert("JsonFx.IO ERROR: "+response.statusText+" ("+response.status+")");
-			}
-		}
 
 		function cb_decodeResponse(response, context) {
 			var data = response.responseText;
@@ -106,14 +102,18 @@ if ("undefined" !== typeof JsonFx) {
 			}
 		}
 
-		var headers = {
-			"User-Agent" : JsonFx.IO.userAgent,
-//			"Content-Type" : "application/json",
-//			"Content-Length" : 0,
-			"Accept" : "application/json"
-		};
+		try {
+			var headers = {
+				"User-Agent" : JsonFx.IO.userAgent,
+//				"Content-Type" : "application/json",
+//				"Content-Length" : 0,
+				"Accept" : "application/json"
+			};
 
-		JsonFx.IO.SendRequest(serviceUrl, null, "GET", true, headers, cb_decodeResponse, cb_reportError, context);
+			return JsonFx.IO.SendRequest(serviceUrl, null, "GET", true, headers, cb_decodeResponse, JsonFx.IO.onRequestFailed, context);
+		} catch (ex) {
+			return false;
+		}
 	};
 
 	/* XMLHttpRequest ----------------------------------------------------*/
@@ -135,7 +135,8 @@ if ("undefined" !== typeof JsonFx) {
 		return new XMLHttpRequest();
 	};
 
-	/*void*/ JsonFx.IO.SendRequest = function(
+	/* returns true if request was sent */
+	/*bool*/ JsonFx.IO.SendRequest = function(
 		/*string*/ url,
 		/*string*/ params,
 		/*string*/ HttpMethod,
@@ -152,58 +153,75 @@ if ("undefined" !== typeof JsonFx) {
 		var request = JsonFx.IO.GetXMLHttpRequest();
 		var timeout = setTimeout(
 			function() {
-				request.abort();
-				request = null;
-				cb_responseFail(request, context);
+				if (request) {
+					request.abort();
+					request = null;
+					cb_responseFail(null, context);
+				}
 			},
 			JsonFx.IO.callTimeout);
 
 		function cb_readyStateChanged() {
 			if (request && request.readyState === 4 /*complete*/) {
 				clearTimeout(timeout);
-				if (request.status === 200) {
-					/* data was retrieved successfully */ 
+				var status;
+				try {
+					status = request.status;
+				} catch (ex) {
+					/* Firefox doesn't allow status to be accessed after request.abort() */
+					status = 0;
+				}
+				if (status === 200) {
+					/* data was retrieved successfully */
 					if (cb_responseSuccess) {
 						cb_responseSuccess(request, context);
 					}
-				} else if (request.status === 0) {
-					/* IE reports status zero when aborting, suppress it. */
+				} else if (status === 0) {
+					/*	IE reports status zero when aborted.
+						firefox throws exception, which we set also to zero,
+						suppress these as cb_responseFail has already been called. */
 				} else {
 					if (cb_responseFail) {
 						cb_responseFail(request, context);
 					}
-				} 
+				}
 				request = null;
 			}
 		}
 
-		if (request) {
-			try {
-				request.onreadystatechange = cb_readyStateChanged;
-				request.open(HttpMethod, url, bAsync);
+		if (!request) {
+			return false;
+		}
 
-				// this prevents server from sending 304 Not-Modified response
-				request.setRequestHeader("If-Modified-Since", "Sat, 17 Jun 1995 00:00:00 GMT");
-				request.setRequestHeader("Pragma", "no-cache");
-				request.setRequestHeader("Cache-Control", "no-cache");
-				if (headers) {
-					for (var header in headers) {
-						if (typeof(headers[header]) === "string") {
-							request.setRequestHeader(header, headers[header]);
-						}
+		try {
+			request.onreadystatechange = cb_readyStateChanged;
+			request.open(HttpMethod, url, bAsync);
+
+			// this prevents server from sending 304 Not-Modified response
+			request.setRequestHeader("If-Modified-Since", "Sat, 17 Jun 1995 00:00:00 GMT");
+			request.setRequestHeader("Pragma", "no-cache");
+			request.setRequestHeader("Cache-Control", "no-cache");
+			if (headers) {
+				for (var header in headers) {
+					if (typeof(headers[header]) === "string") {
+						request.setRequestHeader(header, headers[header]);
 					}
-				} else if (HttpMethod === "POST") {
-					request.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
 				}
-				request.send(params);
-			} catch (ex) {
-				throw new Error("HTTP Request Error: "+ex.message+"\n\n"+url);
-			} finally {
-				cb_readyStateChanged();
+			} else if (HttpMethod === "POST") {
+				request.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
 			}
+			request.send(params);
+			return true;
+		} catch (ex) {
+			//throw new Error("HTTP Request Error: "+ex.message+"\n\n"+url);
+			return false;
+		} finally {
+			// in case immediately returns?
+			cb_readyStateChanged();
 		}
 	};
 
+	/* Base class for generated JSON Services */
 	if (typeof(JsonFx.IO.JsonServiceBase) === "undefined") {
 
 		/* Ctor */
