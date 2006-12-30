@@ -6,6 +6,7 @@ if ("undefined" !== typeof JsonFx) {
 	JsonFx.IO = {};
 
 	JsonFx.IO.userAgent = "JsonFx/1.0 beta";
+	JsonFx.IO.callTimeout = 10000;// 10 seconds
 
 	/* JsonRequest ----------------------------------------------------*/
 
@@ -14,8 +15,16 @@ if ("undefined" !== typeof JsonFx) {
 		/*string*/ method,
 		/*object*/ params,
 		/*object*/ id,
-		/*function(string,object)*/ cb_responseComplete,
+		/*function(data,context)*/ cb_responseSuccess,
 		/*object*/ context) {
+
+		function cb_reportError(response, context) {
+			if (!response) {
+				window.alert("JsonFx.IO ERROR: Timeout");
+			} else {
+				window.alert("JsonFx.IO ERROR: "+response.statusText+" ("+response.status+")");
+			}
+		}
 
 		function cb_decodeResponse(response, context) {
 			var data = response.responseText;
@@ -24,7 +33,7 @@ if ("undefined" !== typeof JsonFx) {
 					data = data.parseJSON();
 				} catch (ex) {}
 			}
-			cb_responseComplete(data, context);
+			cb_responseSuccess(data, context);
 		}
 
 		if (params && typeof(params) !== "object") {
@@ -44,7 +53,7 @@ if ("undefined" !== typeof JsonFx) {
 				"Accept" : "application/json"
 			};
 
-			JsonFx.IO.SendRequest(serviceUrl, rpcRequest, "POST", true, headers, cb_decodeResponse, context);
+			JsonFx.IO.SendRequest(serviceUrl, rpcRequest, "POST", true, headers, cb_decodeResponse, cb_reportError, context);
 		} catch (ex) {}
 	};
 
@@ -52,8 +61,16 @@ if ("undefined" !== typeof JsonFx) {
 		/*string*/ serviceUrl,
 		/*string*/ method,
 		/*object*/ params,
-		/*function(string,object)*/ cb_responseComplete,
+		/*function(data,context)*/ cb_responseSuccess,
 		/*object*/ context) {
+
+		function cb_reportError(response, context) {
+			if (!response) {
+				window.alert("JsonFx.IO ERROR: Timeout");
+			} else {
+				window.alert("JsonFx.IO ERROR: "+response.statusText+" ("+response.status+")");
+			}
+		}
 
 		function cb_decodeResponse(response, context) {
 			var data = response.responseText;
@@ -62,7 +79,7 @@ if ("undefined" !== typeof JsonFx) {
 					data = data.parseJSON();
 				} catch (ex) { }
 			}
-			cb_responseComplete(data, context);
+			cb_responseSuccess(data, context);
 		}
 
 		if (method) {
@@ -96,7 +113,7 @@ if ("undefined" !== typeof JsonFx) {
 			"Accept" : "application/json"
 		};
 
-		JsonFx.IO.SendRequest(serviceUrl, null, "GET", true, headers, cb_decodeResponse, context);
+		JsonFx.IO.SendRequest(serviceUrl, null, "GET", true, headers, cb_decodeResponse, cb_reportError, context);
 	};
 
 	/* XMLHttpRequest ----------------------------------------------------*/
@@ -124,7 +141,8 @@ if ("undefined" !== typeof JsonFx) {
 		/*string*/ HttpMethod,
 		/*bool*/ bAsync,
 		/*object*/ headers,
-		/*function*/ cb_responseComplete,
+		/*function(response,context)*/ cb_responseSuccess,
+		/*function(response,context)*/ cb_responseFail,
 		/*object*/ context) {
 
 		if (!HttpMethod) {
@@ -132,20 +150,28 @@ if ("undefined" !== typeof JsonFx) {
 		}
 
 		var request = JsonFx.IO.GetXMLHttpRequest();
+		var timeout = setTimeout(
+			function() {
+				request.abort();
+				request = null;
+				cb_responseFail(request, context);
+			},
+			JsonFx.IO.callTimeout);
 
 		function cb_readyStateChanged() {
 			if (request && request.readyState === 4 /*complete*/) {
-				/* If the data was retrieved successfully */ 
-				if (request.status === 200) 
-				{ 
-					if (cb_responseComplete) {
-						cb_responseComplete(request, context);
+				clearTimeout(timeout);
+				if (request.status === 200) {
+					/* data was retrieved successfully */ 
+					if (cb_responseSuccess) {
+						cb_responseSuccess(request, context);
 					}
-				}
-				/* IE returns a status code of 0 on some occasions, so ignore this case */ 
-				else if (request.status !== 0) 
-				{ 
-					window.alert("JsonFx.IO ERROR: " + request.statusText); 
+				} else if (request.status === 0) {
+					/* IE reports status zero when aborting, suppress it. */
+				} else {
+					if (cb_responseFail) {
+						cb_responseFail(request, context);
+					}
 				} 
 				request = null;
 			}

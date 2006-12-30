@@ -2,7 +2,7 @@
 
 - Add error callback on JSON calls
 - Implement browser history stack
-- Add IFrame support for downlevel browsers?
+- Add IFrame support for downlevel browsers? (http://ajaxpatterns.org/archive/XMLHttpRequest_Call.php)
 - Add messaging framework
 
 - Find a way to copy generated marker file for .ascx files into output directory
