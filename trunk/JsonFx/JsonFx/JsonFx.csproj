@@ -120,6 +120,12 @@
   <ItemGroup>
     <None Include="Build.bat" />
   </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Scripts\Compacted\JsonFx.js" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Scripts\JsonFx.js" />
+  </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
@@ -129,7 +135,7 @@
   </Target>
   -->
   <PropertyGroup>
-    <PreBuildEvent>$(ProjectDir)Build.bat $(SolutionDir)SolnItems\ScriptCompactor\ScriptCompactor.exe $(ProjectDir)</PreBuildEvent>
+    <PreBuildEvent>$(ProjectDir)Build.bat $(SolutionDir)SolnItems\ $(ProjectDir)</PreBuildEvent>
     <PostBuildEvent>
     </PostBuildEvent>
   </PropertyGroup>
