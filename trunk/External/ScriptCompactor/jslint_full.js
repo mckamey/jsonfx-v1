@@ -1,5 +1,5 @@
 // jslint.js
-// 2006-12-13
+// 2007-01-07
 /*
 Copyright (c) 2002 Douglas Crockford  (www.JSLint.com)
 
@@ -1284,7 +1284,7 @@ JSLINT = function () {
                 q:        {},
                 samp:     {},
                 script:   {parent:
-' head body p div span abbr acronym address bdo blockquote cite code del dfn em ins kbd pre samp strong th td var '},
+' head body p div span abbr acronym address bdo blockquote cite code del dfn em ins kbd pre samp strong table tbody td th tr var '},
                 select:   {},
                 small:    {},
                 span:     {},
@@ -1957,7 +1957,12 @@ JSLINT = function () {
             }
             if (!option.evil) {
                 if (left.value === 'eval' || left.value === 'Function') {
-                    warning("eval is evil", left);
+                    if (    p[0][0] !== "addconcat" ||
+                            p[0][2].value !== ')' ||
+                            p[0][1][0] !== "addconcat" ||
+                            p[0][1][1].value !== '(') {
+                        warning("eval is evil", left);
+                    }
                 } else if (p[0] && p[0].id === '(string)' &&
                        (left.value === 'setTimeout' ||
                         left.value === 'setInterval')) {
@@ -2030,7 +2035,7 @@ JSLINT = function () {
                     advance();
                 }
                 if (!i) {
-                    error("Expected an identifier and instead saw '" +
+                    error("Expected an identifier or '}' and instead saw '" +
                             token.value + "'.");
                 }
                 if (typeof i.value === 'string') {
