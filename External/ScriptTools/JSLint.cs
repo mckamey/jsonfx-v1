@@ -53,7 +53,7 @@ namespace ScriptCompactor
 
 		#region Methods
 
-		public void Run(StreamReader reader)
+		public void Run(TextReader reader)
 		{
 			if (reader == null)
 				throw new NullReferenceException("Input StreamReader was null");
@@ -65,7 +65,7 @@ namespace ScriptCompactor
 			{
 				myProcess.StartInfo.FileName = "cscript";
 				myProcess.StartInfo.Arguments = String.Format("\"{0}\" //NoLogo", this.JSLintPath);
-				//myProcess.StartInfo.CreateNoWindow = true;
+				myProcess.StartInfo.CreateNoWindow = true;
 				myProcess.StartInfo.UseShellExecute = false;
 				myProcess.StartInfo.RedirectStandardInput = true;
 				myProcess.StartInfo.RedirectStandardOutput = true;

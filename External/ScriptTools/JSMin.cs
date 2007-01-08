@@ -41,8 +41,8 @@ namespace ScriptCompactor
 
 		#region Fields
 
-		private StreamReader reader;
-		private StreamWriter writer;
+		private TextReader reader;
+		private TextWriter writer;
 		private char theA;
 		private char theB;
 		private char theLookahead = JSMinifier.EOF;
@@ -68,24 +68,38 @@ namespace ScriptCompactor
 			if (inputFile.Equals(outputFile, StringComparison.InvariantCultureIgnoreCase))
 				throw new ApplicationException("Input and output file are set to the same path.");
 
-			using (this.reader = new StreamReader(inputFile))
+			using (TextReader input = new StreamReader(inputFile))
 			{
 				JSMinifier.PrepSavePath(outputFile);
-				using (this.writer = new StreamWriter(outputFile, false))
+				using (TextWriter output = new StreamWriter(outputFile, false))
 				{
-					if (!String.IsNullOrEmpty(copyright) || addTimeStamp)
-					{
-						this.writer.WriteLine("/*----------------------------------------------------------------------*\\", copyright);
-						if (!String.IsNullOrEmpty(copyright))
-							this.writer.WriteLine("\t"+(copyright.Replace("*/","")));
-
-						if (addTimeStamp)
-							this.writer.WriteLine(DateTime.Now.ToString("'\tScript Compacted 'yyyy-MM-dd @ HH:mm:ss"));
-						this.writer.WriteLine("\\*----------------------------------------------------------------------*/", copyright);
-					}
-					this.JSMin();
+					this.Minify(input, output, addTimeStamp, copyright);
 				}
 			}
+		}
+
+		public void Minify(TextReader input, TextWriter output, bool addTimeStamp, string copyright)
+		{
+			if (input == null)
+				throw new NullReferenceException("Input TextReader was null.");
+
+			if (output == null)
+				throw new NullReferenceException("Output TextWriter was null.");
+
+			this.reader = input;
+			this.writer = output;
+
+			if (!String.IsNullOrEmpty(copyright) || addTimeStamp)
+			{
+				this.writer.WriteLine("/*----------------------------------------------------------------------*\\", copyright);
+				if (!String.IsNullOrEmpty(copyright))
+					this.writer.WriteLine("\t"+(copyright.Replace("*/", "")));
+
+				if (addTimeStamp)
+					this.writer.WriteLine(DateTime.Now.ToString("'\tScript Compacted 'yyyy-MM-dd @ HH:mm:ss"));
+				this.writer.WriteLine("\\*----------------------------------------------------------------------*/", copyright);
+			}
+			this.JSMin();
 		}
 
 		/// <summary>
