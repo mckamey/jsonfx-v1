@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using System.Web;
 using System.Reflection;
+using System.Web.Compilation;
 
 namespace JsonFx.Handlers
 {
@@ -17,21 +18,30 @@ namespace JsonFx.Handlers
 
 		void IHttpHandler.ProcessRequest(HttpContext context)
 		{
-			string script = Path.GetFileNameWithoutExtension(context.Request.FilePath)+".js";
-
-			Assembly assembly = Assembly.GetAssembly(typeof(JsonFx.Scripts.ClientScript));
-			using (Stream input = assembly.GetManifestResourceStream(JsonFx.Scripts.ClientScript.ScriptPath+script))
-			{
-			    if (input == null)
-			        throw new HttpException((int)System.Net.HttpStatusCode.NotFound, "Invalid script name");
-
-				context.Response.Clear();
-				context.Response.ContentType = JsonFx.Scripts.ClientScript.JavaScriptContentType;
-				context.Response.AddHeader("Content-Disposition", "inline;filename="+script);
-
+			context.Response.Clear();
+			context.Response.ContentType = JsonFx.Scripts.ClientScript.JavaScriptContentType;
 #if DEBUG
-				context.Response.Cache.SetCacheability(HttpCacheability.NoCache);
+			context.Response.Cache.SetCacheability(HttpCacheability.NoCache);
 #endif
+
+			string virtualPath = context.Request.FilePath;
+			string compiledScript = BuildManager.GetCompiledCustomString(virtualPath);
+			if (!String.IsNullOrEmpty(compiledScript))
+			{
+				using (StreamWriter writer = new StreamWriter(context.Response.OutputStream))
+				{
+					writer.Write(compiledScript);
+					writer.Flush();
+					writer.Close();
+					return;
+				}
+			}
+
+			// wasn't precompiled so just stream from original file
+			using (Stream input = new FileStream(context.Request.PhysicalPath, FileMode.Open, FileAccess.Read))
+			{
+				if (input == null)
+			        throw new HttpException((int)System.Net.HttpStatusCode.NotFound, "Invalid script name");
 
 				// buffered write to response
 				byte[] buffer = new byte[ClientScriptHandler.BufferSize];

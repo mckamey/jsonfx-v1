@@ -32,6 +32,10 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="ScriptTools, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\SolnItems\ScriptCompactor\ScriptTools.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
     <Reference Include="System.Web" />
@@ -39,6 +43,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Compilation\JsonFxScriptBuildProvider.cs" />
+    <Compile Include="Compilation\ScriptCompactorBuildProvider.cs" />
     <Compile Include="Compilation\JsonServiceBuildProvider.cs">
       <SubType>Code</SubType>
     </Compile>
