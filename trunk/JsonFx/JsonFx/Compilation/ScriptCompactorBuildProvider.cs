@@ -73,7 +73,7 @@ namespace JsonFx.Compilation
 					throw new System.Web.HttpParseException(ex.Message, ex);
 				}
 			}
-#if DEBUG
+#if !DEBUG
 			ScriptCompactor.JSMinifier jsMin = new ScriptCompactor.JSMinifier();
 			using (TextReader reader = base.OpenReader())
 			{
