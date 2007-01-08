@@ -15,45 +15,62 @@ namespace ScriptCompactor
 {
 	public class JSLint
 	{
+		#region Fields
+
+		private string jsLintPath = null;
+
+		#endregion Fields
+
 		#region Init
 
 		public JSLint()
 		{
+			string assemblyPath = (Assembly.GetAssembly(typeof(JSLint)).Location);
+			assemblyPath = Path.GetDirectoryName(assemblyPath);
+
+			this.jsLintPath = assemblyPath+"\\jslint_wsh.js";
+			if (!File.Exists(this.JSLintPath))
+				throw new FileNotFoundException(String.Format("JSLint script not found at \"{0}\".", this.JSLintPath));
+		}
+
+		public JSLint(string jsLintPath)
+		{
+			this.jsLintPath = jsLintPath;
+			if (!File.Exists(this.JSLintPath))
+				throw new FileNotFoundException(String.Format("JSLint script not found at \"{0}\".", this.JSLintPath));
 		}
 
 		#endregion Init
 
+		#region Properties
+
+		public string JSLintPath
+		{
+			get { return this.jsLintPath; }
+		}
+
+		#endregion Properties
+
 		#region Methods
 
-		public void Run(string inputFile)
+		public void Run(StreamReader reader)
 		{
-			if (!File.Exists(inputFile))
-				throw new FileNotFoundException(String.Format("File (\"{0}\") not found.", inputFile), inputFile);
+			if (reader == null)
+				throw new NullReferenceException("Input StreamReader was null");
 
-			string assemblyPath = (Assembly.GetAssembly(typeof(JSLint)).Location);
-			assemblyPath = Path.GetDirectoryName(assemblyPath);
-
-			string jslintPath = assemblyPath+"\\jslint_wsh.js";
-			if (!File.Exists(jslintPath))
-				throw new FileNotFoundException(String.Format("JSLint script not found at \"{0}\".", jslintPath));
+			// read input file into memory
+			string scriptText = reader.ReadToEnd();
 
 			using (Process myProcess = new Process())
 			{
 				myProcess.StartInfo.FileName = "cscript";
-				myProcess.StartInfo.Arguments = String.Format("\"{0}\" //NoLogo", jslintPath);
+				myProcess.StartInfo.Arguments = String.Format("\"{0}\" //NoLogo", this.JSLintPath);
 				//myProcess.StartInfo.CreateNoWindow = true;
 				myProcess.StartInfo.UseShellExecute = false;
 				myProcess.StartInfo.RedirectStandardInput = true;
 				myProcess.StartInfo.RedirectStandardOutput = true;
 				myProcess.StartInfo.RedirectStandardError = true;
 				myProcess.Start();
-
-				// read input file into memory
-				string scriptText;
-				using (StreamReader reader = new StreamReader(inputFile))
-				{
-					scriptText = reader.ReadToEnd();
-				}
 
 				// pipe input file to script
 				myProcess.StandardInput.Write(scriptText);
@@ -72,6 +89,29 @@ namespace ScriptCompactor
 
 				if (myProcess.ExitCode != 0)
 					throw new ApplicationException("JSLint Error: "+stdOut+stdErr);
+			}
+		}
+
+		public void Run(string inputFile)
+		{
+			if (!File.Exists(inputFile))
+				throw new FileNotFoundException(String.Format("File not found: \"{0}\"", inputFile), inputFile);
+
+			using (StreamReader reader = new StreamReader(inputFile))
+			{
+				this.Run(reader);
+			}
+		}
+
+		public void Run(Stream input)
+		{
+			if (input == null)
+				throw new NullReferenceException("Input Stream was null");
+
+			// read input file into memory
+			using (StreamReader reader = new StreamReader(input))
+			{
+				this.Run(reader);
 			}
 		}
 
