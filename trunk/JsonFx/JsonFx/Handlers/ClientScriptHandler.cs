@@ -20,41 +20,26 @@ namespace JsonFx.Handlers
 		{
 			context.Response.Clear();
 			context.Response.ContentType = JsonFx.Scripts.ClientScript.JavaScriptContentType;
-#if DEBUG
-			context.Response.Cache.SetCacheability(HttpCacheability.NoCache);
-#endif
 
-			string virtualPath = context.Request.FilePath;
-			string compiledScript = BuildManager.GetCompiledCustomString(virtualPath);
-			if (!String.IsNullOrEmpty(compiledScript))
+			// specifying "DEBUG" in the query string gets the non-compacted form
+			if (!"debug".Equals(context.Request.QueryString[null], StringComparison.InvariantCultureIgnoreCase))
 			{
-				using (StreamWriter writer = new StreamWriter(context.Response.OutputStream))
+				if (this.OutputCompiledFile(context))
 				{
-					writer.Write(compiledScript);
-					writer.Flush();
-					writer.Close();
 					return;
 				}
 			}
 
-			// wasn't precompiled so just stream from original file
-			using (Stream input = new FileStream(context.Request.PhysicalPath, FileMode.Open, FileAccess.Read))
-			{
-				if (input == null)
-			        throw new HttpException((int)System.Net.HttpStatusCode.NotFound, "Invalid script name");
+			context.Response.Cache.SetCacheability(HttpCacheability.NoCache);
 
-				// buffered write to response
-				byte[] buffer = new byte[ClientScriptHandler.BufferSize];
-				Stream output = context.Response.OutputStream;
-				int count;
-				do
-				{
-					count = input.Read(buffer, 0, ClientScriptHandler.BufferSize);
-					output.Write(buffer, 0, count);
-				} while (count > 0);
-				output.Flush();
-				output.Close();
+			if (context.Request.FilePath.EndsWith(".js", StringComparison.InvariantCultureIgnoreCase))
+			{
+				// wasn't precompiled so just stream from original file
+				this.OutputTargetFile(context);
+				return;
 			}
+
+			this.OutputResourceFile(context);
 		}
 
 		bool IHttpHandler.IsReusable
@@ -63,5 +48,66 @@ namespace JsonFx.Handlers
 		}
 
 		#endregion IHttpHandler Members
+
+		#region ClientScriptHandler Members
+
+		protected bool OutputCompiledFile(HttpContext context)
+		{
+			string virtualPath = context.Request.FilePath;
+			string compiledScript = BuildManager.GetCompiledCustomString(virtualPath);
+			if (String.IsNullOrEmpty(compiledScript))
+				return false;
+
+			using (StreamWriter writer = new StreamWriter(context.Response.OutputStream))
+			{
+				writer.Write(compiledScript);
+				writer.Flush();
+				writer.Close();
+				return true;
+			}
+		}
+
+		protected void OutputResourceFile(HttpContext context)
+		{
+			string virtualPath = context.Request.FilePath;
+			string script = Path.GetFileNameWithoutExtension(virtualPath)+".js";
+			Assembly assembly = Assembly.GetAssembly(typeof(JsonFx.Scripts.ClientScript));
+			Stream input = assembly.GetManifestResourceStream(JsonFx.Scripts.ClientScript.ScriptPath+script);
+			if (input == null)
+				throw new HttpException((int)System.Net.HttpStatusCode.NotFound, "Invalid script name");
+
+			this.BufferedWrite(context, input);
+		}
+
+		protected void OutputTargetFile(HttpContext context)
+		{
+			Stream input = new FileStream(context.Request.PhysicalPath, FileMode.Open, FileAccess.Read);
+
+			this.BufferedWrite(context, input);
+		}
+
+		protected void BufferedWrite(HttpContext context, Stream input)
+		{
+			if (input == null)
+				throw new HttpException((int)System.Net.HttpStatusCode.NotFound, "Input stream is null.");
+
+			using (input)
+			{
+				using (Stream output = context.Response.OutputStream)
+				{
+					// buffered write to response
+					byte[] buffer = new byte[ClientScriptHandler.BufferSize];
+					int count;
+					do
+					{
+						count = input.Read(buffer, 0, ClientScriptHandler.BufferSize);
+						output.Write(buffer, 0, count);
+					} while (count > 0);
+					output.Flush();
+				}
+			}
+		}
+
+		#endregion ClientScriptHandler Members
 	}
 }
