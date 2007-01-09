@@ -15,6 +15,12 @@ namespace ScriptCompactor
 {
 	public class JSLint
 	{
+		#region Constants
+
+		private const string JSLintScript = "jslint_wsh.js";
+
+		#endregion Constants
+
 		#region Fields
 
 		private string jsLintPath = null;
@@ -25,19 +31,32 @@ namespace ScriptCompactor
 
 		public JSLint()
 		{
-			string assemblyPath = (Assembly.GetAssembly(typeof(JSLint)).Location);
-			assemblyPath = Path.GetDirectoryName(assemblyPath);
+			// look next to assembly for script
+			Assembly assembly = Assembly.GetAssembly(typeof(JSLint));
+			string assemblyPath = Path.GetDirectoryName(assembly.Location);
+			this.jsLintPath = Path.Combine(assemblyPath, JSLintScript);
 
-			this.jsLintPath = assemblyPath+"\\jslint_wsh.js";
+			// generate if does not exist
 			if (!File.Exists(this.JSLintPath))
-				throw new FileNotFoundException(String.Format("JSLint script not found at \"{0}\".", this.JSLintPath));
-		}
+			{
+				JSMinifier.PrepSavePath(this.JSLintPath);
 
-		public JSLint(string jsLintPath)
-		{
-			this.jsLintPath = jsLintPath;
-			if (!File.Exists(this.JSLintPath))
-				throw new FileNotFoundException(String.Format("JSLint script not found at \"{0}\".", this.JSLintPath));
+				// stored as a resource file
+				string resourceName = assembly.GetName().Name+"."+JSLintScript;
+				if (assembly.GetManifestResourceInfo(resourceName) == null)
+				{
+					throw new FileNotFoundException("Cannot find the JSLint script file.", JSLintScript);
+				}
+
+				// output next to assembly
+				using (Stream input = assembly.GetManifestResourceStream(resourceName))
+				{
+					using (StreamReader reader = new StreamReader(input))
+					{
+						File.WriteAllText(this.JSLintPath, reader.ReadToEnd());
+					}
+				}
+			}
 		}
 
 		#endregion Init

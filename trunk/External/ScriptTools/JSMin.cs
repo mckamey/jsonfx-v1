@@ -106,7 +106,7 @@ namespace ScriptCompactor
 		/// Makes sure directory exists and if file exists is not readonly.
 		/// </summary>
 		/// <param name="filename"></param>
-		protected static void PrepSavePath(string filename)
+		protected internal static void PrepSavePath(string filename)
 		{
 			if (File.Exists(filename))
 			{
