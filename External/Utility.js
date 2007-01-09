@@ -58,12 +58,12 @@ if ("undefined" !== typeof JsonFx) {
 			}
 		}
 
-		if (!document.body) {
-			// NOTE: Google maps requires this style
-		
-			// hopefully still in the head
-			document.write('<' + 'script src="' + sUrl + '"' +' type="text/javascript"><' + '/script>');
-		} else {
+//		if (!document.body) {
+//			// NOTE: Google maps requires this style
+//		
+//			// hopefully still in the head
+//			document.write('<' + 'script src="' + sUrl + '"' +' type="text/javascript"><' + '/script>');
+//		} else {
 			// get document head
 			var documentHead = document.getElementsByTagName("head")[0];
 
@@ -72,7 +72,7 @@ if ("undefined" !== typeof JsonFx) {
 			elScript.setAttribute("type","text/javascript");
 			elScript.setAttribute("src", sUrl);
 			documentHead.appendChild(elScript);
-		}
+//		}
 	};
 	
 	/* Query String ----------------------------------------------------*/
