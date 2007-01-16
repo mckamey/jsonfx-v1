@@ -49,12 +49,8 @@
     <Compile Include="Compilation\JsonServiceBuildProvider.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="UI\HostableUserControlAttribute.cs" />
     <Compile Include="Handlers\JsonServiceHandlerFactory.cs" />
     <Compile Include="Handlers\JsonServiceProxyHandler.cs" />
-    <Compile Include="Handlers\UserControlHandler.cs">
-      <SubType>ASPXCodeBehind</SubType>
-    </Compile>
     <Compile Include="Scripts\ClientScript.cs" />
     <Compile Include="Handlers\ClientScriptHandler.cs" />
     <Compile Include="Services\JsonServiceInfo.cs" />
