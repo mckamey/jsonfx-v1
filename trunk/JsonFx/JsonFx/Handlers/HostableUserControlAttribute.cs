@@ -1,6 +1,6 @@
 using System;
 
-namespace JsonFx.UI
+namespace JsonFx.Handlers
 {
 	/// <summary>
 	/// Specifies the UserControl may be accessed directly.

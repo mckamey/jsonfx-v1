@@ -1,8 +1,6 @@
 using System;
 using System.Web.UI;
 
-using JsonFx.UI;
-
 namespace JsonFx.Handlers
 {
 	public class UserControlHandler : System.Web.UI.Page
