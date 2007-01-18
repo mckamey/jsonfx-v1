@@ -28,7 +28,7 @@ if ("undefined" !== typeof JsonFx) {
 				} else if (jml.id) {
 					container = document.getElementById(jml.id);
 					if (container && container.parentNode) {
-						container.parentNode.replaceChild(jml);
+						container.parentNode.replaceChild(jml, container);
 					}
 				} else if (jml.childNodes) {
 					while (jml.firstChild) {
