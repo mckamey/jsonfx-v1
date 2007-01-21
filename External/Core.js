@@ -1,7 +1,6 @@
-// ======================================================
-//	namespace JsonFx
 //=======================================================
-var JsonFx = {};
+//	modifications to global objects
+//=======================================================
 
 if (!Object.prototype.hasOwnProperty) {
 	Object.prototype.hasOwnProperty = function(p) {
