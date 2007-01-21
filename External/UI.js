@@ -183,21 +183,29 @@ JsonFx.UI.Dir = {
 	/*const float*/ StepMax = 1.0,
 	/*const float*/ StepInc = 0.05;
 
-	var userOverflow, userHeight, userWidth, pxHeight, pxWidth;
+	var userOverflow = "",
+		userHeight = "",
+		userWidth = "",
+		pxHeight = "",
+		pxWidth = "";
 
 	/*void*/ function saveShape() {
-		userOverflow = es.overflow;
-		userHeight = es.height;
-		userWidth = es.width;
-		pxHeight = !isNaN(elem.offsetHeight) ?
-				elem.offsetHeight : parseFloat(JsonFx.UI.GetStyle(elem, "height"));
-		pxWidth = !isNaN(elem.offsetWidth) ?
-				elem.offsetWidth : parseFloat(JsonFx.UI.GetStyle(elem, "width"));
+		if (elem && es) {
+			userOverflow = es.overflow;
+			userHeight = es.height;
+			userWidth = es.width;
+			pxHeight = !isNaN(elem.offsetHeight) ?
+					elem.offsetHeight : parseFloat(JsonFx.UI.GetStyle(elem, "height"));
+			pxWidth = !isNaN(elem.offsetWidth) ?
+					elem.offsetWidth : parseFloat(JsonFx.UI.GetStyle(elem, "width"));
+		}
 	}
 
 	// state: true = collapse, false = expand
 	return /*void*/ function min(/*bool*/ newState) {
-	
+
+		if (!es) { return; }
+
 		// store the latest requested state
 		if (typeof(newState) === "boolean") {
 			state = newState;
@@ -205,7 +213,7 @@ JsonFx.UI.Dir = {
 			state = !state;
 		}
 		if (mutex) {
-			// concurrency check
+			// crude concurrency check
 			return;
 		}
 		mutex = true;
@@ -218,6 +226,11 @@ JsonFx.UI.Dir = {
 
 		// minimizeStep
 		/*void*/ function m(/*float*/ step) {
+
+			if (!es || isNaN(step)) {
+				mutex = false;
+				return;
+			}
 
 			if (step < StepMin || step > StepMax) {
 				if (state) {
@@ -235,11 +248,11 @@ JsonFx.UI.Dir = {
 
 			es.overflow = "hidden";
 
-			if (JsonFx.UI.Dir.isHorz(dir)) {
+			if (JsonFx.UI.Dir.isHorz(dir) && !isNaN(pxWidth)) {
 				// horizontal, simplified lerp
 				es.width = Math.floor(pxWidth*step)+"px";
 			}
-			if (JsonFx.UI.Dir.isVert(dir)) {
+			if (JsonFx.UI.Dir.isVert(dir) && !isNaN(pxHeight)) {
 				// vertical, simplified lerp
 				es.height = Math.floor(pxHeight*step)+"px";
 			}
