@@ -2,6 +2,7 @@ using System;
 using System.IO;
 using System.Diagnostics;
 using System.Reflection;
+using System.Text.RegularExpressions;
 
 /*
 	.NET Wrapper for running JSLint
@@ -11,7 +12,7 @@ using System.Reflection;
 	WSH Edition
 */
 
-namespace ScriptCompactor
+namespace ScriptTools
 {
 	public class JSLint
 	{
@@ -72,7 +73,7 @@ namespace ScriptCompactor
 
 		#region Methods
 
-		public void Run(TextReader reader)
+		public void Run(TextReader reader, string filename)
 		{
 			if (reader == null)
 				throw new NullReferenceException("Input StreamReader was null");
@@ -98,31 +99,52 @@ namespace ScriptCompactor
 
 				string stdErr = String.Empty;
 				string stdOut = String.Empty;
-				bool exited = false;
-				while (!exited)
+
+				int attempts = 0;
+				while (!myProcess.WaitForExit(5000))
 				{
-					exited = myProcess.WaitForExit(10000);
-					stdOut += myProcess.StandardOutput.ReadToEnd();
-					stdErr += myProcess.StandardError.ReadToEnd();
+					attempts++;
+					if (attempts > 6)
+					{
+						throw new ParseException("JSLint Error: External script is timing out (30 sec).", null, this.JSLintPath, scriptText, 0, 0);
+					}
 				}
+				stdOut += myProcess.StandardOutput.ReadToEnd();
+				stdErr += myProcess.StandardError.ReadToEnd();
 
 				if (myProcess.ExitCode != 0)
-					throw new ApplicationException("JSLint Error: "+stdOut+stdErr);
+				{
+					string message = stdOut+stdErr;
+					int line = 0, column = 0;
+					Match match = Regex.Match(message, "Lint at line (?<Line>[\\d]+) character (?<Char>[\\d]+)[:]\\s*(?<Error>.*)$", RegexOptions.ExplicitCapture|RegexOptions.Compiled|RegexOptions.Singleline);
+					if (match.Success)
+					{
+						string lineStr = match.Groups["Line"].Value;
+						Int32.TryParse(lineStr, out line);
+						string columnStr = match.Groups["Char"].Value;
+						Int32.TryParse(columnStr, out column);
+						string error = match.Groups["Error"].Value;
+						if (!String.IsNullOrEmpty(error))
+							message = error;
+					}
+
+					throw new ParseException(message, null, filename, scriptText, line, column);
+				}
 			}
 		}
 
-		public void Run(string inputFile)
+		public void Run(string filename)
 		{
-			if (!File.Exists(inputFile))
-				throw new FileNotFoundException(String.Format("File not found: \"{0}\"", inputFile), inputFile);
+			if (!File.Exists(filename))
+				throw new FileNotFoundException(String.Format("File not found: \"{0}\"", filename), filename);
 
-			using (StreamReader reader = new StreamReader(inputFile))
+			using (StreamReader reader = new StreamReader(filename))
 			{
-				this.Run(reader);
+				this.Run(reader, filename);
 			}
 		}
 
-		public void Run(Stream input)
+		public void Run(Stream input, string filename)
 		{
 			if (input == null)
 				throw new NullReferenceException("Input Stream was null");
@@ -130,7 +152,7 @@ namespace ScriptCompactor
 			// read input file into memory
 			using (StreamReader reader = new StreamReader(input))
 			{
-				this.Run(reader);
+				this.Run(reader, filename);
 			}
 		}
 

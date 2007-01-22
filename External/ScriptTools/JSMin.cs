@@ -29,7 +29,7 @@ using System.IO;
 	SOFTWARE.
 */
 
-namespace ScriptCompactor
+namespace ScriptTools
 {
 	public class JSMinifier
 	{
