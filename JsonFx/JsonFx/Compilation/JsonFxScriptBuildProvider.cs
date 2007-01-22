@@ -30,6 +30,11 @@ namespace JsonFx.Compilation
 			return new StreamReader(input);
 		}
 
+		protected override bool ForceCompaction
+		{
+			get { return true; }
+		}
+
 		#endregion ScriptCompactorBuildProvider Methods
 	}
 }
