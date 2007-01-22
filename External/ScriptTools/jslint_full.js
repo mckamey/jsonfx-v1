@@ -1,5 +1,5 @@
 // jslint.js
-// 2007-01-07
+// 2007-01-21
 /*
 Copyright (c) 2002 Douglas Crockford  (www.JSLint.com)
 
@@ -566,25 +566,25 @@ JSLINT = function () {
 // If the argument is empty, skip to just before the next '<' character.
 // This is used to ignore HTML content. Return false if it isn't found.
 
-            skip: function (to) {
+            skip: function (t) {
                 if (token.id) {
-                    if (!to) {
-                        to = '';
+                    if (!t) {
+                        t = '';
                         if (token.id.substr(0, 1) === '<') {
                             lookahead.push(token);
                             return true;
                         }
-                    } else if (token.id.indexOf(to) >= 0) {
+                    } else if (token.id.indexOf(t) >= 0) {
                         return true;
                     }
                 }
                 prevtoken = token;
                 token = syntax['(error)'];
                 for (;;) {
-                    var i = s.indexOf(to || '<');
+                    var i = s.indexOf(t || '<');
                     if (i >= 0) {
-                        character += i + to.length;
-                        s = s.substr(i + to.length);
+                        character += i + t.length;
+                        s = s.substr(i + t.length);
                         return true;
                     }
                     if (!nextLine()) {
@@ -911,8 +911,18 @@ JSLINT = function () {
     }
 
 
+    function reserveName(x) {
+        var c = x.id.charAt(0);
+        if ((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z')) {
+            x.identifier = x.reserved = true;
+        }
+        return x;
+    }
+
+
     function prefix(s, f) {
         var x = symbol(s, 150);
+        reserveName(x);
         x.nud = (typeof f === 'function') ? f : function () {
             if (option.plusplus && (this.id === '++' || this.id === '--')) {
                 warning(this.id + " is considered harmful.", this);
@@ -920,13 +930,6 @@ JSLINT = function () {
             parse(150);
             return this;
         };
-        return x;
-    }
-
-
-    function prefixname(s, f) {
-        var x = prefix(s, f);
-        x.identifier = x.reserved = true;
         return x;
     }
 
@@ -955,10 +958,36 @@ JSLINT = function () {
 
     function infix(s, f, p) {
         var x = symbol(s, p);
+        reserveName(x);
         x.led = (typeof f === 'function') ? f : function (left) {
-            return [f, left, parse(p)];
+            return [this.id, left, parse(p)];
         };
         return x;
+    }
+
+
+    function relation(s, f) {
+        var x = symbol(s, 100);
+        x.led = function (left) {
+            var right = parse(100);
+            if (left.id === 'NaN' || right.id === 'NaN') {
+                warning("Use the isNaN function to compare with NaN.", this);
+            } else if (f) {
+                f.apply(this, [left, right]);
+            }
+            return [this.id, left, right];
+        };
+        return x;
+    }
+
+
+    function isPoorRelation(node) {
+        return (node.type === '(number)' && !+node.value) ||
+               (node.type === '(string)' && !node.value) ||
+                node.type === 'true' ||
+                node.node === 'false' ||
+                node.type === 'undefined' ||
+                node.node === 'null';
     }
 
 
@@ -1052,13 +1081,10 @@ JSLINT = function () {
 
     function statement() {
         var t = token;
-        while (t.id === ';') {
+        if (t.id === ';') {
             warning("Unnecessary semicolon", t);
             advance(';');
-            t = token;
-            if (t.id === '}') {
-                return;
-            }
+            return;
         }
         if (t.identifier && !t.reserved && peek().id === ':') {
             advance();
@@ -1090,7 +1116,7 @@ JSLINT = function () {
 
 
     function statements() {
-        while (!token.reach) {
+        while (!token.reach && token.id !== '(end)') {
             statement();
         }
     }
@@ -1760,13 +1786,19 @@ JSLINT = function () {
     delim(';');
     delim(':').reach = true;
     delim(',');
-    reservevar('eval');
+    reserve('as');          // ES4
     reserve('else');
     reserve('case').reach = true;
-    reserve('default').reach = true;
     reserve('catch');
+    reserve('default').reach = true;
     reserve('finally');
+    reserve('is');          // ES4
+    reserve('namespace');   // ES4
+    reserve('to');          // ES4
+    reserve('use');         // ES4
+    reserve('yield');       // ES4
     reservevar('arguments');
+    reservevar('eval');
     reservevar('false');
     reservevar('Infinity');
     reservevar('NaN');
@@ -1800,36 +1832,33 @@ JSLINT = function () {
     infix('|', 'bitor', 70);
     infix('^', 'bitxor', 80);
     infix('&', 'bitand', 90);
-    infix('==', function (left) {
-        var t = token;
+    relation('==', function (left, right) {
         if (option.eqeqeq) {
-            warning("Use '===' instead of '=='.", t);
-        } else if (    (t.type === '(number)' && !+t.value) ||
-                (t.type === '(string)' && !t.value) ||
-                t.type === 'true' || t.type === 'false' ||
-                t.type === 'undefined' || t.type === 'null') {
-            warning("Use '===' to compare with '" + t.value + "'.", t);
+            warning("Use '===' instead of '=='.", this);
+        } else if (isPoorRelation(left)) {
+            warning("Use '===' to compare with '" + left.value + "'.", this);
+        } else if (isPoorRelation(right)) {
+            warning("Use '===' to compare with '" + right.value + "'.", this);
         }
-        return ['==', left, parse(100)];
-    }, 100);
-    infix('===', 'equalexact', 100);
-    infix('!=', function (left) {
+        return ['==', left, right];
+    });
+    relation('===');
+    relation('!=', function (left, right) {
         var t = token;
         if (option.eqeqeq) {
             warning("Use '!==' instead of '!='.", t);
-        } else if (    (t.type === '(number)' && !+t.value) ||
-                (t.type === '(string)' && !t.value) ||
-                t.type === 'true' || t.type === 'false' ||
-                t.type === 'undefined' || t.type === 'null') {
-            warning("Use '!==' to compare with '" + t.value + "'.", t);
+        } else if (isPoorRelation(left)) {
+            warning("Use '!==' to compare with '" + left.value + "'.", this);
+        } else if (isPoorRelation(right)) {
+            warning("Use '!==' to compare with '" + right.value + "'.", this);
         }
-        return ['!=', left, parse(100)];
-    }, 100);
-    infix('!==', 'notequalexact', 100);
-    infix('<', 'less', 110);
-    infix('>', 'greater', 110);
-    infix('<=', 'lessequal', 110);
-    infix('>=', 'greaterequal', 110);
+        return ['!=', left, right];
+    });
+    relation('!==');
+    relation('<');
+    relation('>');
+    relation('<=');
+    relation('>=');
     infix('<<', 'shiftleft', 120);
     infix('>>', 'shiftright', 120);
     infix('>>>', 'shiftrightunsigned', 120);
@@ -1850,15 +1879,15 @@ JSLINT = function () {
     suffix('--', 'postdec');
     prefix('--', 'predec');
     syntax['--'].exps = true;
-    prefixname('delete', function () {
+    prefix('delete', function () {
         parse(0);
     }).exps = true;
 
 
     prefix('~', 'bitnot');
     prefix('!', 'not');
-    prefixname('typeof', 'typeof');
-    prefixname('new', function () {
+    prefix('typeof', 'typeof');
+    prefix('new', function () {
         var c = parse(155),
             i;
         if (c) {
@@ -1934,7 +1963,8 @@ JSLINT = function () {
         var n = 0, p = [];
         if (left && left.type === '(identifier)') {
             if (left.value.match(/^[A-Z](.*[a-z].*)?$/)) {
-                if (left.value !== 'Number' && left.value !== 'String') {
+                if (left.value !== 'Number' && left.value !== 'String' &&
+                        left.value !== 'Date') {
                     warning("Missing 'new' prefix when invoking a constructor",
                             left);
                 }
@@ -2126,7 +2156,7 @@ JSLINT = function () {
         }
     });
 
-    prefixname('function', function () {
+    prefix('function', function () {
         var i = optionalidentifier() || ('"' + anonname + '"');
         beginfunction(i);
         addlabel(i, 'function');
