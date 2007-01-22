@@ -26,27 +26,43 @@ namespace JsonFx.Compilation
 		{
 			try
 			{
-				ScriptCompactor.JSLint jsLint = new ScriptCompactor.JSLint();
+				ScriptTools.JSLint jsLint = new ScriptTools.JSLint();
 				using (TextReader reader = this.OpenScriptSource())
 				{
-					jsLint.Run(reader);
+					jsLint.Run(reader, base.VirtualPath);
 				}
+			}
+			catch (ScriptTools.ParseException ex)
+			{
+				Console.Error.WriteLine(ex.GetCompilerMessage(this.ForceCompaction));
+				if (!this.ForceCompaction)
+				{
+					throw new System.Web.HttpParseException(ex.Message, null/*ex*/, ex.FilePath, ex.SourceCode, ex.Line);
+				}
+				//if (results == null)
+				//{
+				//    results = new System.CodeDom.Compiler.CompilerResults(null);
+				//}
+				//System.CodeDom.Compiler.CompilerError error = new System.CodeDom.Compiler.CompilerError(ex.FilePath, ex.Line, ex.Column, "", ex.Message);
+				//error.IsWarning = true;
+				//results.Errors.Add(error);
+				//throw new System.Web.HttpCompileException(results, ex.SourceCode);
+				Console.Error.WriteLine("Failed to validate "+base.VirtualPath+"!!Compaction forced: need to manually check for errors.");
 			}
 			catch (Exception ex)
 			{
-				int line = 0;
-				Match match = Regex.Match(ex.Message, "Lint at line (?<Line>[\\d]+) character (?<Char>[\\d]+)", RegexOptions.ExplicitCapture|RegexOptions.Compiled);
-				if (match.Success)
+				if (!this.ForceCompaction)
 				{
-					string lineStr = match.Groups["Line"].Value;
-					Int32.TryParse(lineStr, out line);
+					throw new System.Web.HttpParseException(ex.Message, ex, base.VirtualPath, null, 0);
 				}
-				throw new System.Web.HttpParseException(ex.Message, ex, base.VirtualPath, null, line);
+
+				Console.Error.WriteLine(ex.Message);
+				Console.Error.WriteLine("Failed to validate "+base.VirtualPath+"!!Compaction forced: need to manually check for errors.");
 			}
 
 			try
 			{
-				ScriptCompactor.JSMinifier jsMin = new ScriptCompactor.JSMinifier();
+				ScriptTools.JSMinifier jsMin = new ScriptTools.JSMinifier();
 				using (TextReader reader = this.OpenScriptSource())
 				{
 					using (StringWriter writer = new StringWriter())
@@ -66,6 +82,11 @@ namespace JsonFx.Compilation
 		#endregion BuildProvider Methods
 
 		#region ScriptCompactorBuildProvider Methods
+
+		protected virtual bool ForceCompaction
+		{
+			get { return false; }
+		}
 
 		protected virtual TextReader OpenScriptSource()
 		{
