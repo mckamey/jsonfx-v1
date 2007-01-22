@@ -116,7 +116,7 @@ namespace ScriptTools
 				{
 					string message = stdOut+stdErr;
 					int line = 0, column = 0;
-					Match match = Regex.Match(message, "Lint at line (?<Line>[\\d]+) character (?<Char>[\\d]+)[:]\\s*(?<Error>.*)$", RegexOptions.ExplicitCapture|RegexOptions.Compiled|RegexOptions.Singleline);
+					Match match = Regex.Match(message, "Lint at line (?<Line>[\\d]+) character (?<Char>[\\d]+)[:]\\s*(?<Error>[^\\n\\r]*)\\s*(?<Source>.*)$", RegexOptions.ExplicitCapture|RegexOptions.Compiled|RegexOptions.Singleline);
 					if (match.Success)
 					{
 						string lineStr = match.Groups["Line"].Value;
@@ -126,6 +126,9 @@ namespace ScriptTools
 						string error = match.Groups["Error"].Value;
 						if (!String.IsNullOrEmpty(error))
 							message = error;
+						string source = match.Groups["Source"].Value;
+						if (!String.IsNullOrEmpty(source))
+							scriptText = source;
 					}
 
 					throw new ParseException(message, null, filename, scriptText, line, column);
