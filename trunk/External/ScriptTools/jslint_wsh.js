@@ -107,7 +107,7 @@ function type(s,f){var x=delim(s);x.type=s;x.nud=f;return x;}
 function reserve(s,f){var x=type(s,f);x.identifier=x.reserved=true;return x;}
 function reservevar(s){return reserve(s,function(){return this;});}
 function infix(s,f,p){var x=symbol(s,p);reserveName(x);x.led=(typeof f==='function')?f:function(left){return[this.id,left,parse(p)];};return x;}
-function relation(s,f){var x=symbol(s,100);x.led=function(left){var right=parse(100);if(left.id==='NaN'||right.id==='NaN'){warning("Use the isNaN function to compare with NaN.",this);}else if(f){f.apply(this,[left,right]);}
+function relation(s,f){var x=symbol(s,100);x.led=function(left){var right=parse(100);if((left&&left.id==='NaN')||(right&&right.id==='NaN')){warning("Use the isNaN function to compare with NaN.",this);}else if(f){f.apply(this,[left,right]);}
 return[this.id,left,right];};return x;}
 function isPoorRelation(node){return(node.type==='(number)'&&!+node.value)||(node.type==='(string)'&&!node.value)||node.type==='true'||node.node==='false'||node.type==='undefined'||node.node==='null';}
 function assignop(s,f){symbol(s,20).exps=true;return infix(s,function(left){if(left){if(left.id==='.'||left.id==='['||(left.identifier&&!left.reserved)){parse(19);return left;}
@@ -246,7 +246,7 @@ if(c[k]==='parameter!'||c[k]==='var!'){f[k]='var.';break;}
 if(c[k]==='var'||c[k]==='var*'||c[k]==='var!'){f[k]='var.';c[k]='var!';break;}
 if(c[k]==='parameter'){f[k]='var.';c[k]='parameter!';break;}
 c=cc;}}}}
-s=[];for(k in funlab){c=funlab[k];if(typeof c==='string'&&c.substr(0,3)==='var'){if(c==='var?'){s.push('<tt>'+k+'</tt><small>&nbsp;(?)</small>');}else{s.push('<tt>'+k+'</tt>');}}}
+s=[];for(k in funlab){c=funlab[k];if(typeof c==='string'&&c.substr(0,3)==='var'){if(c==='var?'){s.push('<tt>'+k+'</tt><small>&nbsp;(?)</small>');}else{s.push('<tt>'+k+'</tt>');}}else{if(c==='global'&&!builtin(k)){s.push('<tt>'+k+'</tt><small>&nbsp;(?)</small>');}}}
 detail('Global');if(functions.length){o.push('<br>Function:<ol style="padding-left:0.5in">');}
 for(i=0;i<functions.length;i+=1){f=functions[i];o.push('<li value='+
 f['(line)']+'><tt>'+(f['(name)']||'')+'</tt>');s=[];for(k in f){if(k.charAt(0)!=='('){switch(f[k]){case'parameter':s.push('<tt>'+k+'</tt>');break;case'parameter!':s.push('<tt>'+k+'</tt><small>&nbsp;(closure)</small>');break;}}}
