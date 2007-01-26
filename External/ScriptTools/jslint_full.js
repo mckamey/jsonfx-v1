@@ -970,7 +970,7 @@ JSLINT = function () {
         var x = symbol(s, 100);
         x.led = function (left) {
             var right = parse(100);
-            if (left.id === 'NaN' || right.id === 'NaN') {
+            if ((left && left.id === 'NaN') || (right && right.id === 'NaN')) {
                 warning("Use the isNaN function to compare with NaN.", this);
             } else if (f) {
                 f.apply(this, [left, right]);
@@ -2576,6 +2576,10 @@ JSLINT = function () {
                         s.push('<tt>' + k + '</tt><small>&nbsp;(?)</small>');
                     } else {
                         s.push('<tt>' + k + '</tt>');
+                    }
+                } else {
+                    if (c === 'global' && !builtin(k)) {
+                        s.push('<tt>' + k + '</tt><small>&nbsp;(?)</small>');
                     }
                 }
             }
