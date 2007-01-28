@@ -74,7 +74,7 @@ JsonFx.UI.Bindings = function() {
 		}
 		if (bind || unbind) {
 			tag = tag.toLowerCase();
-			if ("undefined" === typeof tags.tag) {
+			if ("undefined" === typeof tags[tag]) {
 				/*array*/ tags[tag] = [];
 			}
 			tags[tag].push(css);
