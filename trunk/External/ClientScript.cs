@@ -4,9 +4,10 @@ using System;
 
 // Allow these resources to be web browsable from this Assembly
 [assembly: System.Web.UI.WebResourceAttribute(JsonFx.Scripts.ClientScript.CoreScript, JsonFx.Scripts.ClientScript.JavaScriptContentType)]
+[assembly: System.Web.UI.WebResourceAttribute(JsonFx.Scripts.ClientScript.JsonScript, JsonFx.Scripts.ClientScript.JavaScriptContentType)]
+[assembly: System.Web.UI.WebResourceAttribute(JsonFx.Scripts.ClientScript.JsonMLScript, JsonFx.Scripts.ClientScript.JavaScriptContentType)]
 [assembly: System.Web.UI.WebResourceAttribute(JsonFx.Scripts.ClientScript.IOScript, JsonFx.Scripts.ClientScript.JavaScriptContentType)]
 [assembly: System.Web.UI.WebResourceAttribute(JsonFx.Scripts.ClientScript.UIScript, JsonFx.Scripts.ClientScript.JavaScriptContentType)]
-[assembly: System.Web.UI.WebResourceAttribute(JsonFx.Scripts.ClientScript.JsonScript, JsonFx.Scripts.ClientScript.JavaScriptContentType)]
 [assembly: System.Web.UI.WebResourceAttribute(JsonFx.Scripts.ClientScript.UtilityScript, JsonFx.Scripts.ClientScript.JavaScriptContentType)]
 [assembly: System.Web.UI.WebResourceAttribute(JsonFx.Scripts.ClientScript.TraceScript, JsonFx.Scripts.ClientScript.JavaScriptContentType)]
 
@@ -36,9 +37,10 @@ namespace JsonFx.Scripts
 #endif
 
 		public const string CoreScript = ScriptPath + "Core.js";
+		public const string JsonScript = ScriptPath + "JSON.js";
+		public const string JsonMLScript = ScriptPath + "JsonML.js";
 		public const string IOScript = ScriptPath + "IO.js";
 		public const string UIScript = ScriptPath + "UI.js";
-		public const string JsonScript = ScriptPath + "JSON.js";
 		public const string UtilityScript = ScriptPath + "Utility.js";
 		public const string TraceScript = ScriptPath + "Trace.js";
 

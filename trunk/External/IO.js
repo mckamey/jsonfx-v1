@@ -1,13 +1,17 @@
-﻿/*extern JsonFx, ActiveXObject */
-//=======================================================
-//	Singleton JsonFx.IO
-//=======================================================
+/*extern JsonFx, ActiveXObject */
+/*---------------------------------------------------------*\
+	JsonFx IO
+	Copyright (c)2006-2007 Stephen M. McKamey
+	Created: 2006-11-09-0120
+	Modified: 2007-01-28-1225
+\*---------------------------------------------------------*/
 
-// define JsonFx namespace
+/* namespace JsonFx */
 if ("undefined" === typeof JsonFx) {
 	window.JsonFx = {};
 }
 
+/* singleton JsonFx.IO */
 JsonFx.IO = {};
 
 JsonFx.IO.userAgent = "JsonFx/1.0 beta";
@@ -124,13 +128,18 @@ JsonFx.IO.callTimeout = 10000;// 10 sec
 /* XMLHttpRequest ----------------------------------------------------*/
 
 /*object*/ JsonFx.IO.GetXMLHttpRequest = function () {
-	if (!window.XMLHttpRequest) {
-		var progIDs = [ /*"MSXML2.XMLHTTP.4.0",*/ "MSXML2.XMLHTTP.3.0", "Msxml2.XMLHTTP", "Microsoft.XMLHTTP" ];
+	if ("undefined" === typeof window.XMLHttpRequest) {
+		var progIDs = [
+			"Msxml2.XMLHTTP.6.0",
+			"Msxml2.XMLHttp.5.0",
+			"Msxml2.XMLHttp.4.0",
+			"MSXML2.XMLHTTP.3.0",
+			"MSXML2.XMLHTTP",
+			"Microsoft.XMLHTTP" ];
 
 		for (var i=0; i<progIDs.length; i++) {
 			try {
-				var xmlHttp = new ActiveXObject(progIDs[i]);
-				return xmlHttp;
+				return new ActiveXObject(progIDs[i]);
 			} catch (ex) {}
 		}
 
@@ -139,6 +148,7 @@ JsonFx.IO.callTimeout = 10000;// 10 sec
 
 	return new XMLHttpRequest();
 };
+/*bool*/ JsonFx.IO.supportsXMLHttp = !!JsonFx.IO.GetXMLHttpRequest();
 
 /* returns true if request was sent */
 /*bool*/ JsonFx.IO.SendRequest = function(
