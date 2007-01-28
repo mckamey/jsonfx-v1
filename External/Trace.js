@@ -1,13 +1,17 @@
-﻿/*extern JsonFx */
-//=======================================================
-//	Singleton JsonFx.Trace
-//=======================================================
+/*extern JsonFx */
+/*---------------------------------------------------------*\
+	JsonFx Trace
+	Copyright (c)2006-2007 Stephen M. McKamey
+	Created: 2006-11-05-1002
+	Modified: 2007-01-26-1307
+\*---------------------------------------------------------*/
 
-// define JsonFx namespace
+/* namespace JsonFx */
 if ("undefined" === typeof JsonFx) {
 	window.JsonFx = {};
 }
 
+/* singleton JsonFx.Trace */
 JsonFx.Trace = {};
 
 /*element*/ JsonFx.Trace.GetTraceElement = function() {

@@ -19,10 +19,18 @@ namespace JsonFx.Handlers
 		void IHttpHandler.ProcessRequest(HttpContext context)
 		{
 			context.Response.Clear();
+			context.Response.ClearContent();
+			context.Response.ClearHeaders();
+			context.Response.BufferOutput = true;
+			context.Response.ContentEncoding = System.Text.Encoding.UTF8;
 			context.Response.ContentType = JsonFx.Scripts.ClientScript.JavaScriptContentType;
 
+			// this is causing issues? Transfer-Encoding: chunked
+			context.Response.AddHeader("Content-Disposition", "inline;filename="+Path.GetFileNameWithoutExtension(context.Request.FilePath)+".js");
+
 			// specifying "DEBUG" in the query string gets the non-compacted form
-			if (!"debug".Equals(context.Request.QueryString[null], StringComparison.InvariantCultureIgnoreCase))
+			if (//String.IsNullOrEmpty(context.Request.QueryString["debug"]) &&
+				!"debug".Equals(context.Request.QueryString[null], StringComparison.InvariantCultureIgnoreCase))
 			{
 				if (this.OutputCompiledFile(context))
 				{
@@ -30,6 +38,7 @@ namespace JsonFx.Handlers
 				}
 			}
 
+			// this is causing issues? Transfer-Encoding: chunked
 			context.Response.Cache.SetCacheability(HttpCacheability.NoCache);
 
 			if (context.Request.FilePath.EndsWith(".js", StringComparison.InvariantCultureIgnoreCase))
@@ -81,9 +90,11 @@ namespace JsonFx.Handlers
 
 		protected void OutputTargetFile(HttpContext context)
 		{
-			Stream input = new FileStream(context.Request.PhysicalPath, FileMode.Open, FileAccess.Read);
+			context.Response.TransmitFile(context.Request.PhysicalPath);
 
-			this.BufferedWrite(context, input);
+			//Stream input = new FileStream(context.Request.PhysicalPath, FileMode.Open, FileAccess.Read);
+
+			//this.BufferedWrite(context, input);
 		}
 
 		protected void BufferedWrite(HttpContext context, Stream input)
@@ -103,7 +114,6 @@ namespace JsonFx.Handlers
 						count = input.Read(buffer, 0, ClientScriptHandler.BufferSize);
 						output.Write(buffer, 0, count);
 					} while (count > 0);
-					output.Flush();
 				}
 			}
 		}

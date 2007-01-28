@@ -1,56 +1,22 @@
-﻿/*extern JsonFx */
-//=======================================================
-//	Singleton JsonFx.Utility
-//=======================================================
+/*extern JsonFx */
+/*---------------------------------------------------------*\
+	JsonFx Utils
+	Copyright (c)2006-2007 Stephen M. McKamey
+	Created: 2006-11-02-2330
+	Modified: 2007-01-26-1527
+\*---------------------------------------------------------*/
 
-// define JsonFx namespace
+/* namespace JsonFx */
 if ("undefined" === typeof JsonFx) {
 	window.JsonFx = {};
 }
 
-JsonFx.Utility = {};
-
-/* DataDump ----------------------------------------------------*/
-
-/*void*/ JsonFx.Utility.DumpData = function(/*elem*/parent, /*object*/result) {
-	var divResult = document.createElement("ul");
-
-	for (var prop in result) {
-		if (!result.hasOwnProperty(prop)) {
-			continue;
-		}
-		
-		var divProp = document.createElement("li");
-		var divName = document.createElement("b");
-		divName.appendChild(document.createTextNode(prop+": "));
-		var divType = document.createElement("span");
-		var divValue = document.createElement("span");
-		if (result[prop] === null) {
-			divType.appendChild(document.createTextNode("[null] "));
-			divValue.appendChild(document.createTextNode(result[prop]));
-		} else if (typeof(result[prop]) == "object") {
-			if (result[prop] instanceof Array) {
-				divType.appendChild(document.createTextNode("[array] "));
-			} else {
-				divType.appendChild(document.createTextNode("["+typeof(result[prop])+"] "));
-			}
-			JsonFx.Utility.DumpData(divValue, result[prop]);
-		} else {
-			divType.appendChild(document.createTextNode("["+typeof(result[prop])+"] "));
-			divValue.appendChild(document.createTextNode(result[prop]));
-		}
-		divProp.appendChild(divType);
-		divProp.appendChild(divName);
-		divProp.appendChild(divValue);
-		divResult.appendChild(divProp);
-	}
-
-	parent.appendChild(divResult);
-};
+/* singleton JsonFx.Trace */
+JsonFx.Utils = {};
 
 /* Script Lazy Load ----------------------------------------------------*/
 
-/*void*/ JsonFx.Utility.RegisterScript = function(/*string*/ sUrl) {
+/*void*/ JsonFx.Utils.registerScript = function(/*string*/ sUrl) {
 	if (!sUrl) {
 		return;
 	}
@@ -82,7 +48,7 @@ JsonFx.Utility = {};
 
 /* Query String ----------------------------------------------------*/
 
-/*string*/ JsonFx.Utility.GetQueryParam = function (/*string*/ sQuery, /*string*/ sKey) {
+/*string*/ JsonFx.Utils.getQueryParam = function (/*string*/ sQuery, /*string*/ sKey) {
 	if (!sQuery || !sKey) {
 		return null;
 	}
@@ -100,27 +66,9 @@ JsonFx.Utility = {};
 	return null;
 };
 
-/* Callbacks ----------------------------------------------------*/
-
-/*void*/ JsonFx.Utility.Notify = function(/*string*/ sKey, /*object*/ sResult) {
-	if (!JsonFx.Utility.aNotifyCallbacks || !JsonFx.Utility.aNotifyCallbacks[sKey]) {
-		return;
-	}
-
-	JsonFx.Utility.aNotifyCallbacks[sKey](sResult);
-	delete(JsonFx.Utility.aNotifyCallbacks[sKey]);
-};
-
-/*void*/ JsonFx.Utility.SetNotifyCallback = function(/*string*/ sKey, /*function*/ fn) {
-	if (!JsonFx.Utility.aNotifyCallbacks) {
-		JsonFx.Utility.aNotifyCallbacks = [];
-	}
-	JsonFx.Utility.aNotifyCallbacks[sKey] = fn;
-};
-
 /* Cookie Storage ----------------------------------------------------*/
 
-/*void*/ JsonFx.Utility.SetCookie = function(/*string*/ key, /*string*/ value, /*date*/ expires) {
+/*void*/ JsonFx.Utils.setCookie = function(/*string*/ key, /*string*/ value, /*date*/ expires) {
 	if (!key || !value) {
 		return;
 	}
@@ -143,7 +91,7 @@ JsonFx.Utility = {};
 	}
 };
 
-/*string*/ JsonFx.Utility.GetCookie = function(/*string*/ key) {
+/*string*/ JsonFx.Utils.getCookie = function(/*string*/ key) {
 	if (!key || !document.cookie) {
 		return null;
 	}
@@ -159,15 +107,15 @@ JsonFx.Utility = {};
 	return unescape(document.cookie.substring(start, end));
 };
 
-/*void*/ JsonFx.Utility.ClearCookie = function(/*string*/ key) {
-	JsonFx.Utility.SetCookie(key, key, new Date(2000,1,1));
+/*void*/ JsonFx.Utils.clearCookie = function(/*string*/ key) {
+	JsonFx.Utils.setCookie(key, key, new Date(2000,1,1));
 };
 
 /* Distance calculation ----------------------------------------------------*/
 
 // Based on: http://www.movable-type.co.uk/scripts/LatLong.html
 // Calculate distance (in miles) between two points specified by latitude/longitude using law of cosines
-/*number*/ JsonFx.Utility.GetDistanceMiles = function(lat1, lon1, lat2, lon2) {
+/*number*/ JsonFx.Utils.getDistanceMiles = function(lat1, lon1, lat2, lon2) {
 	var M = 1.609344; // km per mile
 	var R = 6371; // earth's mean radius in km
 
