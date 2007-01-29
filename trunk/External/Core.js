@@ -29,13 +29,11 @@ if ("undefined" === typeof(Array.prototype.pop)) {
 	};
 }
 
-// TODO: IE5 doesn't support the lazy *? quantifier
-
-//if ("undefined" === typeof(String.prototype.trim)) {
-//	/*string*/ String.prototype.trim = function () {
-//		return this.replace( /^\s*([\s\S]*?)\s*$/, "$1");
-//	};
-//}
+if ("undefined" === typeof(String.prototype.trim)) {
+	/*string*/ String.prototype.trim = function () {
+		return this.replace(/^\s*|\s*$/g, "");
+	};
+}
 
 if ("undefined" === typeof(String.prototype.contains)) {
 	/*string*/ String.prototype.contains = function (str) {
