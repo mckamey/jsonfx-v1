@@ -85,14 +85,17 @@ JsonFx.UI.Bindings = function() {
 		}
 	};
 
-//	// perform a binding action on single element
-//	/*void*/ var performOne = function(/*element*/ elem, /*actionKey*/ a) {
-//	};
-
 // TODO: recreate the inner loop using just the CSS classes in elem.className
 // don't check against all the classes for tag, make the tags[tag] just an
 // attribute on bindings.  then the lookup for elemClassNames[i] is a hashtable
 // rather than a loop.
+
+// TODO: see if can abstract out the innermost action and use it in perform
+// and in the JsonML filter bindOne
+
+//	// perform a binding action on single element
+//	/*void*/ var performOne = function(/*element*/ elem, /*actionKey*/ a) {
+//	};
 
 	// perform a binding action on child elements
 	/*void*/ var perform = function(/*element*/ root, /*actionKey*/ a) {
