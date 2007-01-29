@@ -7,7 +7,7 @@
 
 if ("undefined" === typeof(Object.prototype.hasOwnProperty)) {
 	/*bool*/ Object.prototype.hasOwnProperty = function(/*object*/ p) {
-		return ("undefined" === typeof(this.constructor.prototype[p]));
+		return ("undefined" !== typeof(this[p]) && ("undefined" === typeof(this.constructor.prototype[p])));
 	};
 }
 
