@@ -80,8 +80,8 @@ JsonFx.UI.Bindings = function() {
 			tags[tag].push(css);
 
 			/*object*/ bindings[css] = {};
-			bindings[css][BindAction] = bind;
-			bindings[css][UnbindAction] = unbind;
+			bindings[css][BindAction] = bind ? bind : null;
+			bindings[css][UnbindAction] = unbind ? unbind : null;
 		}
 	};
 
