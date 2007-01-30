@@ -2,7 +2,7 @@
 	Modifications to global objects
 	Copyright (c)2006-2007 Stephen M. McKamey
 	Created: 2006-11-14-0928
-	Modified: 2007-01-29-2139
+	Modified: 2007-01-29-2228
 \*---------------------------------------------------------*/
 
 if ("undefined" === typeof(global)) {
@@ -39,6 +39,15 @@ if ("undefined" === typeof(Array.prototype.pop)) {
 	};
 }
 
+if ("undefined" === typeof(String.prototype.charCodeAt)) {
+	/*int*/ String.prototype.charCodeAt = function (/*int*/ i) {
+		if (isNaN(i) || i<0 || i>=this.length) {
+			return NaN;
+		}
+		return Number(this[i]-"A")+65;
+	};
+}
+
 if ("undefined" === typeof(Number.prototype.toPrecision)) {
 	/*string*/ toPrecision = function(/*int*/ digits) {
 		var str = this.toString();
@@ -49,6 +58,18 @@ if ("undefined" === typeof(Number.prototype.toPrecision)) {
 
 		// note: doesn't handle scientific notation
 		return str.substring(0, digits);
+	};
+}
+
+if ("undefined" === typeof(Object.prototype.isPrototypeOf)) {
+	/*bool*/ Object.prototype.isPrototypeOf = function (/*object*/ obj) {
+		while ("undefined" !== typeof(obj.prototype)) {
+			if (this === obj.prototype) {
+				return true;
+			}
+			obj = obj.prototype;
+		}
+		return false;
 	};
 }
 
@@ -80,20 +101,6 @@ if ("undefined" === typeof(window.decodeURIComponent)) {
 	};
 }
 
-if ("undefined" === typeof(String.prototype.charCodeAt)) {
-	/*int*/ String.prototype.charCodeAt = function (/*int*/ i) {
-		if (isNaN(i) || i<0 || i>=this.length) {
-			return NaN;
-		}
-		return Number(this[i]-"A")+65;
-	};
-}
-
-//if ("undefined" === typeof(Array.prototype.splice)) {
-//	/*array*/ Array.prototype.splice = function(...) {
-//	};
-//}
-
 //if ("undefined" === typeof(Array.prototype.shift)) {
 //	/*array*/ Array.prototype.shift = function(...) {
 //	};
@@ -104,17 +111,10 @@ if ("undefined" === typeof(String.prototype.charCodeAt)) {
 //	};
 //}
 
-if ("undefined" === typeof(Object.prototype.isProtoTypeOf)) {
-	/*bool*/ Object.prototype.isProtoTypeOf = function (/*object*/ obj) {
-		while ("undefined" !== typeof(obj.prototype)) {
-			if (this === obj.prototype) {
-				return true;
-			}
-			obj = obj.prototype;
-		}
-		return false;
-	};
-}
+//if ("undefined" === typeof(Array.prototype.splice)) {
+//	/*array*/ Array.prototype.splice = function(...) {
+//	};
+//}
 
 if ("undefined" === typeof(String.prototype.trim)) {
 	/*string*/ String.prototype.trim = function () {
