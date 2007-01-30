@@ -80,6 +80,15 @@ if ("undefined" === typeof(window.decodeURIComponent)) {
 	};
 }
 
+if ("undefined" === typeof(String.prototype.charCodeAt)) {
+	/*int*/ String.prototype.charCodeAt = function (/*int*/ i) {
+		if (isNaN(i) || i<0 || i>=this.length) {
+			return NaN;
+		}
+		return Number(this[i]-"A")+65;
+	};
+}
+
 //if ("undefined" === typeof(Array.prototype.splice)) {
 //	/*array*/ Array.prototype.splice = function(...) {
 //	};
@@ -92,12 +101,6 @@ if ("undefined" === typeof(window.decodeURIComponent)) {
 
 //if ("undefined" === typeof(Array.prototype.unshift)) {
 //	/*array*/ Array.prototype.unshift = function(...) {
-//	};
-//}
-
-//if ("undefined" === typeof(String.prototype.charCodeAt)) {
-//	/*int*/ String.prototype.charCodeAt = function (/*int*/ i) {
-//		return 60;
 //	};
 //}
 
