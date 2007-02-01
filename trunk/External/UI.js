@@ -495,7 +495,11 @@ JsonFx.UI.Dir = {
 		}
 		elem.minimized = !elem.minimized;
 		next.minimize(elem.minimized);
-		elem.innerHTML = elem.minimized ? "[+]" : "[x]";
+		if (elem.minimized) {
+			elem.className = elem.className.replace(/\s*jsonfx-expanded/g, " jsonfx-collapsed");
+		} else {
+			elem.className = elem.className.replace(/\s*jsonfx-collapsed/g, " jsonfx-expanded");
+		}
 		return false;
 	};
 };
@@ -507,7 +511,7 @@ JsonFx.UI.Dir = {
 	elem.onclick = null;
 };
 
-JsonFx.UI.Bindings.register("a", "jsonfx-close", JsonFx.UI.expandoCreate, JsonFx.UI.expandoDispose);
+JsonFx.UI.Bindings.register("label", "jsonfx-expando", JsonFx.UI.expandoCreate, JsonFx.UI.expandoDispose);
 
 /*JsonML*/ JsonFx.UI.dumpData = function(/*json*/ data) {
 	if (data === null) {
@@ -522,14 +526,16 @@ JsonFx.UI.Bindings.register("a", "jsonfx-close", JsonFx.UI.expandoCreate, JsonFx
 		var pv = data[pn];
 		var pt = typeof(pv);
 
-		var li = ["li",
-			["span", {"class":"jsonfx-type"}, (pv instanceof Array) ? "array" : pt],
-			["span", {"class":"jsonfx-name"}, pn]];
+		var li = ["li"];
+		var a = null;
+		if ("object" === pt && pv) {
+			a = ["label", {"class":"jsonfx-expando jsonfx-expanded"}];
+			li.push(a);
+		}
+		(a?a:li).push(["span", {"class":"jsonfx-type"}, (pv instanceof Array) ? "array" : pt]);
+		(a?a:li).push(["span", {"class":"jsonfx-name"}, pn]);
 
 		if ("object" === pt) {
-			if (pv) {
-				li.push(["a", {"class":"jsonfx-close"}, "[x]"]);
-			}
 			li.push(JsonFx.UI.dumpData(pv));
 		} else {
 			li.push(["span", {"class":"jsonfx-value"}, String(pv)]);
