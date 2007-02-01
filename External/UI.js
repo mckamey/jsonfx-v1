@@ -3,7 +3,7 @@
 	JsonFx UI
 	Copyright (c)2006-2007 Stephen M. McKamey
 	Created: 2006-11-11-1759
-	Modified: 2007-01-28-1046
+	Modified: 2007-02-01-0043
 \*---------------------------------------------------------*/
 
 /* namespace JsonFx */
@@ -215,44 +215,6 @@ JsonFx.UI.Bindings = function() {
 // instantiate only one, destroying the constructor
 JsonFx.UI.Bindings = new JsonFx.UI.Bindings();
 
-/* DataDump ----------------------------------------------------*/
-
-/*void*/ JsonFx.UI.dumpData = function(/*elem*/ parent, /*object*/ result) {
-	var divResult = document.createElement("ul");
-
-	for (var prop in result) {
-		if (!result.hasOwnProperty(prop)) {
-			continue;
-		}
-		
-		var divProp = document.createElement("li");
-		var divName = document.createElement("b");
-		divName.appendChild(document.createTextNode(prop+": "));
-		var divType = document.createElement("span");
-		var divValue = document.createElement("span");
-		if (result[prop] === null) {
-			divType.appendChild(document.createTextNode("[null] "));
-			divValue.appendChild(document.createTextNode(result[prop]));
-		} else if ("object" === typeof result[prop]) {
-			if (result[prop] instanceof Array) {
-				divType.appendChild(document.createTextNode("[array] "));
-			} else {
-				divType.appendChild(document.createTextNode("["+typeof(result[prop])+"] "));
-			}
-			JsonFx.UI.dumpData(divValue, result[prop]);
-		} else {
-			divType.appendChild(document.createTextNode("["+typeof(result[prop])+"] "));
-			divValue.appendChild(document.createTextNode(result[prop]));
-		}
-		divProp.appendChild(divType);
-		divProp.appendChild(divName);
-		divProp.appendChild(divValue);
-		divResult.appendChild(divProp);
-	}
-
-	parent.appendChild(divResult);
-};
-
 /*------------------*\
 	JsonML Methods
 \*------------------*/
@@ -322,7 +284,7 @@ JsonFx.UI.Bindings = new JsonFx.UI.Bindings();
 /*bool*/ JsonFx.UI.loadJsonML = function(/*string*/ url, /*element or string*/ container, /*function*/ callback, /*object*/ context) {
 	return JsonFx.IO.GetJsonRequest(url, null, null,
 			function(jml,obj) {
-				JsonFx.UI.displayJsonML(jml,container);
+				JsonFx.UI.displayJsonML(jml, container);
 				if (callback) { callback(context); }
 			}
 		, null);
@@ -339,7 +301,7 @@ JsonFx.UI.Bindings = new JsonFx.UI.Bindings();
 		elem = document.getElementById(elem);
 	}
 
-	if (!elem) {
+	if (!elem || !elem.tagName) {
 		return null;
 	}
 
@@ -422,7 +384,7 @@ JsonFx.UI.Dir = {
 		elem = document.getElementById(elem);
 	}
 
-	if (!elem) {
+	if (!elem || !elem.tagName) {
 		return null;
 	}
 
@@ -514,4 +476,66 @@ JsonFx.UI.Dir = {
 
 		m(state ? StepMax : StepMin);
 	};
+};
+
+/* DataDump ----------------------------------------------------*/
+
+/*void*/ JsonFx.UI.expandoCreate = function(/*element*/ elem) {
+	elem.style.cursor = "pointer";
+	elem.minimized = false;
+
+	elem.onclick = function (/*event*/ evt) {
+		var next = elem.nextSibling;
+		if (!next.minimize) {
+			if (next.tagName && next.tagName.toLowerCase() === "ul") {
+				next.minimize = JsonFx.UI.createMinimize(next, JsonFx.UI.Dir.Vert);
+			} else {
+				return false;
+			}
+		}
+		elem.minimized = !elem.minimized;
+		next.minimize(elem.minimized);
+		elem.innerHTML = elem.minimized ? "[+]" : "[x]";
+		return false;
+	};
+};
+/*void*/ JsonFx.UI.expandoDispose = function(/*element*/ elem) {
+	var next = elem.nextSibling;
+	if (next.minimize) {
+		next.minimize = null;
+	}
+	elem.onclick = null;
+};
+
+JsonFx.UI.Bindings.register("a", "jsonfx-close", JsonFx.UI.expandoCreate, JsonFx.UI.expandoDispose);
+
+/*JsonML*/ JsonFx.UI.dumpData = function(/*json*/ data) {
+	if (data === null) {
+		return "null";
+	}
+	var ul = ["ul", {"class":"jsonfx-object"}];
+
+	for (var pn in data) {
+		if (!data.hasOwnProperty(pn)) {
+			continue;
+		}
+		var pv = data[pn];
+		var pt = typeof(pv);
+
+		var li = ["li",
+			["span", {"class":"jsonfx-type"}, (pv instanceof Array) ? "array" : pt],
+			["span", {"class":"jsonfx-name"}, pn]];
+
+		if ("object" === pt) {
+			if (pv) {
+				li.push(["a", {"class":"jsonfx-close"}, "[x]"]);
+			}
+			li.push(JsonFx.UI.dumpData(pv));
+		} else {
+			li.push(["span", {"class":"jsonfx-value"}, String(pv)]);
+		}
+		ul.push(li);
+	}
+
+	return ul;
 };
