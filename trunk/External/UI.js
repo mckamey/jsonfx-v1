@@ -364,7 +364,9 @@ JsonFx.UI.Dir = {
 	None: 0x0,
 	Horz: 0x1,
 	Vert: 0x2,
+	Fade: 0x4,
 	Both: 0x1|0x2,
+	All: 0x1|0x2|0x4,
 
 	// helper method which tests for Horz
 	/*bool*/ isHorz: function (/*JsonFx.UI.Dir*/ dir) {
@@ -374,6 +376,11 @@ JsonFx.UI.Dir = {
 	// helper method which tests for Vert
 	/*bool*/ isVert: function (/*JsonFx.UI.Dir*/ dir) {
 		return !!(JsonFx.UI.Dir.Vert & dir);
+	},
+
+	// helper method which tests for Fade
+	/*bool*/ isFade: function (/*JsonFx.UI.Dir*/ dir) {
+		return !!(JsonFx.UI.Dir.Fade & dir);
 	}
 };
 
@@ -468,6 +475,14 @@ JsonFx.UI.Dir = {
 				// vertical, simplified lerp
 				es.height = Math.floor(pxHeight*step)+"px";
 			}
+			if (JsonFx.UI.Dir.isFade(dir)) {
+				// opacity, simplified lerp
+				es["-khtml-opacity"] = 1.0*step;
+				es["-moz-opacity"] = 1.0*step;
+//TODO: add IE support
+//				es.filter = "progid:DXImageTransform.Microsoft.Alpha(opacity="+100*step+")";
+				es.opacity = 1.0*step;
+			}
 
 			setTimeout(function() {
 					m(state ? (step-StepInc) : (step+StepInc));
@@ -488,7 +503,7 @@ JsonFx.UI.Dir = {
 		var next = elem.nextSibling;
 		if (!next.minimize) {
 			if (next.tagName && next.tagName.toLowerCase() === "ul") {
-				next.minimize = JsonFx.UI.createMinimize(next, JsonFx.UI.Dir.Vert);
+				next.minimize = JsonFx.UI.createMinimize(next, JsonFx.UI.Dir.Vert|JsonFx.UI.Dir.Fade);
 			} else {
 				return false;
 			}
