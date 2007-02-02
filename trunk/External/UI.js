@@ -406,7 +406,12 @@ JsonFx.UI.Dir = {
 		userHeight = "",
 		userWidth = "",
 		pxHeight = "",
-		pxWidth = "";
+		pxWidth = "",
+		userZoom = "",
+		userFilter = "",
+		userKhtml = "",
+		userMoz = "",
+		userOpacity = "";
 
 	/*void*/ function saveShape() {
 		if (elem && es) {
@@ -414,9 +419,14 @@ JsonFx.UI.Dir = {
 			userHeight = es.height;
 			userWidth = es.width;
 			pxHeight = !isNaN(elem.offsetHeight) ?
-					elem.offsetHeight : parseFloat(JsonFx.UI.getStyle(elem, "height"));
+				elem.offsetHeight : parseFloat(JsonFx.UI.getStyle(elem, "height"));
 			pxWidth = !isNaN(elem.offsetWidth) ?
-					elem.offsetWidth : parseFloat(JsonFx.UI.getStyle(elem, "width"));
+				elem.offsetWidth : parseFloat(JsonFx.UI.getStyle(elem, "width"));
+			userKhtml = es["-khtml-opacity"];
+			userMoz = es["-moz-opacity"];
+			userZoom = es.zoom;
+			userFilter = es.filter;
+			userOpacity = es.opacity;
 		}
 	}
 
@@ -459,8 +469,19 @@ JsonFx.UI.Dir = {
 					es.visibility = "hidden";
 				}
 				es.overflow = userOverflow;
-				es.width = userWidth;
-				es.height = userHeight;
+				if (JsonFx.UI.Dir.isHorz(dir)) {
+					es.width = userWidth;
+				}
+				if (JsonFx.UI.Dir.isVert(dir)) {
+					es.height = userHeight;
+				}
+				if (JsonFx.UI.Dir.isFade(dir)) {
+					es["-khtml-opacity"] = userKhtml;
+					es["-moz-opacity"] = userMoz;
+					es.zoom = userZoom;
+					es.filter = userFilter;
+					es.opacity = userOpacity;
+				}
 				mutex = false;
 				return;
 			}
@@ -479,8 +500,8 @@ JsonFx.UI.Dir = {
 				// opacity, simplified lerp
 				es["-khtml-opacity"] = 1.0*step;
 				es["-moz-opacity"] = 1.0*step;
-//TODO: add IE support
-//				es.filter = "progid:DXImageTransform.Microsoft.Alpha(opacity="+100*step+")";
+				es.zoom = "100%";
+				es.filter = userFilter+" progid:DXImageTransform.Microsoft.Alpha(opacity="+100*step+")";
 				es.opacity = 1.0*step;
 			}
 
