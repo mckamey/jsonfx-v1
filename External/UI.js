@@ -361,13 +361,15 @@ JsonFx.UI.Bindings = new JsonFx.UI.Bindings();
 \*-----------------*/
 
 JsonFx.UI.Dir = {
-	None: 0x0,
-	Horz: 0x1,
-	Vert: 0x2,
-	Fade: 0x4,
-	Zoom: 0x8,
-	Both: 0x1|0x2,
-	All: 0x1|0x2|0x4|0x8,
+	None:  0x00,
+	Horz:  0x01,
+	Vert:  0x02,
+	Fade:  0x04,
+	Zoom:  0x08,
+	ClipX: 0x10,
+	ClipY: 0x20,
+/*	Both: 0x1|0x2,*/
+/*	All: 0x1|0x2|0x4|0x8,*/
 
 	// helper method which tests for Horz
 	/*bool*/ isHorz: function (/*JsonFx.UI.Dir*/ dir) {
@@ -387,6 +389,16 @@ JsonFx.UI.Dir = {
 	// helper method which tests for Zoom
 	/*bool*/ isZoom: function (/*JsonFx.UI.Dir*/ dir) {
 		return !!(JsonFx.UI.Dir.Zoom & dir);
+	},
+
+	// helper method which tests for ClipX
+	/*bool*/ isClipX: function (/*JsonFx.UI.Dir*/ dir) {
+		return !!(JsonFx.UI.Dir.ClipX & dir);
+	},
+
+	// helper method which tests for ClipY
+	/*bool*/ isClipY: function (/*JsonFx.UI.Dir*/ dir) {
+		return !!(JsonFx.UI.Dir.ClipY & dir);
 	}
 };
 
@@ -408,29 +420,31 @@ JsonFx.UI.Dir = {
 	/*const float*/ StepMax = 1.0,
 	/*const float*/ StepInc = 0.05;
 
-	var userOverflow = "",
+	var pxHeight = "",
+		pxWidth = "",
 		userHeight = "",
 		userWidth = "",
-		pxHeight = "",
-		pxWidth = "",
+		userOverflow = "",
+		userPosition = "",
 		userFilter = "",
 		userKhtml = "",
 		userMoz = "",
 		userOpacity = "",
 		userZoom = "",
+		userClip = "",
 		alpha = null;
 
 	/*void*/ function saveShape() {
 		if (elem && es) {
-			if (JsonFx.UI.Dir.isVert(dir) || JsonFx.UI.Dir.isHorz(dir)) {
+			if (JsonFx.UI.Dir.isVert(dir) || JsonFx.UI.Dir.isHorz(dir) || JsonFx.UI.Dir.isClipX(dir) || JsonFx.UI.Dir.isClipY(dir)) {
 				userOverflow = es.overflow;
 			}
-			if (JsonFx.UI.Dir.isVert(dir)) {
+			if (JsonFx.UI.Dir.isVert(dir) || JsonFx.UI.Dir.isClipY(dir)) {
 				userHeight = es.height;
 				pxHeight = !isNaN(elem.offsetHeight) ?
 					elem.offsetHeight : parseFloat(JsonFx.UI.getStyle(elem, "height"));
 			}
-			if (JsonFx.UI.Dir.isHorz(dir)) {
+			if (JsonFx.UI.Dir.isHorz(dir) || JsonFx.UI.Dir.isClipX(dir)) {
 				userWidth = es.width;
 				pxWidth = !isNaN(elem.offsetWidth) ?
 					elem.offsetWidth : parseFloat(JsonFx.UI.getStyle(elem, "width"));
@@ -454,6 +468,10 @@ JsonFx.UI.Dir = {
 			}
 			if (JsonFx.UI.Dir.isZoom(dir)) {
 				userZoom = es.zoom;
+			}
+			if (JsonFx.UI.Dir.isClipX(dir) || JsonFx.UI.Dir.isClipY(dir)) {
+				userPosition = es.position;
+				userClip = es.clip;
 			}
 		}
 	}
@@ -491,12 +509,12 @@ JsonFx.UI.Dir = {
 
 			if (step < StepMin || step > StepMax) {
 				if (state) {
-					if (JsonFx.UI.Dir.isVert(dir)) {
+					if (JsonFx.UI.Dir.isVert(dir) || JsonFx.UI.Dir.isZoom(dir) || JsonFx.UI.Dir.isClipX(dir) || JsonFx.UI.Dir.isClipY(dir)) {
 						es.display = "none";
 					}
 					es.visibility = "hidden";
 				}
-				if (JsonFx.UI.Dir.isVert(dir) || JsonFx.UI.Dir.isHorz(dir)) {
+				if (JsonFx.UI.Dir.isVert(dir) || JsonFx.UI.Dir.isHorz(dir) || JsonFx.UI.Dir.isClipX(dir) || JsonFx.UI.Dir.isClipY(dir)) {
 					es.overflow = userOverflow;
 				}
 				if (JsonFx.UI.Dir.isHorz(dir)) {
@@ -519,11 +537,15 @@ JsonFx.UI.Dir = {
 				if (JsonFx.UI.Dir.isZoom(dir)) {
 					es.zoom = userZoom;
 				}
+				if (JsonFx.UI.Dir.isClipX(dir) || JsonFx.UI.Dir.isClipY(dir)) {
+					es.position = userPosition;
+					es.clip = userClip;
+				}
 				mutex = false;
 				return;
 			}
 
-			if (JsonFx.UI.Dir.isVert(dir) || JsonFx.UI.Dir.isHorz(dir)) {
+			if (JsonFx.UI.Dir.isVert(dir) || JsonFx.UI.Dir.isHorz(dir) || JsonFx.UI.Dir.isClipX(dir) || JsonFx.UI.Dir.isClipY(dir)) {
 				es.overflow = "hidden";
 			}
 
@@ -547,6 +569,19 @@ JsonFx.UI.Dir = {
 			}
 			if (JsonFx.UI.Dir.isZoom(dir)) {
 				es.zoom = Math.floor(100*step)+"%";
+			}
+			if (JsonFx.UI.Dir.isClipX(dir) || JsonFx.UI.Dir.isClipY(dir)) {
+				var clip = ["auto","auto","auto","auto"];
+				if (JsonFx.UI.Dir.isClipX(dir) && !isNaN(pxWidth)) {
+					clip[3] = Math.ceil(pxWidth*(1-step)/2)+"px";
+					clip[1] = ((pxWidth/2)+Math.floor(pxWidth*step/2))+"px";
+				}
+				if (JsonFx.UI.Dir.isClipY(dir) && !isNaN(pxHeight)) {
+					clip[0] = Math.ceil(pxHeight*(1-step)/2)+"px";
+					clip[2] = ((pxHeight/2)+Math.floor(pxHeight*step/2))+"px";
+				}
+				es.position = "absolute";
+				es.clip = "rect("+clip.join(' ')+")";
 			}
 
 			setTimeout(
