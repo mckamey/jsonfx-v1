@@ -1,12 +1,21 @@
+/*extern JsonFx*/
 /*---------------------------------------------------------*\
 	Modifications to global objects
 	Copyright (c)2006-2007 Stephen M. McKamey
 	Created: 2006-11-14-0928
-	Modified: 2007-01-29-2228
+	Modified: 2007-02-07-2240
 \*---------------------------------------------------------*/
 
-if ("undefined" === typeof(global)) {
-	window.global = window;
+/* namespace JsonFx */
+if ("undefined" === typeof JsonFx) {
+	window.JsonFx = {};
+}
+
+///*float*/ JsonFx.JScriptVersion = ("undefined" === typeof window.ScriptEngineMajorVersion) ? NaN :
+//		Number(window.ScriptEngineMajorVersion()+"."+window.ScriptEngineMinorVersion());
+
+if ("undefined" === typeof(window.global)) {
+	/*object*/ window.global = window;
 }
 
 if ("undefined" === typeof(Object.prototype.hasOwnProperty)) {
@@ -49,7 +58,7 @@ if ("undefined" === typeof(String.prototype.charCodeAt)) {
 }
 
 if ("undefined" === typeof(Number.prototype.toPrecision)) {
-	/*string*/ toPrecision = function(/*int*/ digits) {
+	/*string*/ Number.prototype.toPrecision = function(/*int*/ digits) {
 		var str = this.toString();
 		if (isNaN(digits) || digits < 1 || digits > 21) {
 			return str;
