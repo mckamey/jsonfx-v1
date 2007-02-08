@@ -1,5 +1,5 @@
 // jslint.js
-// 2007-01-21
+// 2007-01-31
 /*
 Copyright (c) 2002 Douglas Crockford  (www.JSLint.com)
 
@@ -985,9 +985,9 @@ JSLINT = function () {
         return (node.type === '(number)' && !+node.value) ||
                (node.type === '(string)' && !node.value) ||
                 node.type === 'true' ||
-                node.node === 'false' ||
+                node.type === 'false' ||
                 node.type === 'undefined' ||
-                node.node === 'null';
+                node.type === 'null';
     }
 
 
@@ -2010,8 +2010,9 @@ JSLINT = function () {
     }, 155).exps = true;
 
     prefix('(', function () {
-        parse(0);
+        var v = parse(0);
         advance(')', this);
+        return v;
     });
 
     infix('[', function (left) {
