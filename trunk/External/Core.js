@@ -3,7 +3,7 @@
 	Modifications to global objects
 	Copyright (c)2006-2007 Stephen M. McKamey
 	Created: 2006-11-14-0928
-	Modified: 2007-02-07-2240
+	Modified: 2007-02-07-2339
 \*---------------------------------------------------------*/
 
 /* namespace JsonFx */
@@ -136,3 +136,52 @@ if ("undefined" === typeof(String.prototype.contains)) {
 		return (this.indexOf(str) >= 0);
 	};
 }
+
+JsonFx.Timer = function() {
+	/*object*/ var s = {};
+	/*object*/ var t = {};
+
+	/*void*/ JsonFx.Timer.prototype.clear = function(/*string*/ key) {
+		if (key) {
+			if (t[key]) {
+				delete t[key];
+			}
+			if (s[key]) {
+				delete s[key];
+			}
+		} else {
+			t = {};
+			s = {};
+		}
+	};
+
+	/*void*/ JsonFx.Timer.prototype.start = function(/*string*/ key) {
+		s[key] = (new Date()).valueOf();
+	};
+
+	/*void*/ JsonFx.Timer.prototype.stop = function(/*string*/ key, /*bool*/ append) {
+		append = append && isFinite(t[key]);
+		var time = ((new Date()).valueOf() - s[key]);
+		t[key] = append ? (t[key]+time) : time;
+	};
+
+	/*int*/ JsonFx.Timer.prototype.getTime = function(/*string*/ key) {
+		if (key && isFinite(t[key])) {
+			return t[key];
+		}
+		return NaN;
+	};
+
+	/*object*/ JsonFx.Timer.prototype.getTimes = function() {
+		var c = {};
+		for (var key in t) {
+			if (t.hasOwnProperty(key) && isFinite(t[key])) {
+				c[key] = t[key];
+			}
+		}
+		return c;
+	};
+};
+
+// instantiate only one, destroying the constructor
+JsonFx.Timer = new JsonFx.Timer();

@@ -3,7 +3,7 @@
 	JsonFx UI
 	Copyright (c)2006-2007 Stephen M. McKamey
 	Created: 2006-11-11-1759
-	Modified: 2007-02-01-0043
+	Modified: 2007-02-07-2339
 \*---------------------------------------------------------*/
 
 /* namespace JsonFx */
@@ -53,8 +53,7 @@ JsonFx.UI.Bindings = function() {
 	/*object*/ var b = this;
 	/*const string*/ var BindAction = "B", UnbindAction = "U";
 
-	/*hashtable[tag] of array*/ var tags = {};
-	/*hashtable[css] of object*/ var bindings = {};
+	/*hashtable[tag] of object*/ var bindings = {};
 
 	/*void*/ b.register = function(/*string*/ tag, /*string*/ css, /*function(elem)*/ bind, /*function(elem)*/ unbind) {
 		if (typeof css !== "string") {
@@ -69,84 +68,82 @@ JsonFx.UI.Bindings = function() {
 		if (unbind && typeof unbind !== "function") {
 			throw new Error("Unbinding method for \""+css+"\" is not a function.");
 		}
-		if (bindings[css]) {
-			throw new Error("Binding for \""+css+"\" has already been registered.");
-		}
+
 		if (bind || unbind) {
 			tag = tag.toLowerCase();
-			if ("undefined" === typeof tags[tag]) {
-				/*array*/ tags[tag] = [];
+			if ("undefined" === typeof bindings[tag]) {
+				/*object*/ bindings[tag] = {};
+			} else if (bindings[tag][css]) {
+				throw new Error("Binding for tag=\""+tag+"\" css=\""+css+"\" has already been registered.");
 			}
-			tags[tag].push(css);
 
-			/*object*/ bindings[css] = {};
-			bindings[css][BindAction] = bind ? bind : null;
-			bindings[css][UnbindAction] = unbind ? unbind : null;
+			/*object*/ bindings[tag][css] = {};
+			bindings[tag][css][BindAction] = bind ? bind : null;
+			bindings[tag][css][UnbindAction] = unbind ? unbind : null;
 		}
 	};
 
-// TODO: recreate the inner loop using just the CSS classes in elem.className
-// don't check against all the classes for tag, make the tags[tag] just an
-// attribute on bindings.  then the lookup for elemClassNames[i] is a hashtable
-// rather than a loop.
+	/*element*/ var performOne = function(/*element*/ elem, /*actionKey*/ a) {
+		if (elem && elem.tagName && elem.className) {
 
-// TODO: see if can abstract out the innermost action and use it in perform
-// and in the JsonML filter bindOne
+/*TIMER*/
+//JsonFx.Timer.start(a+"_one");
+/*TIMER*/
 
-//	// perform a binding action on single element
-//	/*void*/ var performOne = function(/*element*/ elem, /*actionKey*/ a) {
-//	};
+			// only perform on registered tags
+			var tag = elem.tagName.toLowerCase();
+			if (bindings[tag]) {
+				var tagBindings = bindings[tag];
+				var classes = elem.className.split(/\s+/);
+
+				// for each css class in elem
+				for (var i=0; i<classes.length; i++) {
+					var css = classes[i];
+					if (css && tagBindings[css] && tagBindings[css][a]) {
+
+						// perform action on element							
+						tagBindings[css][a](elem);
+					}
+				}
+			}
+
+/*TIMER*/
+//JsonFx.Timer.stop(a+"_one", true);//48/16,46/31,62/0
+/*TIMER*/
+
+		}
+		return elem;
+	};
 
 	// perform a binding action on child elements
 	/*void*/ var perform = function(/*element*/ root, /*actionKey*/ a) {
+
+/*TIMER*/
+//JsonFx.Timer.start(a+"_all");
+/*TIMER*/
 		if (root && root.getElementsByTagName) {
 
 			// for each registered tag
-			for (var tag in tags) {
-				if (tags.hasOwnProperty(tag)) {
+			for (var tag in bindings) {
+				if (bindings.hasOwnProperty(tag)) {
 
 					// for each element in root with tagName
 					var elems = root.getElementsByTagName(tag);
-					for (var j=0; j<elems.length; j++) {
-						var elem = elems[j];
-						if (elem.className) {
-
-							// for each css-binding for tag
-							for (var i=0; i<tags[tag].length; i++) {
-								var css = tags[tag][i];
-								if (bindings[css][a] &&
-									elem.className.indexOf(css) >= 0) {
-
-									// perform action on element							
-									bindings[css][a](elem);
-								}
-							}
-						}
+					for (var i=0; i<elems.length; i++) {
+						performOne(elems[i], a);
 					}
 				}
 			}
 		}
+
+/*TIMER*/
+//JsonFx.Timer.stop(a+"_all", true);//32,31,31
+/*TIMER*/
 	};
 
 	// used as JsonML filter
 	/*element*/ b.bindOne = function(/*element*/ elem) {
-		if (elem && elem.tagName && elem.className) {
-			var tag = elem.tagName.toLowerCase();
-			if (tags.hasOwnProperty(tag)) {
-
-				// for each css-binding for tag
-				for (var i=0; i<tags[tag].length; i++) {
-					var css = tags[tag][i];
-					if (bindings[css][BindAction] &&
-						elem.className.indexOf(css) >= 0) {
-
-						// perform action on element							
-						bindings[css][BindAction](elem);
-					}
-				}
-			}
-		}
-		return elem;
+		return performOne(elem, BindAction);
 	};
 
 	// bind
@@ -233,6 +230,11 @@ JsonFx.UI.Bindings = new JsonFx.UI.Bindings();
 /*	if container is null then uses ID(s) to replace page elements
 	returns the container element if one was specified */
 /*element*/ JsonFx.UI.displayJsonML = function(/*JsonML*/ jml, /*element or string*/ container) {
+
+/*TIMER*/
+//JsonFx.Timer.start("display");
+/*TIMER*/
+
 	// either DOM element or id
 	container = (typeof(container) !== "string") ?
 		container : document.getElementById(container);
@@ -277,13 +279,25 @@ JsonFx.UI.Bindings = new JsonFx.UI.Bindings();
 			}
 		}
 	}
+/*TIMER*/
+//JsonFx.Timer.stop("display", true);//265,266,266
+/*TIMER*/
 	return container;
 };
 
 /* returns true if request was sent */
 /*bool*/ JsonFx.UI.loadJsonML = function(/*string*/ url, /*element or string*/ container, /*function*/ callback, /*object*/ context) {
+
+/*TIMER*/
+//JsonFx.Timer.start("load");
+/*TIMER*/
+
 	return JsonFx.IO.GetJsonRequest(url, null, null,
 			function(jml,obj) {
+
+/*TIMER*/
+//JsonFx.Timer.stop("load", true);//282,281,22750(greedy regex)
+/*TIMER*/
 				JsonFx.UI.displayJsonML(jml, container);
 				if (callback) { callback(context); }
 			}
