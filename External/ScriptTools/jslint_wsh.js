@@ -109,7 +109,7 @@ function reservevar(s){return reserve(s,function(){return this;});}
 function infix(s,f,p){var x=symbol(s,p);reserveName(x);x.led=(typeof f==='function')?f:function(left){return[this.id,left,parse(p)];};return x;}
 function relation(s,f){var x=symbol(s,100);x.led=function(left){var right=parse(100);if((left&&left.id==='NaN')||(right&&right.id==='NaN')){warning("Use the isNaN function to compare with NaN.",this);}else if(f){f.apply(this,[left,right]);}
 return[this.id,left,right];};return x;}
-function isPoorRelation(node){return(node.type==='(number)'&&!+node.value)||(node.type==='(string)'&&!node.value)||node.type==='true'||node.node==='false'||node.type==='undefined'||node.node==='null';}
+function isPoorRelation(node){return(node.type==='(number)'&&!+node.value)||(node.type==='(string)'&&!node.value)||node.type==='true'||node.type==='false'||node.type==='undefined'||node.type==='null';}
 function assignop(s,f){symbol(s,20).exps=true;return infix(s,function(left){if(left){if(left.id==='.'||left.id==='['||(left.identifier&&!left.reserved)){parse(19);return left;}
 if(left===syntax['function']){if(option.jscript){parse(19);return left;}else{warning("Expected an identifier in an assignment, and instead saw a function invocation.",prevtoken);}}}
 error("Bad assignment.",this);},20);}
@@ -199,7 +199,7 @@ advance(',');}}
 advance(')');if(typeof left==='object'){if(left.value==='parseInt'&&n===1){warning("Missing radix parameter",left);}
 if(!option.evil){if(left.value==='eval'||left.value==='Function'){if(p[0][0]!=="addconcat"||p[0][2].value!==')'||p[0][1][0]!=="addconcat"||p[0][1][1].value!=='('){warning("eval is evil",left);}}else if(p[0]&&p[0].id==='(string)'&&(left.value==='setTimeout'||left.value==='setInterval')){warning("Implied eval is evil. Use a function argument instead of a string",left);}}
 if(!left.identifier&&left.id!=='.'&&left.id!=='['&&left.id!=='('){warning('Bad invocation.',left);}}
-return syntax['function'];},155).exps=true;prefix('(',function(){parse(0);advance(')',this);});infix('[',function(left){var e=parse(0);if(e&&e.type==='(string)'){countMember(e.value);if(ix.test(e.value)){var s=syntax[e.value];if(!s||!s.reserved){warning("This is better written in dot notation.",e);}}}
+return syntax['function'];},155).exps=true;prefix('(',function(){var v=parse(0);advance(')',this);return v;});infix('[',function(left){var e=parse(0);if(e&&e.type==='(string)'){countMember(e.value);if(ix.test(e.value)){var s=syntax[e.value];if(!s||!s.reserved){warning("This is better written in dot notation.",e);}}}
 advance(']',this);this.left=left;this.right=e;return this;},160);prefix('[',function(){if(token.id===']'){advance(']');return;}
 for(;;){parse(10);if(token.id===','){advance(',');if(token.id===']'||token.id===','){warning('Extra comma.',prevtoken);}}else{advance(']',this);return;}}},160);(function(x){x.nud=function(){var i;if(token.id==='}'){advance('}');return;}
 for(;;){i=optionalidentifier(true);if(!i&&(token.id==='(string)'||token.id==='(number)')){i=token.id;advance();}
