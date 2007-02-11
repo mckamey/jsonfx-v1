@@ -3,7 +3,7 @@
 	JsonFx UI
 	Copyright (c)2006-2007 Stephen M. McKamey
 	Created: 2006-11-11-1759
-	Modified: 2007-02-10-2003
+	Modified: 2007-02-11-2003
 \*---------------------------------------------------------*/
 
 /* namespace JsonFx */
@@ -621,7 +621,7 @@ JsonFx.UI.Dir = {
 
 /* DataDump ----------------------------------------------------*/
 
-/*void*/ JsonFx.UI.expandoCreate = function(/*element*/ elem) {
+/*void*/ JsonFx.UI.expandoBind = function(/*element*/ elem) {
 	elem.style.cursor = "pointer";
 	elem.minimized = false;
 
@@ -644,7 +644,7 @@ JsonFx.UI.Dir = {
 		return false;
 	};
 };
-/*void*/ JsonFx.UI.expandoDispose = function(/*element*/ elem) {
+/*void*/ JsonFx.UI.expandoUnbind = function(/*element*/ elem) {
 	var next = elem.nextSibling;
 	if (next.minimize) {
 		next.minimize = null;
@@ -652,7 +652,7 @@ JsonFx.UI.Dir = {
 	elem.onclick = null;
 };
 
-JsonFx.UI.Bindings.register("label", "jsonfx-expando", JsonFx.UI.expandoCreate, JsonFx.UI.expandoDispose);
+JsonFx.UI.Bindings.register("label", "jsonfx-expando", JsonFx.UI.expandoBind, JsonFx.UI.expandoUnbind);
 
 /*JsonML*/ JsonFx.UI.dumpData = function(/*json*/ data) {
 	if (data === null) {
