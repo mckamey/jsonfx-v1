@@ -434,7 +434,8 @@ JsonFx.UI.Dir = {
 	/*const float*/ StepMax = 1.0,
 	/*const float*/ StepInc = 0.05;
 
-	var pxHeight = "",
+	var saved = false,
+		pxHeight = "",
 		pxWidth = "",
 		userHeight = "",
 		userWidth = "",
@@ -487,6 +488,7 @@ JsonFx.UI.Dir = {
 				userPosition = es.position;
 				userClip = es.clip;
 			}
+			saved = true;
 		}
 	}
 
@@ -507,7 +509,7 @@ JsonFx.UI.Dir = {
 		}
 		mutex = true;
 
-		if (state) {
+		if (state || !saved) {
 			saveShape();
 		}
 		es.display = "block";
