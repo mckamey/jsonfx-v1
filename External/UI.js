@@ -557,7 +557,7 @@ JsonFx.UI.Dir = {
 				}
 				if (JsonFx.UI.Dir.isClipX(dir) || JsonFx.UI.Dir.isClipY(dir)) {
 					es.position = userPosition;
-					es.clip = userClip ? userClip : "auto";
+					es.clip = userClip ? userClip : "rect(auto auto auto auto)";// works in IE/FireFox/Opera
 				}
 				mutex = false;
 				return;
