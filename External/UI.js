@@ -541,11 +541,15 @@ JsonFx.UI.Dir = {
 					es["-khtml-opacity"] = userKhtml;
 					es["-moz-opacity"] = userMoz;
 					es.opacity = userOpacity;
-					if (alpha) {
-						alpha.enabled = false;
-					}
-					if (userFilter) {
-						es.filter = userFilter;
+					try {
+						if (alpha) {
+							alpha.enabled = false;
+						}
+						if (userFilter) {
+							es.filter = userFilter;
+						}
+					} catch (ex) {
+						alpha = null;
 					}
 				}
 				if (JsonFx.UI.Dir.isZoom(dir)) {
@@ -553,7 +557,7 @@ JsonFx.UI.Dir = {
 				}
 				if (JsonFx.UI.Dir.isClipX(dir) || JsonFx.UI.Dir.isClipY(dir)) {
 					es.position = userPosition;
-					es.clip = userClip;
+					es.clip = userClip ? userClip : "rect(auto)";
 				}
 				mutex = false;
 				return;
@@ -577,8 +581,12 @@ JsonFx.UI.Dir = {
 				es["-moz-opacity"] = 1.0*step;
 				es.opacity = 1.0*step;
 				if (alpha) {
-					alpha.opacity = Math.floor(100*step);
-					alpha.enabled = true;
+					try {
+						alpha.opacity = Math.floor(100*step);
+						alpha.enabled = true;
+					} catch (ex) {
+						alpha = null;
+					}
 				}
 			}
 			if (JsonFx.UI.Dir.isZoom(dir)) {
