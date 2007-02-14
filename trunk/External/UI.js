@@ -3,7 +3,7 @@
 	JsonFx UI
 	Copyright (c)2006-2007 Stephen M. McKamey
 	Created: 2006-11-11-1759
-	Modified: 2007-02-11-0432
+	Modified: 2007-02-14-0713
 \*---------------------------------------------------------*/
 
 /* namespace JsonFx */
@@ -75,7 +75,7 @@ JsonFx.UI = {};
 JsonFx.UI.Bindings = function() {
 
 	/*object*/ var b = this;
-	/*const string*/ var BindAction = "B", UnbindAction = "U";
+	/*const string*/ var BIND = "B", UNBIND = "U";
 
 	/*hashtable[tag] of object*/ var bindings = {};
 
@@ -102,8 +102,8 @@ JsonFx.UI.Bindings = function() {
 			}
 
 			/*object*/ bindings[tag][css] = {};
-			bindings[tag][css][BindAction] = bind ? bind : null;
-			bindings[tag][css][UnbindAction] = unbind ? unbind : null;
+			bindings[tag][css][BIND] = bind ? bind : null;
+			bindings[tag][css][UNBIND] = unbind ? unbind : null;
 		}
 	};
 
@@ -167,7 +167,7 @@ JsonFx.UI.Bindings = function() {
 
 	// used as JsonML filter
 	/*element*/ b.bindOne = function(/*element*/ elem) {
-		return performOne(elem, BindAction);
+		return performOne(elem, BIND);
 	};
 
 	// bind
@@ -181,7 +181,7 @@ JsonFx.UI.Bindings = function() {
 		document.body.style.cursor = "wait";
 
 		try {
-			perform(document, BindAction);
+			perform(document, BIND);
 		} finally {
 			// restore previous values
 			document.body.title = ttl ? ttl : "";
@@ -200,7 +200,7 @@ JsonFx.UI.Bindings = function() {
 		document.body.style.cursor = "wait";
 
 		try {
-			perform(document, UnbindAction);
+			perform(document, UNBIND);
 		} finally {
 			// restore previous values
 			document.body.title = ttl ? ttl : "";
@@ -210,12 +210,12 @@ JsonFx.UI.Bindings = function() {
 
 	// bind
 	/*void*/ b.bind = function(/*element*/ root) {
-		perform(root, BindAction);
+		perform(root, BIND);
 	};
 
 	// unbind
 	/*void*/ b.unbind = function(/*element*/ root) {
-		perform(root, UnbindAction);
+		perform(root, UNBIND);
 	};
 
 	// wire up binding
@@ -454,9 +454,9 @@ JsonFx.UI.Dir = {
 	var es = elem.style,
 	/*bool*/ mutex = false,
 	/*bool*/ state = false,
-	/*const float*/ StepMin = 0,
-	/*const float*/ StepMax = 1,
-	/*const float*/ StepInc = 0.05;
+	/*const float*/ STEP_MIN = 0,
+	/*const float*/ STEP_MAX = 1,
+	/*const float*/ STEP_INC = 0.05;
 
 	var saved = false,
 		pxHeight = "",
@@ -547,7 +547,7 @@ JsonFx.UI.Dir = {
 				return;
 			}
 
-			if (step < StepMin || step > StepMax) {
+			if (step < STEP_MIN || step > STEP_MAX) {
 				if (state) {
 					if (JsonFx.UI.Dir.isVert(dir) || JsonFx.UI.Dir.isZoom(dir) || JsonFx.UI.Dir.isClipX(dir) || JsonFx.UI.Dir.isClipY(dir)) {
 						es.display = "none";
@@ -634,12 +634,12 @@ JsonFx.UI.Dir = {
 
 			setTimeout(
 				function() {
-					m(state ? (step-StepInc) : (step+StepInc));
+					m(state ? (step-STEP_INC) : (step+STEP_INC));
 				},
 				0);
 		}
 
-		m(state ? StepMax : StepMin);
+		m(state ? STEP_MAX : STEP_MIN);
 	};
 };
 
@@ -715,11 +715,11 @@ JsonFx.UI.Bindings.register("label", "jsonfx-expando", JsonFx.UI.expandoBind, Js
 	Transform Classes
 \*---------------------*/
 
-/* namespace JsonFx.UI.Transform */
-JsonFx.UI.Transform = {};
+/* namespace JsonFx.UI.Animate */
+JsonFx.UI.Animate = {};
 
-/* class JsonFx.UI.Transform.Unit -------------------------------------------- */
-JsonFx.UI.Transform.Unit = function(/*int*/ size, /*string*/ unit) {
+/* class JsonFx.UI.Animate.Unit -------------------------------------------- */
+JsonFx.UI.Animate.Unit = function(/*int*/ size, /*string*/ unit) {
 	if (unit) {
 		switch (unit) {
 			case "px" :
@@ -748,29 +748,29 @@ JsonFx.UI.Transform.Unit = function(/*int*/ size, /*string*/ unit) {
 		this.unit = "";
 	}
 };
-JsonFx.UI.Transform.Unit.prototype.toString = function() {
+JsonFx.UI.Animate.Unit.prototype.toString = function() {
 	return this.unit ? (this.size+this.unit) : "auto";
 };
-/*JsonFx.UI.Transform.Unit*/ JsonFx.UI.Transform.Unit.parse = function(/*string*/ str) {
+/*JsonFx.UI.Animate.Unit*/ JsonFx.UI.Animate.Unit.parse = function(/*string*/ str) {
 	var size = parseFloat(str);
 	var unit = null;
 	if (isFinite(size) && str.match(/(px|%|em|pt|in|cm|mm|pc|ex)/)) {
 		unit = RegExp.$1;
 	}
-	return new JsonFx.UI.Transform.Unit(size, unit);
+	return new JsonFx.UI.Animate.Unit(size, unit);
 };
 
-/* class JsonFx.UI.Transform.Op -------------------------------------------- */
-JsonFx.UI.Transform.Op = function() {
+/* class JsonFx.UI.Animate.Op -------------------------------------------- */
+JsonFx.UI.Animate.Op = function() {
 	this.x = this.y = this.z = this.l = this.t = this.w = this.h =
 	this.f = this.cL = this.cR = this.cT = this.cB = NaN;
 	this.s = 0.05;// 20 steps
 };
 
-/*Regex*/ JsonFx.UI.Transform.Op.clipRE = /^rect[\(]([0-9\.]*)(auto|px|%)\s*([0-9\.]*)(auto|px|%)\s*([0-9\.]*)(auto|px|%)\s*([0-9\.]*)(auto|px|%)[\)]$/;
+/*Regex*/ JsonFx.UI.Animate.Op.clipRE = /^rect[\(]([0-9\.]*)(auto|px|%)\s*([0-9\.]*)(auto|px|%)\s*([0-9\.]*)(auto|px|%)\s*([0-9\.]*)(auto|px|%)[\)]$/;
 
-/*JsonFx.UI.Transform.Op*/ JsonFx.UI.Transform.Op.save = function(/*element*/ elem) {
-	var op = new JsonFx.UI.Transform.Op();
+/*JsonFx.UI.Animate.Op*/ JsonFx.UI.Animate.Op.save = function(/*element*/ elem) {
+	var op = new JsonFx.UI.Animate.Op();
 
 	if (elem && elem.style) {
 		var es = elem.style;
@@ -811,21 +811,21 @@ JsonFx.UI.Transform.Op = function() {
 		op.scale(1, 1);
 
 		// fade
-		if (isFinite(es.opacity)) {
+		if (!!es.zoom && isFinite(es.opacity)) {
 			op.fade(es.opacity);
 		} else {
 			op.fade(1);
 		}
 
 		// zoom
-		if (isFinite(es.zoom)) {
+		if (!!es.zoom && isFinite(es.zoom)) {
 			op.zoom(es.zoom);
 		} else {
 			op.zoom(1);
 		}
 
 		// clip
-		if (es.clip && es.clip.match(JsonFx.UI.Transform.Op.clipRE)) {
+		if (es.clip && es.clip.match(JsonFx.UI.Animate.Op.clipRE)) {
 			if ("%" === RegExp.$2) {
 				op.clipTop(RegExp.$1/100);
 			} else if ("px" === RegExp.$2) {
@@ -863,22 +863,24 @@ JsonFx.UI.Transform.Op = function() {
 			op.clipBottom(0);
 			op.clipLeft(0);
 		}
+		es = null;
 	}
 
+	elem = null;
 	return op;
 };
 
-/*void*/ JsonFx.UI.Transform.Op.prototype.fade = function(/*float*/ f) {
+/*void*/ JsonFx.UI.Animate.Op.prototype.fade = function(/*float*/ f) {
 	if (!isFinite(f) || f<0 || f>1) {
 		throw new Error("Fade is a number from 0.0 to 1.0");
 	}
 	this.f = Number(f);
 };
-/*bool*/ JsonFx.UI.Transform.Op.prototype.hasFade = function() {
+/*bool*/ JsonFx.UI.Animate.Op.prototype.hasFade = function() {
 	return isFinite(this.f);
 };
 
-/*void*/ JsonFx.UI.Transform.Op.prototype.zoom = function(/*float*/ z) {
+/*void*/ JsonFx.UI.Animate.Op.prototype.zoom = function(/*float*/ z) {
 	if (!isFinite(z)) {
 		throw new Error("Zoom is a number >= 0.01 with 1.0 being normal");
 	}
@@ -887,144 +889,144 @@ JsonFx.UI.Transform.Op = function() {
 	}
 	this.z = Number(z);
 };
-/*bool*/ JsonFx.UI.Transform.Op.prototype.hasZoom = function() {
+/*bool*/ JsonFx.UI.Animate.Op.prototype.hasZoom = function() {
 	return isFinite(this.z);
 };
 
-/*void*/ JsonFx.UI.Transform.Op.prototype.move = function(/*int*/ left, /*int*/ top) {
+/*void*/ JsonFx.UI.Animate.Op.prototype.move = function(/*int*/ left, /*int*/ top) {
 	this.top(top);
 	this.left(left);
 };
-/*void*/ JsonFx.UI.Transform.Op.prototype.left = function(/*int*/ left) {
+/*void*/ JsonFx.UI.Animate.Op.prototype.left = function(/*int*/ left) {
 	if (!isFinite(left)) {
 		throw new Error("Left is a pixel position");
 	}
 	this.l = Number(left);
 };
-/*void*/ JsonFx.UI.Transform.Op.prototype.top = function(/*int*/ top) {
+/*void*/ JsonFx.UI.Animate.Op.prototype.top = function(/*int*/ top) {
 	if (!isFinite(top)) {
 		throw new Error("Top is a pixel position");
 	}
 	this.t = Number(top);
 };
-/*bool*/ JsonFx.UI.Transform.Op.prototype.hasMove = function() {
+/*bool*/ JsonFx.UI.Animate.Op.prototype.hasMove = function() {
 	return isFinite(this.t)||isFinite(this.l);
 };
-/*bool*/ JsonFx.UI.Transform.Op.prototype.hasTop = function() {
+/*bool*/ JsonFx.UI.Animate.Op.prototype.hasTop = function() {
 	return isFinite(this.t);
 };
-/*bool*/ JsonFx.UI.Transform.Op.prototype.hasLeft = function() {
+/*bool*/ JsonFx.UI.Animate.Op.prototype.hasLeft = function() {
 	return isFinite(this.l);
 };
 
-/*void*/ JsonFx.UI.Transform.Op.prototype.scaleX = function(/*int*/ x) {
+/*void*/ JsonFx.UI.Animate.Op.prototype.scaleX = function(/*int*/ x) {
 	if (!isFinite(x) || x<0) {
 		throw new Error("Scale X is a number >= 0.0 with 1.0 being normal");
 	}
 	this.x = Number(x);
 };
-/*void*/ JsonFx.UI.Transform.Op.prototype.scaleY = function(/*int*/ y) {
+/*void*/ JsonFx.UI.Animate.Op.prototype.scaleY = function(/*int*/ y) {
 	if (!isFinite(y) || y<0) {
 		throw new Error("Scale Y is a number >= 0.0 with 1.0 being normal");
 	}
 	this.y = Number(y);
 };
-/*void*/ JsonFx.UI.Transform.Op.prototype.scale = function(/*int*/ x, /*int*/ y) {
+/*void*/ JsonFx.UI.Animate.Op.prototype.scale = function(/*int*/ x, /*int*/ y) {
 	this.scaleX(x);
 	this.scaleY(y);
 };
-/*bool*/ JsonFx.UI.Transform.Op.prototype.hasScale = function() {
-	return isFinite(this.x)||isFinite(this.y);
-};
-/*bool*/ JsonFx.UI.Transform.Op.prototype.hasScaleX = function() {
-	return isFinite(this.x);
-};
-/*bool*/ JsonFx.UI.Transform.Op.prototype.hasScaleY = function() {
-	return isFinite(this.y);
-};
-
-/*void*/ JsonFx.UI.Transform.Op.prototype.width = function(/*int*/ width) {
+/*void*/ JsonFx.UI.Animate.Op.prototype.width = function(/*int*/ width) {
 	if (!isFinite(width) || width<0) {
 		throw new Error("Width is a non-negative pixel size");
 	}
 	this.w = Number(width);
 };
-/*void*/ JsonFx.UI.Transform.Op.prototype.height = function(/*int*/ height) {
+/*void*/ JsonFx.UI.Animate.Op.prototype.height = function(/*int*/ height) {
 	if (!isFinite(height) || height<0.0) {
 		throw new Error("Height is a non-negative pixel size");
 	}
 	this.h = Number(height);
 };
-/*void*/ JsonFx.UI.Transform.Op.prototype.resize = function(/*int*/ width, /*int*/ height) {
+/*bool*/ JsonFx.UI.Animate.Op.prototype.hasScaleX = function() {
+	return isFinite(this.x)||isFinite(this.w);
+};
+/*bool*/ JsonFx.UI.Animate.Op.prototype.hasScaleY = function() {
+	return isFinite(this.y)||isFinite(this.h);
+};
+/*bool*/ JsonFx.UI.Animate.Op.prototype.hasScale = function() {
+	return this.hasScaleX()||this.hasScaleY();
+};
+
+/*void*/ JsonFx.UI.Animate.Op.prototype.resize = function(/*int*/ width, /*int*/ height) {
 	this.width(width);
 	this.height(height);
 };
-/*bool*/ JsonFx.UI.Transform.Op.prototype.hasResize = function() {
+/*bool*/ JsonFx.UI.Animate.Op.prototype.hasResize = function() {
 	return isFinite(this.w)||isFinite(this.h);
 };
-/*bool*/ JsonFx.UI.Transform.Op.prototype.hasWidth = function() {
+/*bool*/ JsonFx.UI.Animate.Op.prototype.hasWidth = function() {
 	return isFinite(this.w);
 };
-/*bool*/ JsonFx.UI.Transform.Op.prototype.hasHeight = function() {
+/*bool*/ JsonFx.UI.Animate.Op.prototype.hasHeight = function() {
 	return isFinite(this.h);
 };
 
-/*void*/ JsonFx.UI.Transform.Op.prototype.clipTop = function(/*float*/ clip) {
+/*void*/ JsonFx.UI.Animate.Op.prototype.clipTop = function(/*float*/ clip) {
 	if (!isFinite(clip)) {
 		throw new Error("Clip Top is a number from 0.0 to 1.0");
 	}
 	this.cT = Number(clip);
 };
-/*void*/ JsonFx.UI.Transform.Op.prototype.clipRight = function(/*float*/ clip) {
+/*void*/ JsonFx.UI.Animate.Op.prototype.clipRight = function(/*float*/ clip) {
 	if (!isFinite(clip)) {
 		throw new Error("Clip Right is a number from 0.0 to 1.0");
 	}
 	this.cR = Number(clip);
 };
-/*void*/ JsonFx.UI.Transform.Op.prototype.clipBottom = function(/*float*/ clip) {
+/*void*/ JsonFx.UI.Animate.Op.prototype.clipBottom = function(/*float*/ clip) {
 	if (!isFinite(clip)) {
 		throw new Error("Clip Bottom is a number from 0.0 to 1.0");
 	}
 	this.cB = Number(clip);
 };
-/*void*/ JsonFx.UI.Transform.Op.prototype.clipLeft = function(/*float*/ clip) {
+/*void*/ JsonFx.UI.Animate.Op.prototype.clipLeft = function(/*float*/ clip) {
 	if (!isFinite(clip)) {
 		throw new Error("Clip Left is a number from 0.0 to 1.0");
 	}
 	this.cL = Number(clip);
 };
-/*bool*/ JsonFx.UI.Transform.Op.prototype.hasClip = function() {
+/*bool*/ JsonFx.UI.Animate.Op.prototype.hasClip = function() {
 	return isFinite(this.cT)||isFinite(this.cR)||isFinite(this.cB)||isFinite(this.cL);
 };
-/*bool*/ JsonFx.UI.Transform.Op.prototype.hasClipT = function() {
+/*bool*/ JsonFx.UI.Animate.Op.prototype.hasClipT = function() {
 	return isFinite(this.cT);
 };
-/*bool*/ JsonFx.UI.Transform.Op.prototype.hasClipR = function() {
+/*bool*/ JsonFx.UI.Animate.Op.prototype.hasClipR = function() {
 	return isFinite(this.cR);
 };
-/*bool*/ JsonFx.UI.Transform.Op.prototype.hasClipB = function() {
+/*bool*/ JsonFx.UI.Animate.Op.prototype.hasClipB = function() {
 	return isFinite(this.cB);
 };
-/*bool*/ JsonFx.UI.Transform.Op.prototype.hasClipL = function() {
+/*bool*/ JsonFx.UI.Animate.Op.prototype.hasClipL = function() {
 	return isFinite(this.cL);
 };
 
-/*bool*/ JsonFx.UI.Transform.Op.prototype.isHidden = function() {
+/*bool*/ JsonFx.UI.Animate.Op.prototype.isHidden = function() {
 	return (this.f<=0)||(this.w<=0)||(this.h<=0)||(this.x<=0)||(this.y<=0)||(this.z<=0.01);
 };
-/*bool*/ JsonFx.UI.Transform.Op.prototype.isRemoved = function() {
+/*bool*/ JsonFx.UI.Animate.Op.prototype.isRemoved = function() {
 	return (this.h<=0)||(this.y<=0);
 };
 
-/*void*/ JsonFx.UI.Transform.Op.prototype.speed = function(/*int*/ s) {
+/*void*/ JsonFx.UI.Animate.Op.prototype.speed = function(/*int*/ s) {
 	if (!isFinite(s) || s<=0 || s>1) {
 		throw new Error("Speed is a number from 0.0 to 1.0");
 	}
 	this.s = Math.pow(s,4.5);
 };
 
-/* class JsonFx.UI.Transform.Engine -------------------------------------------- */
-JsonFx.UI.Transform.Engine = function(/*element*/ elem) {
+/* class JsonFx.UI.Animate.Engine -------------------------------------------- */
+JsonFx.UI.Animate.Engine = function(/*element*/ elem) {
 
 	if (typeof(elem) === "string") {
 		// either DOM element or id
@@ -1036,12 +1038,12 @@ JsonFx.UI.Transform.Engine = function(/*element*/ elem) {
 	}
 
 	var es = elem.style,
-	/*JsonFx.UI.Transform.Op*/ start = null,
-	/*JsonFx.UI.Transform.Op*/ op = new JsonFx.UI.Transform.Op(),
+	/*JsonFx.UI.Animate.Op*/ start = null,
+	/*JsonFx.UI.Animate.Op*/ op = new JsonFx.UI.Animate.Op(),
 	/*bool*/ mutex = false,
 	/*bool*/ state = false,
-	/*const float*/ StepMin = 0, // start
-	/*const float*/ StepMax = 1; // end
+	/*const float*/ STEP_MIN = 0, // start
+	/*const float*/ STEP_MAX = 1; // end
 
 	var userHeight = "",
 		userWidth = "",
@@ -1137,12 +1139,18 @@ JsonFx.UI.Transform.Engine = function(/*element*/ elem) {
 		}
 	}
 
-	// state: true = perform op, false = reverse op
-	/*void*/ this.transform = function(/*JsonFx.UI.Transform.Op*/ newOp) {
+	/*bool*/ this.hasAppliedOp = function() {
+		return state;
+	};
+
+	// if newOp is null, the previous operation is reversed
+	// immediate doesn't animate but applies operation
+	/*void*/ this.apply = function(/*JsonFx.UI.Animate.Op*/ newOp, /*bool*/ immediate) {
 		if (!es) { return; }
 
-		// store the latest requested state
+		// state: true = perform op, false = reverse op
 		state = !!newOp;
+		immediate = !!immediate;
 		if (mutex) {
 			// crude concurrency check
 			return;
@@ -1153,7 +1161,7 @@ JsonFx.UI.Transform.Engine = function(/*element*/ elem) {
 			op = newOp;
 		}
 		if (!start) {
-			start = JsonFx.UI.Transform.Op.save(elem);
+			start = JsonFx.UI.Animate.Op.save(elem);
 		}
 		showElem();
 
@@ -1166,10 +1174,10 @@ JsonFx.UI.Transform.Engine = function(/*element*/ elem) {
 
 			var esPos = JsonFx.UI.getStyle(elem, "position");
 
-			if (step < StepMin) {
-				step = StepMin;
-			} else if (step > StepMax) {
-				step = StepMax;
+			if (step < STEP_MIN) {
+				step = STEP_MIN;
+			} else if (step > STEP_MAX) {
+				step = STEP_MAX;
 			}
 
 			if (op.hasScale() || op.hasClip()) {
@@ -1184,7 +1192,7 @@ JsonFx.UI.Transform.Engine = function(/*element*/ elem) {
 			if (op.hasHeight() && start.hasHeight()) {
 				es.height = JsonFx.UI.lerpInt(start.h, op.h, step)+"px";
 			} else if (op.hasScaleY() && start.hasScaleY() && start.hasHeight()) {
-				es.height = Math.ceil(start.h*JsonFx.UI.lerpInt(start.y, op.y, step))+"px";
+				es.height = Math.ceil(start.h*JsonFx.UI.lerp(start.y, op.y, step))+"px";
 			}
 			if (op.hasFade() && start.hasFade()) {
 				// opacity
@@ -1233,16 +1241,16 @@ JsonFx.UI.Transform.Engine = function(/*element*/ elem) {
 				}
 			}
 
-			if (step <= StepMin && !state) {
+			if (step <= STEP_MIN && !state) {
 				setTimeout(
 					function() {
 						restore();
 						start = null;
-						op = new JsonFx.UI.Transform.Op();
+						op = new JsonFx.UI.Animate.Op();
 						mutex = false;
 					},
 					0);
-			} else if (step >= StepMax && state) {
+			} else if (step >= STEP_MAX && state) {
 				setTimeout(
 					function() {
 						if (op.isRemoved()) {
@@ -1262,6 +1270,8 @@ JsonFx.UI.Transform.Engine = function(/*element*/ elem) {
 			}
 		}
 
-		t(state ? StepMin : StepMax);
+		// XOR: state OR immediate but not both
+		// immediate forces to far end of step
+		t(state^immediate ? STEP_MIN : STEP_MAX);
 	};
 };
