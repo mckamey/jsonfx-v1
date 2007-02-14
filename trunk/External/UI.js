@@ -3,7 +3,7 @@
 	JsonFx UI
 	Copyright (c)2006-2007 Stephen M. McKamey
 	Created: 2006-11-11-1759
-	Modified: 2007-02-11-2003
+	Modified: 2007-02-11-0432
 \*---------------------------------------------------------*/
 
 /* namespace JsonFx */
@@ -16,7 +16,7 @@ JsonFx.UI = {};
 
 /* Utilities ----------------------------------------------------*/
 
-/*string*/ JsonFx.UI.getStyle = function(/*elem*/ elem, /*string*/ style) {
+/*string*/ JsonFx.UI.getStyle = function(/*element*/ elem, /*string*/ style) {
 	if (typeof(elem) === "string") {
 		elem = document.getElementById(elem);
 	}
@@ -31,6 +31,22 @@ JsonFx.UI = {};
 	return null;
 };
 
+/*{left,top}*/ JsonFx.UI.getOffset = function(/*element*/ elem) {
+	var top=0, left=0;
+	while (elem) {
+		top += elem.offsetTop;
+		left += elem.offsetLeft;
+		elem = elem.offsetParent;
+		if (elem) {
+			var pos = JsonFx.UI.getStyle(elem, "position");
+			if (pos && pos !== "static") {
+				elem = null;
+			}
+		}
+	}
+	return { "left":left, "top":top };
+};
+
 /*function*/ JsonFx.UI.combineHandlers = function (/*function*/ handlerA, /*function*/ handlerB) {
 	if ("function" === typeof handlerA) {
 		if ("function" === typeof handlerB) {
@@ -41,6 +57,14 @@ JsonFx.UI = {};
 	} else {
 		return handlerB;
 	}
+};
+
+/*float*/ JsonFx.UI.lerp = function (/*float*/ start, /*float*/ end, /*float*/ t) {
+	return (start * (1-t)) + (end * t);
+};
+
+/*int*/ JsonFx.UI.lerpInt = function (/*int*/ start, /*int*/ end, /*float*/ t) {
+	return Math.floor( JsonFx.UI.lerp(start, end, t) + 0.5 );
 };
 
 /*-------------------*\
@@ -324,7 +348,7 @@ JsonFx.UI.Bindings = new JsonFx.UI.Bindings();
 
 	var userShape;
 
-	/*void*/ function saveShape() {
+	/*void*/ function store() {
 		userShape = {};
 		for (var s in es) {
 			if (/*es.hasOwnProperty(s) &&*/ es[s]) {
@@ -346,7 +370,7 @@ JsonFx.UI.Bindings = new JsonFx.UI.Bindings();
 	return /*void*/ function max(/*bool*/ newState) {
 
 		if (!state) {
-			saveShape();
+			store();
 		}
 		// store the latest requested state
 		if (typeof(newState) === "boolean") {
@@ -430,8 +454,8 @@ JsonFx.UI.Dir = {
 	var es = elem.style,
 	/*bool*/ mutex = false,
 	/*bool*/ state = false,
-	/*const float*/ StepMin = 0.0,
-	/*const float*/ StepMax = 1.0,
+	/*const float*/ StepMin = 0,
+	/*const float*/ StepMax = 1,
 	/*const float*/ StepInc = 0.05;
 
 	var saved = false,
@@ -449,7 +473,7 @@ JsonFx.UI.Dir = {
 		userClip = "",
 		alpha = null;
 
-	/*void*/ function saveShape() {
+	/*void*/ function store() {
 		if (elem && es) {
 			if (JsonFx.UI.Dir.isVert(dir) || JsonFx.UI.Dir.isHorz(dir) || JsonFx.UI.Dir.isClipX(dir) || JsonFx.UI.Dir.isClipY(dir)) {
 				userOverflow = es.overflow;
@@ -510,7 +534,7 @@ JsonFx.UI.Dir = {
 		mutex = true;
 
 		if (state || !saved) {
-			saveShape();
+			store();
 		}
 		es.display = "block";
 		es.visibility = "visible";
@@ -579,9 +603,9 @@ JsonFx.UI.Dir = {
 			}
 			if (JsonFx.UI.Dir.isFade(dir)) {
 				// opacity, simplified lerp
-				es["-khtml-opacity"] = 1.0*step;
-				es["-moz-opacity"] = 1.0*step;
-				es.opacity = 1.0*step;
+				es["-khtml-opacity"] = step;
+				es["-moz-opacity"] = step;
+				es.opacity = step;
 				if (alpha) {
 					try {
 						alpha.opacity = Math.floor(100*step);
@@ -685,4 +709,559 @@ JsonFx.UI.Bindings.register("label", "jsonfx-expando", JsonFx.UI.expandoBind, Js
 	}
 
 	return ul;
+};
+
+/*---------------------*\
+	Transform Classes
+\*---------------------*/
+
+/* namespace JsonFx.UI.Transform */
+JsonFx.UI.Transform = {};
+
+/* class JsonFx.UI.Transform.Unit -------------------------------------------- */
+JsonFx.UI.Transform.Unit = function(/*int*/ size, /*string*/ unit) {
+	if (unit) {
+		switch (unit) {
+			case "px" :
+				this.size = Math.floor(size);
+				this.unit = unit;
+				break;
+			case "%" :
+			case "em" :
+			case "pt" :
+			case "in" :
+			case "cm" :
+			case "mm" :
+			case "pc" :
+			case "ex" :
+				this.size = Number(size);
+				this.unit = unit;
+				break;
+			default:
+				throw new Error("Invalid unit.");
+		}
+		if (!isFinite(this.size)) {
+			throw new Error("Invalid unit.");
+		}
+	} else {
+		this.size = NaN;
+		this.unit = "";
+	}
+};
+JsonFx.UI.Transform.Unit.prototype.toString = function() {
+	return this.unit ? (this.size+this.unit) : "auto";
+};
+/*JsonFx.UI.Transform.Unit*/ JsonFx.UI.Transform.Unit.parse = function(/*string*/ str) {
+	var size = parseFloat(str);
+	var unit = null;
+	if (isFinite(size) && str.match(/(px|%|em|pt|in|cm|mm|pc|ex)/)) {
+		unit = RegExp.$1;
+	}
+	return new JsonFx.UI.Transform.Unit(size, unit);
+};
+
+/* class JsonFx.UI.Transform.Op -------------------------------------------- */
+JsonFx.UI.Transform.Op = function() {
+	this.x = this.y = this.z = this.l = this.t = this.w = this.h =
+	this.f = this.cL = this.cR = this.cT = this.cB = NaN;
+	this.s = 0.05;// 20 steps
+};
+
+/*Regex*/ JsonFx.UI.Transform.Op.clipRE = /^rect[\(]([0-9\.]*)(auto|px|%)\s*([0-9\.]*)(auto|px|%)\s*([0-9\.]*)(auto|px|%)\s*([0-9\.]*)(auto|px|%)[\)]$/;
+
+/*JsonFx.UI.Transform.Op*/ JsonFx.UI.Transform.Op.save = function(/*element*/ elem) {
+	var op = new JsonFx.UI.Transform.Op();
+
+	if (elem && elem.style) {
+		var es = elem.style;
+
+		var top = parseFloat(JsonFx.UI.getStyle(elem, "top"));
+		if (top && isFinite(top)) {
+			op.top(top);
+		} else {
+			op.top(0);
+		}
+		var left = parseFloat(JsonFx.UI.getStyle(elem, "left"));
+		if (left && isFinite(left)) {
+			op.left(left);
+		} else {
+			op.left(0);
+		}
+
+		// width
+		if (isFinite(elem.offsetWidth)) {
+			op.width(elem.offsetWidth);
+		} else {
+			var width = parseFloat(JsonFx.UI.getStyle(elem, "width"));
+			if (isFinite(width)) {
+				op.width(width);
+			}
+		}
+		// height
+		if (isFinite(elem.offsetHeight)) {
+			op.height(elem.offsetHeight);
+		} else {
+			var height = parseFloat(JsonFx.UI.getStyle(elem, "height"));
+			if (isFinite(height)) {
+				op.height(height);
+			}
+		}
+
+		// scale
+		op.scale(1, 1);
+
+		// fade
+		if (isFinite(es.opacity)) {
+			op.fade(es.opacity);
+		} else {
+			op.fade(1);
+		}
+
+		// zoom
+		if (isFinite(es.zoom)) {
+			op.zoom(es.zoom);
+		} else {
+			op.zoom(1);
+		}
+
+		// clip
+		if (es.clip && es.clip.match(JsonFx.UI.Transform.Op.clipRE)) {
+			if ("%" === RegExp.$2) {
+				op.clipTop(RegExp.$1/100);
+			} else if ("px" === RegExp.$2) {
+				op.clipTop(RegExp.$1/op.h);
+			} else {
+				op.clipTop(0);
+			}
+
+			if ("%" === RegExp.$4) {
+				op.clipRight(1-RegExp.$3/100);
+			} else if ("px" === RegExp.$4) {
+				op.clipRight(1-RegExp.$3/op.w);
+			} else {
+				op.clipRight(0);
+			}
+
+			if ("%" === RegExp.$6) {
+				op.clipBottom(1-RegExp.$5/100);
+			} else if ("px" === RegExp.$6) {
+				op.clipBottom(1-RegExp.$5/op.h);
+			} else {
+				op.clipBottom(0);
+			}
+
+			if ("%" === RegExp.$8) {
+				op.clipLeft(RegExp.$7/100);
+			} else if ("px" === RegExp.$8) {
+				op.clipLeft(RegExp.$7/op.w);
+			} else {
+				op.clipLeft(0);
+			}
+		} else {
+			op.clipTop(0);
+			op.clipRight(0);
+			op.clipBottom(0);
+			op.clipLeft(0);
+		}
+	}
+
+	return op;
+};
+
+/*void*/ JsonFx.UI.Transform.Op.prototype.fade = function(/*float*/ f) {
+	if (!isFinite(f) || f<0 || f>1) {
+		throw new Error("Fade is a number from 0.0 to 1.0");
+	}
+	this.f = Number(f);
+};
+/*bool*/ JsonFx.UI.Transform.Op.prototype.hasFade = function() {
+	return isFinite(this.f);
+};
+
+/*void*/ JsonFx.UI.Transform.Op.prototype.zoom = function(/*float*/ z) {
+	if (!isFinite(z)) {
+		throw new Error("Zoom is a number >= 0.01 with 1.0 being normal");
+	}
+	if (z < 0.01) {
+		z = 0.01;
+	}
+	this.z = Number(z);
+};
+/*bool*/ JsonFx.UI.Transform.Op.prototype.hasZoom = function() {
+	return isFinite(this.z);
+};
+
+/*void*/ JsonFx.UI.Transform.Op.prototype.move = function(/*int*/ left, /*int*/ top) {
+	this.top(top);
+	this.left(left);
+};
+/*void*/ JsonFx.UI.Transform.Op.prototype.left = function(/*int*/ left) {
+	if (!isFinite(left)) {
+		throw new Error("Left is a pixel position");
+	}
+	this.l = Number(left);
+};
+/*void*/ JsonFx.UI.Transform.Op.prototype.top = function(/*int*/ top) {
+	if (!isFinite(top)) {
+		throw new Error("Top is a pixel position");
+	}
+	this.t = Number(top);
+};
+/*bool*/ JsonFx.UI.Transform.Op.prototype.hasMove = function() {
+	return isFinite(this.t)||isFinite(this.l);
+};
+/*bool*/ JsonFx.UI.Transform.Op.prototype.hasTop = function() {
+	return isFinite(this.t);
+};
+/*bool*/ JsonFx.UI.Transform.Op.prototype.hasLeft = function() {
+	return isFinite(this.l);
+};
+
+/*void*/ JsonFx.UI.Transform.Op.prototype.scaleX = function(/*int*/ x) {
+	if (!isFinite(x) || x<0) {
+		throw new Error("Scale X is a number >= 0.0 with 1.0 being normal");
+	}
+	this.x = Number(x);
+};
+/*void*/ JsonFx.UI.Transform.Op.prototype.scaleY = function(/*int*/ y) {
+	if (!isFinite(y) || y<0) {
+		throw new Error("Scale Y is a number >= 0.0 with 1.0 being normal");
+	}
+	this.y = Number(y);
+};
+/*void*/ JsonFx.UI.Transform.Op.prototype.scale = function(/*int*/ x, /*int*/ y) {
+	this.scaleX(x);
+	this.scaleY(y);
+};
+/*bool*/ JsonFx.UI.Transform.Op.prototype.hasScale = function() {
+	return isFinite(this.x)||isFinite(this.y);
+};
+/*bool*/ JsonFx.UI.Transform.Op.prototype.hasScaleX = function() {
+	return isFinite(this.x);
+};
+/*bool*/ JsonFx.UI.Transform.Op.prototype.hasScaleY = function() {
+	return isFinite(this.y);
+};
+
+/*void*/ JsonFx.UI.Transform.Op.prototype.width = function(/*int*/ width) {
+	if (!isFinite(width) || width<0) {
+		throw new Error("Width is a non-negative pixel size");
+	}
+	this.w = Number(width);
+};
+/*void*/ JsonFx.UI.Transform.Op.prototype.height = function(/*int*/ height) {
+	if (!isFinite(height) || height<0.0) {
+		throw new Error("Height is a non-negative pixel size");
+	}
+	this.h = Number(height);
+};
+/*void*/ JsonFx.UI.Transform.Op.prototype.resize = function(/*int*/ width, /*int*/ height) {
+	this.width(width);
+	this.height(height);
+};
+/*bool*/ JsonFx.UI.Transform.Op.prototype.hasResize = function() {
+	return isFinite(this.w)||isFinite(this.h);
+};
+/*bool*/ JsonFx.UI.Transform.Op.prototype.hasWidth = function() {
+	return isFinite(this.w);
+};
+/*bool*/ JsonFx.UI.Transform.Op.prototype.hasHeight = function() {
+	return isFinite(this.h);
+};
+
+/*void*/ JsonFx.UI.Transform.Op.prototype.clipTop = function(/*float*/ clip) {
+	if (!isFinite(clip)) {
+		throw new Error("Clip Top is a number from 0.0 to 1.0");
+	}
+	this.cT = Number(clip);
+};
+/*void*/ JsonFx.UI.Transform.Op.prototype.clipRight = function(/*float*/ clip) {
+	if (!isFinite(clip)) {
+		throw new Error("Clip Right is a number from 0.0 to 1.0");
+	}
+	this.cR = Number(clip);
+};
+/*void*/ JsonFx.UI.Transform.Op.prototype.clipBottom = function(/*float*/ clip) {
+	if (!isFinite(clip)) {
+		throw new Error("Clip Bottom is a number from 0.0 to 1.0");
+	}
+	this.cB = Number(clip);
+};
+/*void*/ JsonFx.UI.Transform.Op.prototype.clipLeft = function(/*float*/ clip) {
+	if (!isFinite(clip)) {
+		throw new Error("Clip Left is a number from 0.0 to 1.0");
+	}
+	this.cL = Number(clip);
+};
+/*bool*/ JsonFx.UI.Transform.Op.prototype.hasClip = function() {
+	return isFinite(this.cT)||isFinite(this.cR)||isFinite(this.cB)||isFinite(this.cL);
+};
+/*bool*/ JsonFx.UI.Transform.Op.prototype.hasClipT = function() {
+	return isFinite(this.cT);
+};
+/*bool*/ JsonFx.UI.Transform.Op.prototype.hasClipR = function() {
+	return isFinite(this.cR);
+};
+/*bool*/ JsonFx.UI.Transform.Op.prototype.hasClipB = function() {
+	return isFinite(this.cB);
+};
+/*bool*/ JsonFx.UI.Transform.Op.prototype.hasClipL = function() {
+	return isFinite(this.cL);
+};
+
+/*bool*/ JsonFx.UI.Transform.Op.prototype.isHidden = function() {
+	return (this.f<=0)||(this.w<=0)||(this.h<=0)||(this.x<=0)||(this.y<=0)||(this.z<=0.01);
+};
+/*bool*/ JsonFx.UI.Transform.Op.prototype.isRemoved = function() {
+	return (this.h<=0)||(this.y<=0);
+};
+
+/*void*/ JsonFx.UI.Transform.Op.prototype.speed = function(/*int*/ s) {
+	if (!isFinite(s) || s<0 || s>1) {
+		throw new Error("Speed is a number from 0.0 to 1.0");
+	}
+	this.s = 1/JsonFx.UI.lerpInt(1000, 1, s);
+};
+
+/* class JsonFx.UI.Transform.Engine -------------------------------------------- */
+JsonFx.UI.Transform.Engine = function(/*element*/ elem) {
+
+	if (typeof(elem) === "string") {
+		// either DOM element or id
+		elem = document.getElementById(elem);
+	}
+
+	if (!elem || !elem.tagName) {
+		throw new Error("Invalid element");
+	}
+
+	var es = elem.style,
+	/*JsonFx.UI.Transform.Op*/ start = null,
+	/*JsonFx.UI.Transform.Op*/ op = new JsonFx.UI.Transform.Op(),
+	/*bool*/ mutex = false,
+	/*bool*/ state = false,
+	/*const float*/ StepMin = 0, // start
+	/*const float*/ StepMax = 1; // end
+
+	var userHeight = "",
+		userWidth = "",
+		userTop = "",
+		userLeft = "",
+		userOverflow = "",
+		userPosition = "",
+		userDisplay = "",
+		userVisibility = "",
+		userFilter = "",
+		userKhtml = "",
+		userMoz = "",
+		userOpacity = "",
+		userZoom = "",
+		userClip = "",
+		alpha = null;
+
+	if (elem && es) {
+		userOverflow = es.overflow;
+		userPosition = es.position;
+		userDisplay = es.display;
+		userVisibility = es.visibility;
+		userHeight = es.height;
+		userWidth = es.width;
+		userHeight = es.top;
+		userWidth = es.left;
+		userKhtml = es["-khtml-opacity"];
+		userMoz = es["-moz-opacity"];
+		userOpacity = es.opacity;
+		userFilter = es.filter;
+		userZoom = es.zoom;
+		userClip = es.clip;
+	}
+
+	/*void*/ function restore() {
+		es.overflow = userOverflow;
+		es.position = userPosition;
+		es.display = userDisplay;
+		es.visibility = userVisibility;
+		es.width = userWidth;
+		es.height = userHeight;
+		es.top = userTop;
+		es.left = userLeft;
+		es["-khtml-opacity"] = userKhtml;
+		es["-moz-opacity"] = userMoz;
+		es.opacity = userOpacity;
+		try {
+			if (userFilter) {
+				es.filter = userFilter;
+			}
+		} catch (ex) {}
+		es.zoom = userZoom;
+		es.clip = userClip ? userClip : "rect(auto auto auto auto)";// works in IE/FireFox/Opera
+	}
+
+	/*void*/ function showElem() {
+		if (!!JsonFx.UI.getStyle(elem, "display")) {
+			es.display = "block";
+		}
+		if (!!JsonFx.UI.getStyle(elem, "visibility")) {
+			es.visibility = "visible";
+		}
+	}
+
+	/*void*/ function initAlpha() {
+		if (elem.filters && !alpha) {
+			if (elem.filters.length > 0) {
+				try {
+					// check IE5.5+
+					alpha = elem.filters.item("DXImageTransform.Microsoft.Alpha");
+				} catch (ex) { alpha = null; }
+				if (!alpha) {
+					try {
+						// check IE4.0+
+						alpha = elem.filters.item("alpha");
+					} catch (ex) { alpha = null; }
+				}
+			}
+			if (!alpha) {
+				// try IE5.5+
+				es.filter += " progid:DXImageTransform.Microsoft.Alpha(enabled=false)";
+				try {
+					alpha = elem.filters.item("DXImageTransform.Microsoft.Alpha");
+				} catch (ex) { alpha = null; }
+				if (!alpha) {
+					// try IE4.0+
+					es.filter += " alpha(enabled=false)";
+					try {
+						alpha = elem.filters.item("alpha");
+					} catch (ex) { alpha = null; }
+				}
+			}
+		}
+	}
+
+	// state: true = perform op, false = reverse op
+	/*void*/ this.transform = function(/*JsonFx.UI.Transform.Op*/ newOp) {
+		if (!es) { return; }
+
+		// store the latest requested state
+		state = !!newOp;
+		if (mutex) {
+			// crude concurrency check
+			return;
+		}
+		mutex = true;
+
+		if (state) {
+			op = newOp;
+		}
+		if (!start) {
+			start = JsonFx.UI.Transform.Op.save(elem);
+		}
+		showElem();
+
+		// minimizeStep
+		/*void*/ function t(/*float*/ step) {
+			if (!es || isNaN(step)) {
+				mutex = false;
+				return;
+			}
+
+			var esPos = JsonFx.UI.getStyle(elem, "position");
+
+			if (step < StepMin) {
+				step = StepMin;
+			} else if (step > StepMax) {
+				step = StepMax;
+			}
+
+			if (op.hasScale() || op.hasClip()) {
+				es.overflow = "hidden";
+			}
+
+			if (op.hasWidth() && start.hasWidth()) {
+				es.width = JsonFx.UI.lerpInt(start.w, op.w, step)+"px";
+			} else if (op.hasScaleX() && start.hasScaleX() && start.hasWidth()) {
+				es.width = Math.ceil(start.w*JsonFx.UI.lerp(start.x, op.x, step))+"px";
+			}
+			if (op.hasHeight() && start.hasHeight()) {
+				es.height = JsonFx.UI.lerpInt(start.h, op.h, step)+"px";
+			} else if (op.hasScaleY() && start.hasScaleY() && start.hasHeight()) {
+				es.height = Math.ceil(start.h*JsonFx.UI.lerpInt(start.y, op.y, step))+"px";
+			}
+			if (op.hasFade() && start.hasFade()) {
+				// opacity
+				es["-khtml-opacity"] = es["-moz-opacity"] = es.opacity = JsonFx.UI.lerp(start.f, op.f, step);
+				initAlpha();
+				if (alpha) {
+					try {
+						alpha.opacity = JsonFx.UI.lerpInt(100*start.f, 100*op.f, step);
+						alpha.enabled = true;
+					} catch (ex) {
+						alpha = null;
+					}
+				}
+			}
+			if (op.hasZoom() && start.hasZoom()) {
+				es.zoom = JsonFx.UI.lerpInt(100*start.z, 100*op.z, step)+"%";
+			}
+			if (op.hasClip()) {
+				var clip = ["auto","auto","auto","auto"];
+				if (op.hasClipT() && start.hasClipT()) {
+					clip[0] = Math.ceil(start.h*JsonFx.UI.lerp(start.cT, op.cT, step))+"px";
+				}
+				if (op.hasClipR() && start.hasClipR()) {
+					clip[1] = Math.floor(start.w*JsonFx.UI.lerp(1-start.cR, 1-op.cR, step))+"px";
+				}
+				if (op.hasClipB() && start.hasClipB()) {
+					clip[2] = Math.floor(start.h*JsonFx.UI.lerp(1-start.cB, 1-op.cB, step))+"px";
+				}
+				if (op.hasClipL() && start.hasClipL()) {
+					clip[3] = Math.ceil(start.w*JsonFx.UI.lerp(start.cL, op.cL, step))+"px";
+				}
+				if (esPos !== "fixed") {
+					es.position = "absolute";
+				}
+				es.clip = "rect("+clip.join(' ')+")";
+			}
+			if (op.hasMove()) {
+				if (!esPos || esPos === "static") {
+					es.position = "relative";
+				}
+				if (op.hasTop() && start.hasTop()) {
+					es.top = JsonFx.UI.lerpInt(start.t, op.t, step)+"px";
+				}
+				if (op.hasLeft() && start.hasLeft()) {
+					es.left = JsonFx.UI.lerpInt(start.l, op.l, step)+"px";
+				}
+			}
+
+			if (step <= StepMin && !state) {
+				setTimeout(
+					function() {
+						restore();
+						start = null;
+						op = new JsonFx.UI.Transform.Op();
+						mutex = false;
+					},
+					0);
+			} else if (step >= StepMax && state) {
+				setTimeout(
+					function() {
+						if (op.isRemoved()) {
+							es.display = "none";
+						} else if (op.isHidden()) {
+							es.visibility = "hidden";
+						}
+						mutex = false;
+					},
+					0);
+			} else {
+				setTimeout(
+					function() {
+						t(state ? (step+op.s) : (step-op.s));
+					},
+					0);
+			}
+		}
+
+		t(state ? StepMin : StepMax);
+	};
 };
