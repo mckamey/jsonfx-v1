@@ -1017,10 +1017,10 @@ JsonFx.UI.Transform.Op = function() {
 };
 
 /*void*/ JsonFx.UI.Transform.Op.prototype.speed = function(/*int*/ s) {
-	if (!isFinite(s) || s<0 || s>1) {
+	if (!isFinite(s) || s<=0 || s>1) {
 		throw new Error("Speed is a number from 0.0 to 1.0");
 	}
-	this.s = 1/JsonFx.UI.lerpInt(1000, 1, s);
+	this.s = Math.pow(s,4.5);
 };
 
 /* class JsonFx.UI.Transform.Engine -------------------------------------------- */
