@@ -29,21 +29,22 @@ JsonFx.Utils = {};
 		}
 	}
 
-//		if (!document.body) {
-//			// NOTE: Google maps requires this style
-//		
-//			// hopefully still in the head
-//			document.write('<' + 'script src="' + sUrl + '"' +' type="text/javascript"><' + '/script>');
-//		} else {
-		// get document head
-		var documentHead = document.getElementsByTagName("head")[0];
+		if (!document.body) {
+			// NOTE: Google maps requires this style
 
-		// append a new script element to document head
-		var elScript = document.createElement("script");
-		elScript.setAttribute("type","text/javascript");
-		elScript.setAttribute("src", sUrl);
-		documentHead.appendChild(elScript);
-//		}
+			// hopefully still in the head
+			var doc = document;
+			doc.write('<' + 'script src="' + sUrl + '"' +' type="text/javascript"><' + '/script>');
+		} else {
+			// get document head
+			var documentHead = document.getElementsByTagName("head")[0];
+
+			// append a new script element to document head
+			var elScript = document.createElement("script");
+			elScript.setAttribute("type","text/javascript");
+			elScript.setAttribute("src", sUrl);
+			documentHead.appendChild(elScript);
+		}
 };
 
 /* Query String ----------------------------------------------------*/
