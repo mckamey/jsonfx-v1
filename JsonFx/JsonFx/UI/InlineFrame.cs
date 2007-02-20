@@ -1,4 +1,5 @@
 using System;
+using System.Web.UI;
 using System.Web.UI.WebControls;
 using System.ComponentModel;
 
@@ -9,12 +10,13 @@ namespace PseudoCode.Web.Controls
 	/// http://www.w3.org/TR/xhtml-modularization/dtd_module_defs.html#a_module_Iframe
 	/// http://www.w3.org/TR/REC-html40/present/frames.html#h-16.5
 	/// </summary>
+	[ToolboxData("<{0}:InlineFrame runat=\"server\">\n\t\n<{0}:InlineFrame>")]
 	public class InlineFrame : System.Web.UI.WebControls.WebControl
 	{
 		#region Fields
 
-		private const string DefaultAltText = "Your browser does not support IFrames.";
-		System.Web.UI.HtmlControls.HtmlAnchor altLink = new System.Web.UI.HtmlControls.HtmlAnchor();
+		private string alternateText = null;
+		//private const string DefaultAltText = "Your browser does not support IFrames.";
 
 		#endregion Fields
 
@@ -26,21 +28,6 @@ namespace PseudoCode.Web.Controls
 		public InlineFrame() : base(System.Web.UI.HtmlTextWriterTag.Iframe) { }
 
 		#endregion Ctor
-
-		#region Page Events
-
-		/// <summary>
-		/// Sets up the controls for rendering.
-		/// </summary>
-		protected override void CreateChildControls()
-		{
-			base.CreateChildControls();
-
-			this.AlternateText = InlineFrame.DefaultAltText;
-			this.Controls.Add(this.altLink);
-		}
-
-		#endregion Page Events
 
 		#region Properties
 
@@ -57,7 +44,7 @@ namespace PseudoCode.Web.Controls
 			set
 			{
 				this.EnsureChildControls();
-				this.Attributes["src"] = this.altLink.HRef = this.ResolveUrl(value);
+				this.Attributes["src"] = this.ResolveUrl(value);
 			}
 		}
 
@@ -78,21 +65,17 @@ namespace PseudoCode.Web.Controls
 		/// Text shown if the browser does not support IFrames.
 		/// </summary>
 		[Browsable(true)]
-		[DefaultValue(InlineFrame.DefaultAltText)]
+		[DefaultValue(null)]
 		[Category(" InlineFrame")]
 		[Description("Gets and sets the text to be displayed if browser doesn't support the iframe tag.")]
 		public string AlternateText
 		{
-			get { return System.Web.HttpUtility.HtmlDecode(this.altLink.InnerText); }
-			set
-			{
-				this.EnsureChildControls();
-				this.altLink.InnerText = System.Web.HttpUtility.HtmlEncode(value);
-			}
+			get { return this.alternateText; }
+			set { this.alternateText = value; }
 		}
 
 		/// <summary>
-		/// 
+		/// Gets and sets the Height of the frame
 		/// </summary>
 		[Browsable(true)]
 		[Category(" InlineFrame")]
@@ -108,7 +91,7 @@ namespace PseudoCode.Web.Controls
 		}
 
 		/// <summary>
-		/// 
+		/// Gets and sets the Width of the frame
 		/// </summary>
 		[Browsable(true)]
 		[Category(" InlineFrame")]
@@ -255,6 +238,28 @@ namespace PseudoCode.Web.Controls
 		}
 
 		#endregion Properties
+
+		#region Page Events
+
+		/// <summary>
+		/// Sets up the controls for rendering.
+		/// </summary>
+		protected override void RenderContents(System.Web.UI.HtmlTextWriter writer)
+		{
+			if (String.IsNullOrEmpty(this.AlternateText))
+			{
+				base.RenderContents(writer);
+			}
+			else
+			{
+				writer.AddAttribute(HtmlTextWriterAttribute.Href, this.SourceUrl);
+				writer.RenderBeginTag(HtmlTextWriterTag.A);
+				writer.WriteEncodedText(this.AlternateText);
+				writer.RenderEndTag();
+			}
+		}
+
+		#endregion Page Events
 	}
 
 	#region InlineFrameScrollingType
