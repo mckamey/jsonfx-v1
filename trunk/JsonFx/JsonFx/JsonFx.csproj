@@ -81,8 +81,10 @@
     <Compile Include="Serialization\JsonToken.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Services\Proxy\JsonServiceProxy.cs" />
+    <Compile Include="UI\HistoryManager.cs" />
     <Compile Include="UI\HtmlScriptControl.cs" />
     <Compile Include="UI\IJsonControl.cs" />
+    <Compile Include="UI\InlineFrame.cs" />
     <Compile Include="UI\JsonControl.cs" />
     <Compile Include="UI\JsonControlBuilder.cs" />
     <Compile Include="UI\JsonControlCollection.cs" />

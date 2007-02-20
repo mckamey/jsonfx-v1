@@ -249,6 +249,42 @@ JsonFx.UI.Bindings = new JsonFx.UI.Bindings();
 	JsonML Methods
 \*------------------*/
 
+/* singleton JsonFx.UI.History */
+JsonFx.UI.History = {};
+
+JsonFx.UI.History.h = null;
+JsonFx.UI.History.onchange = null;
+
+/*void*/ JsonFx.UI.History.add = function(/*object*/ info) {
+	var h = JsonFx.UI.getIFrameDocument(JsonFx.UI.History.h);
+	if (h) {
+		h.location.search = encodeURIComponent(info.toJSONString());
+	}
+};
+
+/*void*/ JsonFx.UI.History.changed = function(/*element*/ elem) {
+	if (!JsonFx.UI.History.h) {
+		JsonFx.UI.History.h = elem;
+	}
+	var h = JsonFx.UI.getIFrameDocument(elem);
+	if (h) {
+		var info = h.location.search;
+		if (info) {
+			if (info.charAt(0) === '?') {
+				info = info.substring(1);
+			}
+			info = decodeURIComponent(info).parseJSON();
+			if ("function" === typeof JsonFx.UI.History.onchange) {
+				JsonFx.UI.History.onchange(info);
+			}
+		}
+	}
+};
+
+/*------------------*\
+	JsonML Methods
+\*------------------*/
+
 /*void*/ JsonFx.UI.clear = function(/*element*/ elem) {
 	if (elem) {
 		// unbind to prevent memory leaks
