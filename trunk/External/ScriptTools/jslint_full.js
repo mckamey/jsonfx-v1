@@ -1,5 +1,5 @@
 // jslint.js
-// 2007-01-31
+// 2007-02-19
 /*
 Copyright (c) 2002 Douglas Crockford  (www.JSLint.com)
 
@@ -50,6 +50,7 @@ SOFTWARE.
         passfail   : true if the scan should stop on first error
         plusplus   : true if increment/decrement should not be allowed
         redef      : true if var redefinition should be allowed
+        rhino      : true if the Rhino environment globals should be predefined
         undef      : true if undefined variables are errors
         widget     : true if the Yahoo Widgets globals should be predefined
     }
@@ -117,6 +118,8 @@ JSLINT = function () {
             close: true,
             closed: true,
             confirm: true,
+            console: true,
+            Debug: true,
             defaultStatus: true,
             document: true,
             event: true,
@@ -138,6 +141,7 @@ JSLINT = function () {
             onunload: true,
             open: true,
             opener: true,
+            opera: true,
             parent: true,
             print: true,
             prompt: true,
@@ -216,7 +220,27 @@ JSLINT = function () {
             XMLDOM: true,
             XMLHttpRequest: true
         },
-        lines, lookahead, member, noreach, option, prevtoken, stack,
+        lines, lookahead, member, noreach, option, prevtoken,
+        rhino = {
+            defineClass: true,
+            deserialize: true,
+            gc: true,
+            help: true,
+            load: true,
+            loadClass: true,
+            print: true,
+            quit: true,
+            readFile: true,
+            readUrl: true,
+            runCommand: true,
+            seal: true,
+            serialize: true,
+            spawn: true,
+            sync: true,
+            toint32: true,
+            version: true
+        },
+        stack,
 
 // standard contains the global names that are provided by standard JavaScript.
 
@@ -613,6 +637,7 @@ JSLINT = function () {
     function builtin(name) {
         return standard[name] === true ||
                globals[name] === true ||
+              (option.rhino && rhino[name] === true) ||
              ((xtype === 'widget' || option.widget) && konfab[name] === true) ||
              ((xtype === 'html' || option.browser) && browser[name] === true);
     }
