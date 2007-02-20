@@ -59,6 +59,15 @@ JsonFx.UI = {};
 	}
 };
 
+/*element*/ JsonFx.UI.getIFrameDocument = function(/*element*/ elem) {
+	if (!elem) {
+		return null;
+	}
+
+	return ("undefined" !== typeof elem.contentDocument) ?
+		elem.contentDocument : elem.contentWindow.document;
+};
+
 /*float*/ JsonFx.UI.lerp = function (/*float*/ start, /*float*/ end, /*float*/ t) {
 	return (start * (1-t)) + (end * t);
 };

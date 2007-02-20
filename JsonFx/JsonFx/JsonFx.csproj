@@ -49,6 +49,7 @@
     <Compile Include="Compilation\JsonServiceBuildProvider.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="Handlers\EchoHandler.cs" />
     <Compile Include="Handlers\JsonServiceHandlerFactory.cs" />
     <Compile Include="Handlers\JsonServiceProxyHandler.cs" />
     <Compile Include="Scripts\ClientScript.cs" />
