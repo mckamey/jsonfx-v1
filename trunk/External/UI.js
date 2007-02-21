@@ -26,6 +26,17 @@ JsonFx.UI = {};
 	}
 	if (elem.currentStyle) {
 		// IE only
+		if (style === "float") {
+			style = "styleFloat";
+		} else {
+			// convert property name to camelCase
+			style = style.split('-');
+			style[0] = style[0].toLowerCase();
+			for (var i=1; i<style.length; i++) {
+				style[i] = style[i].charAt(0).toUpperCase()+style[i].substr(1).toLowerCase();
+			}
+			style = style.join("");
+		}
 		return elem.currentStyle[style];
 	}
 	return null;
@@ -68,7 +79,7 @@ JsonFx.UI = {};
 		elem.contentDocument : elem.contentWindow.document;
 };
 
-/*string*/ JsonFx.UI.toColorHex = function(/*int*/ r, /*int*/ g, /*int*/ b) {
+/*string*/ JsonFx.UI.toHtmlColor = function(/*int*/ r, /*int*/ g, /*int*/ b) {
 	if (!isFinite(r) || r<0x00 || r>0xFF ||
 		!isFinite(g) || g<0x00 || g>0xFF ||
 		!isFinite(b) || b<0x00 || b>0xFF) {
@@ -84,6 +95,26 @@ JsonFx.UI = {};
 	}
 
 	return "#"+hex;
+};
+
+/*{r,g,b}*/ JsonFx.UI.fromHtmlColor = function(/*string*/ hex) {
+	if (hex) {
+		if (hex.length === 7 && hex.charAt(0) === '#') {
+			return {
+					"r":Number("0x"+hex.substring(1,3)),
+					"g":Number("0x"+hex.substring(3,5)),
+					"b":Number("0x"+hex.substring(5,7))
+				};
+		}
+		if (hex.match(/rgb[\(](\d+),\s*(\d+),\s*(\d+)[\)]/)) {// Firefox colors
+			return {
+					"r":Number(RegExp.$1),
+					"g":Number(RegExp.$2),
+					"b":Number(RegExp.$3)
+				};
+		}
+	}
+	return {"r":NaN, "g":NaN, "b":NaN};
 };
 
 /*float*/ JsonFx.UI.lerp = function (/*float*/ start, /*float*/ end, /*float*/ t) {
@@ -890,15 +921,17 @@ JsonFx.UI.Animate.Op = function() {
 		}
 
 		// color
-		if (!!es.color && es.color.charAt(0) === '#') {
-			op.color(0, 0, 0);
+		var color = JsonFx.UI.fromHtmlColor(JsonFx.UI.getStyle(elem, "color"));
+		if (isFinite(color.r) && isFinite(color.g) && isFinite(color.b)) {
+			op.color(color.r, color.g, color.b);
 		} else {
 			op.color(0, 0, 0);
 		}
 
 		// backgroundColor
-		if (!!es.backgroundColor && es.backgroundColor.length === 7 && es.backgroundColor.charAt(0) === '#') {
-			op.backgroundColor(0xFF, 0xFF, 0xFF);
+		color = JsonFx.UI.fromHtmlColor(JsonFx.UI.getStyle(elem, "background-color"));
+		if (isFinite(color.r) && isFinite(color.g) && isFinite(color.b)) {
+			op.backgroundColor(color.r, color.g, color.b);
 		} else {
 			op.backgroundColor(0xFF, 0xFF, 0xFF);
 		}
@@ -1327,14 +1360,14 @@ JsonFx.UI.Animate.Engine = function(/*element*/ elem) {
 				}
 			}
 			if (op.hasBackgroundColor() && start.hasBackgroundColor()) {
-				es.backgroundColor = JsonFx.UI.toColorHex(
+				es.backgroundColor = JsonFx.UI.toHtmlColor(
 					JsonFx.UI.lerpInt(start.bc.r, op.bc.r, step),
 					JsonFx.UI.lerpInt(start.bc.g, op.bc.g, step),
 					JsonFx.UI.lerpInt(start.bc.b, op.bc.b, step)
 				);
 			}
 			if (op.hasColor() && start.hasColor()) {
-				es.color = JsonFx.UI.toColorHex(
+				es.color = JsonFx.UI.toHtmlColor(
 					JsonFx.UI.lerpInt(start.c.r, op.c.r, step),
 					JsonFx.UI.lerpInt(start.c.g, op.c.g, step),
 					JsonFx.UI.lerpInt(start.c.b, op.c.b, step)
