@@ -11,8 +11,10 @@ if ("undefined" === typeof JsonFx) {
 	window.JsonFx = {};
 }
 
-/* singleton JsonFx.Trace */
-JsonFx.Utils = {};
+/* singleton JsonFx.Utils */
+if ("undefined" === typeof JsonFx.Utils) {
+	JsonFx.Utils = {};
+}
 
 /* Script Lazy Load ----------------------------------------------------*/
 
