@@ -865,123 +865,6 @@ JsonFx.UI.Animate.Op = function() {
 
 /*Regex*/ JsonFx.UI.Animate.Op.clipRE = /^rect[\(]([0-9\.]*)(auto|px|%)\s*([0-9\.]*)(auto|px|%)\s*([0-9\.]*)(auto|px|%)\s*([0-9\.]*)(auto|px|%)[\)]$/;
 
-/*JsonFx.UI.Animate.Op*/ JsonFx.UI.Animate.Op.save = function(/*element*/ elem) {
-	var op = new JsonFx.UI.Animate.Op();
-
-	if (elem && elem.style) {
-		var es = elem.style;
-
-		var top = parseFloat(JsonFx.UI.getStyle(elem, "top"));
-		if (top && isFinite(top)) {
-			op.top(top);
-		} else {
-			op.top(0);
-		}
-		var left = parseFloat(JsonFx.UI.getStyle(elem, "left"));
-		if (left && isFinite(left)) {
-			op.left(left);
-		} else {
-			op.left(0);
-		}
-
-		// width
-		if (isFinite(elem.offsetWidth)) {
-			op.width(elem.offsetWidth);
-		} else {
-			var width = parseFloat(JsonFx.UI.getStyle(elem, "width"));
-			if (isFinite(width)) {
-				op.width(width);
-			}
-		}
-		// height
-		if (isFinite(elem.offsetHeight)) {
-			op.height(elem.offsetHeight);
-		} else {
-			var height = parseFloat(JsonFx.UI.getStyle(elem, "height"));
-			if (isFinite(height)) {
-				op.height(height);
-			}
-		}
-
-		// scale
-		op.scale(1, 1);
-
-		// fade
-		if (!!es.zoom && isFinite(es.opacity)) {
-			op.fade(es.opacity);
-		} else {
-			op.fade(1);
-		}
-
-		// zoom
-		if (!!es.zoom && isFinite(es.zoom)) {
-			op.zoom(es.zoom);
-		} else {
-			op.zoom(1);
-		}
-
-		// color
-		var color = JsonFx.UI.fromHtmlColor(JsonFx.UI.getStyle(elem, "color"));
-		if (isFinite(color.r) && isFinite(color.g) && isFinite(color.b)) {
-			op.color(color.r, color.g, color.b);
-		} else {
-			op.color(0, 0, 0);
-		}
-
-		// backgroundColor
-		color = JsonFx.UI.fromHtmlColor(JsonFx.UI.getStyle(elem, "background-color"));
-		if (isFinite(color.r) && isFinite(color.g) && isFinite(color.b)) {
-			op.backgroundColor(color.r, color.g, color.b);
-		} else {
-			op.backgroundColor(0xFF, 0xFF, 0xFF);
-		}
-
-		// clip
-		if (es.clip && es.clip.match(JsonFx.UI.Animate.Op.clipRE)) {
-			if ("%" === RegExp.$2) {
-				op.clipTop(RegExp.$1/100);
-			} else if ("px" === RegExp.$2) {
-				op.clipTop(RegExp.$1/op.h);
-			} else {
-				op.clipTop(0);
-			}
-
-			if ("%" === RegExp.$4) {
-				op.clipRight(1-RegExp.$3/100);
-			} else if ("px" === RegExp.$4) {
-				op.clipRight(1-RegExp.$3/op.w);
-			} else {
-				op.clipRight(0);
-			}
-
-			if ("%" === RegExp.$6) {
-				op.clipBottom(1-RegExp.$5/100);
-			} else if ("px" === RegExp.$6) {
-				op.clipBottom(1-RegExp.$5/op.h);
-			} else {
-				op.clipBottom(0);
-			}
-
-			if ("%" === RegExp.$8) {
-				op.clipLeft(RegExp.$7/100);
-			} else if ("px" === RegExp.$8) {
-				op.clipLeft(RegExp.$7/op.w);
-			} else {
-				op.clipLeft(0);
-			}
-		} else {
-			op.clipTop(0);
-			op.clipRight(0);
-			op.clipBottom(0);
-			op.clipLeft(0);
-		}
-		es = null;
-	}
-
-	elem = null;
-	return op;
-};
-
 /*void*/ JsonFx.UI.Animate.Op.prototype.fade = function(/*float*/ f) {
 	if (!isFinite(f) || f<0 || f>1) {
 		throw new Error("Fade is a number from 0.0 to 1.0");
@@ -1169,6 +1052,123 @@ JsonFx.UI.Animate.Op = function() {
 		throw new Error("Speed is a number from 0.0 to 1.0");
 	}
 	this.s = Math.pow(s,4.5);
+};
+
+/*JsonFx.UI.Animate.Op*/ JsonFx.UI.Animate.Op.save = function(/*element*/ elem) {
+	var op = new JsonFx.UI.Animate.Op();
+
+	if (elem && elem.style) {
+		var es = elem.style;
+
+		var top = parseFloat(JsonFx.UI.getStyle(elem, "top"));
+		if (top && isFinite(top)) {
+			op.top(top);
+		} else {
+			op.top(0);
+		}
+		var left = parseFloat(JsonFx.UI.getStyle(elem, "left"));
+		if (left && isFinite(left)) {
+			op.left(left);
+		} else {
+			op.left(0);
+		}
+
+		// width
+		if (isFinite(elem.offsetWidth)) {
+			op.width(elem.offsetWidth);
+		} else {
+			var width = parseFloat(JsonFx.UI.getStyle(elem, "width"));
+			if (isFinite(width)) {
+				op.width(width);
+			}
+		}
+		// height
+		if (isFinite(elem.offsetHeight)) {
+			op.height(elem.offsetHeight);
+		} else {
+			var height = parseFloat(JsonFx.UI.getStyle(elem, "height"));
+			if (isFinite(height)) {
+				op.height(height);
+			}
+		}
+
+		// scale
+		op.scale(1, 1);
+
+		// fade
+		if (!!es.zoom && isFinite(es.opacity)) {
+			op.fade(es.opacity);
+		} else {
+			op.fade(1);
+		}
+
+		// zoom
+		if (!!es.zoom && isFinite(es.zoom)) {
+			op.zoom(es.zoom);
+		} else {
+			op.zoom(1);
+		}
+
+		// color
+		var color = JsonFx.UI.fromHtmlColor(JsonFx.UI.getStyle(elem, "color"));
+		if (isFinite(color.r) && isFinite(color.g) && isFinite(color.b)) {
+			op.color(color.r, color.g, color.b);
+		} else {
+			op.color(0, 0, 0);
+		}
+
+		// backgroundColor
+		color = JsonFx.UI.fromHtmlColor(JsonFx.UI.getStyle(elem, "background-color"));
+		if (isFinite(color.r) && isFinite(color.g) && isFinite(color.b)) {
+			op.backgroundColor(color.r, color.g, color.b);
+		} else {
+			op.backgroundColor(0xFF, 0xFF, 0xFF);
+		}
+
+		// clip
+		if (es.clip && es.clip.match(JsonFx.UI.Animate.Op.clipRE)) {
+			if ("%" === RegExp.$2) {
+				op.clipTop(RegExp.$1/100);
+			} else if ("px" === RegExp.$2) {
+				op.clipTop(RegExp.$1/op.h);
+			} else {
+				op.clipTop(0);
+			}
+
+			if ("%" === RegExp.$4) {
+				op.clipRight(1-RegExp.$3/100);
+			} else if ("px" === RegExp.$4) {
+				op.clipRight(1-RegExp.$3/op.w);
+			} else {
+				op.clipRight(0);
+			}
+
+			if ("%" === RegExp.$6) {
+				op.clipBottom(1-RegExp.$5/100);
+			} else if ("px" === RegExp.$6) {
+				op.clipBottom(1-RegExp.$5/op.h);
+			} else {
+				op.clipBottom(0);
+			}
+
+			if ("%" === RegExp.$8) {
+				op.clipLeft(RegExp.$7/100);
+			} else if ("px" === RegExp.$8) {
+				op.clipLeft(RegExp.$7/op.w);
+			} else {
+				op.clipLeft(0);
+			}
+		} else {
+			op.clipTop(0);
+			op.clipRight(0);
+			op.clipBottom(0);
+			op.clipLeft(0);
+		}
+		es = null;
+	}
+
+	elem = null;
+	return op;
 };
 
 /* class JsonFx.UI.Animate.Engine -------------------------------------------- */
