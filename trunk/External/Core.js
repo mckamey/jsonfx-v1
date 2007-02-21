@@ -3,7 +3,7 @@
 	Modifications to global objects
 	Copyright (c)2006-2007 Stephen M. McKamey
 	Created: 2006-11-14-0928
-	Modified: 2007-02-07-2339
+	Modified: 2007-02-21-0540
 \*---------------------------------------------------------*/
 
 /* namespace JsonFx */
@@ -136,6 +136,25 @@ if ("undefined" === typeof(String.prototype.contains)) {
 		return (this.indexOf(str) >= 0);
 	};
 }
+
+/* singleton JsonFx.Utils */
+if ("undefined" === typeof JsonFx.Utils) {
+	JsonFx.Utils = {};
+}
+
+/*string*/ JsonFx.Utils.digitToHex = function(/*int*/ val) {
+	if (!isFinite(val) || val<0x00 || val>0xFF) {
+		throw new Error("Digit needs to be a numbers from 0x0 to 0xF");
+	}
+
+	val = Math.floor(val);
+	if (val < 10) {
+		return String.fromCharCode('0'.charCodeAt(0)+val);
+	} else {
+		val -= 10;
+		return String.fromCharCode('A'.charCodeAt(0)+val);
+	}
+};
 
 JsonFx.Timer = function() {
 	/*object*/ var s = {};

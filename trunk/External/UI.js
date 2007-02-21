@@ -3,7 +3,7 @@
 	JsonFx UI
 	Copyright (c)2006-2007 Stephen M. McKamey
 	Created: 2006-11-11-1759
-	Modified: 2007-02-14-0713
+	Modified: 2007-02-21-0618
 \*---------------------------------------------------------*/
 
 /* namespace JsonFx */
@@ -66,6 +66,24 @@ JsonFx.UI = {};
 
 	return ("undefined" !== typeof elem.contentDocument) ?
 		elem.contentDocument : elem.contentWindow.document;
+};
+
+/*string*/ JsonFx.UI.toColorHex = function(/*int*/ r, /*int*/ g, /*int*/ b) {
+	if (!isFinite(r) || r<0x00 || r>0xFF ||
+		!isFinite(g) || g<0x00 || g>0xFF ||
+		!isFinite(b) || b<0x00 || b>0xFF) {
+		throw new Error("Color components need to be numbers from 0x00 to 0xFF");
+	}
+
+	/*int*/ var c = (((Math.floor(r)*0x100)+Math.floor(g))*0x100)+Math.floor(b);
+
+	/*string*/ var hex = "";
+	for (var i=0; i<6; i++) {
+		hex = JsonFx.Utils.digitToHex(c % 0x10) + hex;
+		c = Math.floor(c / 0x10);
+	}
+
+	return "#"+hex;
 };
 
 /*float*/ JsonFx.UI.lerp = function (/*float*/ start, /*float*/ end, /*float*/ t) {
@@ -757,7 +775,7 @@ JsonFx.UI.Bindings.register("label", "jsonfx-expando", JsonFx.UI.expandoBind, Js
 };
 
 /*---------------------*\
-	Transform Classes
+	Animation Classes
 \*---------------------*/
 
 /* namespace JsonFx.UI.Animate */
@@ -809,6 +827,8 @@ JsonFx.UI.Animate.Unit.prototype.toString = function() {
 JsonFx.UI.Animate.Op = function() {
 	this.x = this.y = this.z = this.l = this.t = this.w = this.h =
 	this.f = this.cL = this.cR = this.cT = this.cB = NaN;
+	this.c = { "r":NaN, "g":NaN, "b":NaN };
+	this.bc = { "r":NaN, "g":NaN, "b":NaN };
 	this.s = 0.05;// 20 steps
 };
 
@@ -869,6 +889,20 @@ JsonFx.UI.Animate.Op = function() {
 			op.zoom(1);
 		}
 
+		// color
+		if (!!es.color && es.color.charAt(0) === '#') {
+			op.color(0, 0, 0);
+		} else {
+			op.color(0, 0, 0);
+		}
+
+		// backgroundColor
+		if (!!es.backgroundColor && es.backgroundColor.length === 7 && es.backgroundColor.charAt(0) === '#') {
+			op.backgroundColor(0xFF, 0xFF, 0xFF);
+		} else {
+			op.backgroundColor(0xFF, 0xFF, 0xFF);
+		}
+
 		// clip
 		if (es.clip && es.clip.match(JsonFx.UI.Animate.Op.clipRE)) {
 			if ("%" === RegExp.$2) {
@@ -923,6 +957,40 @@ JsonFx.UI.Animate.Op = function() {
 };
 /*bool*/ JsonFx.UI.Animate.Op.prototype.hasFade = function() {
 	return isFinite(this.f);
+};
+
+/*void*/ JsonFx.UI.Animate.Op.prototype.color = function(/*int*/ r, /*int*/ g, /*int*/ b) {
+	if (!isFinite(r) || r<0x00 || r>0xFF ||
+		!isFinite(g) || g<0x00 || g>0xFF ||
+		!isFinite(b) || b<0x00 || b>0xFF) {
+		throw new Error("Color is a triplet of numbers from 0x00 to 0xFF");
+	}
+	this.c.r = Number(r);
+	this.c.g = Number(g);
+	this.c.b = Number(b);
+};
+/*bool*/ JsonFx.UI.Animate.Op.prototype.hasColor = function() {
+	return !!this.c &&
+		isFinite(this.c.r) &&
+		isFinite(this.c.g) &&
+		isFinite(this.c.b);
+};
+
+/*void*/ JsonFx.UI.Animate.Op.prototype.backgroundColor = function(/*int*/ r, /*int*/ g, /*int*/ b) {
+	if (!isFinite(r) || r<0x00 || r>0xFF ||
+		!isFinite(g) || g<0x00 || g>0xFF ||
+		!isFinite(b) || b<0x00 || b>0xFF) {
+		throw new Error("BackgroundColor is a triplet of numbers from 0x00 to 0xFF");
+	}
+	this.bc.r = Number(r);
+	this.bc.g = Number(g);
+	this.bc.b = Number(b);
+};
+/*bool*/ JsonFx.UI.Animate.Op.prototype.hasBackgroundColor = function() {
+	return !!this.bc &&
+		isFinite(this.bc.r) &&
+		isFinite(this.bc.g) &&
+		isFinite(this.bc.b);
 };
 
 /*void*/ JsonFx.UI.Animate.Op.prototype.zoom = function(/*float*/ z) {
@@ -1104,6 +1172,8 @@ JsonFx.UI.Animate.Engine = function(/*element*/ elem) {
 		userOpacity = "",
 		userZoom = "",
 		userClip = "",
+		userColor = "",
+		userBGColor = "",
 		alpha = null;
 
 	if (elem && es) {
@@ -1121,6 +1191,8 @@ JsonFx.UI.Animate.Engine = function(/*element*/ elem) {
 		userFilter = es.filter;
 		userZoom = es.zoom;
 		userClip = es.clip;
+		userColor = es.color;
+		userBGColor = es.backgroundColor;
 	}
 
 	/*void*/ function restore() {
@@ -1142,6 +1214,8 @@ JsonFx.UI.Animate.Engine = function(/*element*/ elem) {
 		} catch (ex) {}
 		es.zoom = userZoom;
 		es.clip = userClip ? userClip : "rect(auto auto auto auto)";// works in IE/FireFox/Opera
+		es.color = userColor;
+		es.backgroundColor = userBGColor;
 	}
 
 	/*void*/ function showElem() {
@@ -1251,6 +1325,20 @@ JsonFx.UI.Animate.Engine = function(/*element*/ elem) {
 						alpha = null;
 					}
 				}
+			}
+			if (op.hasBackgroundColor() && start.hasBackgroundColor()) {
+				es.backgroundColor = JsonFx.UI.toColorHex(
+					JsonFx.UI.lerpInt(start.bc.r, op.bc.r, step),
+					JsonFx.UI.lerpInt(start.bc.g, op.bc.g, step),
+					JsonFx.UI.lerpInt(start.bc.b, op.bc.b, step)
+				);
+			}
+			if (op.hasColor() && start.hasColor()) {
+				es.color = JsonFx.UI.toColorHex(
+					JsonFx.UI.lerpInt(start.c.r, op.c.r, step),
+					JsonFx.UI.lerpInt(start.c.g, op.c.g, step),
+					JsonFx.UI.lerpInt(start.c.b, op.c.b, step)
+				);
 			}
 			if (op.hasZoom() && start.hasZoom()) {
 				es.zoom = JsonFx.UI.lerpInt(100*start.z, 100*op.z, step)+"%";
