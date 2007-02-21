@@ -885,6 +885,10 @@ JsonFx.UI.Animate.Op = function() {
 	this.c.g = Number(g);
 	this.c.b = Number(b);
 };
+/*void*/ JsonFx.UI.Animate.Op.prototype.colorHtml = function(/*string*/ c) {
+	c = JsonFx.UI.fromHtmlColor(c);
+	this.color(c.r, c.g, c.b);
+};
 /*bool*/ JsonFx.UI.Animate.Op.prototype.hasColor = function() {
 	return !!this.c &&
 		isFinite(this.c.r) &&
@@ -901,6 +905,10 @@ JsonFx.UI.Animate.Op = function() {
 	this.bc.r = Number(r);
 	this.bc.g = Number(g);
 	this.bc.b = Number(b);
+};
+/*void*/ JsonFx.UI.Animate.Op.prototype.backgroundColorHtml = function(/*string*/ c) {
+	c = JsonFx.UI.fromHtmlColor(c);
+	this.backgroundColor(c.r, c.g, c.b);
 };
 /*bool*/ JsonFx.UI.Animate.Op.prototype.hasBackgroundColor = function() {
 	return !!this.bc &&
