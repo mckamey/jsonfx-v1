@@ -435,7 +435,7 @@ namespace ScriptTools
 					case ';':
 					case ':':
 					case '{':
-					case '}':// allowing this so line length isn't too long
+					case '}':
 					case '(':
 					case '[':
 					case '=':
