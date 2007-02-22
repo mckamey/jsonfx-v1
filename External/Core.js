@@ -142,20 +142,6 @@ if ("undefined" === typeof JsonFx.Utils) {
 	JsonFx.Utils = {};
 }
 
-/*string*/ JsonFx.Utils.digitToHex = function(/*int*/ val) {
-	if (!isFinite(val) || val<0x0 || val>0xF) {
-		throw new Error("Digit needs to be a numbers from 0x0 to 0xF");
-	}
-
-	val = Math.floor(val);
-	if (val < 10) {
-		return String.fromCharCode('0'.charCodeAt(0)+val);
-	} else {
-		val -= 10;
-		return String.fromCharCode('A'.charCodeAt(0)+val);
-	}
-};
-
 JsonFx.Timer = function() {
 	/*object*/ var s = {};
 	/*object*/ var t = {};

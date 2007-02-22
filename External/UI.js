@@ -91,7 +91,7 @@ JsonFx.UI = {};
 
 	/*string*/ var hex = "";
 	for (var i=0; i<6; i++) {
-		hex = JsonFx.Utils.digitToHex(c % 0x10) + hex;
+		hex = Math.floor(c % 0x10).toString(16) + hex;
 		c = Math.floor(c / 0x10);
 	}
 
