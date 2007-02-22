@@ -143,7 +143,7 @@ if ("undefined" === typeof JsonFx.Utils) {
 }
 
 /*string*/ JsonFx.Utils.digitToHex = function(/*int*/ val) {
-	if (!isFinite(val) || val<0x00 || val>0xFF) {
+	if (!isFinite(val) || val<0x0 || val>0xF) {
 		throw new Error("Digit needs to be a numbers from 0x0 to 0xF");
 	}
 

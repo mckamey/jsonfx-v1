@@ -86,7 +86,8 @@ JsonFx.UI = {};
 		throw new Error("Color components need to be numbers from 0x00 to 0xFF");
 	}
 
-	/*int*/ var c = (((Math.floor(r)*0x100)+Math.floor(g))*0x100)+Math.floor(b);
+//	/*int*/ var c = (((Math.floor(r)*0x100)+Math.floor(g))*0x100)+Math.floor(b);
+	/*int*/ var c = (((Math.floor(r)<<8)+Math.floor(g))<<8)+Math.floor(b);
 
 	/*string*/ var hex = "";
 	for (var i=0; i<6; i++) {
@@ -99,12 +100,22 @@ JsonFx.UI = {};
 
 /*{r,g,b}*/ JsonFx.UI.fromHtmlColor = function(/*string*/ hex) {
 	if (hex) {
-		if (hex.length === 7 && hex.charAt(0) === '#') {
-			return {
-					"r":Number("0x"+hex.substring(1,3)),
-					"g":Number("0x"+hex.substring(3,5)),
-					"b":Number("0x"+hex.substring(5,7))
-				};
+		if (hex.match(/#([0-9a-fA-F]{1,2})([0-9a-fA-F]{1,2})([0-9a-fA-F]{1,2})/)) {// HEX colors
+			if (hex.length === 7) {
+				// e.g. "#336699"
+				return {
+						"r":Number("0x"+RegExp.$1),
+						"g":Number("0x"+RegExp.$2),
+						"b":Number("0x"+RegExp.$3)
+					};
+			} else if (hex.length === 4) {
+				// e.g. "#369" === "#336699"
+				return {
+						"r":Number("0x"+RegExp.$1+RegExp.$1),
+						"g":Number("0x"+RegExp.$2+RegExp.$2),
+						"b":Number("0x"+RegExp.$3+RegExp.$3)
+					};
+			}
 		}
 		if (hex.match(/rgb[\(](\d+),\s*(\d+),\s*(\d+)[\)]/)) {// Firefox colors
 			return {
