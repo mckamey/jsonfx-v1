@@ -81,9 +81,9 @@ JsonFx.IO.callTimeout = 10000;// 10 sec
 			if (status === 200) {
 				/* data was retrieved successfully */
 				if (cb_responseSuccess) {
-/*TIMER*/
+//TIMER
 //JsonFx.Timer.stop("request", true);//250,250,250
-/*TIMER*/
+//TIMER
 					cb_responseSuccess(request, context);
 				}
 			} else if (status === 0) {
@@ -120,9 +120,9 @@ JsonFx.IO.callTimeout = 10000;// 10 sec
 		} else if (HttpMethod === "POST") {
 			request.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
 		}
-/*TIMER*/
+//TIMER
 //JsonFx.Timer.start("request");
-/*TIMER*/
+//TIMER
 		request.send(params);
 		return true;
 	} catch (ex) {
@@ -195,18 +195,18 @@ JsonFx.IO.callTimeout = 10000;// 10 sec
 	/*object*/ context) {
 
 	function cb_decodeResponse(response, context) {
-/*TIMER*/
+//TIMER
 //JsonFx.Timer.start("decode");
-/*TIMER*/
+//TIMER
 		var data = response.responseText;
 		if (typeof(data) === "string") {
 			try {
 				data = data.parseJSON();
 			} catch (ex) { }
 		}
-/*TIMER*/
+//TIMER
 //JsonFx.Timer.stop("decode", true);//32,31,22500(greedy regex)
-/*TIMER*/
+//TIMER
 		cb_responseSuccess(data, context);
 	}
 

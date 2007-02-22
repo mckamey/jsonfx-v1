@@ -168,9 +168,9 @@ JsonFx.UI.Bindings = function() {
 	/*element*/ var performOne = function(/*element*/ elem, /*actionKey*/ a) {
 		if (elem && elem.tagName && elem.className) {
 
-/*TIMER*/
+//TIMER
 //JsonFx.Timer.start(a+"_one");
-/*TIMER*/
+//TIMER
 
 			// only perform on registered tags
 			var tag = elem.tagName.toLowerCase();
@@ -189,9 +189,9 @@ JsonFx.UI.Bindings = function() {
 				}
 			}
 
-/*TIMER*/
+//TIMER
 //JsonFx.Timer.stop(a+"_one", true);//48/16,46/31,62/0
-/*TIMER*/
+//TIMER
 
 		}
 		return elem;
@@ -200,9 +200,9 @@ JsonFx.UI.Bindings = function() {
 	// perform a binding action on child elements
 	/*void*/ var perform = function(/*element*/ root, /*actionKey*/ a) {
 
-/*TIMER*/
+//TIMER
 //JsonFx.Timer.start(a+"_all");
-/*TIMER*/
+//TIMER
 		if (root && root.getElementsByTagName) {
 
 			// for each registered tag
@@ -218,9 +218,9 @@ JsonFx.UI.Bindings = function() {
 			}
 		}
 
-/*TIMER*/
+//TIMER
 //JsonFx.Timer.stop(a+"_all", true);//32,31,31
-/*TIMER*/
+//TIMER
 	};
 
 	// used as JsonML filter
@@ -349,9 +349,9 @@ JsonFx.UI.History.onchange = null;
 	returns the container element if one was specified */
 /*element*/ JsonFx.UI.displayJsonML = function(/*JsonML*/ jml, /*element or string*/ container) {
 
-/*TIMER*/
+//TIMER
 //JsonFx.Timer.start("display");
-/*TIMER*/
+//TIMER
 
 	// either DOM element or id
 	container = (typeof(container) !== "string") ?
@@ -397,25 +397,25 @@ JsonFx.UI.History.onchange = null;
 			}
 		}
 	}
-/*TIMER*/
+//TIMER
 //JsonFx.Timer.stop("display", true);//265,266,266
-/*TIMER*/
+//TIMER
 	return container;
 };
 
 /* returns true if request was sent */
 /*bool*/ JsonFx.UI.loadJsonML = function(/*string*/ url, /*element or string*/ container, /*function*/ callback, /*object*/ context) {
 
-/*TIMER*/
+//TIMER
 //JsonFx.Timer.start("load");
-/*TIMER*/
+//TIMER
 
 	return JsonFx.IO.GetJsonRequest(url, null, null,
 			function(jml,obj) {
 
-/*TIMER*/
+//TIMER
 //JsonFx.Timer.stop("load", true);//282,281,22750(greedy regex)
-/*TIMER*/
+//TIMER
 				JsonFx.UI.displayJsonML(jml, container);
 				if (callback) { callback(context); }
 			}
@@ -445,7 +445,7 @@ JsonFx.UI.History.onchange = null;
 	/*void*/ function store() {
 		userShape = {};
 		for (var s in es) {
-			if (/*es.hasOwnProperty(s) &&*/ es[s]) {
+			if (es.hasOwnProperty(s) && es[s]) {
 				userShape[s] = es[s];
 			}
 		}
