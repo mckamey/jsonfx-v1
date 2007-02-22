@@ -427,344 +427,51 @@ JsonFx.UI.History.onchange = null;
 //JsonFx.Timer.stop("load", true);//282,281,22750(greedy regex)
 //TIMER
 				JsonFx.UI.displayJsonML(jml, container);
-				if (callback) { callback(context); }
+				if ("function" === typeof callback) { callback(context); }
 			}
 		, null);
 };
 
-/*-----------------*\
-	Maximize Verb
-\*-----------------*/
-
-/*function*/ JsonFx.UI.createMaximize = function(/*element or string*/ elem, /*JsonFx.UI.Dir*/ dir) {
-
-	if (typeof(elem) === "string") {
-		// either DOM element or id
-		elem = document.getElementById(elem);
-	}
-
-	if (!elem || !elem.tagName) {
-		return null;
-	}
-
-	var es = elem.style,
-	/*bool*/ state = false;
-
-	var userShape;
-
-	/*void*/ function store() {
-		userShape = {};
-		for (var s in es) {
-			if (es.hasOwnProperty(s) && es[s]) {
-				userShape[s] = es[s];
-			}
-		}
-	}
-	/*void*/ function restoreShape() {
-		if (userShape) {
-			for (var s in userShape) {
-				if (userShape.hasOwnProperty(s)) {
-					es[s] = userShape[s];
-				}
-			}
-		}
-	}
-
-	// state: true = maixmize, false = restore
-	return /*void*/ function max(/*bool*/ newState) {
-
-		if (!state) {
-			store();
-		}
-		// store the latest requested state
-		if (typeof(newState) === "boolean") {
-			state = newState;
-		} else {
-			state = !state;
-		}
-
-		if (state) {
-			es.floatStyle = "none";
-			es.position = "absolute";
-			es.width = JsonFx.UI.getStyle(document.documentElement, "width");
-			es.height = JsonFx.UI.getStyle(document.documentElement, "height");
-			es.top = "0px";
-			es.left = "0px";
-			es.bottom = "0px";
-			es.right = "0px";
-		} else {
-			restoreShape();
-		}
-	};
-};
-
-/*-----------------*\
-	Minimize Verb
-\*-----------------*/
-
-JsonFx.UI.Dir = {
-	None:  0x00,
-	Horz:  0x01,
-	Vert:  0x02,
-	Fade:  0x04,
-	Zoom:  0x08,
-	ClipX: 0x10,
-	ClipY: 0x20,
-//	Both: 0x1|0x2,
-//	All: 0x1|0x2|0x4|0x8,
-
-	// helper method which tests for Horz
-	/*bool*/ isHorz: function (/*JsonFx.UI.Dir*/ dir) {
-		return !!(JsonFx.UI.Dir.Horz & dir);
-	},
-
-	// helper method which tests for Vert
-	/*bool*/ isVert: function (/*JsonFx.UI.Dir*/ dir) {
-		return !!(JsonFx.UI.Dir.Vert & dir);
-	},
-
-	// helper method which tests for Fade
-	/*bool*/ isFade: function (/*JsonFx.UI.Dir*/ dir) {
-		return !!(JsonFx.UI.Dir.Fade & dir);
-	},
-
-	// helper method which tests for Zoom
-	/*bool*/ isZoom: function (/*JsonFx.UI.Dir*/ dir) {
-		return !!(JsonFx.UI.Dir.Zoom & dir);
-	},
-
-	// helper method which tests for ClipX
-	/*bool*/ isClipX: function (/*JsonFx.UI.Dir*/ dir) {
-		return !!(JsonFx.UI.Dir.ClipX & dir);
-	},
-
-	// helper method which tests for ClipY
-	/*bool*/ isClipY: function (/*JsonFx.UI.Dir*/ dir) {
-		return !!(JsonFx.UI.Dir.ClipY & dir);
-	}
-};
-
-/*function*/ JsonFx.UI.createMinimize = function(/*element or string*/ elem, /*JsonFx.UI.Dir*/ dir) {
-
-	if (typeof(elem) === "string") {
-		// either DOM element or id
-		elem = document.getElementById(elem);
-	}
-
-	if (!elem || !elem.tagName) {
-		return null;
-	}
-
-	var es = elem.style,
-	/*bool*/ mutex = false,
-	/*bool*/ state = false,
-	/*const float*/ STEP_MIN = 0,
-	/*const float*/ STEP_MAX = 1,
-	/*const float*/ STEP_INC = 0.05;
-
-	var saved = false,
-		pxHeight = "",
-		pxWidth = "",
-		userHeight = "",
-		userWidth = "",
-		userOverflow = "",
-		userPosition = "",
-		userFilter = "",
-		userKhtml = "",
-		userMoz = "",
-		userOpacity = "",
-		userZoom = "",
-		userClip = "",
-		alpha = null;
-
-	/*void*/ function store() {
-		if (elem && es) {
-			if (JsonFx.UI.Dir.isVert(dir) || JsonFx.UI.Dir.isHorz(dir) || JsonFx.UI.Dir.isClipX(dir) || JsonFx.UI.Dir.isClipY(dir)) {
-				userOverflow = es.overflow;
-			}
-			if (JsonFx.UI.Dir.isVert(dir) || JsonFx.UI.Dir.isClipY(dir)) {
-				userHeight = es.height;
-				pxHeight = !isNaN(elem.offsetHeight) ?
-					elem.offsetHeight : parseFloat(JsonFx.UI.getStyle(elem, "height"));
-			}
-			if (JsonFx.UI.Dir.isHorz(dir) || JsonFx.UI.Dir.isClipX(dir)) {
-				userWidth = es.width;
-				pxWidth = !isNaN(elem.offsetWidth) ?
-					elem.offsetWidth : parseFloat(JsonFx.UI.getStyle(elem, "width"));
-			}
-			if (JsonFx.UI.Dir.isFade(dir)) {
-				userKhtml = es["-khtml-opacity"];
-				userMoz = es["-moz-opacity"];
-				userOpacity = es.opacity;
-				if (elem.filters && !alpha) {
-					es.filter += " progid:DXImageTransform.Microsoft.Alpha(enabled=false)";
-					try {
-						alpha = elem.filters.item("DXImageTransform.Microsoft.Alpha");
-					} catch (ex) { alpha = null; }
-					if (!alpha) {
-						es.filter += " alpha(enabled=false)";
-						try {
-							alpha = elem.filters.item("alpha");
-						} catch (ex) { alpha = null; }
-					}
-				}
-			}
-			if (JsonFx.UI.Dir.isZoom(dir)) {
-				userZoom = es.zoom;
-			}
-			if (JsonFx.UI.Dir.isClipX(dir) || JsonFx.UI.Dir.isClipY(dir)) {
-				userPosition = es.position;
-				userClip = es.clip;
-			}
-			saved = true;
-		}
-	}
-
-	// state: true = collapse, false = expand
-	return /*void*/ function min(/*bool*/ newState) {
-
-		if (!es) { return; }
-
-		// store the latest requested state
-		if (typeof(newState) === "boolean") {
-			state = newState;
-		} else {
-			state = !state;
-		}
-		if (mutex) {
-			// crude concurrency check
-			return;
-		}
-		mutex = true;
-
-		if (state || !saved) {
-			store();
-		}
-		es.display = "block";
-		es.visibility = "visible";
-
-		// minimizeStep
-		/*void*/ function m(/*float*/ step) {
-
-			if (!es || isNaN(step)) {
-				mutex = false;
-				return;
-			}
-
-			if (step < STEP_MIN || step > STEP_MAX) {
-				if (state) {
-					if (JsonFx.UI.Dir.isVert(dir) || JsonFx.UI.Dir.isZoom(dir) || JsonFx.UI.Dir.isClipX(dir) || JsonFx.UI.Dir.isClipY(dir)) {
-						es.display = "none";
-					}
-					es.visibility = "hidden";
-				}
-				if (JsonFx.UI.Dir.isVert(dir) || JsonFx.UI.Dir.isHorz(dir) || JsonFx.UI.Dir.isClipX(dir) || JsonFx.UI.Dir.isClipY(dir)) {
-					es.overflow = userOverflow;
-				}
-				if (JsonFx.UI.Dir.isHorz(dir)) {
-					es.width = userWidth;
-				}
-				if (JsonFx.UI.Dir.isVert(dir)) {
-					es.height = userHeight;
-				}
-				if (JsonFx.UI.Dir.isFade(dir)) {
-					es["-khtml-opacity"] = userKhtml;
-					es["-moz-opacity"] = userMoz;
-					es.opacity = userOpacity;
-					try {
-						if (alpha) {
-							alpha.enabled = false;
-						}
-						if (userFilter) {
-							es.filter = userFilter;
-						}
-					} catch (ex) {
-						alpha = null;
-					}
-				}
-				if (JsonFx.UI.Dir.isZoom(dir)) {
-					es.zoom = userZoom;
-				}
-				if (JsonFx.UI.Dir.isClipX(dir) || JsonFx.UI.Dir.isClipY(dir)) {
-					es.position = userPosition;
-					es.clip = userClip ? userClip : "rect(auto auto auto auto)";// works in IE/FireFox/Opera
-				}
-				mutex = false;
-				return;
-			}
-
-			if (JsonFx.UI.Dir.isVert(dir) || JsonFx.UI.Dir.isHorz(dir) || JsonFx.UI.Dir.isClipX(dir) || JsonFx.UI.Dir.isClipY(dir)) {
-				es.overflow = "hidden";
-			}
-
-			if (JsonFx.UI.Dir.isHorz(dir) && !isNaN(pxWidth)) {
-				// horizontal, simplified lerp
-				es.width = Math.floor(pxWidth*step)+"px";
-			}
-			if (JsonFx.UI.Dir.isVert(dir) && !isNaN(pxHeight)) {
-				// vertical, simplified lerp
-				es.height = Math.floor(pxHeight*step)+"px";
-			}
-			if (JsonFx.UI.Dir.isFade(dir)) {
-				// opacity, simplified lerp
-				es["-khtml-opacity"] = step;
-				es["-moz-opacity"] = step;
-				es.opacity = step;
-				if (alpha) {
-					try {
-						alpha.opacity = Math.floor(100*step);
-						alpha.enabled = true;
-					} catch (ex) {
-						alpha = null;
-					}
-				}
-			}
-			if (JsonFx.UI.Dir.isZoom(dir)) {
-				es.zoom = Math.floor(100*step)+"%";
-			}
-			if (JsonFx.UI.Dir.isClipX(dir) || JsonFx.UI.Dir.isClipY(dir)) {
-				var clip = ["auto","auto","auto","auto"];
-				if (JsonFx.UI.Dir.isClipX(dir) && !isNaN(pxWidth)) {
-					clip[3] = Math.ceil(pxWidth*(1-step)/2)+"px";
-					clip[1] = ((pxWidth/2)+Math.floor(pxWidth*step/2))+"px";
-				}
-				if (JsonFx.UI.Dir.isClipY(dir) && !isNaN(pxHeight)) {
-					clip[0] = Math.ceil(pxHeight*(1-step)/2)+"px";
-					clip[2] = ((pxHeight/2)+Math.floor(pxHeight*step/2))+"px";
-				}
-				es.position = "absolute";
-				es.clip = "rect("+clip.join(' ')+")";
-			}
-
-			setTimeout(
-				function() {
-					m(state ? (step-STEP_INC) : (step+STEP_INC));
-				},
-				0);
-		}
-
-		m(state ? STEP_MAX : STEP_MIN);
-	};
-};
-
 /* DataDump ----------------------------------------------------*/
+
+/*bool*/ JsonFx.UI.expando = function (/*element*/ elem, /*string*/ target) {
+	var expando = elem.expando;
+	if (!expando) {
+		if ("string" === typeof target) {
+			target = document.getElementById(target);
+		}
+		if (!target) {
+			return false;
+		}
+		elem.expando = expando = new JsonFx.UI.Animate.Engine(target);
+	}
+	if (expando.hasAppliedOp()) {
+		if (elem.value) {
+			elem.value = " \u2212 ";
+			//elem.replaceChild(document.createTextNode("\u2212"), elem.firstChild);
+		}
+		expando.apply(null, false);
+		return true;
+	} else {
+		var op = new JsonFx.UI.Animate.Op();
+		op.fade(0);
+		op.height(0);
+		op.speed(0.65);
+		if (elem.value) {
+			elem.value = " + ";
+			//elem.replaceChild(document.createTextNode("+"), elem.firstChild);
+		}
+		expando.apply(op, false);
+		return false;
+	}
+};
 
 /*void*/ JsonFx.UI.expandoBind = function(/*element*/ elem) {
 	elem.style.cursor = "pointer";
-	elem.minimized = false;
 
 	elem.onclick = function (/*event*/ evt) {
 		var next = elem.nextSibling;
-		if (!next.minimize) {
-			if (next.tagName && next.tagName.toLowerCase() === "ul") {
-				next.minimize = JsonFx.UI.createMinimize(next, JsonFx.UI.Dir.Vert|JsonFx.UI.Dir.Fade);
-			} else {
-				return false;
-			}
-		}
-		elem.minimized = !elem.minimized;
-		next.minimize(elem.minimized);
-		if (elem.minimized) {
+		if (JsonFx.UI.expando(elem, next)) {
 			elem.className = elem.className.replace(/\s*jsonfx-expanded/g, " jsonfx-collapsed");
 		} else {
 			elem.className = elem.className.replace(/\s*jsonfx-collapsed/g, " jsonfx-expanded");
@@ -773,9 +480,8 @@ JsonFx.UI.Dir = {
 	};
 };
 /*void*/ JsonFx.UI.expandoUnbind = function(/*element*/ elem) {
-	var next = elem.nextSibling;
-	if (next.minimize) {
-		next.minimize = null;
+	if ("undefined" !== typeof elem.expando) {
+		elem.expando = null;
 	}
 	elem.onclick = null;
 };
@@ -866,7 +572,8 @@ JsonFx.UI.Animate.Unit.prototype.toString = function() {
 
 /* class JsonFx.UI.Animate.Op -------------------------------------------- */
 JsonFx.UI.Animate.Op = function() {
-	this.x = this.y = this.z = this.l = this.t = this.w = this.h =
+	this.x = this.y = this.w = this.h =
+	this.z = this.t = this.r = this.b = this.l = 
 	this.f = this.cL = this.cR = this.cT = this.cB = NaN;
 	this.c = { "r":NaN, "g":NaN, "b":NaN };
 	this.bc = { "r":NaN, "g":NaN, "b":NaN };
@@ -944,23 +651,41 @@ JsonFx.UI.Animate.Op = function() {
 	this.top(top);
 	this.left(left);
 };
-/*void*/ JsonFx.UI.Animate.Op.prototype.left = function(/*int*/ left) {
-	if (!isFinite(left)) {
-		throw new Error("Left is a pixel position");
-	}
-	this.l = Number(left);
-};
 /*void*/ JsonFx.UI.Animate.Op.prototype.top = function(/*int*/ top) {
 	if (!isFinite(top)) {
 		throw new Error("Top is a pixel position");
 	}
 	this.t = Number(top);
 };
+/*void*/ JsonFx.UI.Animate.Op.prototype.right = function(/*int*/ right) {
+	if (!isFinite(right)) {
+		throw new Error("Right is a pixel position");
+	}
+	this.r = Number(right);
+};
+/*void*/ JsonFx.UI.Animate.Op.prototype.bottom = function(/*int*/ bottom) {
+	if (!isFinite(bottom)) {
+		throw new Error("Bottom is a pixel position");
+	}
+	this.b = Number(bottom);
+};
+/*void*/ JsonFx.UI.Animate.Op.prototype.left = function(/*int*/ left) {
+	if (!isFinite(left)) {
+		throw new Error("Left is a pixel position");
+	}
+	this.l = Number(left);
+};
 /*bool*/ JsonFx.UI.Animate.Op.prototype.hasMove = function() {
-	return isFinite(this.t)||isFinite(this.l);
+	return isFinite(this.t)||isFinite(this.r)||isFinite(this.b)||isFinite(this.l);
 };
 /*bool*/ JsonFx.UI.Animate.Op.prototype.hasTop = function() {
 	return isFinite(this.t);
+};
+/*bool*/ JsonFx.UI.Animate.Op.prototype.hasRight = function() {
+	return isFinite(this.r);
+};
+/*bool*/ JsonFx.UI.Animate.Op.prototype.hasBottom = function() {
+	return isFinite(this.b);
 };
 /*bool*/ JsonFx.UI.Animate.Op.prototype.hasLeft = function() {
 	return isFinite(this.l);
@@ -1077,17 +802,30 @@ JsonFx.UI.Animate.Op = function() {
 
 	if (elem && elem.style) {
 		var es = elem.style;
+		var esPos = JsonFx.UI.getStyle(elem, "position");
 
 		var top = parseFloat(JsonFx.UI.getStyle(elem, "top"));
-		if (top && isFinite(top)) {
+		if (isFinite(top)) {
 			op.top(top);
-		} else {
+		} else if (esPos === "static") {
 			op.top(0);
 		}
+		var right = parseFloat(JsonFx.UI.getStyle(elem, "right"));
+		if (isFinite(right)) {
+			op.right(right);
+		} else if (esPos === "static") {
+			op.right(0);
+		}
+		var bottom = parseFloat(JsonFx.UI.getStyle(elem, "bottom"));
+		if (isFinite(bottom)) {
+			op.right(bottom);
+		} else if (esPos === "static") {
+			op.bottom(0);
+		}
 		var left = parseFloat(JsonFx.UI.getStyle(elem, "left"));
-		if (left && isFinite(left)) {
+		if (isFinite(left)) {
 			op.left(left);
-		} else {
+		} else if (esPos === "static") {
 			op.left(0);
 		}
 
@@ -1212,6 +950,8 @@ JsonFx.UI.Animate.Engine = function(/*element*/ elem) {
 	var userHeight = "",
 		userWidth = "",
 		userTop = "",
+		userRight = "",
+		userBottom = "",
 		userLeft = "",
 		userOverflow = "",
 		userPosition = "",
@@ -1234,8 +974,10 @@ JsonFx.UI.Animate.Engine = function(/*element*/ elem) {
 		userVisibility = es.visibility;
 		userHeight = es.height;
 		userWidth = es.width;
-		userHeight = es.top;
-		userWidth = es.left;
+		userTop = es.top;
+		userRight = es.right;
+		userBottom = es.bottom;
+		userLeft = es.left;
 		userKhtml = es["-khtml-opacity"];
 		userMoz = es["-moz-opacity"];
 		userOpacity = es.opacity;
@@ -1247,26 +989,50 @@ JsonFx.UI.Animate.Engine = function(/*element*/ elem) {
 	}
 
 	/*void*/ function restore() {
-		es.overflow = userOverflow;
-		es.position = userPosition;
-		es.display = userDisplay;
-		es.visibility = userVisibility;
-		es.width = userWidth;
-		es.height = userHeight;
-		es.top = userTop;
-		es.left = userLeft;
-		es["-khtml-opacity"] = userKhtml;
-		es["-moz-opacity"] = userMoz;
-		es.opacity = userOpacity;
-		try {
-			if (userFilter) {
-				es.filter = userFilter;
-			}
-		} catch (ex) {}
-		es.zoom = userZoom;
-		es.clip = userClip ? userClip : "rect(auto auto auto auto)";// works in IE/FireFox/Opera
-		es.color = userColor;
-		es.backgroundColor = userBGColor;
+//		if (!!JsonFx.UI.getStyle(elem, "display")) {
+//			es.display = userDisplay;
+//		}
+//		if (!!JsonFx.UI.getStyle(elem, "visibility")) {
+//			es.visibility = userVisibility;
+//		}
+		if (op.hasScale() || op.hasClip()) {
+			es.overflow = userOverflow;
+		}
+		if (op.hasWidth()) {
+			es.width = userWidth;
+		}
+		if (op.hasHeight()) {
+			es.height = userHeight;
+		}
+		if (op.hasMove()) {
+			es.position = userPosition;
+			es.top = userTop;
+			es.right = userRight;
+			es.bottom = userBottom;
+			es.left = userLeft;
+		}
+		if (op.hasFade()) {
+			es["-khtml-opacity"] = userKhtml;
+			es["-moz-opacity"] = userMoz;
+			es.opacity = userOpacity;
+			try {
+				if (userFilter) {
+					es.filter = userFilter;
+				}
+			} catch (ex) {}
+		}
+		if (op.hasZoom()) {
+			es.zoom = userZoom;
+		}
+		if (op.hasClip()) {
+			es.clip = userClip ? userClip : "rect(auto auto auto auto)";// tested in IE/FireFox/Opera
+		}
+		if (op.hasColor()) {
+			es.color = userColor;
+		}
+		if (op.hasBackgroundColor()) {
+			es.backgroundColor = userBGColor;
+		}
 	}
 
 	/*void*/ function showElem() {
@@ -1315,7 +1081,7 @@ JsonFx.UI.Animate.Engine = function(/*element*/ elem) {
 
 	// if newOp is null, the previous operation is reversed
 	// immediate doesn't animate but applies operation
-	/*void*/ this.apply = function(/*JsonFx.UI.Animate.Op*/ newOp, /*bool*/ immediate) {
+	/*void*/ this.apply = function(/*JsonFx.UI.Animate.Op*/ newOp, /*bool*/ immediate, /*function(cx)*/ callback, /*object*/ context) {
 		if (!es) { return; }
 
 		// state: true = perform op, false = reverse op
@@ -1397,16 +1163,16 @@ JsonFx.UI.Animate.Engine = function(/*element*/ elem) {
 			if (op.hasClip()) {
 				var clip = ["auto","auto","auto","auto"];
 				if (op.hasClipT() && start.hasClipT()) {
-					clip[0] = Math.ceil(start.h*JsonFx.UI.lerp(start.cT, op.cT, step))+"px";
+					clip[0] = Math.ceil(JsonFx.UI.lerp(start.cT, op.cT, step)*100)+"%";
 				}
 				if (op.hasClipR() && start.hasClipR()) {
-					clip[1] = Math.floor(start.w*JsonFx.UI.lerp(1-start.cR, 1-op.cR, step))+"px";
+					clip[1] = Math.floor(JsonFx.UI.lerp(1-start.cR, 1-op.cR, step)*100)+"%";
 				}
 				if (op.hasClipB() && start.hasClipB()) {
-					clip[2] = Math.floor(start.h*JsonFx.UI.lerp(1-start.cB, 1-op.cB, step))+"px";
+					clip[2] = Math.floor(JsonFx.UI.lerp(1-start.cB, 1-op.cB, step)*100)+"%";
 				}
 				if (op.hasClipL() && start.hasClipL()) {
-					clip[3] = Math.ceil(start.w*JsonFx.UI.lerp(start.cL, op.cL, step))+"px";
+					clip[3] = Math.ceil(JsonFx.UI.lerp(start.cL, op.cL, step)*100)+"%";
 				}
 				if (esPos !== "fixed") {
 					es.position = "absolute";
@@ -1420,6 +1186,12 @@ JsonFx.UI.Animate.Engine = function(/*element*/ elem) {
 				if (op.hasTop() && start.hasTop()) {
 					es.top = JsonFx.UI.lerpInt(start.t, op.t, step)+"px";
 				}
+				if (op.hasRight() && start.hasRight()) {
+					es.right = JsonFx.UI.lerpInt(start.r, op.r, step)+"px";
+				}
+				if (op.hasBottom() && start.hasBottom()) {
+					es.bottom = JsonFx.UI.lerpInt(start.b, op.b, step)+"px";
+				}
 				if (op.hasLeft() && start.hasLeft()) {
 					es.left = JsonFx.UI.lerpInt(start.l, op.l, step)+"px";
 				}
@@ -1432,6 +1204,10 @@ JsonFx.UI.Animate.Engine = function(/*element*/ elem) {
 						start = null;
 						op = new JsonFx.UI.Animate.Op();
 						mutex = false;
+
+						if ("function" === typeof cb) {
+							cb(cx);
+						}
 					},
 					0);
 			} else if (step >= STEP_MAX && state) {
@@ -1443,6 +1219,10 @@ JsonFx.UI.Animate.Engine = function(/*element*/ elem) {
 							es.visibility = "hidden";
 						}
 						mutex = false;
+
+						if ("function" === typeof callback) {
+							callback(context);
+						}
 					},
 					0);
 			} else {
