@@ -137,11 +137,6 @@ if ("undefined" === typeof(String.prototype.contains)) {
 	};
 }
 
-/* singleton JsonFx.Utils */
-if ("undefined" === typeof JsonFx.Utils) {
-	JsonFx.Utils = {};
-}
-
 JsonFx.Timer = function() {
 	/*object*/ var s = {};
 	/*object*/ var t = {};

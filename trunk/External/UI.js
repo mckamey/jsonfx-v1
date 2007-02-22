@@ -86,7 +86,6 @@ JsonFx.UI = {};
 		throw new Error("Color components need to be numbers from 0x00 to 0xFF");
 	}
 
-//	/*int*/ var c = (((Math.floor(r)*0x100)+Math.floor(g))*0x100)+Math.floor(b);
 	/*int*/ var c = (((Math.floor(r)<<8)+Math.floor(g))<<8)+Math.floor(b);
 
 	/*string*/ var hex = "";
