@@ -451,7 +451,7 @@ JsonFx.UI.History.onchange = null;
 			//elem.replaceChild(document.createTextNode("\u2212"), elem.firstChild);
 		}
 		expando.apply(null, false);
-		return true;
+		return false;
 	} else {
 		var op = new JsonFx.UI.Animate.Op();
 		op.fade(0);
@@ -462,7 +462,7 @@ JsonFx.UI.History.onchange = null;
 			//elem.replaceChild(document.createTextNode("+"), elem.firstChild);
 		}
 		expando.apply(op, false);
-		return false;
+		return true;
 	}
 };
 
