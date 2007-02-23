@@ -510,8 +510,10 @@ JsonFx.UI.History.onchange = null;
 					return false;
 				};
 				elem.ondblclick = function (/*event*/ evt) {
-					JsonFx.UI.clearTextSelection();
-					this.click();
+					if (elem.click) {
+						elem.click();
+					}
+					window.setTimeout( function(){JsonFx.UI.clearTextSelection();}, 0);
 					return false;
 				};
 			}
