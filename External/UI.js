@@ -58,6 +58,16 @@ JsonFx.UI = {};
 	return { "left":left, "top":top };
 };
 
+/*void*/ JsonFx.UI.clearTextSelection = function() {
+	if (window.getSelection && window.getSelection().removeAllRanges) {
+		window.getSelection().removeAllRanges();
+	} else if (document.getSelection && document.getSelection().empty) {
+		document.getSelection().empty();
+	} else if (document.selection && document.selection.empty) {
+		document.selection.empty();
+	}
+};
+
 /*function*/ JsonFx.UI.combineHandlers = function (/*function*/ handlerA, /*function*/ handlerB) {
 	if ("function" === typeof handlerA) {
 		if ("function" === typeof handlerB) {
@@ -487,6 +497,11 @@ JsonFx.UI.History.onchange = null;
 				}
 				return false;
 			};
+			elem.ondblclick = function (/*event*/ evt) {
+				JsonFx.UI.clearTextSelection();
+				this.click();
+				return false;
+			};
 		}, 0);
 };
 /*void*/ JsonFx.UI.expandoUnbind = function(/*element*/ elem) {
@@ -494,6 +509,7 @@ JsonFx.UI.History.onchange = null;
 		elem.expando = null;
 	}
 	elem.onclick = null;
+	elem.ondblclick = null;
 };
 
 JsonFx.UI.Bindings.register("label", "jsonfx-expando", JsonFx.UI.expandoBind, JsonFx.UI.expandoUnbind);
