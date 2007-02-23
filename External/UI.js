@@ -474,6 +474,9 @@ JsonFx.UI.History.onchange = null;
 			var target = document.getElementById(elem.getAttribute("for"));
 			if (!target) {
 				target = elem.nextSibling;
+				while (target && !target.tagName) {
+					target = target.nextSibling;
+				}
 			}
 
 			elem.onclick = function (/*event*/ evt) {
