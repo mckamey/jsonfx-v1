@@ -305,7 +305,7 @@ JsonFx.UI.Bindings = function() {
 JsonFx.UI.Bindings = new JsonFx.UI.Bindings();
 
 /*------------------*\
-	JsonML Methods
+	History Methods
 \*------------------*/
 
 /* singleton JsonFx.UI.History */
