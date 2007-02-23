@@ -250,39 +250,49 @@ JsonFx.UI.Bindings = function() {
 
 	// bind
 	/*void*/ b.bindAll = function() {
-		// store previous values
-		var ttl = document.body.title;
-		var crsr = document.body.style.cursor;
+		var ttl, crsr;
+		if (document.body && document.body.style) {
+			// store previous values
+			ttl = document.body.title;
+			crsr = document.body.style.cursor;
 
-		// setup loading visual cues
-		document.body.title = "Loading...";
-		document.body.style.cursor = "wait";
+			// setup loading visual cues
+			document.body.title = "Loading...";
+			document.body.style.cursor = "wait";
+		}
 
 		try {
 			perform(document, BIND);
 		} finally {
-			// restore previous values
-			document.body.title = ttl ? ttl : "";
-			document.body.style.cursor = crsr ? crsr : "";
+			if (document.body && document.body.style) {
+				// restore previous values
+				document.body.title = ttl ? ttl : "";
+				document.body.style.cursor = crsr ? crsr : "";
+			}
 		}
 	};
 
 	// unbind
 	/*void*/ b.unbindAll = function() {
-		// store previous values
-		var ttl = document.body.title;
-		var crsr = document.body.style.cursor;
+		var ttl, crsr;
+		if (document.body && document.body.style) {
+			// store previous values
+			ttl = document.body.title;
+			crsr = document.body.style.cursor;
 
-		// setup loading visual cues
-		document.body.title = "Unloading...";
-		document.body.style.cursor = "wait";
+			// setup loading visual cues
+			document.body.title = "Unloading...";
+			document.body.style.cursor = "wait";
+		}
 
 		try {
 			perform(document, UNBIND);
 		} finally {
-			// restore previous values
-			document.body.title = ttl ? ttl : "";
-			document.body.style.cursor = crsr ? crsr : "";
+			if (document.body && document.body.style) {
+				// restore previous values
+				document.body.title = ttl ? ttl : "";
+				document.body.style.cursor = crsr ? crsr : "";
+			}
 		}
 	};
 
