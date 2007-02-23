@@ -480,7 +480,6 @@ JsonFx.UI.History.onchange = null;
 	// call after elements have been added to document
 	window.setTimeout(
 		function() {
-			elem.style.cursor = "pointer";
 			var target = document.getElementById(elem.getAttribute("for"));
 			if (!target) {
 				target = elem.nextSibling;
@@ -488,20 +487,24 @@ JsonFx.UI.History.onchange = null;
 					target = target.nextSibling;
 				}
 			}
+			if (target) {
+				elem.style.cursor = "pointer";
+				elem.className += " jsonfx-expanded";
 
-			elem.onclick = function (/*event*/ evt) {
-				if (JsonFx.UI.expando(elem, target)) {
-					elem.className = elem.className.replace(/\s*jsonfx-expanded/g, " jsonfx-collapsed");
-				} else {
-					elem.className = elem.className.replace(/\s*jsonfx-collapsed/g, " jsonfx-expanded");
-				}
-				return false;
-			};
-			elem.ondblclick = function (/*event*/ evt) {
-				JsonFx.UI.clearTextSelection();
-				this.click();
-				return false;
-			};
+				elem.onclick = function (/*event*/ evt) {
+					if (JsonFx.UI.expando(elem, target)) {
+						elem.className = elem.className.replace(/\s*jsonfx-expanded/g, " jsonfx-collapsed");
+					} else {
+						elem.className = elem.className.replace(/\s*jsonfx-collapsed/g, " jsonfx-expanded");
+					}
+					return false;
+				};
+				elem.ondblclick = function (/*event*/ evt) {
+					JsonFx.UI.clearTextSelection();
+					this.click();
+					return false;
+				};
+			}
 		}, 0);
 };
 /*void*/ JsonFx.UI.expandoUnbind = function(/*element*/ elem) {
@@ -511,8 +514,6 @@ JsonFx.UI.History.onchange = null;
 	elem.onclick = null;
 	elem.ondblclick = null;
 };
-
-JsonFx.UI.Bindings.register("label", "jsonfx-expando", JsonFx.UI.expandoBind, JsonFx.UI.expandoUnbind);
 
 /*int*/ JsonFx.UI.dumpDataID = 0;
 /*JsonML*/ JsonFx.UI.dumpData = function(/*json*/ data) {
@@ -531,7 +532,7 @@ JsonFx.UI.Bindings.register("label", "jsonfx-expando", JsonFx.UI.expandoBind, Js
 		var li = ["li"];
 		var a = null;
 		if ("object" === pt && pv) {
-			a = ["label", {"class":"jsonfx-expando jsonfx-expanded"}];
+			a = ["label", {"class":"jsonfx-expando"}];
 			li.push(a);
 		}
 		(a?a:li).push(["span", {"class":"jsonfx-type"}, (pv instanceof Array) ? "array" : pt]);
