@@ -446,7 +446,7 @@ JsonFx.UI.History.onchange = null;
 		elem.expando = expando = new JsonFx.UI.Animate.Engine(target);
 	}
 	if (expando.hasAppliedOp()) {
-		if (elem.value) {
+		if (elem.value) {// hacky swap out for buttons
 			elem.value = " \u2212 ";
 			//elem.replaceChild(document.createTextNode("\u2212"), elem.firstChild);
 		}
@@ -457,7 +457,7 @@ JsonFx.UI.History.onchange = null;
 		op.fade(0);
 		op.height(0);
 		op.speed(0.65);
-		if (elem.value) {
+		if (elem.value) {// hacky swap out for buttons
 			elem.value = " + ";
 			//elem.replaceChild(document.createTextNode("+"), elem.firstChild);
 		}
@@ -467,17 +467,24 @@ JsonFx.UI.History.onchange = null;
 };
 
 /*void*/ JsonFx.UI.expandoBind = function(/*element*/ elem) {
-	elem.style.cursor = "pointer";
+	// call after elements have been added to document
+	window.setTimeout(
+		function() {
+			elem.style.cursor = "pointer";
+			var target = document.getElementById(elem.getAttribute("for"));
+			if (!target) {
+				target = elem.nextSibling;
+			}
 
-	elem.onclick = function (/*event*/ evt) {
-		var next = elem.nextSibling;
-		if (JsonFx.UI.expando(elem, next)) {
-			elem.className = elem.className.replace(/\s*jsonfx-expanded/g, " jsonfx-collapsed");
-		} else {
-			elem.className = elem.className.replace(/\s*jsonfx-collapsed/g, " jsonfx-expanded");
-		}
-		return false;
-	};
+			elem.onclick = function (/*event*/ evt) {
+				if (JsonFx.UI.expando(elem, target)) {
+					elem.className = elem.className.replace(/\s*jsonfx-expanded/g, " jsonfx-collapsed");
+				} else {
+					elem.className = elem.className.replace(/\s*jsonfx-collapsed/g, " jsonfx-expanded");
+				}
+				return false;
+			};
+		}, 0);
 };
 /*void*/ JsonFx.UI.expandoUnbind = function(/*element*/ elem) {
 	if ("undefined" !== typeof elem.expando) {
@@ -488,11 +495,12 @@ JsonFx.UI.History.onchange = null;
 
 JsonFx.UI.Bindings.register("label", "jsonfx-expando", JsonFx.UI.expandoBind, JsonFx.UI.expandoUnbind);
 
+/*int*/ JsonFx.UI.dumpDataID = 0;
 /*JsonML*/ JsonFx.UI.dumpData = function(/*json*/ data) {
 	if (data === null) {
 		return "null";
 	}
-	var ul = ["ul", {"class":"jsonfx-object"}];
+	var ul = ["ul", {"id":"JsonFx_UI_Dump_"+(JsonFx.UI.dumpDataID++),"class":"jsonfx-object"}];
 
 	for (var pn in data) {
 		if (!data.hasOwnProperty(pn)) {
@@ -511,7 +519,11 @@ JsonFx.UI.Bindings.register("label", "jsonfx-expando", JsonFx.UI.expandoBind, Js
 		(a?a:li).push(["span", {"class":"jsonfx-name"}, pn]);
 
 		if ("object" === pt) {
-			li.push(JsonFx.UI.dumpData(pv));
+			var o = JsonFx.UI.dumpData(pv);
+			if (a && o[1].id) {
+				a[1]["for"] = o[1].id;
+			}
+			li.push(o);
 		} else {
 			li.push(["span", {"class":"jsonfx-value"}, String(pv)]);
 		}
