@@ -8,6 +8,7 @@ If "%2" == "" GOTO HANDLE_ERROR
 %1ScriptCompactor\ScriptCompactor.exe "%2Scripts\IO.js" "%2Scripts\Compacted\IO.js" "Copyright (c)2006-2007 Stephen M. McKamey. http://JsonFx.net"
 %1ScriptCompactor\ScriptCompactor.exe "%2Scripts\UI.js" "%2Scripts\Compacted\UI.js" "Copyright (c)2006-2007 Stephen M. McKamey. http://JsonFx.net"
 %1ScriptCompactor\ScriptCompactor.exe "%2Scripts\Utility.js" "%2Scripts\Compacted\Utility.js" "Copyright (c)2006-2007 Stephen M. McKamey. http://JsonFx.net"
+%1ScriptCompactor\ScriptCompactor.exe "%2Scripts\UA.js" "%2Scripts\Compacted\UA.js" "Copyright (c)2006-2007 Stephen M. McKamey. http://JsonFx.net"
 %1ScriptCompactor\ScriptCompactor.exe "%2Scripts\Trace.js" "%2Scripts\Compacted\Trace.js" "Copyright (c)2006-2007 Stephen M. McKamey. http://JsonFx.net"
 
 xcopy "%2Scripts\JsonML.js" "%2..\JsonML\JsonML.js" /Y /R
