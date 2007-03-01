@@ -3,7 +3,7 @@
 	Dynamically appends CSS classes to document.body based upon user-agent.
 \*---------------------------------------------------------------------------*/
 
-JsonFx.UI.setCssUserAgent = function() {
+JsonFx.UI.setCssUserAgent = (function() {
 
 	// anonymous function doesn't affect global namespace and can't be called externally
 	// variables and helper functions available via JavaScript closures
