@@ -1,9 +1,23 @@
 ﻿/*---------------------------------------------------------------------------*\
-	UA.js
-	Dynamically appends CSS classes to document.body based upon user-agent.
+	JsonFx.UI.setCssUserAgent
+
+	Copyright (c)2006-2007 Stephen M. McKamey
+	Created: 2006-06-10-1635
+	Modified: 2007-03-01-0313
 \*---------------------------------------------------------------------------*/
 
-JsonFx.UI.setCssUserAgent = (function() {
+/* namespace JsonFx */
+if ("undefined" === typeof JsonFx) {
+	window.JsonFx = {};
+}
+
+/* namespace JsonFx.UI */
+if ("undefined" === typeof JsonFx.UI) {
+	JsonFx.UI = {};
+}
+
+/*	Dynamically appends CSS classes to document.body based upon user-agent.*/
+/*void*/ JsonFx.UI.setCssUserAgent = function() {
 
 	// anonymous function doesn't affect global namespace and can't be called externally
 	// variables and helper functions available via JavaScript closures
@@ -116,4 +130,4 @@ JsonFx.UI.setCssUserAgent = (function() {
 	}
 
 	appendCssLoop();
-})();
+};
