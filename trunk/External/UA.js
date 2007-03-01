@@ -29,7 +29,7 @@ if ("undefined" === typeof JsonFx.UI) {
 			return "";
 		}
 
-		b = b.replace(/\s*/g, '-');
+		b = b.replace(/\s+/g, '-');
 		var vi = parseInt(v, 10);
 		var vf = parseFloat(v);
 		vf = (vf === vi && vf.toFixed) ?
