@@ -67,13 +67,11 @@ namespace JsonFx.Handlers
 			if (String.IsNullOrEmpty(compiledScript))
 				return false;
 
-			using (StreamWriter writer = new StreamWriter(context.Response.OutputStream))
-			{
-				writer.Write(compiledScript);
-				writer.Flush();
-				writer.Close();
-				return true;
-			}
+			TextWriter writer = context.Response.Output;
+			writer.Write(compiledScript);
+			writer.Flush();
+			writer.Close();
+			return true;
 		}
 
 		protected void OutputResourceFile(HttpContext context)
@@ -85,34 +83,34 @@ namespace JsonFx.Handlers
 			if (input == null)
 				throw new HttpException((int)System.Net.HttpStatusCode.NotFound, "Invalid script name");
 
-			this.BufferedWrite(context, input);
+			this.BufferedWrite(context, new StreamReader(input, System.Text.Encoding.UTF8));
 		}
 
 		protected void OutputTargetFile(HttpContext context)
 		{
 			context.Response.TransmitFile(context.Request.PhysicalPath);
 
-			//Stream input = new FileStream(context.Request.PhysicalPath, FileMode.Open, FileAccess.Read);
+			//StreamReader reader = File.OpenText(context.Request.PhysicalPath);
 
-			//this.BufferedWrite(context, input);
+			//this.BufferedWrite(context, reader);
 		}
 
-		protected void BufferedWrite(HttpContext context, Stream input)
+		protected void BufferedWrite(HttpContext context, TextReader reader)
 		{
-			if (input == null)
+			if (reader == null)
 				throw new HttpException((int)System.Net.HttpStatusCode.NotFound, "Input stream is null.");
 
-			using (input)
+			using (reader)
 			{
-				using (Stream output = context.Response.OutputStream)
+				using (TextWriter writer = context.Response.Output)
 				{
 					// buffered write to response
-					byte[] buffer = new byte[ClientScriptHandler.BufferSize];
+					char[] buffer = new char[ClientScriptHandler.BufferSize];
 					int count;
 					do
 					{
-						count = input.Read(buffer, 0, ClientScriptHandler.BufferSize);
-						output.Write(buffer, 0, count);
+						count = reader.ReadBlock(buffer, 0, ClientScriptHandler.BufferSize);
+						writer.Write(buffer);
 					} while (count > 0);
 				}
 			}
