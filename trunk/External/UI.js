@@ -3,7 +3,7 @@
 	JsonFx UI
 	Copyright (c)2006-2007 Stephen M. McKamey
 	Created: 2006-11-11-1759
-	Modified: 2007-02-21-0618
+	Modified: 2007-03-02-0612
 \*---------------------------------------------------------*/
 
 /* namespace JsonFx */
@@ -1249,8 +1249,8 @@ JsonFx.UI.Animate.Engine = function(/*element*/ elem) {
 						op = new JsonFx.UI.Animate.Op();
 						mutex = false;
 
-						if ("function" === typeof cb) {
-							cb(cx);
+						if ("function" === typeof callback) {
+							callback(context);
 						}
 					},
 					0);

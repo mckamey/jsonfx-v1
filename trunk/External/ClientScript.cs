@@ -3,13 +3,13 @@ using System;
 #region Web Resource Declarations
 
 // Allow these resources to be web browsable from this Assembly
-[assembly: System.Web.UI.WebResourceAttribute(JsonFx.Scripts.ClientScript.CoreScript, JsonFx.Scripts.ClientScript.JavaScriptContentType)]
-[assembly: System.Web.UI.WebResourceAttribute(JsonFx.Scripts.ClientScript.JsonScript, JsonFx.Scripts.ClientScript.JavaScriptContentType)]
-[assembly: System.Web.UI.WebResourceAttribute(JsonFx.Scripts.ClientScript.JsonMLScript, JsonFx.Scripts.ClientScript.JavaScriptContentType)]
-[assembly: System.Web.UI.WebResourceAttribute(JsonFx.Scripts.ClientScript.IOScript, JsonFx.Scripts.ClientScript.JavaScriptContentType)]
-[assembly: System.Web.UI.WebResourceAttribute(JsonFx.Scripts.ClientScript.UIScript, JsonFx.Scripts.ClientScript.JavaScriptContentType)]
-[assembly: System.Web.UI.WebResourceAttribute(JsonFx.Scripts.ClientScript.UtilityScript, JsonFx.Scripts.ClientScript.JavaScriptContentType)]
-[assembly: System.Web.UI.WebResourceAttribute(JsonFx.Scripts.ClientScript.TraceScript, JsonFx.Scripts.ClientScript.JavaScriptContentType)]
+//[assembly: System.Web.UI.WebResourceAttribute(JsonFx.Scripts.ClientScript.CoreScript, JsonFx.Scripts.ClientScript.JavaScriptContentType)]
+//[assembly: System.Web.UI.WebResourceAttribute(JsonFx.Scripts.ClientScript.JsonScript, JsonFx.Scripts.ClientScript.JavaScriptContentType)]
+//[assembly: System.Web.UI.WebResourceAttribute(JsonFx.Scripts.ClientScript.JsonMLScript, JsonFx.Scripts.ClientScript.JavaScriptContentType)]
+//[assembly: System.Web.UI.WebResourceAttribute(JsonFx.Scripts.ClientScript.IOScript, JsonFx.Scripts.ClientScript.JavaScriptContentType)]
+//[assembly: System.Web.UI.WebResourceAttribute(JsonFx.Scripts.ClientScript.UIScript, JsonFx.Scripts.ClientScript.JavaScriptContentType)]
+//[assembly: System.Web.UI.WebResourceAttribute(JsonFx.Scripts.ClientScript.UtilityScript, JsonFx.Scripts.ClientScript.JavaScriptContentType)]
+//[assembly: System.Web.UI.WebResourceAttribute(JsonFx.Scripts.ClientScript.TraceScript, JsonFx.Scripts.ClientScript.JavaScriptContentType)]
 
 #endregion Web Resource Declarations
 
@@ -28,19 +28,20 @@ namespace JsonFx.Scripts
 
 		#region Scripts
 
-#if DEBUG
+//#if DEBUG
 		// full source scripts: good for dev and debugging
 		public const string ScriptPath = "JsonFx.Scripts.";
-#else
+//#else
 		// compacted scripts: better for distribution and speed
-		public const string ScriptPath = "JsonFx.Scripts.Compacted.";
-#endif
+		public const string CompactedScriptPath = "JsonFx.Scripts.Compacted.";
+//#endif
 
 		public const string CoreScript = ScriptPath + "Core.js";
 		public const string JsonScript = ScriptPath + "JSON.js";
 		public const string JsonMLScript = ScriptPath + "JsonML.js";
 		public const string IOScript = ScriptPath + "IO.js";
 		public const string UIScript = ScriptPath + "UI.js";
+		public const string UAScript = ScriptPath + "UA.js";
 		public const string UtilityScript = ScriptPath + "Utility.js";
 		public const string TraceScript = ScriptPath + "Trace.js";
 

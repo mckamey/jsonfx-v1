@@ -18,6 +18,8 @@ namespace JsonFx.Handlers
 
 		void IHttpHandler.ProcessRequest(HttpContext context)
 		{
+			bool isDebug = "debug".Equals(context.Request.QueryString[null], StringComparison.InvariantCultureIgnoreCase);
+
 			context.Response.Clear();
 			context.Response.ClearContent();
 			context.Response.ClearHeaders();
@@ -28,27 +30,27 @@ namespace JsonFx.Handlers
 			// this is causing issues? Transfer-Encoding: chunked
 			context.Response.AddHeader("Content-Disposition", "inline;filename="+Path.GetFileNameWithoutExtension(context.Request.FilePath)+".js");
 
-			// specifying "DEBUG" in the query string gets the non-compacted form
-			if (//String.IsNullOrEmpty(context.Request.QueryString["debug"]) &&
-				!"debug".Equals(context.Request.QueryString[null], StringComparison.InvariantCultureIgnoreCase))
+			if (context.Request.FilePath.EndsWith(".js", StringComparison.InvariantCultureIgnoreCase))
 			{
-				if (this.OutputCompiledFile(context))
+				// specifying "DEBUG" in the query string gets the non-compacted form
+				if (!isDebug && this.OutputCompiledFile(context))
 				{
 					return;
 				}
-			}
+				// continue with non-compacted if compacted form could not be found
 
-			// this is causing issues? Transfer-Encoding: chunked
-			context.Response.Cache.SetCacheability(HttpCacheability.NoCache);
+				// is this causing issues? Transfer-Encoding: chunked
+				context.Response.Cache.SetCacheability(HttpCacheability.NoCache);
 
-			if (context.Request.FilePath.EndsWith(".js", StringComparison.InvariantCultureIgnoreCase))
-			{
-				// wasn't precompiled so just stream from original file
+				// wasn't precompiled so just stream original file
 				this.OutputTargetFile(context);
 				return;
 			}
-
-			this.OutputResourceFile(context);
+			else
+			{
+				// JsonFx scripts
+				this.OutputResourceFile(context, isDebug);
+			}
 		}
 
 		bool IHttpHandler.IsReusable
@@ -74,14 +76,18 @@ namespace JsonFx.Handlers
 			return true;
 		}
 
-		protected void OutputResourceFile(HttpContext context)
+		protected void OutputResourceFile(HttpContext context, bool isDebug)
 		{
 			string virtualPath = context.Request.FilePath;
-			string script = Path.GetFileNameWithoutExtension(virtualPath)+".js";
+			string script = isDebug ? JsonFx.Scripts.ClientScript.ScriptPath : JsonFx.Scripts.ClientScript.CompactedScriptPath;
+			script += Path.GetFileNameWithoutExtension(virtualPath)+".js";
+
 			Assembly assembly = Assembly.GetAssembly(typeof(JsonFx.Scripts.ClientScript));
-			Stream input = assembly.GetManifestResourceStream(JsonFx.Scripts.ClientScript.ScriptPath+script);
+			Stream input = assembly.GetManifestResourceStream(script);
 			if (input == null)
+			{
 				throw new HttpException((int)System.Net.HttpStatusCode.NotFound, "Invalid script name");
+			}
 
 			this.BufferedWrite(context, new StreamReader(input, System.Text.Encoding.UTF8));
 		}
@@ -91,7 +97,6 @@ namespace JsonFx.Handlers
 			context.Response.TransmitFile(context.Request.PhysicalPath);
 
 			//StreamReader reader = File.OpenText(context.Request.PhysicalPath);
-
 			//this.BufferedWrite(context, reader);
 		}
 
@@ -102,17 +107,17 @@ namespace JsonFx.Handlers
 
 			using (reader)
 			{
-				using (TextWriter writer = context.Response.Output)
+				TextWriter writer = context.Response.Output;
+				// buffered write to response
+				char[] buffer = new char[ClientScriptHandler.BufferSize];
+				int count;
+				do
 				{
-					// buffered write to response
-					char[] buffer = new char[ClientScriptHandler.BufferSize];
-					int count;
-					do
-					{
-						count = reader.ReadBlock(buffer, 0, ClientScriptHandler.BufferSize);
-						writer.Write(buffer);
-					} while (count > 0);
-				}
+					count = reader.ReadBlock(buffer, 0, ClientScriptHandler.BufferSize);
+					writer.Write(buffer, 0, count);
+				} while (count > 0);
+				writer.Flush();
+				writer.Close();
 			}
 		}
 
