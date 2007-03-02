@@ -22,7 +22,7 @@ namespace JsonFx.Services.Proxy
 #if DEBUG
 		private const string ExternFormat = "/*extern JsonFx, {0}*/\r\n";
 
-		private const string NamespaceFormat = "if (\"undefined\" === typeof {0}) {{\r\n\t{0} = {{}};\r\n}}\r\n";
+		private const string NamespaceFormat = "if (\"undefined\" === typeof {0}) {{\r\n\twindow.{0} = {{}};\r\n}}\r\n";
 
 		private const string ClassBeginFormat = "if (\"undefined\" === typeof {0}{1}) {{\r\n\r\n\t/*ctor*/\r\n\t{0}{1} = function(/*string*/ serviceUrl) {{\r\n\t\tif (serviceUrl) {{\r\n\t\t\tthis.address = serviceUrl;\r\n\t\t}}\r\n\t}};\r\n\r\n\t/*base*/\r\n\t{0}{1}.prototype = new JsonFx.IO.JsonServiceBase();\r\n\r\n";
 		private const string ClassEnd = "}\r\n";
@@ -38,7 +38,7 @@ namespace JsonFx.Services.Proxy
 #else
 		private const string ExternFormat = "";
 
-		private const string NamespaceFormat = "if(\"undefined\"===typeof {0}){{{0}={{}};}}";
+		private const string NamespaceFormat = "if(\"undefined\"===typeof {0}){{window.{0}={{}};}}";
 
 		private const string ClassBeginFormat = "if(\"undefined\"===typeof {0}{1}){{{0}{1}=function(url){{if(url){{this.address=url;}}}};{0}{1}.prototype=new JsonFx.IO.JsonServiceBase();";
 		private const string ClassEnd = "}";
