@@ -3,7 +3,7 @@
 	Modifications to global objects
 	Copyright (c)2006-2007 Stephen M. McKamey
 	Created: 2006-11-14-0928
-	Modified: 2007-02-07-2339
+	Modified: 2007-02-21-0540
 \*---------------------------------------------------------*/
 
 /* namespace JsonFx */
@@ -381,7 +381,7 @@ if (!Object.prototype.toJSONString) {
 	JsonML.js
 
 	Created: 2006-11-09-0116
-	Modified: 2007-01-29-2154
+	Modified: 2007-02-15-2226
 
 	Released under a BSD-style open-source license:
 	http://jsonml.org/License.htm
@@ -436,8 +436,6 @@ if (!Object.prototype.toJSONString) {
 
 /*element*/ Array.prototype.parseJsonML = function (/*element function(element)*/ filter) {
 
-	var re = /^\s*([a-zA-Z-]+[\w-]*)\s*[:]\s*((\S+\s*\S+)+)\s*$/;// styles RegExp
-
 	//attribute name mapping
 	var am = {
 		"tabindex" : "tabIndex",
@@ -453,30 +451,10 @@ if (!Object.prototype.toJSONString) {
 				continue;
 			}
 			if (an.toLowerCase() === "style") {
-				var s = a[an];// styles
-				s = s.split(";");
-				for (var i=0; i<s.length; i++) {
-					if (!s[i]) {
-						continue;
-					}
-					if (s[i].match(re)) {
-						var n = RegExp.$1; // style property
-						var v = RegExp.$2; // style value
-						if (n && v) {
-							if (n === "float") {
-								n = "styleFloat";
-							} else {
-								// convert property name to camelCase
-								n = n.split('-');
-								n[0] = n[0].toLowerCase();
-								for (var j=1; j<n.length; j++) {
-									n[j] = n[j].charAt(0).toUpperCase()+n[j].substr(1).toLowerCase();
-								}
-								n = n.join("");
-							}
-							el.style[n] = v;
-						}
-					}
+				if ("undefined" !== typeof el.style.cssText) {
+					el.style.cssText = a[an];
+				} else {
+					el.style = a[an];
 				}
 			} else if (an.toLowerCase() === "class") {
 				el.className = a[an];
@@ -640,9 +618,9 @@ JsonFx.IO.callTimeout = 10000;// 10 sec
 			if (status === 200) {
 				/* data was retrieved successfully */
 				if (cb_responseSuccess) {
-/*TIMER*/
+//TIMER
 //JsonFx.Timer.stop("request", true);//250,250,250
-/*TIMER*/
+//TIMER
 					cb_responseSuccess(request, context);
 				}
 			} else if (status === 0) {
@@ -679,9 +657,9 @@ JsonFx.IO.callTimeout = 10000;// 10 sec
 		} else if (HttpMethod === "POST") {
 			request.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
 		}
-/*TIMER*/
+//TIMER
 //JsonFx.Timer.start("request");
-/*TIMER*/
+//TIMER
 		request.send(params);
 		return true;
 	} catch (ex) {
@@ -754,18 +732,18 @@ JsonFx.IO.callTimeout = 10000;// 10 sec
 	/*object*/ context) {
 
 	function cb_decodeResponse(response, context) {
-/*TIMER*/
+//TIMER
 //JsonFx.Timer.start("decode");
-/*TIMER*/
+//TIMER
 		var data = response.responseText;
 		if (typeof(data) === "string") {
 			try {
 				data = data.parseJSON();
 			} catch (ex) { }
 		}
-/*TIMER*/
+//TIMER
 //JsonFx.Timer.stop("decode", true);//32,31,22500(greedy regex)
-/*TIMER*/
+//TIMER
 		cb_responseSuccess(data, context);
 	}
 
@@ -859,7 +837,7 @@ if (typeof(JsonFx.IO.JsonServiceBase) === "undefined") {
 	JsonFx UI
 	Copyright (c)2006-2007 Stephen M. McKamey
 	Created: 2006-11-11-1759
-	Modified: 2007-02-07-2339
+	Modified: 2007-03-02-0612
 \*---------------------------------------------------------*/
 
 /* namespace JsonFx */
@@ -872,7 +850,7 @@ JsonFx.UI = {};
 
 /* Utilities ----------------------------------------------------*/
 
-/*string*/ JsonFx.UI.getStyle = function(/*elem*/ elem, /*string*/ style) {
+/*string*/ JsonFx.UI.getStyle = function(/*element*/ elem, /*string*/ style) {
 	if (typeof(elem) === "string") {
 		elem = document.getElementById(elem);
 	}
@@ -882,9 +860,46 @@ JsonFx.UI = {};
 	}
 	if (elem.currentStyle) {
 		// IE only
+		if (style === "float") {
+			style = "styleFloat";
+		} else {
+			// convert property name to camelCase
+			style = style.split('-');
+			style[0] = style[0].toLowerCase();
+			for (var i=1; i<style.length; i++) {
+				style[i] = style[i].charAt(0).toUpperCase()+style[i].substr(1).toLowerCase();
+			}
+			style = style.join("");
+		}
 		return elem.currentStyle[style];
 	}
 	return null;
+};
+
+/*{left,top}*/ JsonFx.UI.getOffset = function(/*element*/ elem) {
+	var top=0, left=0;
+	while (elem) {
+		top += elem.offsetTop;
+		left += elem.offsetLeft;
+		elem = elem.offsetParent;
+		if (elem) {
+			var pos = JsonFx.UI.getStyle(elem, "position");
+			if (pos && pos !== "static") {
+				elem = null;
+			}
+		}
+	}
+	return { "left":left, "top":top };
+};
+
+/*void*/ JsonFx.UI.clearTextSelection = function() {
+	if (window.getSelection && window.getSelection().removeAllRanges) {
+		window.getSelection().removeAllRanges();
+	} else if (document.getSelection && document.getSelection().empty) {
+		document.getSelection().empty();
+	} else if (document.selection && document.selection.empty) {
+		document.selection.empty();
+	}
 };
 
 /*function*/ JsonFx.UI.combineHandlers = function (/*function*/ handlerA, /*function*/ handlerB) {
@@ -899,6 +914,71 @@ JsonFx.UI = {};
 	}
 };
 
+/*element*/ JsonFx.UI.getIFrameDocument = function(/*element*/ elem) {
+	if (!elem) {
+		return null;
+	}
+
+	return ("undefined" !== typeof elem.contentDocument) ?
+		elem.contentDocument : elem.contentWindow.document;
+};
+
+/*string*/ JsonFx.UI.toHtmlColor = function(/*int*/ r, /*int*/ g, /*int*/ b) {
+	if (!isFinite(r) || r<0x00 || r>0xFF ||
+		!isFinite(g) || g<0x00 || g>0xFF ||
+		!isFinite(b) || b<0x00 || b>0xFF) {
+		throw new Error("Color components need to be numbers from 0x00 to 0xFF");
+	}
+
+	/*int*/ var c = (((Math.floor(r)<<8)+Math.floor(g))<<8)+Math.floor(b);
+
+	/*string*/ var hex = "";
+	for (var i=0; i<6; i++) {
+		hex = Math.floor(c % 0x10).toString(16) + hex;
+		c = Math.floor(c / 0x10);
+	}
+
+	return "#"+hex;
+};
+
+/*{r,g,b}*/ JsonFx.UI.fromHtmlColor = function(/*string*/ hex) {
+	if (hex) {
+		if (hex.match(/#([0-9a-fA-F]{1,2})([0-9a-fA-F]{1,2})([0-9a-fA-F]{1,2})/)) {// HEX colors
+			if (hex.length === 7) {
+				// e.g. "#336699"
+				return {
+						"r":Number("0x"+RegExp.$1),
+						"g":Number("0x"+RegExp.$2),
+						"b":Number("0x"+RegExp.$3)
+					};
+			} else if (hex.length === 4) {
+				// e.g. "#369" === "#336699"
+				return {
+						"r":Number("0x"+RegExp.$1+RegExp.$1),
+						"g":Number("0x"+RegExp.$2+RegExp.$2),
+						"b":Number("0x"+RegExp.$3+RegExp.$3)
+					};
+			}
+		}
+		if (hex.match(/rgb[\(](\d+),\s*(\d+),\s*(\d+)[\)]/)) {// Firefox colors
+			return {
+					"r":Number(RegExp.$1),
+					"g":Number(RegExp.$2),
+					"b":Number(RegExp.$3)
+				};
+		}
+	}
+	return {"r":NaN, "g":NaN, "b":NaN};
+};
+
+/*float*/ JsonFx.UI.lerp = function (/*float*/ start, /*float*/ end, /*float*/ t) {
+	return (start * (1-t)) + (end * t);
+};
+
+/*int*/ JsonFx.UI.lerpInt = function (/*int*/ start, /*int*/ end, /*float*/ t) {
+	return Math.floor( JsonFx.UI.lerp(start, end, t) + 0.5 );
+};
+
 /*-------------------*\
 	Binding Methods
 \*-------------------*/
@@ -907,7 +987,7 @@ JsonFx.UI = {};
 JsonFx.UI.Bindings = function() {
 
 	/*object*/ var b = this;
-	/*const string*/ var BindAction = "B", UnbindAction = "U";
+	/*const string*/ var BIND = "B", UNBIND = "U";
 
 	/*hashtable[tag] of object*/ var bindings = {};
 
@@ -934,17 +1014,17 @@ JsonFx.UI.Bindings = function() {
 			}
 
 			/*object*/ bindings[tag][css] = {};
-			bindings[tag][css][BindAction] = bind ? bind : null;
-			bindings[tag][css][UnbindAction] = unbind ? unbind : null;
+			bindings[tag][css][BIND] = bind ? bind : null;
+			bindings[tag][css][UNBIND] = unbind ? unbind : null;
 		}
 	};
 
 	/*element*/ var performOne = function(/*element*/ elem, /*actionKey*/ a) {
 		if (elem && elem.tagName && elem.className) {
 
-/*TIMER*/
+//TIMER
 //JsonFx.Timer.start(a+"_one");
-/*TIMER*/
+//TIMER
 
 			// only perform on registered tags
 			var tag = elem.tagName.toLowerCase();
@@ -963,9 +1043,9 @@ JsonFx.UI.Bindings = function() {
 				}
 			}
 
-/*TIMER*/
+//TIMER
 //JsonFx.Timer.stop(a+"_one", true);//48/16,46/31,62/0
-/*TIMER*/
+//TIMER
 
 		}
 		return elem;
@@ -974,9 +1054,9 @@ JsonFx.UI.Bindings = function() {
 	// perform a binding action on child elements
 	/*void*/ var perform = function(/*element*/ root, /*actionKey*/ a) {
 
-/*TIMER*/
+//TIMER
 //JsonFx.Timer.start(a+"_all");
-/*TIMER*/
+//TIMER
 		if (root && root.getElementsByTagName) {
 
 			// for each registered tag
@@ -992,62 +1072,72 @@ JsonFx.UI.Bindings = function() {
 			}
 		}
 
-/*TIMER*/
+//TIMER
 //JsonFx.Timer.stop(a+"_all", true);//32,31,31
-/*TIMER*/
+//TIMER
 	};
 
 	// used as JsonML filter
 	/*element*/ b.bindOne = function(/*element*/ elem) {
-		return performOne(elem, BindAction);
+		return performOne(elem, BIND);
 	};
 
 	// bind
 	/*void*/ b.bindAll = function() {
-		// store previous values
-		var ttl = document.body.title;
-		var crsr = document.body.style.cursor;
+		var ttl, crsr;
+		if (document.body && document.body.style) {
+			// store previous values
+			ttl = document.body.title;
+			crsr = document.body.style.cursor;
 
-		// setup loading visual cues
-		document.body.title = "Loading...";
-		document.body.style.cursor = "wait";
+			// setup loading visual cues
+			document.body.title = "Loading...";
+			document.body.style.cursor = "wait";
+		}
 
 		try {
-			perform(document, BindAction);
+			perform(document, BIND);
 		} finally {
-			// restore previous values
-			document.body.title = ttl ? ttl : "";
-			document.body.style.cursor = crsr ? crsr : "";
+			if (document.body && document.body.style) {
+				// restore previous values
+				document.body.title = ttl ? ttl : "";
+				document.body.style.cursor = crsr ? crsr : "";
+			}
 		}
 	};
 
 	// unbind
 	/*void*/ b.unbindAll = function() {
-		// store previous values
-		var ttl = document.body.title;
-		var crsr = document.body.style.cursor;
+		var ttl, crsr;
+		if (document.body && document.body.style) {
+			// store previous values
+			ttl = document.body.title;
+			crsr = document.body.style.cursor;
 
-		// setup loading visual cues
-		document.body.title = "Unloading...";
-		document.body.style.cursor = "wait";
+			// setup loading visual cues
+			document.body.title = "Unloading...";
+			document.body.style.cursor = "wait";
+		}
 
 		try {
-			perform(document, UnbindAction);
+			perform(document, UNBIND);
 		} finally {
-			// restore previous values
-			document.body.title = ttl ? ttl : "";
-			document.body.style.cursor = crsr ? crsr : "";
+			if (document.body && document.body.style) {
+				// restore previous values
+				document.body.title = ttl ? ttl : "";
+				document.body.style.cursor = crsr ? crsr : "";
+			}
 		}
 	};
 
 	// bind
 	/*void*/ b.bind = function(/*element*/ root) {
-		perform(root, BindAction);
+		perform(root, BIND);
 	};
 
 	// unbind
 	/*void*/ b.unbind = function(/*element*/ root) {
-		perform(root, UnbindAction);
+		perform(root, UNBIND);
 	};
 
 	// wire up binding
@@ -1069,6 +1159,42 @@ JsonFx.UI.Bindings = function() {
 JsonFx.UI.Bindings = new JsonFx.UI.Bindings();
 
 /*------------------*\
+	History Methods
+\*------------------*/
+
+/* singleton JsonFx.UI.History */
+JsonFx.UI.History = {};
+
+JsonFx.UI.History.h = null;
+JsonFx.UI.History.onchange = null;
+
+/*void*/ JsonFx.UI.History.add = function(/*object*/ info) {
+	var h = JsonFx.UI.getIFrameDocument(JsonFx.UI.History.h);
+	if (h) {
+		h.location.search = encodeURIComponent(info.toJSONString());
+	}
+};
+
+/*void*/ JsonFx.UI.History.changed = function(/*element*/ elem) {
+	if (!JsonFx.UI.History.h) {
+		JsonFx.UI.History.h = elem;
+	}
+	var h = JsonFx.UI.getIFrameDocument(elem);
+	if (h) {
+		var info = h.location.search;
+		if (info) {
+			if (info.charAt(0) === '?') {
+				info = info.substring(1);
+			}
+			info = decodeURIComponent(info).parseJSON();
+			if ("function" === typeof JsonFx.UI.History.onchange) {
+				JsonFx.UI.History.onchange(info);
+			}
+		}
+	}
+};
+
+/*------------------*\
 	JsonML Methods
 \*------------------*/
 
@@ -1087,9 +1213,9 @@ JsonFx.UI.Bindings = new JsonFx.UI.Bindings();
 	returns the container element if one was specified */
 /*element*/ JsonFx.UI.displayJsonML = function(/*JsonML*/ jml, /*element or string*/ container) {
 
-/*TIMER*/
+//TIMER
 //JsonFx.Timer.start("display");
-/*TIMER*/
+//TIMER
 
 	// either DOM element or id
 	container = (typeof(container) !== "string") ?
@@ -1135,376 +1261,112 @@ JsonFx.UI.Bindings = new JsonFx.UI.Bindings();
 			}
 		}
 	}
-/*TIMER*/
+//TIMER
 //JsonFx.Timer.stop("display", true);//265,266,266
-/*TIMER*/
+//TIMER
 	return container;
 };
 
 /* returns true if request was sent */
 /*bool*/ JsonFx.UI.loadJsonML = function(/*string*/ url, /*element or string*/ container, /*function*/ callback, /*object*/ context) {
 
-/*TIMER*/
+//TIMER
 //JsonFx.Timer.start("load");
-/*TIMER*/
+//TIMER
 
 	return JsonFx.IO.GetJsonRequest(url, null, null,
 			function(jml,obj) {
 
-/*TIMER*/
+//TIMER
 //JsonFx.Timer.stop("load", true);//282,281,22750(greedy regex)
-/*TIMER*/
+//TIMER
 				JsonFx.UI.displayJsonML(jml, container);
-				if (callback) { callback(context); }
+				if ("function" === typeof callback) { callback(context); }
 			}
 		, null);
 };
 
-/*-----------------*\
-	Maximize Verb
-\*-----------------*/
-
-/*function*/ JsonFx.UI.createMaximize = function(/*element or string*/ elem, /*JsonFx.UI.Dir*/ dir) {
-
-	if (typeof(elem) === "string") {
-		// either DOM element or id
-		elem = document.getElementById(elem);
-	}
-
-	if (!elem || !elem.tagName) {
-		return null;
-	}
-
-	var es = elem.style,
-	/*bool*/ state = false;
-
-	var userShape;
-
-	/*void*/ function saveShape() {
-		userShape = {};
-		for (var s in es) {
-			if (/*es.hasOwnProperty(s) &&*/ es[s]) {
-				userShape[s] = es[s];
-			}
-		}
-	}
-	/*void*/ function restoreShape() {
-		if (userShape) {
-			for (var s in userShape) {
-				if (userShape.hasOwnProperty(s)) {
-					es[s] = userShape[s];
-				}
-			}
-		}
-	}
-
-	// state: true = maixmize, false = restore
-	return /*void*/ function max(/*bool*/ newState) {
-
-		if (!state) {
-			saveShape();
-		}
-		// store the latest requested state
-		if (typeof(newState) === "boolean") {
-			state = newState;
-		} else {
-			state = !state;
-		}
-
-		if (state) {
-			es.floatStyle = "none";
-			es.position = "absolute";
-			es.width = JsonFx.UI.getStyle(document.documentElement, "width");
-			es.height = JsonFx.UI.getStyle(document.documentElement, "height");
-			es.top = "0px";
-			es.left = "0px";
-			es.bottom = "0px";
-			es.right = "0px";
-		} else {
-			restoreShape();
-		}
-	};
-};
-
-/*-----------------*\
-	Minimize Verb
-\*-----------------*/
-
-JsonFx.UI.Dir = {
-	None:  0x00,
-	Horz:  0x01,
-	Vert:  0x02,
-	Fade:  0x04,
-	Zoom:  0x08,
-	ClipX: 0x10,
-	ClipY: 0x20,
-/*	Both: 0x1|0x2,*/
-/*	All: 0x1|0x2|0x4|0x8,*/
-
-	// helper method which tests for Horz
-	/*bool*/ isHorz: function (/*JsonFx.UI.Dir*/ dir) {
-		return !!(JsonFx.UI.Dir.Horz & dir);
-	},
-
-	// helper method which tests for Vert
-	/*bool*/ isVert: function (/*JsonFx.UI.Dir*/ dir) {
-		return !!(JsonFx.UI.Dir.Vert & dir);
-	},
-
-	// helper method which tests for Fade
-	/*bool*/ isFade: function (/*JsonFx.UI.Dir*/ dir) {
-		return !!(JsonFx.UI.Dir.Fade & dir);
-	},
-
-	// helper method which tests for Zoom
-	/*bool*/ isZoom: function (/*JsonFx.UI.Dir*/ dir) {
-		return !!(JsonFx.UI.Dir.Zoom & dir);
-	},
-
-	// helper method which tests for ClipX
-	/*bool*/ isClipX: function (/*JsonFx.UI.Dir*/ dir) {
-		return !!(JsonFx.UI.Dir.ClipX & dir);
-	},
-
-	// helper method which tests for ClipY
-	/*bool*/ isClipY: function (/*JsonFx.UI.Dir*/ dir) {
-		return !!(JsonFx.UI.Dir.ClipY & dir);
-	}
-};
-
-/*function*/ JsonFx.UI.createMinimize = function(/*element or string*/ elem, /*JsonFx.UI.Dir*/ dir) {
-
-	if (typeof(elem) === "string") {
-		// either DOM element or id
-		elem = document.getElementById(elem);
-	}
-
-	if (!elem || !elem.tagName) {
-		return null;
-	}
-
-	var es = elem.style,
-	/*bool*/ mutex = false,
-	/*bool*/ state = false,
-	/*const float*/ StepMin = 0.0,
-	/*const float*/ StepMax = 1.0,
-	/*const float*/ StepInc = 0.05;
-
-	var pxHeight = "",
-		pxWidth = "",
-		userHeight = "",
-		userWidth = "",
-		userOverflow = "",
-		userPosition = "",
-		userFilter = "",
-		userKhtml = "",
-		userMoz = "",
-		userOpacity = "",
-		userZoom = "",
-		userClip = "",
-		alpha = null;
-
-	/*void*/ function saveShape() {
-		if (elem && es) {
-			if (JsonFx.UI.Dir.isVert(dir) || JsonFx.UI.Dir.isHorz(dir) || JsonFx.UI.Dir.isClipX(dir) || JsonFx.UI.Dir.isClipY(dir)) {
-				userOverflow = es.overflow;
-			}
-			if (JsonFx.UI.Dir.isVert(dir) || JsonFx.UI.Dir.isClipY(dir)) {
-				userHeight = es.height;
-				pxHeight = !isNaN(elem.offsetHeight) ?
-					elem.offsetHeight : parseFloat(JsonFx.UI.getStyle(elem, "height"));
-			}
-			if (JsonFx.UI.Dir.isHorz(dir) || JsonFx.UI.Dir.isClipX(dir)) {
-				userWidth = es.width;
-				pxWidth = !isNaN(elem.offsetWidth) ?
-					elem.offsetWidth : parseFloat(JsonFx.UI.getStyle(elem, "width"));
-			}
-			if (JsonFx.UI.Dir.isFade(dir)) {
-				userKhtml = es["-khtml-opacity"];
-				userMoz = es["-moz-opacity"];
-				userOpacity = es.opacity;
-				if (elem.filters && !alpha) {
-					es.filter += " progid:DXImageTransform.Microsoft.Alpha(enabled=false)";
-					try {
-						alpha = elem.filters.item("DXImageTransform.Microsoft.Alpha");
-					} catch (ex) { alpha = null; }
-					if (!alpha) {
-						es.filter += " alpha(enabled=false)";
-						try {
-							alpha = elem.filters.item("alpha");
-						} catch (ex) { alpha = null; }
-					}
-				}
-			}
-			if (JsonFx.UI.Dir.isZoom(dir)) {
-				userZoom = es.zoom;
-			}
-			if (JsonFx.UI.Dir.isClipX(dir) || JsonFx.UI.Dir.isClipY(dir)) {
-				userPosition = es.position;
-				userClip = es.clip;
-			}
-		}
-	}
-
-	// state: true = collapse, false = expand
-	return /*void*/ function min(/*bool*/ newState) {
-
-		if (!es) { return; }
-
-		// store the latest requested state
-		if (typeof(newState) === "boolean") {
-			state = newState;
-		} else {
-			state = !state;
-		}
-		if (mutex) {
-			// crude concurrency check
-			return;
-		}
-		mutex = true;
-
-		if (state) {
-			saveShape();
-		}
-		es.display = "block";
-		es.visibility = "visible";
-
-		// minimizeStep
-		/*void*/ function m(/*float*/ step) {
-
-			if (!es || isNaN(step)) {
-				mutex = false;
-				return;
-			}
-
-			if (step < StepMin || step > StepMax) {
-				if (state) {
-					if (JsonFx.UI.Dir.isVert(dir) || JsonFx.UI.Dir.isZoom(dir) || JsonFx.UI.Dir.isClipX(dir) || JsonFx.UI.Dir.isClipY(dir)) {
-						es.display = "none";
-					}
-					es.visibility = "hidden";
-				}
-				if (JsonFx.UI.Dir.isVert(dir) || JsonFx.UI.Dir.isHorz(dir) || JsonFx.UI.Dir.isClipX(dir) || JsonFx.UI.Dir.isClipY(dir)) {
-					es.overflow = userOverflow;
-				}
-				if (JsonFx.UI.Dir.isHorz(dir)) {
-					es.width = userWidth;
-				}
-				if (JsonFx.UI.Dir.isVert(dir)) {
-					es.height = userHeight;
-				}
-				if (JsonFx.UI.Dir.isFade(dir)) {
-					es["-khtml-opacity"] = userKhtml;
-					es["-moz-opacity"] = userMoz;
-					es.opacity = userOpacity;
-					if (alpha) {
-						alpha.enabled = false;
-					}
-					if (userFilter) {
-						es.filter = userFilter;
-					}
-				}
-				if (JsonFx.UI.Dir.isZoom(dir)) {
-					es.zoom = userZoom;
-				}
-				if (JsonFx.UI.Dir.isClipX(dir) || JsonFx.UI.Dir.isClipY(dir)) {
-					es.position = userPosition;
-					es.clip = userClip;
-				}
-				mutex = false;
-				return;
-			}
-
-			if (JsonFx.UI.Dir.isVert(dir) || JsonFx.UI.Dir.isHorz(dir) || JsonFx.UI.Dir.isClipX(dir) || JsonFx.UI.Dir.isClipY(dir)) {
-				es.overflow = "hidden";
-			}
-
-			if (JsonFx.UI.Dir.isHorz(dir) && !isNaN(pxWidth)) {
-				// horizontal, simplified lerp
-				es.width = Math.floor(pxWidth*step)+"px";
-			}
-			if (JsonFx.UI.Dir.isVert(dir) && !isNaN(pxHeight)) {
-				// vertical, simplified lerp
-				es.height = Math.floor(pxHeight*step)+"px";
-			}
-			if (JsonFx.UI.Dir.isFade(dir)) {
-				// opacity, simplified lerp
-				es["-khtml-opacity"] = 1.0*step;
-				es["-moz-opacity"] = 1.0*step;
-				es.opacity = 1.0*step;
-				if (alpha) {
-					alpha.opacity = Math.floor(100*step);
-					alpha.enabled = true;
-				}
-			}
-			if (JsonFx.UI.Dir.isZoom(dir)) {
-				es.zoom = Math.floor(100*step)+"%";
-			}
-			if (JsonFx.UI.Dir.isClipX(dir) || JsonFx.UI.Dir.isClipY(dir)) {
-				var clip = ["auto","auto","auto","auto"];
-				if (JsonFx.UI.Dir.isClipX(dir) && !isNaN(pxWidth)) {
-					clip[3] = Math.ceil(pxWidth*(1-step)/2)+"px";
-					clip[1] = ((pxWidth/2)+Math.floor(pxWidth*step/2))+"px";
-				}
-				if (JsonFx.UI.Dir.isClipY(dir) && !isNaN(pxHeight)) {
-					clip[0] = Math.ceil(pxHeight*(1-step)/2)+"px";
-					clip[2] = ((pxHeight/2)+Math.floor(pxHeight*step/2))+"px";
-				}
-				es.position = "absolute";
-				es.clip = "rect("+clip.join(' ')+")";
-			}
-
-			setTimeout(
-				function() {
-					m(state ? (step-StepInc) : (step+StepInc));
-				},
-				0);
-		}
-
-		m(state ? StepMax : StepMin);
-	};
-};
-
 /* DataDump ----------------------------------------------------*/
 
-/*void*/ JsonFx.UI.expandoCreate = function(/*element*/ elem) {
-	elem.style.cursor = "pointer";
-	elem.minimized = false;
-
-	elem.onclick = function (/*event*/ evt) {
-		var next = elem.nextSibling;
-		if (!next.minimize) {
-			if (next.tagName && next.tagName.toLowerCase() === "ul") {
-				next.minimize = JsonFx.UI.createMinimize(next, JsonFx.UI.Dir.Vert|JsonFx.UI.Dir.Fade);
-			} else {
-				return false;
-			}
+/*bool*/ JsonFx.UI.expando = function (/*element*/ elem, /*string*/ target) {
+	var expando = elem.expando;
+	if (!expando) {
+		if ("string" === typeof target) {
+			target = document.getElementById(target);
 		}
-		elem.minimized = !elem.minimized;
-		next.minimize(elem.minimized);
-		if (elem.minimized) {
-			elem.className = elem.className.replace(/\s*jsonfx-expanded/g, " jsonfx-collapsed");
-		} else {
-			elem.className = elem.className.replace(/\s*jsonfx-collapsed/g, " jsonfx-expanded");
+		if (!target) {
+			return false;
 		}
+		elem.expando = expando = new JsonFx.UI.Animate.Engine(target);
+	}
+	if (expando.hasAppliedOp()) {
+		if (elem.value) {// hacky swap out for buttons
+			elem.value = " \u2212 ";
+			//elem.replaceChild(document.createTextNode("\u2212"), elem.firstChild);
+		}
+		expando.apply(null, false);
 		return false;
-	};
+	} else {
+		var op = new JsonFx.UI.Animate.Op();
+		op.fade(0);
+		op.height(0);
+		op.speed(0.65);
+		if (elem.value) {// hacky swap out for buttons
+			elem.value = " + ";
+			//elem.replaceChild(document.createTextNode("+"), elem.firstChild);
+		}
+		expando.apply(op, false);
+		return true;
+	}
 };
-/*void*/ JsonFx.UI.expandoDispose = function(/*element*/ elem) {
-	var next = elem.nextSibling;
-	if (next.minimize) {
-		next.minimize = null;
+
+/*void*/ JsonFx.UI.expandoBind = function(/*element*/ elem) {
+	// call after elements have been added to document
+	window.setTimeout(
+		function() {
+			var target = document.getElementById(elem.getAttribute("for"));
+			if (!target) {
+				target = elem.nextSibling;
+				while (target && !target.tagName) {
+					target = target.nextSibling;
+				}
+			}
+			if (target) {
+				elem.style.cursor = "pointer";
+				elem.className += " jsonfx-expanded";
+
+				elem.onclick = function (/*event*/ evt) {
+					if (JsonFx.UI.expando(elem, target)) {
+						elem.className = elem.className.replace(/\s*jsonfx-expanded/g, " jsonfx-collapsed");
+					} else {
+						elem.className = elem.className.replace(/\s*jsonfx-collapsed/g, " jsonfx-expanded");
+					}
+					return false;
+				};
+				elem.ondblclick = function (/*event*/ evt) {
+					if (elem.click) {
+						elem.click();
+					}
+					window.setTimeout( function(){JsonFx.UI.clearTextSelection();}, 0);
+					return false;
+				};
+			}
+		}, 0);
+};
+/*void*/ JsonFx.UI.expandoUnbind = function(/*element*/ elem) {
+	if ("undefined" !== typeof elem.expando) {
+		elem.expando = null;
 	}
 	elem.onclick = null;
+	elem.ondblclick = null;
 };
 
-JsonFx.UI.Bindings.register("label", "jsonfx-expando", JsonFx.UI.expandoCreate, JsonFx.UI.expandoDispose);
-
+/*int*/ JsonFx.UI.dumpDataID = 0;
 /*JsonML*/ JsonFx.UI.dumpData = function(/*json*/ data) {
 	if (data === null) {
 		return "null";
 	}
-	var ul = ["ul", {"class":"jsonfx-object"}];
+	var ul = ["ul", {"id":"JsonFx_UI_Dump_"+(JsonFx.UI.dumpDataID++),"class":"jsonfx-object"}];
 
 	for (var pn in data) {
 		if (!data.hasOwnProperty(pn)) {
@@ -1516,14 +1378,18 @@ JsonFx.UI.Bindings.register("label", "jsonfx-expando", JsonFx.UI.expandoCreate, 
 		var li = ["li"];
 		var a = null;
 		if ("object" === pt && pv) {
-			a = ["label", {"class":"jsonfx-expando jsonfx-expanded"}];
+			a = ["label", {"class":"jsonfx-expando"}];
 			li.push(a);
 		}
 		(a?a:li).push(["span", {"class":"jsonfx-type"}, (pv instanceof Array) ? "array" : pt]);
 		(a?a:li).push(["span", {"class":"jsonfx-name"}, pn]);
 
 		if ("object" === pt) {
-			li.push(JsonFx.UI.dumpData(pv));
+			var o = JsonFx.UI.dumpData(pv);
+			if (a && o[1].id) {
+				a[1]["for"] = o[1].id;
+			}
+			li.push(o);
 		} else {
 			li.push(["span", {"class":"jsonfx-value"}, String(pv)]);
 		}
@@ -1531,4 +1397,855 @@ JsonFx.UI.Bindings.register("label", "jsonfx-expando", JsonFx.UI.expandoCreate, 
 	}
 
 	return ul;
+};
+
+/*---------------------*\
+	Animation Classes
+\*---------------------*/
+
+/* namespace JsonFx.UI.Animate */
+JsonFx.UI.Animate = {};
+
+/* class JsonFx.UI.Animate.Unit -------------------------------------------- */
+JsonFx.UI.Animate.Unit = function(/*int*/ size, /*string*/ unit) {
+	if (unit) {
+		switch (unit) {
+			case "px" :
+				this.size = Math.floor(size);
+				this.unit = unit;
+				break;
+			case "%" :
+			case "em" :
+			case "pt" :
+			case "in" :
+			case "cm" :
+			case "mm" :
+			case "pc" :
+			case "ex" :
+				this.size = Number(size);
+				this.unit = unit;
+				break;
+			default:
+				throw new Error("Invalid unit.");
+		}
+		if (!isFinite(this.size)) {
+			throw new Error("Invalid unit.");
+		}
+	} else {
+		this.size = NaN;
+		this.unit = "";
+	}
+};
+JsonFx.UI.Animate.Unit.prototype.toString = function() {
+	return this.unit ? (this.size+this.unit) : "auto";
+};
+/*JsonFx.UI.Animate.Unit*/ JsonFx.UI.Animate.Unit.parse = function(/*string*/ str) {
+	var size = parseFloat(str);
+	var unit = null;
+	if (isFinite(size) && str.match(/(px|%|em|pt|in|cm|mm|pc|ex)/)) {
+		unit = RegExp.$1;
+	}
+	return new JsonFx.UI.Animate.Unit(size, unit);
+};
+
+/* class JsonFx.UI.Animate.Op -------------------------------------------- */
+JsonFx.UI.Animate.Op = function() {
+	this.x = this.y = this.w = this.h =
+	this.z = this.t = this.r = this.b = this.l = 
+	this.f = this.cL = this.cR = this.cT = this.cB = NaN;
+	this.c = { "r":NaN, "g":NaN, "b":NaN };
+	this.bc = { "r":NaN, "g":NaN, "b":NaN };
+	this.s = 0.05;// 20 steps
+};
+
+/*Regex*/ JsonFx.UI.Animate.Op.clipRE = /^rect[\(]([0-9\.]*)(auto|px|%)\s*([0-9\.]*)(auto|px|%)\s*([0-9\.]*)(auto|px|%)\s*([0-9\.]*)(auto|px|%)[\)]$/;
+
+/*void*/ JsonFx.UI.Animate.Op.prototype.fade = function(/*float*/ f) {
+	if (!isFinite(f) || f<0 || f>1) {
+		throw new Error("Fade is a number from 0.0 to 1.0");
+	}
+	this.f = Number(f);
+};
+/*bool*/ JsonFx.UI.Animate.Op.prototype.hasFade = function() {
+	return isFinite(this.f);
+};
+
+/*void*/ JsonFx.UI.Animate.Op.prototype.color = function(/*int*/ r, /*int*/ g, /*int*/ b) {
+	if (!isFinite(r) || r<0x00 || r>0xFF ||
+		!isFinite(g) || g<0x00 || g>0xFF ||
+		!isFinite(b) || b<0x00 || b>0xFF) {
+		throw new Error("Color is a triplet of numbers from 0x00 to 0xFF");
+	}
+	this.c.r = Number(r);
+	this.c.g = Number(g);
+	this.c.b = Number(b);
+};
+/*void*/ JsonFx.UI.Animate.Op.prototype.colorHtml = function(/*string*/ c) {
+	c = JsonFx.UI.fromHtmlColor(c);
+	this.color(c.r, c.g, c.b);
+};
+/*bool*/ JsonFx.UI.Animate.Op.prototype.hasColor = function() {
+	return !!this.c &&
+		isFinite(this.c.r) &&
+		isFinite(this.c.g) &&
+		isFinite(this.c.b);
+};
+
+/*void*/ JsonFx.UI.Animate.Op.prototype.backgroundColor = function(/*int*/ r, /*int*/ g, /*int*/ b) {
+	if (!isFinite(r) || r<0x00 || r>0xFF ||
+		!isFinite(g) || g<0x00 || g>0xFF ||
+		!isFinite(b) || b<0x00 || b>0xFF) {
+		throw new Error("BackgroundColor is a triplet of numbers from 0x00 to 0xFF");
+	}
+	this.bc.r = Number(r);
+	this.bc.g = Number(g);
+	this.bc.b = Number(b);
+};
+/*void*/ JsonFx.UI.Animate.Op.prototype.backgroundColorHtml = function(/*string*/ c) {
+	c = JsonFx.UI.fromHtmlColor(c);
+	this.backgroundColor(c.r, c.g, c.b);
+};
+/*bool*/ JsonFx.UI.Animate.Op.prototype.hasBackgroundColor = function() {
+	return !!this.bc &&
+		isFinite(this.bc.r) &&
+		isFinite(this.bc.g) &&
+		isFinite(this.bc.b);
+};
+
+/*void*/ JsonFx.UI.Animate.Op.prototype.zoom = function(/*float*/ z) {
+	if (!isFinite(z)) {
+		throw new Error("Zoom is a number >= 0.01 with 1.0 being normal");
+	}
+	if (z < 0.01) {
+		z = 0.01;
+	}
+	this.z = Number(z);
+};
+/*bool*/ JsonFx.UI.Animate.Op.prototype.hasZoom = function() {
+	return isFinite(this.z);
+};
+
+/*void*/ JsonFx.UI.Animate.Op.prototype.move = function(/*int*/ left, /*int*/ top) {
+	this.top(top);
+	this.left(left);
+};
+/*void*/ JsonFx.UI.Animate.Op.prototype.top = function(/*int*/ top) {
+	if (!isFinite(top)) {
+		throw new Error("Top is a pixel position");
+	}
+	this.t = Number(top);
+};
+/*void*/ JsonFx.UI.Animate.Op.prototype.right = function(/*int*/ right) {
+	if (!isFinite(right)) {
+		throw new Error("Right is a pixel position");
+	}
+	this.r = Number(right);
+};
+/*void*/ JsonFx.UI.Animate.Op.prototype.bottom = function(/*int*/ bottom) {
+	if (!isFinite(bottom)) {
+		throw new Error("Bottom is a pixel position");
+	}
+	this.b = Number(bottom);
+};
+/*void*/ JsonFx.UI.Animate.Op.prototype.left = function(/*int*/ left) {
+	if (!isFinite(left)) {
+		throw new Error("Left is a pixel position");
+	}
+	this.l = Number(left);
+};
+/*bool*/ JsonFx.UI.Animate.Op.prototype.hasMove = function() {
+	return isFinite(this.t)||isFinite(this.r)||isFinite(this.b)||isFinite(this.l);
+};
+/*bool*/ JsonFx.UI.Animate.Op.prototype.hasTop = function() {
+	return isFinite(this.t);
+};
+/*bool*/ JsonFx.UI.Animate.Op.prototype.hasRight = function() {
+	return isFinite(this.r);
+};
+/*bool*/ JsonFx.UI.Animate.Op.prototype.hasBottom = function() {
+	return isFinite(this.b);
+};
+/*bool*/ JsonFx.UI.Animate.Op.prototype.hasLeft = function() {
+	return isFinite(this.l);
+};
+
+/*void*/ JsonFx.UI.Animate.Op.prototype.scaleX = function(/*int*/ x) {
+	if (!isFinite(x) || x<0) {
+		throw new Error("Scale X is a number >= 0.0 with 1.0 being normal");
+	}
+	this.x = Number(x);
+};
+/*void*/ JsonFx.UI.Animate.Op.prototype.scaleY = function(/*int*/ y) {
+	if (!isFinite(y) || y<0) {
+		throw new Error("Scale Y is a number >= 0.0 with 1.0 being normal");
+	}
+	this.y = Number(y);
+};
+/*void*/ JsonFx.UI.Animate.Op.prototype.scale = function(/*int*/ x, /*int*/ y) {
+	this.scaleX(x);
+	this.scaleY(y);
+};
+/*void*/ JsonFx.UI.Animate.Op.prototype.width = function(/*int*/ width) {
+	if (!isFinite(width) || width<0) {
+		throw new Error("Width is a non-negative pixel size");
+	}
+	this.w = Number(width);
+};
+/*void*/ JsonFx.UI.Animate.Op.prototype.height = function(/*int*/ height) {
+	if (!isFinite(height) || height<0.0) {
+		throw new Error("Height is a non-negative pixel size");
+	}
+	this.h = Number(height);
+};
+/*bool*/ JsonFx.UI.Animate.Op.prototype.hasScaleX = function() {
+	return isFinite(this.x)||isFinite(this.w);
+};
+/*bool*/ JsonFx.UI.Animate.Op.prototype.hasScaleY = function() {
+	return isFinite(this.y)||isFinite(this.h);
+};
+/*bool*/ JsonFx.UI.Animate.Op.prototype.hasScale = function() {
+	return this.hasScaleX()||this.hasScaleY();
+};
+
+/*void*/ JsonFx.UI.Animate.Op.prototype.resize = function(/*int*/ width, /*int*/ height) {
+	this.width(width);
+	this.height(height);
+};
+/*bool*/ JsonFx.UI.Animate.Op.prototype.hasResize = function() {
+	return isFinite(this.w)||isFinite(this.h);
+};
+/*bool*/ JsonFx.UI.Animate.Op.prototype.hasWidth = function() {
+	return isFinite(this.w);
+};
+/*bool*/ JsonFx.UI.Animate.Op.prototype.hasHeight = function() {
+	return isFinite(this.h);
+};
+
+/*void*/ JsonFx.UI.Animate.Op.prototype.clipTop = function(/*float*/ clip) {
+	if (!isFinite(clip)) {
+		throw new Error("Clip Top is a number from 0.0 to 1.0");
+	}
+	this.cT = Number(clip);
+};
+/*void*/ JsonFx.UI.Animate.Op.prototype.clipRight = function(/*float*/ clip) {
+	if (!isFinite(clip)) {
+		throw new Error("Clip Right is a number from 0.0 to 1.0");
+	}
+	this.cR = Number(clip);
+};
+/*void*/ JsonFx.UI.Animate.Op.prototype.clipBottom = function(/*float*/ clip) {
+	if (!isFinite(clip)) {
+		throw new Error("Clip Bottom is a number from 0.0 to 1.0");
+	}
+	this.cB = Number(clip);
+};
+/*void*/ JsonFx.UI.Animate.Op.prototype.clipLeft = function(/*float*/ clip) {
+	if (!isFinite(clip)) {
+		throw new Error("Clip Left is a number from 0.0 to 1.0");
+	}
+	this.cL = Number(clip);
+};
+/*bool*/ JsonFx.UI.Animate.Op.prototype.hasClip = function() {
+	return isFinite(this.cT)||isFinite(this.cR)||isFinite(this.cB)||isFinite(this.cL);
+};
+/*bool*/ JsonFx.UI.Animate.Op.prototype.hasClipT = function() {
+	return isFinite(this.cT);
+};
+/*bool*/ JsonFx.UI.Animate.Op.prototype.hasClipR = function() {
+	return isFinite(this.cR);
+};
+/*bool*/ JsonFx.UI.Animate.Op.prototype.hasClipB = function() {
+	return isFinite(this.cB);
+};
+/*bool*/ JsonFx.UI.Animate.Op.prototype.hasClipL = function() {
+	return isFinite(this.cL);
+};
+
+/*bool*/ JsonFx.UI.Animate.Op.prototype.isHidden = function() {
+	return (this.f<=0)||(this.w<=0)||(this.h<=0)||(this.x<=0)||(this.y<=0)||(this.z<=0.01);
+};
+/*bool*/ JsonFx.UI.Animate.Op.prototype.isRemoved = function() {
+	return (this.h<=0)||(this.y<=0);
+};
+
+/*void*/ JsonFx.UI.Animate.Op.prototype.speed = function(/*int*/ s) {
+	if (!isFinite(s) || s<=0 || s>1) {
+		throw new Error("Speed is a number from 0.0 to 1.0");
+	}
+	this.s = Math.pow(s,4.5);
+};
+
+/*JsonFx.UI.Animate.Op*/ JsonFx.UI.Animate.Op.save = function(/*element*/ elem) {
+	var op = new JsonFx.UI.Animate.Op();
+
+	if (elem && elem.style) {
+		var es = elem.style;
+		var esPos = JsonFx.UI.getStyle(elem, "position");
+
+		var top = parseFloat(JsonFx.UI.getStyle(elem, "top"));
+		if (isFinite(top)) {
+			op.top(top);
+		} else if (esPos === "static") {
+			op.top(0);
+		}
+		var right = parseFloat(JsonFx.UI.getStyle(elem, "right"));
+		if (isFinite(right)) {
+			op.right(right);
+		} else if (esPos === "static") {
+			op.right(0);
+		}
+		var bottom = parseFloat(JsonFx.UI.getStyle(elem, "bottom"));
+		if (isFinite(bottom)) {
+			op.right(bottom);
+		} else if (esPos === "static") {
+			op.bottom(0);
+		}
+		var left = parseFloat(JsonFx.UI.getStyle(elem, "left"));
+		if (isFinite(left)) {
+			op.left(left);
+		} else if (esPos === "static") {
+			op.left(0);
+		}
+
+		// width
+		if (isFinite(elem.offsetWidth)) {
+			op.width(elem.offsetWidth);
+		} else {
+			var width = parseFloat(JsonFx.UI.getStyle(elem, "width"));
+			if (isFinite(width)) {
+				op.width(width);
+			}
+		}
+		// height
+		if (isFinite(elem.offsetHeight)) {
+			op.height(elem.offsetHeight);
+		} else {
+			var height = parseFloat(JsonFx.UI.getStyle(elem, "height"));
+			if (isFinite(height)) {
+				op.height(height);
+			}
+		}
+
+		// scale
+		op.scale(1, 1);
+
+		// fade
+		if (!!es.zoom && isFinite(es.opacity)) {
+			op.fade(es.opacity);
+		} else {
+			op.fade(1);
+		}
+
+		// zoom
+		if (!!es.zoom && isFinite(es.zoom)) {
+			op.zoom(es.zoom);
+		} else {
+			op.zoom(1);
+		}
+
+		// color
+		var color = JsonFx.UI.fromHtmlColor(JsonFx.UI.getStyle(elem, "color"));
+		if (isFinite(color.r) && isFinite(color.g) && isFinite(color.b)) {
+			op.color(color.r, color.g, color.b);
+		} else {
+			op.color(0, 0, 0);
+		}
+
+		// backgroundColor
+		color = JsonFx.UI.fromHtmlColor(JsonFx.UI.getStyle(elem, "background-color"));
+		if (isFinite(color.r) && isFinite(color.g) && isFinite(color.b)) {
+			op.backgroundColor(color.r, color.g, color.b);
+		} else {
+			op.backgroundColor(0xFF, 0xFF, 0xFF);
+		}
+
+		// clip
+		if (es.clip && es.clip.match(JsonFx.UI.Animate.Op.clipRE)) {
+			if ("%" === RegExp.$2) {
+				op.clipTop(RegExp.$1/100);
+			} else if ("px" === RegExp.$2) {
+				op.clipTop(RegExp.$1/op.h);
+			} else {
+				op.clipTop(0);
+			}
+
+			if ("%" === RegExp.$4) {
+				op.clipRight(1-RegExp.$3/100);
+			} else if ("px" === RegExp.$4) {
+				op.clipRight(1-RegExp.$3/op.w);
+			} else {
+				op.clipRight(0);
+			}
+
+			if ("%" === RegExp.$6) {
+				op.clipBottom(1-RegExp.$5/100);
+			} else if ("px" === RegExp.$6) {
+				op.clipBottom(1-RegExp.$5/op.h);
+			} else {
+				op.clipBottom(0);
+			}
+
+			if ("%" === RegExp.$8) {
+				op.clipLeft(RegExp.$7/100);
+			} else if ("px" === RegExp.$8) {
+				op.clipLeft(RegExp.$7/op.w);
+			} else {
+				op.clipLeft(0);
+			}
+		} else {
+			op.clipTop(0);
+			op.clipRight(0);
+			op.clipBottom(0);
+			op.clipLeft(0);
+		}
+		es = null;
+	}
+
+	elem = null;
+	return op;
+};
+
+/* class JsonFx.UI.Animate.Engine -------------------------------------------- */
+JsonFx.UI.Animate.Engine = function(/*element*/ elem) {
+
+	if (typeof(elem) === "string") {
+		// either DOM element or id
+		elem = document.getElementById(elem);
+	}
+
+	if (!elem || !elem.tagName) {
+		throw new Error("Invalid element");
+	}
+
+	var es = elem.style,
+	/*JsonFx.UI.Animate.Op*/ start = null,
+	/*JsonFx.UI.Animate.Op*/ op = new JsonFx.UI.Animate.Op(),
+	/*bool*/ mutex = false,
+	/*bool*/ state = false,
+	/*const float*/ STEP_MIN = 0, // start
+	/*const float*/ STEP_MAX = 1; // end
+
+	var userHeight = "",
+		userWidth = "",
+		userTop = "",
+		userRight = "",
+		userBottom = "",
+		userLeft = "",
+		userOverflow = "",
+		userPosition = "",
+		userDisplay = "",
+		userVisibility = "",
+		userFilter = "",
+		userKhtml = "",
+		userMoz = "",
+		userOpacity = "",
+		userZoom = "",
+		userClip = "",
+		userColor = "",
+		userBGColor = "",
+		alpha = null;
+
+	if (elem && es) {
+		userOverflow = es.overflow;
+		userPosition = es.position;
+		userDisplay = es.display;
+		userVisibility = es.visibility;
+		userHeight = es.height;
+		userWidth = es.width;
+		userTop = es.top;
+		userRight = es.right;
+		userBottom = es.bottom;
+		userLeft = es.left;
+		userKhtml = es["-khtml-opacity"];
+		userMoz = es["-moz-opacity"];
+		userOpacity = es.opacity;
+		userFilter = es.filter;
+		userZoom = es.zoom;
+		userClip = es.clip;
+		userColor = es.color;
+		userBGColor = es.backgroundColor;
+	}
+
+	/*void*/ function restore() {
+//		if (!!JsonFx.UI.getStyle(elem, "display")) {
+//			es.display = userDisplay;
+//		}
+//		if (!!JsonFx.UI.getStyle(elem, "visibility")) {
+//			es.visibility = userVisibility;
+//		}
+		if (op.hasScale() || op.hasClip()) {
+			es.overflow = userOverflow;
+		}
+		if (op.hasWidth()) {
+			es.width = userWidth;
+		}
+		if (op.hasHeight()) {
+			es.height = userHeight;
+		}
+		if (op.hasMove()) {
+			es.position = userPosition;
+			es.top = userTop;
+			es.right = userRight;
+			es.bottom = userBottom;
+			es.left = userLeft;
+		}
+		if (op.hasFade()) {
+			es["-khtml-opacity"] = userKhtml;
+			es["-moz-opacity"] = userMoz;
+			es.opacity = userOpacity;
+			try {
+				if (userFilter) {
+					es.filter = userFilter;
+				}
+			} catch (ex) {}
+		}
+		if (op.hasZoom()) {
+			es.zoom = userZoom;
+		}
+		if (op.hasClip()) {
+			es.clip = userClip ? userClip : "rect(auto auto auto auto)";// tested in IE/FireFox/Opera
+		}
+		if (op.hasColor()) {
+			es.color = userColor;
+		}
+		if (op.hasBackgroundColor()) {
+			es.backgroundColor = userBGColor;
+		}
+	}
+
+	/*void*/ function showElem() {
+		if (!!JsonFx.UI.getStyle(elem, "display")) {
+			es.display = "block";
+		}
+		if (!!JsonFx.UI.getStyle(elem, "visibility")) {
+			es.visibility = "visible";
+		}
+	}
+
+	/*void*/ function initAlpha() {
+		if (elem.filters && !alpha) {
+			if (elem.filters.length > 0) {
+				try {
+					// check IE5.5+
+					alpha = elem.filters.item("DXImageTransform.Microsoft.Alpha");
+				} catch (ex) { alpha = null; }
+				if (!alpha) {
+					try {
+						// check IE4.0+
+						alpha = elem.filters.item("alpha");
+					} catch (ex) { alpha = null; }
+				}
+			}
+			if (!alpha) {
+				// try IE5.5+
+				es.filter += " progid:DXImageTransform.Microsoft.Alpha(enabled=false)";
+				try {
+					alpha = elem.filters.item("DXImageTransform.Microsoft.Alpha");
+				} catch (ex) { alpha = null; }
+				if (!alpha) {
+					// try IE4.0+
+					es.filter += " alpha(enabled=false)";
+					try {
+						alpha = elem.filters.item("alpha");
+					} catch (ex) { alpha = null; }
+				}
+			}
+		}
+	}
+
+	/*bool*/ this.hasAppliedOp = function() {
+		return state;
+	};
+
+	// if newOp is null, the previous operation is reversed
+	// immediate doesn't animate but applies operation
+	/*void*/ this.apply = function(/*JsonFx.UI.Animate.Op*/ newOp, /*bool*/ immediate, /*function(cx)*/ callback, /*object*/ context) {
+		if (!es) { return; }
+
+		// state: true = perform op, false = reverse op
+		state = !!newOp;
+		immediate = !!immediate;
+		if (mutex) {
+			// crude concurrency check
+			return;
+		}
+		mutex = true;
+
+		if (state) {
+			op = newOp;
+		}
+		if (!start) {
+			start = JsonFx.UI.Animate.Op.save(elem);
+		}
+		showElem();
+
+		// minimizeStep
+		/*void*/ function t(/*float*/ step) {
+			if (!es || isNaN(step)) {
+				mutex = false;
+				return;
+			}
+
+			var esPos = JsonFx.UI.getStyle(elem, "position");
+
+			if (step < STEP_MIN) {
+				step = STEP_MIN;
+			} else if (step > STEP_MAX) {
+				step = STEP_MAX;
+			}
+
+			if (op.hasScale() || op.hasClip()) {
+				es.overflow = "hidden";
+			}
+
+			if (op.hasWidth() && start.hasWidth()) {
+				es.width = JsonFx.UI.lerpInt(start.w, op.w, step)+"px";
+			} else if (op.hasScaleX() && start.hasScaleX() && start.hasWidth()) {
+				es.width = Math.ceil(start.w*JsonFx.UI.lerp(start.x, op.x, step))+"px";
+			}
+			if (op.hasHeight() && start.hasHeight()) {
+				es.height = JsonFx.UI.lerpInt(start.h, op.h, step)+"px";
+			} else if (op.hasScaleY() && start.hasScaleY() && start.hasHeight()) {
+				es.height = Math.ceil(start.h*JsonFx.UI.lerp(start.y, op.y, step))+"px";
+			}
+			if (op.hasFade() && start.hasFade()) {
+				// opacity
+				es["-khtml-opacity"] = es["-moz-opacity"] = es.opacity = JsonFx.UI.lerp(start.f, op.f, step);
+				initAlpha();
+				if (alpha) {
+					try {
+						alpha.opacity = JsonFx.UI.lerpInt(100*start.f, 100*op.f, step);
+						alpha.enabled = true;
+					} catch (ex) {
+						alpha = null;
+					}
+				}
+			}
+			if (op.hasBackgroundColor() && start.hasBackgroundColor()) {
+				es.backgroundColor = JsonFx.UI.toHtmlColor(
+					JsonFx.UI.lerpInt(start.bc.r, op.bc.r, step),
+					JsonFx.UI.lerpInt(start.bc.g, op.bc.g, step),
+					JsonFx.UI.lerpInt(start.bc.b, op.bc.b, step)
+				);
+			}
+			if (op.hasColor() && start.hasColor()) {
+				es.color = JsonFx.UI.toHtmlColor(
+					JsonFx.UI.lerpInt(start.c.r, op.c.r, step),
+					JsonFx.UI.lerpInt(start.c.g, op.c.g, step),
+					JsonFx.UI.lerpInt(start.c.b, op.c.b, step)
+				);
+			}
+			if (op.hasZoom() && start.hasZoom()) {
+				es.zoom = JsonFx.UI.lerpInt(100*start.z, 100*op.z, step)+"%";
+			}
+			if (op.hasClip()) {
+				var clip = ["auto","auto","auto","auto"];
+				if (op.hasClipT() && start.hasClipT()) {
+					clip[0] = Math.ceil(JsonFx.UI.lerp(start.cT, op.cT, step)*100)+"%";
+				}
+				if (op.hasClipR() && start.hasClipR()) {
+					clip[1] = Math.floor(JsonFx.UI.lerp(1-start.cR, 1-op.cR, step)*100)+"%";
+				}
+				if (op.hasClipB() && start.hasClipB()) {
+					clip[2] = Math.floor(JsonFx.UI.lerp(1-start.cB, 1-op.cB, step)*100)+"%";
+				}
+				if (op.hasClipL() && start.hasClipL()) {
+					clip[3] = Math.ceil(JsonFx.UI.lerp(start.cL, op.cL, step)*100)+"%";
+				}
+				if (esPos !== "fixed") {
+					es.position = "absolute";
+				}
+				es.clip = "rect("+clip.join(' ')+")";
+			}
+			if (op.hasMove()) {
+				if (!esPos || esPos === "static") {
+					es.position = "relative";
+				}
+				if (op.hasTop() && start.hasTop()) {
+					es.top = JsonFx.UI.lerpInt(start.t, op.t, step)+"px";
+				}
+				if (op.hasRight() && start.hasRight()) {
+					es.right = JsonFx.UI.lerpInt(start.r, op.r, step)+"px";
+				}
+				if (op.hasBottom() && start.hasBottom()) {
+					es.bottom = JsonFx.UI.lerpInt(start.b, op.b, step)+"px";
+				}
+				if (op.hasLeft() && start.hasLeft()) {
+					es.left = JsonFx.UI.lerpInt(start.l, op.l, step)+"px";
+				}
+			}
+
+			if (step <= STEP_MIN && !state) {
+				setTimeout(
+					function() {
+						restore();
+						start = null;
+						op = new JsonFx.UI.Animate.Op();
+						mutex = false;
+
+						if ("function" === typeof callback) {
+							callback(context);
+						}
+					},
+					0);
+			} else if (step >= STEP_MAX && state) {
+				setTimeout(
+					function() {
+						if (op.isRemoved()) {
+							es.display = "none";
+						} else if (op.isHidden()) {
+							es.visibility = "hidden";
+						}
+						mutex = false;
+
+						if ("function" === typeof callback) {
+							callback(context);
+						}
+					},
+					0);
+			} else {
+				setTimeout(
+					function() {
+						t(state ? (step+op.s) : (step-op.s));
+					},
+					0);
+			}
+		}
+
+		// XOR: state OR immediate but not both
+		// immediate forces to far end of step
+		t(state^immediate ? STEP_MIN : STEP_MAX);
+	};
+};
+
+/*extern JsonFx */
+/*---------------------------------------------------------------------------*\
+	JsonFx.UI.setCssUserAgent
+
+	Copyright (c)2006-2007 Stephen M. McKamey
+	Created: 2006-06-10-1635
+	Modified: 2007-03-01-0313
+\*---------------------------------------------------------------------------*/
+
+/* namespace JsonFx */
+if ("undefined" === typeof JsonFx) {
+	window.JsonFx = {};
+}
+
+/* namespace JsonFx.UI */
+if ("undefined" === typeof JsonFx.UI) {
+	JsonFx.UI = {};
+}
+
+/*	Dynamically appends CSS classes to document.body based upon user-agent.*/
+/*void*/ JsonFx.UI.setCssUserAgent = function() {
+
+	// anonymous function doesn't affect global namespace and can't be called externally
+	// variables and helper functions available via JavaScript closures
+	var PREFIX = " ua-";
+
+	/*string*/ function formatCss(/*string*/ b, /*string*/ v) {
+		if (!b) {
+			return "";
+		}
+
+		b = b.replace(/\s+/g, '-');
+		var vi = parseInt(v, 10);
+		var vf = parseFloat(v);
+		vf = (vf === vi && vf.toFixed) ?
+			vf.toFixed(1) : vf.toString();
+		vf = vf.replace(/\./g, '-');
+		if (!isFinite(vi)) {
+			return PREFIX+b;
+		}
+		return PREFIX+b+PREFIX+b+vi+PREFIX+b+vf;
+	}
+
+	/*string*/ function buildCss() {
+		// Regex tested against (2006-06-11 @ 1600): http://en.wikipedia.org/wiki/User_agent
+		var R_MSIE = new RegExp("(msie|microsoft internet explorer)[\\s/]*([0-9]+[\\.]?[0-9]*)");
+		var R_Gecko = new RegExp("rv[:]([0-9]+[\\.]?[0-9]*).*?gecko[/][0-9]+(\\s+(\\S+)[/]([0-9]+[\\.]?[0-9]*))?");
+		var R_AppleWebKit = new RegExp("applewebkit[/]([0-9]+[\\.]?[0-9]*).*?(\\S+)[/][v]?([0-9]+[\\.]?[0-9]*)");
+		var R_Opera = new RegExp("opera[\\s/]*([0-9]+[\\.]?[0-9]*)");
+		var R_MSPIE = new RegExp("(mspie|microsoft pocket internet explorer)[\\s/]*([0-9]+[\\.]?[0-9]*)");
+		var R_MozCompat = new RegExp("[(].*?(\\S+)[/]([0-9]+[\\.]?[0-9]*).*?[)]");
+		var R_Other = new RegExp("^([^/]+)[/]([0-9]+[\\.]?[0-9]*)");
+		var R_AOL = new RegExp("(america online browser|aol)[\\s/]*([0-9]+[\\.]?[0-9]*)");
+
+		var ua = navigator.userAgent.toLowerCase();
+		var css = PREFIX+navigator.platform.toLowerCase();
+		var bName = null;// browser name
+		var bVer = null;// browser version
+
+		// aol uses multiple browsers so don't stop
+		if (R_AOL.exec(ua)) {
+			css += formatCss("aol", RegExp.$2);
+		}
+
+		// order is important as user-agents spoof each other	
+		if (R_Opera.exec(ua)) {
+			bName = "opera";
+			bVer = RegExp.$1;
+		} else if (R_MSIE.exec(ua)) {
+			bName = "msie";
+			bVer = RegExp.$2;
+		} else if (R_MSPIE.exec(ua)) {
+			bName = "mspie";
+			bVer = RegExp.$2;
+		} else if (R_AppleWebKit.exec(ua)) {
+			bName = "applewebkit";
+			bVer = RegExp.$1;
+
+			// also add AppleWebKit-brand version
+			css += formatCss(RegExp.$2, RegExp.$3);
+		} else if (R_Gecko.exec(ua)) {
+			bName = "gecko";
+			bVer = RegExp.$1;
+
+			// also add Gecko-brand version
+			css += formatCss(RegExp.$3, RegExp.$4);
+		} else if (R_MozCompat.exec(ua)) {
+			bName = RegExp.$1;
+			bVer = RegExp.$2;
+		} else if (R_Other.exec(ua)) {
+			bName = RegExp.$1;
+			bVer = RegExp.$2;
+		}
+
+		// bVer should hold parsed version string
+		if (bVer) {
+			css += formatCss(bName, bVer);
+		}
+		
+		return css;
+	}
+
+	// calculate styles immediately, loop until can apply them
+	var uaCss = buildCss();
+
+	// using JavaScript closures to access the calculated css
+	/*void*/ function appendCss() {
+
+		// assign user-agent classes
+		if (document.body.className) {
+			document.body.className += uaCss;
+		} else {
+			document.body.className += uaCss.substring(1);
+		}
+
+		// DEBUG
+		//alert("\""+document.body.className+"\"");
+	}
+
+	// using setTimeout to poll until body exists
+	/*void*/ function appendCssLoop() {
+
+		if (!document.body) {
+			setTimeout(appendCssLoop, 100);
+		} else {
+			appendCss();
+		}
+	}
+
+	appendCssLoop();
 };
