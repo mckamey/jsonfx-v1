@@ -36,7 +36,7 @@ namespace JsonFx.Services.Proxy
 
 		private const string ParamFormat = "/*{0}*/ {1}, ";
 #else
-		private const string ExternFormat = "/*extern JsonFx,{0}*/";
+		private const string ExternFormat = "";
 
 		private const string NamespaceFormat = "if(\"undefined\"===typeof {0}){{{0}={{}};}}";
 
