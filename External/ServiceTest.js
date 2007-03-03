@@ -77,19 +77,7 @@ JsonFx.IO.ServiceTest.Context = function(/*string*/ request, /*element*/ output)
 
 		var context = new JsonFx.IO.ServiceTest.Context(call, output);
 
-		if (args.length > 4) {
-			service[proc.name](args[0], args[1], args[2], args[3], args[4], JsonFx.IO.ServiceTest.cb_displayResult, context);
-		} else if (args.length > 3) {
-			service[proc.name](args[0], args[1], args[2], args[3], JsonFx.IO.ServiceTest.cb_displayResult, context);
-		} else if (args.length > 2) {
-			service[proc.name](args[0], args[1], args[2], JsonFx.IO.ServiceTest.cb_displayResult, context);
-		} else if (args.length > 1) {
-			service[proc.name](args[0], args[1], JsonFx.IO.ServiceTest.cb_displayResult, context);
-		} else if (args.length > 0) {
-			service[proc.name](args[0], JsonFx.IO.ServiceTest.cb_displayResult, context);
-		} else {
-			service[proc.name](JsonFx.IO.ServiceTest.cb_displayResult, context);
-		}
+		service.callService(proc.name, args, JsonFx.IO.ServiceTest.cb_displayResult, context);
 	};
 };
 

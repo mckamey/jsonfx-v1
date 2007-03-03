@@ -73,9 +73,9 @@ namespace JsonFx.Services
 		/// OPTIONAL. An Array or Object that holds the actual parameter values for the invocation of the procedure.
 		/// </remarks>
 		[JsonIgnore]
-		public virtual Object[] PositionalParams
+		public virtual Array PositionalParams
 		{
-			get { return this.Params as Object[]; }
+			get { return this.Params as Array; }
 			set { this.Params = value; }
 		}
 
