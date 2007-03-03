@@ -53,6 +53,8 @@ namespace JsonFx.Handlers
 				// use generated code
 				context.Response.Output.Write(proxyScript);
 			}
+			context.Response.Output.Write(this.serviceUrl);
+			context.Response.Output.Write(JsonServiceProxy.ProxyEnd);
 		}
 
 		#endregion IHttpHandler Members
