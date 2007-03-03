@@ -287,7 +287,7 @@ if (typeof(JsonFx.IO.JsonServiceBase) === "undefined") {
 			context);
 	};
 
-	/*string*/ JsonFx.IO.JsonServiceBase.prototype["system.describe"] = function(
+	/*string*/ JsonFx.IO.JsonServiceBase.prototype["system.describe"] = JsonFx.IO.JsonServiceBase.prototype.$describe = function(
 		/*function(string,object)*/ callback,
 		/*object*/ context) {
 
