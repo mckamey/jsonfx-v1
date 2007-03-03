@@ -108,7 +108,7 @@ namespace JsonFx.Handlers
 			}
 			else if (method != null)
 			{
-				object[] positionalParams = null;
+				Object[] positionalParams = null;
 				if (request.NamedParams != null)
 				{
 					string[] paramMap = this.ServiceInfo.GetMethodParams(method.Name);
@@ -124,9 +124,9 @@ namespace JsonFx.Handlers
 						}
 					}
 				}
-				else
+				else if (request.PositionalParams != null)
 				{
-					positionalParams = request.PositionalParams;
+					request.PositionalParams.CopyTo(positionalParams, 0);
 				}
 #warning This does not check the parameters for type compatibility.  e.g. using Double for Int32 throws exception
 				response.Result = method.Invoke(this.Service, positionalParams);
