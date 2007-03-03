@@ -139,6 +139,12 @@
   <ItemGroup>
     <EmbeddedResource Include="Scripts\Compacted\UA.js" />
   </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Scripts\ServiceTest.js" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Scripts\Compacted\ServiceTest.js" />
+  </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
