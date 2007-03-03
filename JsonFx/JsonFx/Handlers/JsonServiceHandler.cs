@@ -128,6 +128,7 @@ namespace JsonFx.Handlers
 				{
 					positionalParams = request.PositionalParams;
 				}
+#warning This does not check the parameters for type compatibility.  e.g. using Double for Int32 throws exception
 				response.Result = method.Invoke(this.Service, positionalParams);
 			}
 			else
