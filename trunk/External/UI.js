@@ -1180,6 +1180,10 @@ JsonFx.UI.Animate.Engine = function(/*element*/ elem) {
 				initAlpha();
 				if (alpha) {
 					try {
+						// this might have side-effects, but should be rare
+						if (!elem.currentStyle.hasLayout) {
+							es.zoom = "100%";
+						}
 						alpha.opacity = JsonFx.UI.lerpInt(100*start.f, 100*op.f, step);
 						alpha.enabled = true;
 					} catch (ex) {
