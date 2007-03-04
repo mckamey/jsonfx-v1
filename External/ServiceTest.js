@@ -65,7 +65,9 @@ JsonFx.IO.ServiceTest.Context = function(/*string*/ request, /*element*/ output)
 				args[i] = window.prompt("("+proc.params[i].type+") "+proc.params[i].name+" =","");
 				if (args[i] !== null) {
 					if (proc.params[i].type !== "str") {
-						args[i] = args[i].parseJSON();
+						try {
+							args[i] = args[i].parseJSON();
+						} catch (ex) {}
 					}
 					call += args[i].toJSONString();
 				} else {

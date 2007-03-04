@@ -111,8 +111,8 @@ namespace JsonFx.Handlers
 				Object[] positionalParams = null;
 				if (request.NamedParams != null)
 				{
-					string[] paramMap = this.ServiceInfo.GetMethodParams(method.Name);
-					positionalParams = new object[paramMap.Length];
+					String[] paramMap = this.ServiceInfo.GetMethodParams(method.Name);
+					positionalParams = new Object[paramMap.Length];
 					for (int i=0; i<paramMap.Length; i++)
 					{
 						// initially map name to position
@@ -129,8 +129,24 @@ namespace JsonFx.Handlers
 					positionalParams = new object[request.PositionalParams.Length];
 					request.PositionalParams.CopyTo(positionalParams, 0);
 				}
+				try
+				{
 #warning This does not check the parameters for type compatibility.  e.g. using Double for Int32 throws exception
-				response.Result = method.Invoke(this.Service, positionalParams);
+					response.Result = method.Invoke(this.Service, positionalParams);
+				}
+				catch (TargetParameterCountException ex)
+				{
+					throw new JsonServiceException(
+						String.Format(
+							"Method \"{0}\" expects {1} parameters, {2} provided",
+							method.Name,
+							method.GetParameters().Length, positionalParams.Length),
+						ex);
+				}
+				catch (Exception ex)
+				{
+					throw new JsonServiceException(ex.Message, ex);
+				}
 			}
 			else
 			{
