@@ -1089,34 +1089,36 @@ JsonFx.UI.Animate.Engine = function(/*element*/ elem) {
 	}
 
 	/*void*/ function initAlpha() {
-		if (elem.filters && !alpha) {
-			if (elem.filters.length > 0) {
-				try {
-					// check IE5.5+
-					alpha = elem.filters.item("DXImageTransform.Microsoft.Alpha");
-				} catch (ex) { alpha = null; }
-				if (!alpha) {
+		try {
+			if (elem.filters && !alpha) {
+				if (elem.filters.length > 0) {
 					try {
-						// check IE4.0+
-						alpha = elem.filters.item("alpha");
+						// check IE5.5+
+						alpha = elem.filters.item("DXImageTransform.Microsoft.Alpha");
 					} catch (ex) { alpha = null; }
+					if (!alpha) {
+						try {
+							// check IE4.0+
+							alpha = elem.filters.item("alpha");
+						} catch (ex) { alpha = null; }
+					}
+				}
+				if (!alpha) {
+					// try IE5.5+
+					es.filter += " progid:DXImageTransform.Microsoft.Alpha(enabled=false)";
+					try {
+						alpha = elem.filters.item("DXImageTransform.Microsoft.Alpha");
+					} catch (ex) { alpha = null; }
+					if (!alpha) {
+						// try IE4.0+
+						es.filter += " alpha(enabled=false)";
+						try {
+							alpha = elem.filters.item("alpha");
+						} catch (ex) { alpha = null; }
+					}
 				}
 			}
-			if (!alpha) {
-				// try IE5.5+
-				es.filter += " progid:DXImageTransform.Microsoft.Alpha(enabled=false)";
-				try {
-					alpha = elem.filters.item("DXImageTransform.Microsoft.Alpha");
-				} catch (ex) { alpha = null; }
-				if (!alpha) {
-					// try IE4.0+
-					es.filter += " alpha(enabled=false)";
-					try {
-						alpha = elem.filters.item("alpha");
-					} catch (ex) { alpha = null; }
-				}
-			}
-		}
+		} catch (ex) {}
 	}
 
 	/*bool*/ this.hasAppliedOp = function() {
