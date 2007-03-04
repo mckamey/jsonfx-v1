@@ -126,6 +126,7 @@ namespace JsonFx.Handlers
 				}
 				else if (request.PositionalParams != null)
 				{
+					positionalParams = new object[request.PositionalParams.Length];
 					request.PositionalParams.CopyTo(positionalParams, 0);
 				}
 #warning This does not check the parameters for type compatibility.  e.g. using Double for Int32 throws exception
