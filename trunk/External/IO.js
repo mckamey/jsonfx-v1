@@ -282,7 +282,9 @@ if (typeof(JsonFx.IO.JsonServiceBase) === "undefined") {
 				if (self.onEndRequest) {
 					self.onEndRequest(ctxt);
 				}
-				callback(data,ctxt);
+				if ("function" === typeof callback) {
+					callback(data,ctxt);
+				}
 			},
 			context);
 	};
