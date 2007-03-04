@@ -354,6 +354,11 @@ namespace JsonFx.Serialization
 				if (this.index >= this.SourceLength)
 					throw new JsonSerializationException("Unterminated JSON array.", this.index);
 
+				// get next token
+				token = this.Tokenize();
+				if (token == JsonToken.ArrayEnd)
+					break;
+
 				// parse array item
 				object value = this.Read(arrayType);
 				jsArray.Add(value);
