@@ -43,7 +43,7 @@ namespace ScriptTools
 				JSMinifier.PrepSavePath(this.JSLintPath);
 
 				// stored as a resource file
-				string resourceName = assembly.GetName().Name+"."+JSLintScript;
+				string resourceName = "ScriptTools"/*assembly.GetName().Name*/+"."+JSLintScript;
 				if (assembly.GetManifestResourceInfo(resourceName) == null)
 				{
 					throw new FileNotFoundException("Cannot find the JSLint script file.", JSLintScript);
