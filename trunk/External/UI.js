@@ -618,7 +618,8 @@ JsonFx.UI.Animate.Unit.prototype.toString = function() {
 JsonFx.UI.Animate.Op = function() {
 	this.x = this.y = this.w = this.h =
 	this.z = this.t = this.r = this.b = this.l = 
-	this.f = this.cL = this.cR = this.cT = this.cB = NaN;
+	this.cL = this.cR = this.cT = this.cB =
+	this.f = this.bl = NaN;
 	this.c = { "r":NaN, "g":NaN, "b":NaN };
 	this.bc = { "r":NaN, "g":NaN, "b":NaN };
 	this.s = 0.05;// 20 steps
@@ -634,6 +635,16 @@ JsonFx.UI.Animate.Op = function() {
 };
 /*bool*/ JsonFx.UI.Animate.Op.prototype.hasFade = function() {
 	return isFinite(this.f);
+};
+
+/*void*/ JsonFx.UI.Animate.Op.prototype.blur = function(/*float*/ b) {
+	if (!isFinite(b) || b<0) {
+		throw new Error("Blur is a number greater than 0");
+	}
+	this.bl = Number(b);
+};
+/*bool*/ JsonFx.UI.Animate.Op.prototype.hasBlur = function() {
+	return isFinite(this.bl);
 };
 
 /*void*/ JsonFx.UI.Animate.Op.prototype.color = function(/*int*/ r, /*int*/ g, /*int*/ b) {
@@ -896,11 +907,15 @@ JsonFx.UI.Animate.Op = function() {
 		op.scale(1, 1);
 
 		// fade
-		if (!!es.zoom && isFinite(es.opacity)) {
+		if (!!es.opacity && isFinite(es.opacity)) {
 			op.fade(es.opacity);
 		} else {
 			op.fade(1);
 		}
+
+		// blur
+		//warning: should extract blur?
+		op.blur(0);
 
 		// zoom
 		if (!!es.zoom && isFinite(es.zoom)) {
@@ -1009,7 +1024,8 @@ JsonFx.UI.Animate.Engine = function(/*element*/ elem) {
 		userClip = "",
 		userColor = "",
 		userBGColor = "",
-		alpha = null;
+		alpha = null,
+		blur = null;
 
 	if (elem && es) {
 		userOverflow = es.overflow;
@@ -1065,6 +1081,13 @@ JsonFx.UI.Animate.Engine = function(/*element*/ elem) {
 				}
 			} catch (ex) {}
 		}
+		if (op.hasBlur()) {
+			try {
+				if (userFilter) {
+					es.filter = userFilter;
+				}
+			} catch (ex) {}
+		}
 		if (op.hasZoom()) {
 			es.zoom = userZoom;
 		}
@@ -1088,33 +1111,63 @@ JsonFx.UI.Animate.Engine = function(/*element*/ elem) {
 		}
 	}
 
-	/*void*/ function initAlpha() {
+	/*void*/ function initFilter(op) {
 		try {
-			if (elem.filters && !alpha) {
-				if (elem.filters.length > 0) {
-					try {
-						// check IE5.5+
-						alpha = elem.filters.item("DXImageTransform.Microsoft.Alpha");
-					} catch (ex) { alpha = null; }
-					if (!alpha) {
+			if (elem.filters) {
+				if (op.hasFade() && !alpha) {
+					if (elem.filters.length > 0) {
 						try {
-							// check IE4.0+
-							alpha = elem.filters.item("alpha");
+							// check IE5.5+
+							alpha = elem.filters.item("DXImageTransform.Microsoft.Alpha");
 						} catch (ex) { alpha = null; }
+						if (!alpha) {
+							try {
+								// check IE4.0+
+								alpha = elem.filters.item("alpha");
+							} catch (ex) { alpha = null; }
+						}
+					}
+					if (!alpha) {
+						// try IE5.5+
+						es.filter += " progid:DXImageTransform.Microsoft.Alpha(enabled=false)";
+						try {
+							alpha = elem.filters.item("DXImageTransform.Microsoft.Alpha");
+						} catch (ex) { alpha = null; }
+						if (!alpha) {
+							// try IE4.0+
+							es.filter += " alpha(enabled=false)";
+							try {
+								alpha = elem.filters.item("alpha");
+							} catch (ex) { alpha = null; }
+						}
 					}
 				}
-				if (!alpha) {
-					// try IE5.5+
-					es.filter += " progid:DXImageTransform.Microsoft.Alpha(enabled=false)";
-					try {
-						alpha = elem.filters.item("DXImageTransform.Microsoft.Alpha");
-					} catch (ex) { alpha = null; }
-					if (!alpha) {
-						// try IE4.0+
-						es.filter += " alpha(enabled=false)";
+				if (op.hasBlur() && !blur) {
+					if (elem.filters.length > 0) {
 						try {
-							alpha = elem.filters.item("alpha");
-						} catch (ex) { alpha = null; }
+							// check IE5.5+
+							blur = elem.filters.item("DXImageTransform.Microsoft.Blur");
+						} catch (ex) { blur = null; }
+						if (!blur) {
+							try {
+								// check IE4.0+
+								blur = elem.filters.item("blur");
+							} catch (ex) { blur = null; }
+						}
+					}
+					if (!blur) {
+						// try IE5.5+
+						es.filter += " progid:DXImageTransform.Microsoft.Blur(enabled=false)";
+						try {
+							blur = elem.filters.item("DXImageTransform.Microsoft.Blur");
+						} catch (ex) { blur = null; }
+						if (!blur) {
+							// try IE4.0+
+							es.filter += " blur(enabled=false)";
+							try {
+								blur = elem.filters.item("blur");
+							} catch (ex) { blur = null; }
+						}
 					}
 				}
 			}
@@ -1179,7 +1232,7 @@ JsonFx.UI.Animate.Engine = function(/*element*/ elem) {
 			if (op.hasFade() && start.hasFade()) {
 				// opacity
 				es["-khtml-opacity"] = es["-moz-opacity"] = es.opacity = JsonFx.UI.lerp(start.f, op.f, step);
-				initAlpha();
+				initFilter(op);
 				if (alpha) {
 					try {
 						// this might have side-effects, but should be rare
@@ -1192,6 +1245,24 @@ JsonFx.UI.Animate.Engine = function(/*element*/ elem) {
 						alpha = null;
 					}
 				}
+			}
+			if (op.hasBlur()) {
+				initFilter(op);
+				if (blur) {
+					try {
+						// this might have side-effects, but should be rare
+						if (!elem.currentStyle.hasLayout) {
+							es.zoom = "100%";
+						}
+						blur.pixelRadius = JsonFx.UI.lerpInt(start.bl, op.bl, step);
+						blur.enabled = true;
+					} catch (ex) {
+						blur = null;
+					}
+				}
+			}
+			if (op.hasZoom() && start.hasZoom()) {
+				es.zoom = JsonFx.UI.lerpInt(100*start.z, 100*op.z, step)+"%";
 			}
 			if (op.hasBackgroundColor() && start.hasBackgroundColor()) {
 				es.backgroundColor = JsonFx.UI.toHtmlColor(
@@ -1206,9 +1277,6 @@ JsonFx.UI.Animate.Engine = function(/*element*/ elem) {
 					JsonFx.UI.lerpInt(start.c.g, op.c.g, step),
 					JsonFx.UI.lerpInt(start.c.b, op.c.b, step)
 				);
-			}
-			if (op.hasZoom() && start.hasZoom()) {
-				es.zoom = JsonFx.UI.lerpInt(100*start.z, 100*op.z, step)+"%";
 			}
 			if (op.hasClip()) {
 				var clip = ["auto","auto","auto","auto"];
