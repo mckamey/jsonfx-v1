@@ -17,7 +17,7 @@ JsonFx.UI = {};
 /* Utilities ----------------------------------------------------*/
 
 /*string*/ JsonFx.UI.getStyle = function(/*element*/ elem, /*string*/ style) {
-	if (typeof(elem) === "string") {
+	if ("string" === typeof elem) {
 		elem = document.getElementById(elem);
 	}
 	if (window.getComputedStyle) {
@@ -384,10 +384,10 @@ JsonFx.UI.History.onchange = null;
 //TIMER
 
 	// either DOM element or id
-	container = (typeof(container) !== "string") ?
-		container : document.getElementById(container);
+	container = ("string" === typeof container) ?
+		document.getElementById(container) : container;
 
-	if (jml && typeof(jml.parseJsonML) === "function") {
+	if (jml && ("function" === typeof jml.parseJsonML)) {
 		jml = jml.parseJsonML(JsonFx.UI.Bindings.bindOne);
 		if (jml) {
 			if (container) {
@@ -440,7 +440,7 @@ JsonFx.UI.History.onchange = null;
 //JsonFx.Timer.start("load");
 //TIMER
 
-	return JsonFx.IO.GetJsonRequest(url, null, null,
+	return JsonFx.IO.getJsonRequest(url, null, null,
 			function(jml,obj) {
 
 //TIMER
@@ -539,7 +539,7 @@ JsonFx.UI.History.onchange = null;
 			continue;
 		}
 		var pv = data[pn];
-		var pt = typeof(pv);
+		var pt = typeof pv;
 
 		var li = ["li"];
 		var a = null;
@@ -989,7 +989,7 @@ JsonFx.UI.Animate.Op = function() {
 /* class JsonFx.UI.Animate.Engine -------------------------------------------- */
 JsonFx.UI.Animate.Engine = function(/*element*/ elem) {
 
-	if (typeof(elem) === "string") {
+	if ("string" === typeof elem) {
 		// either DOM element or id
 		elem = document.getElementById(elem);
 	}

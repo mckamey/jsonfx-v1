@@ -3,7 +3,7 @@
 	JsonFx IO
 	Copyright (c)2006-2007 Stephen M. McKamey
 	Created: 2006-11-09-0120
-	Modified: 2007-02-07-2339
+	Modified: 2007-03-11-1426
 \*---------------------------------------------------------*/
 
 /* namespace JsonFx */
@@ -11,17 +11,18 @@ if ("undefined" === typeof JsonFx) {
 	window.JsonFx = {};
 }
 
-/* singleton JsonFx.IO */
+/* namespace JsonFx.IO */
 JsonFx.IO = {};
 
 JsonFx.IO.userAgent = "JsonFx/1.0 beta";
-JsonFx.IO.callTimeout = 10000;// 10 sec
 
 /* XMLHttpRequest ----------------------------------------------------*/
 
-/*object*/ JsonFx.IO.GetXMLHttpRequest = function () {
+// augment browser to have "native" XHR
+(function () {
 	if ("undefined" === typeof window.XMLHttpRequest) {
-		var progIDs = [
+		// these IDs are as per MSDN documentation (including case)
+		/*string[]*/ var xhrIDs = [
 			"Msxml2.XMLHTTP.6.0",
 			"Msxml2.XMLHttp.5.0",
 			"Msxml2.XMLHttp.4.0",
@@ -29,101 +30,145 @@ JsonFx.IO.callTimeout = 10000;// 10 sec
 			"MSXML2.XMLHTTP",
 			"Microsoft.XMLHTTP" ];
 
-		for (var i=0; i<progIDs.length; i++) {
-			try {
-				return new ActiveXObject(progIDs[i]);
-			} catch (ex) {}
-		}
+		window.XMLHttpRequest = function() {
+			while (xhrIDs.length) {
+				try {
+					return new ActiveXObject(xhrIDs[0]);
+				} catch (ex) {
+					// remove the failed xhrIDs for future requests
+					xhrIDs.shift();
+				}
+			}
 
-		return null;
+			// all xhrIDs failed		
+			return null;
+		};
 	}
+})();
 
-	return new XMLHttpRequest();
-};
-/*bool*/ JsonFx.IO.supportsXMLHttp = !!JsonFx.IO.GetXMLHttpRequest();
+/*bool*/ JsonFx.IO.hasAjax = !!(new XMLHttpRequest());
+
+/*
+	RequestOptions = {
+		// HTTP Options
+		async : bool,
+		method : string,
+		headers : Dictionary<string, string>,
+		timeout : number,
+		params : string,
+
+		// callbacks
+		onSuccess : function(XMLHttpRequest, context){},
+		onFailure : function(XMLHttpRequest, context){},
+		onTimeout : function(XMLHttpRequest, context){},
+
+		// callback context
+		context : object
+	};
+*/
 
 /* returns true if request was sent */
-/*bool*/ JsonFx.IO.SendRequest = function(
-	/*string*/ url,
-	/*string*/ params,
-	/*string*/ HttpMethod,
-	/*bool*/ bAsync,
-	/*object*/ headers,
-	/*function(response,context)*/ cb_responseSuccess,
-	/*function(response,context)*/ cb_responseFail,
-	/*object*/ context) {
+/*bool*/ JsonFx.IO.sendRequest = function(/*string*/ url, /*RequestOptions*/ options) {
 
-	if (!HttpMethod) {
-		HttpMethod = "POST";
+	// establish defaults
+	if ("undefined" === typeof options) {
+		options = {};
+	}
+	if ("boolean" !== typeof options.async) {
+		options.async = true;
+	}
+	if ("string" !== typeof options.method) {
+		options.method = "POST";
+	}
+	if ("object" !== typeof options.headers) {
+		options.headers = null;
+	}
+	if ("string" !== typeof options.params) {
+		options.params = null;
+	}
+	if ("number" !== typeof options.timeout) {
+		options.timeout = 10000;
+	}
+	if ("function" !== typeof options.onSuccess) {
+		options.onSuccess = null;
+	}
+	if ("function" !== typeof options.onFailure) {
+		options.onFailure = null;
+	}
+	if ("function" !== typeof options.onTimeout) {
+		options.onTimeout = options.onFailure;
+	}
+	if ("undefined" === typeof options.context) {
+		options.context = null;
 	}
 
-	var request = JsonFx.IO.GetXMLHttpRequest();
-	var timeout = setTimeout(
-		function() {
-			if (request) {
-				request.abort();
-				request = null;
-				cb_responseFail(null, context);
-			}
-		},
-		JsonFx.IO.callTimeout);
-
-	function cb_readyStateChanged() {
-		if (request && request.readyState === 4 /*complete*/) {
-			clearTimeout(timeout);
-			var status;
-			try {
-				status = request.status;
-			} catch (ex) {
-				/* Firefox doesn't allow status to be accessed after request.abort() */
-				status = 0;
-			}
-			if (status === 200) {
-				/* data was retrieved successfully */
-				if (cb_responseSuccess) {
-//TIMER
-//JsonFx.Timer.stop("request", true);//250,250,250
-//TIMER
-					cb_responseSuccess(request, context);
-				}
-			} else if (status === 0) {
-				/*	IE reports status zero when aborted.
-					firefox throws exception, which we set also to zero,
-					suppress these as cb_responseFail has already been called. */
-			} else {
-				if (cb_responseFail) {
-					cb_responseFail(request, context);
-				}
-			}
-			request = null;
-		}
-	}
-
-	if (!request) {
+	var xhr = new XMLHttpRequest();
+	if (!xhr) {
 		return false;
 	}
 
-	try {
-		request.onreadystatechange = cb_readyStateChanged;
-		request.open(HttpMethod, url, bAsync);
-
-		// this prevents server from sending 304 Not-Modified response
-		request.setRequestHeader("If-Modified-Since", "Sat, 17 Jun 1995 00:00:00 GMT");
-		request.setRequestHeader("Pragma", "no-cache");
-		request.setRequestHeader("Cache-Control", "no-cache");
-		if (headers) {
-			for (var header in headers) {
-				if (typeof(headers[header]) === "string") {
-					request.setRequestHeader(header, headers[header]);
+	var timeoutID = window.setTimeout(
+		function() {
+			if (xhr) {
+				xhr.abort();
+				xhr = null;
+				if (options.onTimeout) {
+					options.onTimeout(null, context);
 				}
 			}
-		} else if (HttpMethod === "POST") {
-			request.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
+		},
+		options.timeout);
+
+	function cb_readyStateChanged() {
+		if (xhr && xhr.readyState === 4 /*complete*/) {
+			window.clearTimeout(timeoutID);
+			var status;
+			try {
+				status = Number(xhr.status);
+			} catch (ex) {
+				/* Firefox doesn't allow status to be accessed after xhr.abort() */
+				status = 0;
+			}
+			if (Math.floor(status/100) === 2) {// catch all 200s
+				/* data was retrieved successfully */
+				if (options.onSuccess) {
+//TIMER
+//JsonFx.Timer.stop("request", true);//250,250,250
+//TIMER
+					options.onSuccess(xhr, options.context);
+				}
+			} else if (status === 0) {
+				/*	IE reports status zero when aborted.
+					Firefox throws exception, which we set also to zero,
+					suppress these as onTimeout has already been called. */
+			} else if (options.onFailure) {
+				options.onFailure(xhr, options.context);
+			}
+			xhr = null;
+		}
+	}
+
+	try {
+		xhr.onreadystatechange = cb_readyStateChanged;
+		xhr.open(options.method, url, options.async);
+
+		// this prevents server from sending 304 Not-Modified response
+		xhr.setRequestHeader("If-Modified-Since", "Sun, 1 Jan 1995 00:00:00 GMT");
+		xhr.setRequestHeader("Pragma", "no-cache");
+		xhr.setRequestHeader("Cache-Control", "no-cache");
+		if (options.headers) {
+			for (var h in options.headers) {
+				if ("string" === typeof options.headers[h]) {
+					xhr.setRequestHeader(h, options.headers[h]);
+				}
+			}
+		} else if (options.method === "POST") {
+			xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
 		}
 //TIMER
 //JsonFx.Timer.start("request");
 //TIMER
-		request.send(params);
+		xhr.send(options.params);
 		return true;
 	} catch (ex) {
 		//throw new Error("HTTP Request Error: "+ex.message+"\n\n"+url);
@@ -145,34 +190,39 @@ JsonFx.IO.callTimeout = 10000;// 10 sec
 };
 
 /* returns true if request was sent */
-/*bool*/ JsonFx.IO.PostJsonRequest = function(
+/*bool*/ JsonFx.IO.postJsonRequest = function(
 	/*string*/ serviceUrl,
-	/*string*/ method,
-	/*object*/ params,
+	/*string*/ methodName,
+	/*object*/ methodParams,
 	/*object*/ id,
-	/*function(data,context)*/ cb_responseSuccess,
+	/*function(data,context)*/ onSuccess,
 	/*object*/ context) {
 
 	function cb_decodeResponse(response, context) {
 		var data = response.responseText;
-		if (typeof(data) === "string") {
+		if ("string" === typeof data) {
 			try {
 				data = data.parseJSON();
 			} catch (ex) {}
 		}
-		cb_responseSuccess(data, context);
+		onSuccess(data, context);
 	}
 
-	if (params && typeof(params) !== "object") {
-		params = [ params ];
+	if ("object" !== typeof methodParams) {
+		methodParams = [ methodParams ];
 	}
 	
-	var rpcRequest = { "version":"1.1", "method":method, "params":params, "id":id };
+	var rpcRequest = {
+			"version" : "1.1",
+			"method" : methodName,
+			"params" : methodParams,
+			"id" : id
+		};
 
 	try {
 		// JSON encode request
 		rpcRequest = rpcRequest.toJSONString();
-		
+
 		var headers = {
 			"User-Agent" : JsonFx.IO.userAgent,
 			"Content-Type" : "application/json",
@@ -180,18 +230,26 @@ JsonFx.IO.callTimeout = 10000;// 10 sec
 			"Accept" : "application/json"
 		};
 
-		return JsonFx.IO.SendRequest(serviceUrl, rpcRequest, "POST", true, headers, cb_decodeResponse, JsonFx.IO.onRequestFailed, context);
+		return JsonFx.IO.sendRequest(
+			serviceUrl, {
+				method : "POST",
+				headers : headers,
+				params : rpcRequest,
+				onSuccess : cb_decodeResponse,
+				onFailure : JsonFx.IO.onRequestFailed,
+				context : context
+			});
 	} catch (ex) {
 		return false;
 	}
 };
 
 /* returns true if request was sent */
-/*bool*/ JsonFx.IO.GetJsonRequest = function(
+/*bool*/ JsonFx.IO.getJsonRequest = function(
 	/*string*/ serviceUrl,
-	/*string*/ method,
-	/*object*/ params,
-	/*function(data,context)*/ cb_responseSuccess,
+	/*string*/ methodName,
+	/*object*/ methodParams,
+	/*function(data,context)*/ onSuccess,
 	/*object*/ context) {
 
 	function cb_decodeResponse(response, context) {
@@ -199,7 +257,7 @@ JsonFx.IO.callTimeout = 10000;// 10 sec
 //JsonFx.Timer.start("decode");
 //TIMER
 		var data = response.responseText;
-		if (typeof(data) === "string") {
+		if ("string" === typeof data) {
 			try {
 				data = data.parseJSON();
 			} catch (ex) { }
@@ -207,29 +265,28 @@ JsonFx.IO.callTimeout = 10000;// 10 sec
 //TIMER
 //JsonFx.Timer.stop("decode", true);//32,31,22500(greedy regex)
 //TIMER
-		cb_responseSuccess(data, context);
+		onSuccess(data, context);
 	}
 
 	if (method) {
-		serviceUrl += "/"+encodeURIComponent(method);
+		serviceUrl += "/"+encodeURIComponent(methodName);
 	}
-	if (params) {
+	if (methodParams) {
 		serviceUrl += "?";
-		if (params instanceof Array)
-		{
-			for (var i=0; i<params.length; i++) {
+		if (methodParams instanceof Array) {
+			for (var i=0; i<methodParams.length; i++) {
 				if (i > 0) {
 					serviceUrl += "&";
 				}
 				serviceUrl += encodeURIComponent(i);
 				serviceUrl += "=";
-				serviceUrl += encodeURIComponent(params[i]);
+				serviceUrl += encodeURIComponent(methodParams[i]);
 			}
 		} else {
-			for (var param in params) {
-				serviceUrl += encodeURIComponent(param);
+			for (var p in methodParams) {
+				serviceUrl += encodeURIComponent(p);
 				serviceUrl += "=";
-				serviceUrl += encodeURIComponent(params[param]);
+				serviceUrl += encodeURIComponent(methodParams[p]);
 			}
 		}
 	}
@@ -242,7 +299,14 @@ JsonFx.IO.callTimeout = 10000;// 10 sec
 			"Accept" : "application/json"
 		};
 
-		return JsonFx.IO.SendRequest(serviceUrl, null, "GET", true, headers, cb_decodeResponse, JsonFx.IO.onRequestFailed, context);
+		return JsonFx.IO.sendRequest(
+			serviceUrl, {
+				method : "GET",
+				headers : headers,
+				onSuccess : cb_decodeResponse,
+				onFailure : JsonFx.IO.onRequestFailed,
+				context : context
+			});
 	} catch (ex) {
 		return false;
 	}
@@ -251,7 +315,7 @@ JsonFx.IO.callTimeout = 10000;// 10 sec
 /* JsonRequest ----------------------------------------------------*/
 
 /* Base type for generated JSON Services */
-if (typeof(JsonFx.IO.JsonServiceBase) === "undefined") {
+if ("undefined" === typeof JsonFx.IO.JsonServiceBase) {
 
 	/* Ctor */
 	JsonFx.IO.JsonServiceBase = function() {
@@ -273,7 +337,7 @@ if (typeof(JsonFx.IO.JsonServiceBase) === "undefined") {
 			this.onBeginRequest(context);
 		}
 
-		JsonFx.IO.PostJsonRequest(
+		JsonFx.IO.postJsonRequest(
 			this.address,
 			method,
 			params,
