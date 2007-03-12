@@ -24,7 +24,7 @@ namespace JsonFx.Services.Proxy
 
 		private const string NamespaceFormat = "if (\"undefined\" === typeof {0}) {{\r\n\twindow.{0} = {{}};\r\n}}\r\n";
 
-		private const string ClassBeginFormat = "if (\"undefined\" === typeof {0}{1}) {{\r\n\r\n\t/*ctor*/\r\n\t{0}{1} = function(/*string*/ serviceUrl) {{\r\n\t\tif (serviceUrl) {{\r\n\t\t\tthis.address = serviceUrl;\r\n\t\t}}\r\n\t}};\r\n\r\n\t/*base*/\r\n\t{0}{1}.prototype = new JsonFx.IO.JsonServiceBase();\r\n\r\n";
+		private const string ClassBeginFormat = "if (\"undefined\" === typeof {0}{1}) {{\r\n\r\n\t/*ctor*/\r\n\t{0}{1} = function(/*string*/ serviceUrl) {{\r\n\t\tif (serviceUrl) {{\r\n\t\t\tthis.address = serviceUrl;\r\n\t\t}}\r\n\t}};\r\n\r\n\t/*base*/\r\n\t{0}{1}.prototype = new JsonFx.IO.JsonRpcService();\r\n\r\n";
 		private const string ClassEnd = "}\r\n";
 		private const string ProxyBeginFormat = "/* instance of service */\r\n/*{0}{1}*/ {0}{1}.instance = new {0}{1}(\"";
 		internal const string ProxyEnd = "\");\r\n";
@@ -42,7 +42,7 @@ namespace JsonFx.Services.Proxy
 
 		private const string NamespaceFormat = "if(\"undefined\"===typeof {0}){{window.{0}={{}};}}";
 
-		private const string ClassBeginFormat = "if(\"undefined\"===typeof {0}{1}){{{0}{1}=function(url){{if(url){{this.address=url;}}}};{0}{1}.prototype=new JsonFx.IO.JsonServiceBase();";
+		private const string ClassBeginFormat = "if(\"undefined\"===typeof {0}{1}){{{0}{1}=function(url){{if(url){{this.address=url;}}}};{0}{1}.prototype=new JsonFx.IO.JsonRpcService();";
 		private const string ClassEnd = "}";
 		private const string ProxyBeginFormat = "{0}{1}.instance=new {0}{1}(\"";
 		internal const string ProxyEnd = "\");";
