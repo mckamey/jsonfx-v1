@@ -3,7 +3,7 @@
 	JsonFx UI
 	Copyright (c)2006-2007 Stephen M. McKamey
 	Created: 2006-11-11-1759
-	Modified: 2007-03-02-0612
+	Modified: 2007-03-11-2235
 \*---------------------------------------------------------*/
 
 /* namespace JsonFx */
@@ -440,26 +440,14 @@ JsonFx.UI.History.onchange = null;
 //JsonFx.Timer.start("load");
 //TIMER
 
-	return JsonFx.IO.sendRequest(
+	return JsonFx.IO.sendJsonRequest(
 		url,
 		/*RequestOptions*/ {
 			method : "GET",
-			headers : {
-				"User-Agent" : JsonFx.IO.userAgent,
-				"Accept" : "application/json"
-			},
-			onSuccess : function(xhr, cx) {
+			onSuccess : function(jml, cx) {
 //TIMER
 //JsonFx.Timer.stop("load", true);//282,281,22750(greedy regex)
 //TIMER
-				// decode response
-				var jml = xhr.responseText;
-				if ("string" === typeof jml) {
-					try {
-						jml = jml.parseJSON();
-					} catch (ex) {}
-				}
-
 				// display UI
 				JsonFx.UI.displayJsonML(jml, container);
 
