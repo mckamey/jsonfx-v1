@@ -192,8 +192,8 @@ JsonFx.IO.userAgent = "JsonFx/1.0 beta";
 /* returns true if request was sent */
 /*bool*/ JsonFx.IO.postJsonRequest = function(
 	/*string*/ serviceUrl,
-	/*string*/ methodName,
-	/*object*/ methodParams,
+	/*string*/ rpcMethod,
+	/*object*/ rpcParams,
 	/*object*/ id,
 	/*function(data,context)*/ onSuccess,
 	/*object*/ context) {
@@ -208,14 +208,14 @@ JsonFx.IO.userAgent = "JsonFx/1.0 beta";
 		onSuccess(data, context);
 	}
 
-	if ("object" !== typeof methodParams) {
-		methodParams = [ methodParams ];
+	if ("object" !== typeof rpcParams) {
+		rpcParams = [ rpcParams ];
 	}
 	
 	var rpcRequest = {
 			"version" : "1.1",
-			"method" : methodName,
-			"params" : methodParams,
+			"method" : rpcMethod,
+			"params" : rpcParams,
 			"id" : id
 		};
 
@@ -247,8 +247,8 @@ JsonFx.IO.userAgent = "JsonFx/1.0 beta";
 /* returns true if request was sent */
 /*bool*/ JsonFx.IO.getJsonRequest = function(
 	/*string*/ serviceUrl,
-	/*string*/ methodName,
-	/*object*/ methodParams,
+	/*string*/ rpcMethod,
+	/*object*/ rpcParams,
 	/*function(data,context)*/ onSuccess,
 	/*object*/ context) {
 
@@ -268,25 +268,25 @@ JsonFx.IO.userAgent = "JsonFx/1.0 beta";
 		onSuccess(data, context);
 	}
 
-	if (method) {
-		serviceUrl += "/"+encodeURIComponent(methodName);
+	if (rpcMethod) {
+		serviceUrl += "/"+encodeURIComponent(rpcMethod);
 	}
-	if (methodParams) {
+	if (rpcParams) {
 		serviceUrl += "?";
-		if (methodParams instanceof Array) {
-			for (var i=0; i<methodParams.length; i++) {
+		if (rpcParams instanceof Array) {
+			for (var i=0; i<rpcParams.length; i++) {
 				if (i > 0) {
 					serviceUrl += "&";
 				}
 				serviceUrl += encodeURIComponent(i);
 				serviceUrl += "=";
-				serviceUrl += encodeURIComponent(methodParams[i]);
+				serviceUrl += encodeURIComponent(rpcParams[i]);
 			}
 		} else {
-			for (var p in methodParams) {
+			for (var p in rpcParams) {
 				serviceUrl += encodeURIComponent(p);
 				serviceUrl += "=";
-				serviceUrl += encodeURIComponent(methodParams[p]);
+				serviceUrl += encodeURIComponent(rpcParams[p]);
 			}
 		}
 	}
@@ -326,8 +326,8 @@ if ("undefined" === typeof JsonFx.IO.JsonServiceBase) {
 	/*event*/ JsonFx.IO.JsonServiceBase.prototype.onEndRequest = null;
 
 	/*void*/ JsonFx.IO.JsonServiceBase.prototype.callService = function(
-		/*string*/ method,
-		/*object*/ params,
+		/*string*/ rpcMethod,
+		/*object*/ rpcParams,
 		/*function(string,object)*/ callback,
 		/*object*/ context) {
 
@@ -339,8 +339,8 @@ if ("undefined" === typeof JsonFx.IO.JsonServiceBase) {
 
 		JsonFx.IO.postJsonRequest(
 			this.address,
-			method,
-			params,
+			rpcMethod,
+			rpcParams,
 			null,
 			function(data,ctxt){
 				if (self.onEndRequest) {
