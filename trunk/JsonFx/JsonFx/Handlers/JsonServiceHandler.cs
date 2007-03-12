@@ -143,6 +143,14 @@ namespace JsonFx.Handlers
 							method.GetParameters().Length, positionalParams.Length),
 						ex);
 				}
+				catch (TargetInvocationException ex)
+				{
+					if (ex.InnerException != null)
+					{
+						throw new JsonServiceException(ex.InnerException.Message, ex.InnerException);
+					}
+					throw new JsonServiceException(ex.Message, ex);
+				}
 				catch (Exception ex)
 				{
 					throw new JsonServiceException(ex.Message, ex);
@@ -186,7 +194,7 @@ namespace JsonFx.Handlers
 			{
 				context.Response.ClearContent();
 				response.Result = null;
-				response.Error = new JsonError(ex is TargetInvocationException ? ex.InnerException : ex);
+				response.Error = new JsonError(ex is JsonServiceException ? ex.InnerException : ex);
 			}
 			finally
 			{

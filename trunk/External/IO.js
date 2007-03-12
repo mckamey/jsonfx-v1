@@ -45,8 +45,7 @@ if ("undefined" === typeof JsonFx) {
 /* namespace JsonFx.IO */
 JsonFx.IO = {};
 
-/*string*/ JsonFx.IO.userAgent = "JsonFx/1.0 beta";
-
+/*string*/ JsonFx.IO.userAgent = "JsonFx/1.0";
 /*bool*/ JsonFx.IO.hasAjax = !!(new XMLHttpRequest());
 
 /*
@@ -67,6 +66,18 @@ JsonFx.IO = {};
 		context : object
 	};
 */
+
+/*RequestOptions*/ JsonFx.IO.onFailure = function(/*XMLHttpRequest|Error*/ obj, /*object*/ cx) {
+	if (obj) {
+		var name = obj.name ? obj.name : "Error";
+		var msg = obj.message ? obj.message : obj.statusText;
+		var code = isFinite(obj.status) ? obj.status : (isFinite(obj.code) ? obj.code : obj.number);
+		window.alert("Request Failed - "+name+" ("+Number(code)+"):\n\""+msg+"\"");
+	} else {
+		window.alert("Request Timeout");
+	}
+};
+
 /*RequestOptions*/ JsonFx.IO.validateOptions = function(/*RequestOptions*/ options) {
 	// establish defaults
 	if ("object" !== typeof options) {
@@ -100,13 +111,7 @@ JsonFx.IO = {};
 		options.onSuccess = null;
 	}
 	if ("function" !== typeof options.onFailure) {
-		options.onFailure = function(/*XMLHttpRequest*/ xhr, /*object*/ cx) {
-			if (xhr) {
-				window.alert("JsonFx.IO: Request Failed - "+xhr.statusText+" ("+xhr.status+")");
-			} else {
-				window.alert("JsonFx.IO: Request Timeout");
-			}
-		};
+		options.onFailure = JsonFx.IO.onFailure;
 	}
 	if ("function" !== typeof options.onTimeout) {
 		options.onTimeout = options.onFailure;
@@ -198,7 +203,7 @@ JsonFx.IO = {};
 	} catch (ex) {
 		// immediate failure
 		if ("function" === typeof options.onFailure) {
-			options.onFailure(xhr, options.context);
+			options.onFailure(ex, options.context);
 		}
 		return false;
 	} finally {
@@ -237,10 +242,10 @@ JsonFx.IO = {};
 			}
 		} catch (ex) {
 			if (options.onFailure) {
-				options.onFailure(xhr, context);
+				options.onFailure(ex, context);
 			}
 		} finally {
-			// free references
+			// free closure references
 			onSuccess = options = null;
 		}
 	};
@@ -290,23 +295,59 @@ JsonFx.IO = {};
 	options.headers["User-Agent"] = JsonFx.IO.userAgent;
 	options.headers.Accept = "application/json";
 
+	// wrap callbacks with RPC layer
 	var onSuccess = options.onSuccess;
-	options.onSuccess = function(/*XMLHttpRequest*/ xhr, /*object*/ context) {
-//TIMER
-//JsonFx.Timer.start("decode");
-//TIMER
+	var onFailure = options.onFailure;
+
+	// this calls onSuccess with the results of the method (not the RPC wrapper)
+	// or it calls onFailure with the error of the method (not the RPC wrapper)
+	options.onSuccess = function(/*XMLHttpRequest*/ xhr, /*object*/ cx) {
+
+ 		var json = xhr.responseText;
+		if ("string" === typeof json) {
+			try {
+				json = json.parseJSON();
+			} catch (ex) {
+				if ("function" === typeof onFailure) {
+					onFailure(ex, cx);
+				}
+			}
+		}
+
+		if (json.error) {
+			if ("function" === typeof onFailure) {
+				onFailure(json.error, cx);
+			}
+		} else {
+			if ("function" === typeof onSuccess) {
+				onSuccess(json.result, cx);
+			}
+		}
+
+		// free closure references
+		onFailure = onSuccess = null;
+	};
+
+	// this calls onFailure with the RPC response
+	options.onFailure = function(/*XMLHttpRequest*/ xhr, /*object*/ cx) {
+
 		var json = xhr.responseText;
 		if ("string" === typeof json) {
 			try {
 				json = json.parseJSON();
-			} catch (ex) {}
+			} catch (ex) {
+				if ("function" === typeof onFailure) {
+					onFailure(ex, cx);
+				}
+			}
 		}
-//TIMER
-//JsonFx.Timer.stop("decode", true);//32,31,22500(greedy regex)
-//TIMER
-		if ("function" === typeof onSuccess) {
-			onSuccess(json, context);
+
+		if ("function" === typeof onFailure) {
+			onFailure(json, cx);
 		}
+
+		// free closure references
+		onFailure = null;
 	};
 
 	if ("object" !== typeof rpcParams) {// must be object or array, else wrap in one
@@ -355,37 +396,52 @@ if ("undefined" === typeof JsonFx.IO.JsonRpcService) {
 	/*void*/ JsonFx.IO.JsonRpcService.prototype.callService = function(
 		/*string*/ rpcMethod,
 		/*object*/ rpcParams,
-		/*function(string,object)*/ callback,
-		/*object*/ context) {
+		/*RequestOptions*/ options) {
 
-		var self = this;
+		// ensure defaults
+		options = JsonFx.IO.validateOptions(options);
 
-		if (self.onBeginRequest) {
-			self.onBeginRequest(context);
+		if ("function" === typeof this.onEndRequest) {
+			var self = this;
+
+			// intercept onSuccess to call onEndRequest
+			var onSuccess = options.onSuccess;
+			options.onSuccess = function(/*JSON*/ json, /*object*/ cx) {
+				self.onEndRequest(cx);
+
+				if ("function" === typeof onSuccess) {
+					onSuccess(json, cx);
+				}
+
+				// free closure references				
+				self = onSuccess = null;
+			};
+
+			// intercept onFailure to call onEndRequest
+			var onFailure = options.onFailure;
+			options.onFailure = function(/*JSON*/ json, /*object*/ cx) {
+				self.onEndRequest(cx);
+
+				if ("function" === typeof onFailure) {
+					onFailure(json, cx);
+				}
+
+				// free closure references				
+				self = onFailure = null;
+			};
 		}
 
-		JsonFx.IO.sendJsonRpc(
-			self.address,
-			rpcMethod,
-			rpcParams,
-			{
-				context : context,
-				onSuccess : function(json, cx){
-					if (self.onEndRequest) {
-						self.onEndRequest(cx);
-					}
-					if ("function" === typeof callback) {
-						callback(json, cx);
-					}
-					self = null;
-				}
-			});
+		if ("function" === typeof this.onBeginRequest) {
+			this.onBeginRequest(options.context);
+		}
+
+		JsonFx.IO.sendJsonRpc(this.address, rpcMethod, rpcParams, options);
 	};
 
+	// service description is callable via two methods
 	/*string*/ JsonFx.IO.JsonRpcService.prototype["system.describe"] = JsonFx.IO.JsonRpcService.prototype.$describe = function(
-		/*function(string,object)*/ callback,
-		/*object*/ context) {
+		/*RequestOptions*/ options) {
 
-		this.callService("system.describe", null, callback, context);
+		this.callService("system.describe", null, options);
 	};
 }

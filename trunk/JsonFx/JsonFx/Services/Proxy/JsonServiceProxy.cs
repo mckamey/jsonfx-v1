@@ -33,8 +33,8 @@ namespace JsonFx.Services.Proxy
 
 		private const string MethodBeginFormat = "\t/*{2}*/ {0}{1}.prototype.{3} = function(";
 		private const string SafeMethodBeginFormat = "\t/*{2}*/ {0}{1}.prototype[\"{3}\"] = function(";
-		private const string MethodMiddleFormat = "/*function(object,object)*/ callback, /*object*/ context) {{\r\n\t\tthis.callService(\"{0}\", ";
-		private const string MethodEndFormat = ", callback, context);\r\n\t};\r\n\r\n";
+		private const string MethodMiddleFormat = "/*RequestOptions*/ options) {{\r\n\t\tthis.callService(\"{0}\", ";
+		private const string MethodEndFormat = ", options);\r\n\t};\r\n\r\n";
 
 		private const string ParamFormat = "/*{0}*/ {1}, ";
 #else
@@ -51,8 +51,8 @@ namespace JsonFx.Services.Proxy
 
 		private const string MethodBeginFormat = "{0}{1}.prototype.{3}=function(";
 		private const string SafeMethodBeginFormat = "{0}{1}.prototype[\"{3}\"]=function(";
-		private const string MethodMiddleFormat = "cb,cx){{this.callService(\"{0}\",";
-		private const string MethodEndFormat = ",cb,cx);};";
+		private const string MethodMiddleFormat = "opt){{this.callService(\"{0}\",";
+		private const string MethodEndFormat = ",opt);};";
 
 		private const string ParamFormat = "{1},";
 #endif
