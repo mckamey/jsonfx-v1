@@ -3,7 +3,7 @@
 	JsonFx IO
 	Copyright (c)2006-2007 Stephen M. McKamey
 	Created: 2006-11-09-0120
-	Modified: 2007-03-11-2019
+	Modified: 2007-03-11-2235
 \*---------------------------------------------------------*/
 
 // XMLHttpRequest: augment browser to have "native" XHR
@@ -209,11 +209,52 @@ JsonFx.IO = {};
 
 /* JsonRequest ----------------------------------------------------*/
 
+/*bool*/ JsonFx.IO.sendJsonRequest = function(
+	/*string*/ restUrl,
+	/*RequestOptions*/ options) {
+
+	// ensure defaults
+	options = JsonFx.IO.validateOptions(options);
+
+	options.headers["User-Agent"] = JsonFx.IO.userAgent;
+	options.headers.Accept = "application/json";
+
+	var onSuccess = options.onSuccess;
+	options.onSuccess = function(/*XMLHttpRequest*/ xhr, /*object*/ context) {
+//TIMER
+//JsonFx.Timer.start("decode");
+//TIMER
+
+		// decode response as JSON
+		try {
+			var json = xhr.responseText;
+			json = json.parseJSON();
+//TIMER
+//JsonFx.Timer.stop("decode", true);//32,31,22500(greedy regex)
+//TIMER
+			if ("function" === typeof onSuccess) {
+				onSuccess(json, context);
+			}
+		} catch (ex) {
+			if (options.onFailure) {
+				options.onFailure(xhr, context);
+			}
+		} finally {
+			// free references
+			onSuccess = options = null;
+		}
+	};
+
+	return JsonFx.IO.sendRequest(restUrl, options);
+};
+
+/* JSON-RPC ----------------------------------------------------*/
+
 /*string*/ JsonFx.IO.jsonRpcPathEncode = function (/*string*/ rpcMethod, /*object|array*/ rpcParams) {
-	var euc = encodeURIComponent;
+	var enc = encodeURIComponent;
 	var rpcUrl = "/";
 	if (rpcMethod) {
-		rpcUrl += euc(rpcMethod);
+		rpcUrl += enc(rpcMethod);
 	}
 	if ("object" === typeof rpcParams) {
 		rpcUrl += "?";
@@ -222,15 +263,15 @@ JsonFx.IO = {};
 				if (i > 0) {
 					rpcUrl += "&";
 				}
-				rpcUrl += euc(i);
+				rpcUrl += enc(i);
 				rpcUrl += "=";
-				rpcUrl += euc(rpcParams[i]);
+				rpcUrl += enc(rpcParams[i]);
 			}
 		} else {
 			for (var p in rpcParams) {
-				rpcUrl += euc(p);
+				rpcUrl += enc(p);
 				rpcUrl += "=";
-				rpcUrl += euc(rpcParams[p]);
+				rpcUrl += enc(rpcParams[p]);
 			}
 		}
 	}
@@ -254,17 +295,17 @@ JsonFx.IO = {};
 //TIMER
 //JsonFx.Timer.start("decode");
 //TIMER
-		var data = xhr.responseText;
-		if ("string" === typeof data) {
+		var json = xhr.responseText;
+		if ("string" === typeof json) {
 			try {
-				data = data.parseJSON();
+				json = json.parseJSON();
 			} catch (ex) {}
 		}
 //TIMER
 //JsonFx.Timer.stop("decode", true);//32,31,22500(greedy regex)
 //TIMER
 		if ("function" === typeof onSuccess) {
-			onSuccess(data, context);
+			onSuccess(json, context);
 		}
 	};
 
@@ -299,7 +340,7 @@ JsonFx.IO = {};
 	return JsonFx.IO.sendRequest(rpcUrl, options);
 };
 
-/* JsonRequest ----------------------------------------------------*/
+/* JsonRpcService ----------------------------------------------------*/
 
 /* Base type for generated JSON Services */
 if ("undefined" === typeof JsonFx.IO.JsonRpcService) {
