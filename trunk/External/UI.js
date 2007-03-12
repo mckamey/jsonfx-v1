@@ -377,7 +377,7 @@ JsonFx.UI.History.onchange = null;
 
 /*	if container is null then uses ID(s) to replace page elements
 	returns the container element if one was specified */
-/*element*/ JsonFx.UI.displayJsonML = function(/*JsonML*/ jml, /*element or string*/ container) {
+/*element*/ JsonFx.UI.displayJsonML = function(/*JsonML*/ jml, /*element|string*/ container) {
 
 //TIMER
 //JsonFx.Timer.start("display");
@@ -434,22 +434,42 @@ JsonFx.UI.History.onchange = null;
 };
 
 /* returns true if request was sent */
-/*bool*/ JsonFx.UI.loadJsonML = function(/*string*/ url, /*element or string*/ container, /*function*/ callback, /*object*/ context) {
+/*bool*/ JsonFx.UI.loadJsonML = function(/*string*/ url, /*element|string*/ container, /*function*/ callback, /*object*/ context) {
 
 //TIMER
 //JsonFx.Timer.start("load");
 //TIMER
 
-	return JsonFx.IO.getJsonRequest(url, null, null,
-			function(jml,obj) {
-
+	return JsonFx.IO.sendRequest(
+		url,
+		/*RequestOptions*/ {
+			method : "GET",
+			headers : {
+				"User-Agent" : JsonFx.IO.userAgent,
+				"Accept" : "application/json"
+			},
+			onSuccess : function(xhr, cx) {
 //TIMER
 //JsonFx.Timer.stop("load", true);//282,281,22750(greedy regex)
 //TIMER
+				// decode response
+				var jml = xhr.responseText;
+				if ("string" === typeof jml) {
+					try {
+						jml = jml.parseJSON();
+					} catch (ex) {}
+				}
+
+				// display UI
 				JsonFx.UI.displayJsonML(jml, container);
+
+				// callback
 				if ("function" === typeof callback) { callback(context); }
+
+				// free references
+				callback = context = container = null;
 			}
-		, null);
+		});
 };
 
 /* DataDump ----------------------------------------------------*/
@@ -1180,7 +1200,12 @@ JsonFx.UI.Animate.Engine = function(/*element*/ elem) {
 
 	// if newOp is null, the previous operation is reversed
 	// immediate doesn't animate but applies operation
-	/*void*/ this.apply = function(/*JsonFx.UI.Animate.Op*/ newOp, /*bool*/ immediate, /*function(cx)*/ callback, /*object*/ context) {
+	/*void*/ this.apply = function(
+		/*JsonFx.UI.Animate.Op*/ newOp,
+		/*bool*/ immediate,
+		/*function(cx)*/ callback,
+		/*object*/ context) {
+
 		if (!es) { return; }
 
 		// state: true = perform op, false = reverse op
