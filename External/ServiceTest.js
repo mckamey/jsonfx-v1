@@ -13,47 +13,51 @@ JsonFx.IO.ServiceTest = {};
 /*-------------------------------------------------------------------*/
 
 /* context object */
-JsonFx.IO.ServiceTest.Context = function(/*string*/ request, /*element*/ output) {
+JsonFx.IO.ServiceTest.Context = function(/*string*/ request, /*element*/ target) {
 	var cx = this;
 	var start = new Date().valueOf();
-	cx.output = output;
+	cx.target = target;
 	cx["JSON-RPC"] = request;
 	cx["Time Stamp"] = new Date(start).toString();
 	cx.setResponseTime = function() {
 		cx["Response Time"] = (new Date().valueOf()-start)+" ms";
 		delete cx.setResponseTime;
 	};
+	cx.resultType = "JSON-RPC Result";
 };
 
 /* display result callback */
-/*void*/ JsonFx.IO.ServiceTest.cb_displayResult = function(/*object*/ response, /*JsonFx.IO.ServiceTest.Context*/ context) {
-	if (!response) {
-		alert("JSON-RPC failed.");
-		return;
-	}
-
-	var output = null;
+/*void*/ JsonFx.IO.ServiceTest.cb_displayResult = function(/*object*/ result, /*JsonFx.IO.ServiceTest.Context*/ context) {
+	var target = null;
 	if (context) {
-		output = context.output;
- 		delete context.output;
+		target = context.target;
+ 		delete context.target;
 		context.setResponseTime();
 	}
 
-	if ("string" === typeof output) {
-		output = document.getElementById(output);
+	if ("string" === typeof target) {
+		target = document.getElementById(target);
 	}
-	if (!output) {
-		output = document.createElement("div");
-		document.body.appendChild(output);
+	if (!target) {
+		target = document.createElement("div");
+		document.body.appendChild(target);
 	} else {
-		JsonFx.UI.clear(output);
+		JsonFx.UI.clear(target);
 	}
 
-	JsonFx.UI.displayJsonML(["div",JsonFx.UI.dumpData(context),["hr"],JsonFx.UI.dumpData(response)], output);
+	var label = context.resultType;
+	delete context.resultType;
+	JsonFx.UI.displayJsonML(["div",JsonFx.UI.dumpData("Call Context", context),["hr"],JsonFx.UI.dumpData(label, result)], target);
+};
+
+/* display result callback */
+/*void*/ JsonFx.IO.ServiceTest.cb_displayError = function(/*object*/ result, /*JsonFx.IO.ServiceTest.Context*/ context) {
+	context.resultType = "JSON-RPC Error";
+	JsonFx.IO.ServiceTest.cb_displayResult(result, context);
 };
 
 /* creates actual method call */		
-/*function*/ JsonFx.IO.ServiceTest.createServiceCall = function(/*object*/ service, /*object*/ proc, /*element*/ output) {
+/*function*/ JsonFx.IO.ServiceTest.createServiceCall = function(/*object*/ service, /*object*/ proc, /*element*/ target) {
 	return function() {
 		var call = service.name+"."+proc.name+"(";
 		var args = [];
@@ -77,15 +81,22 @@ JsonFx.IO.ServiceTest.Context = function(/*string*/ request, /*element*/ output)
 		}
 		call += ")";
 
-		var context = new JsonFx.IO.ServiceTest.Context(call, output);
+		var cx = new JsonFx.IO.ServiceTest.Context(call, target);
 
-		service.callService(proc.name, args, JsonFx.IO.ServiceTest.cb_displayResult, context);
+		service.callService(
+			proc.name,
+			args,
+			{
+				onSuccess : JsonFx.IO.ServiceTest.cb_displayResult,
+				onFailure : JsonFx.IO.ServiceTest.cb_displayError,
+				context : cx
+			});
 	};
 };
 
 /* generates test buttons from the system.decribe result */
-/*void*/ JsonFx.IO.ServiceTest.cb_buildTestUI = function(/*object*/ response, /*object*/ context) {
-	if (!response || !response.result) {
+/*void*/ JsonFx.IO.ServiceTest.cb_buildTestUI = function(/*object*/ result, /*object*/ context) {
+	if ("object" !== typeof result && result !== null) {
 		return;
 	}
 	if ("string" === typeof context.container) {
@@ -93,20 +104,20 @@ JsonFx.IO.ServiceTest.Context = function(/*string*/ request, /*element*/ output)
 	}
 	if (!context.container) {
 		context.container = document.createElement("div");
-		document.body.appendChild(context.output);
+		document.body.appendChild(context.target);
 	} else {
 		JsonFx.UI.clear(context.container);
 	}
 
 	// add placeholder for implicit service description
-	response.result.procs.unshift({"name":"system.describe"});
+	result.procs.unshift({"name":"system.describe"});
 
-	for (var i=0; i<response.result.procs.length; i++) {
-		var proc = response.result.procs[i];
+	for (var i=0; i<result.procs.length; i++) {
+		var proc = result.procs[i];
 		var btn = ["input", {"type":"button", "class":"ServiceTest", "value":proc.name}];
 		btn = btn.parseJsonML(null);
 
-		var handler = JsonFx.IO.ServiceTest.createServiceCall(context.service, proc, context.output);
+		var handler = JsonFx.IO.ServiceTest.createServiceCall(context.service, proc, context.target);
 		if (handler) {
 			btn.onclick = handler;
 			context.container.appendChild(btn);
@@ -114,9 +125,13 @@ JsonFx.IO.ServiceTest.Context = function(/*string*/ request, /*element*/ output)
 	}
 };
 
-/*void*/ JsonFx.IO.ServiceTest.buildTestUI = function(/*JsonFx.IO.Service*/ service, /*element*/ container, /*element*/ output) {
-	service.$describe(
-			JsonFx.IO.ServiceTest.cb_buildTestUI,
-			{ "service":service, "container":container, "output":output }
-		);
+/*void*/ JsonFx.IO.ServiceTest.buildTestUI = function(/*JsonFx.IO.Service*/ service, /*element*/ container, /*element*/ target) {
+	if (service) {
+		service.$describe(
+			{
+				onSuccess : JsonFx.IO.ServiceTest.cb_buildTestUI,
+				onFailure : JsonFx.IO.ServiceTest.cb_displayError,
+				context : { "service":service, "container":container, "target":target }
+			});
+	}
 };

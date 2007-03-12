@@ -454,7 +454,7 @@ JsonFx.UI.History.onchange = null;
 				// callback
 				if ("function" === typeof callback) { callback(context); }
 
-				// free references
+				// free closure references
 				callback = context = container = null;
 			}
 		});
@@ -536,41 +536,36 @@ JsonFx.UI.History.onchange = null;
 };
 
 /*int*/ JsonFx.UI.dumpDataID = 0;
-/*JsonML*/ JsonFx.UI.dumpData = function(/*json*/ data) {
-	if (data === null) {
-		return "null";
+/*JsonML*/ JsonFx.UI.dumpData = function(/*string*/ name, /*json*/ val) {
+	var c = ["span"];
+	var type = typeof val;
+
+	var a = false;
+	if ("object" === type && val) {
+		a = ["label", {"class":"jsonfx-expando"}];
+		c.push(a);
 	}
-	var ul = ["ul", {"id":"JsonFx_UI_Dump_"+(JsonFx.UI.dumpDataID++),"class":"jsonfx-object"}];
+	(a?a:c).push(["span", {"class":"jsonfx-type"}, (val instanceof Array) ? "array" : type]);
+	(a?a:c).push(["span", {"class":"jsonfx-name"}, name]);
 
-	for (var pn in data) {
-		if (!data.hasOwnProperty(pn)) {
-			continue;
-		}
-		var pv = data[pn];
-		var pt = typeof pv;
-
-		var li = ["li"];
-		var a = null;
-		if ("object" === pt && pv) {
-			a = ["label", {"class":"jsonfx-expando"}];
-			li.push(a);
-		}
-		(a?a:li).push(["span", {"class":"jsonfx-type"}, (pv instanceof Array) ? "array" : pt]);
-		(a?a:li).push(["span", {"class":"jsonfx-name"}, pn]);
-
-		if ("object" === pt) {
-			var o = JsonFx.UI.dumpData(pv);
-			if (a && o[1].id) {
-				a[1]["for"] = o[1].id;
+	if ("object" === type && val) {
+		var ul = ["ul", {"id":"JsonFx_UI_Dump_"+(JsonFx.UI.dumpDataID++),"class":"jsonfx-object"}];
+		for (var pn in val) {
+			if (!val.hasOwnProperty(pn)) {
+				continue;
 			}
-			li.push(o);
-		} else {
-			li.push(["span", {"class":"jsonfx-value"}, String(pv)]);
+			ul.push(["li", JsonFx.UI.dumpData(pn, val[pn])]);
 		}
-		ul.push(li);
+
+		if (a) {
+			a[1]["for"] = ul[1].id;
+		}
+		c.push(ul);
+	} else {
+		c.push(["span", {"class":"jsonfx-value"}, String(val)]);
 	}
 
-	return ul;
+	return c;
 };
 
 /*---------------------*\
