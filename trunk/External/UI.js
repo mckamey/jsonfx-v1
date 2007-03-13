@@ -434,30 +434,71 @@ JsonFx.UI.History.onchange = null;
 };
 
 /* returns true if request was sent */
-/*bool*/ JsonFx.UI.loadJsonML = function(/*string*/ url, /*element|string*/ container, /*function*/ callback, /*object*/ context) {
+/*bool*/ JsonFx.UI.loadJsonML = function(
+	/*string*/ url,
+	/*element|string*/ container,
+	/*RequestOptions*/ options) {
 
-//TIMER
-//JsonFx.Timer.start("load");
-//TIMER
+	options = JsonFx.IO.validateOptions(options);
+	options.method = "GET";
 
-	return JsonFx.IO.sendJsonRequest(
-		url,
-		/*RequestOptions*/ {
-			method : "GET",
-			onSuccess : function(jml, cx) {
-//TIMER
-//JsonFx.Timer.stop("load", true);//282,281,22750(greedy regex)
-//TIMER
-				// display UI
-				JsonFx.UI.displayJsonML(jml, container);
+	if (options.onCreate) {
+		var onCreate = options.onCreate;
+		options.onCreate = function(jml, cx) {
+			// callback
+			onCreate(cx);
 
-				// callback
-				if ("function" === typeof callback) { callback(context); }
+			// free closure references
+			onCreate = null;
+		};
+	}
 
-				// free closure references
-				callback = context = container = null;
-			}
-		});
+	var onSuccess = options.onSuccess;
+	options.onSuccess = function(jml, cx) {
+		// display UI
+		JsonFx.UI.displayJsonML(jml, container);
+
+		// callback
+		if (onSuccess) { onSuccess(cx); }
+
+		// free closure references
+		onSuccess = container = null;
+	};
+
+	if (options.onFailure) {
+		var onFailure = options.onFailure;
+		options.onFailure = function(jml, cx) {
+			// callback
+			onFailure(cx);
+
+			// free closure references
+			onFailure = null;
+		};
+	}
+
+	if (options.onTimeout) {
+		var onTimeout = options.onTimeout;
+		options.onTimeout = function(jml, cx) {
+			// callback
+			onTimeout(cx);
+
+			// free closure references
+			onTimeout = null;
+		};
+	}
+
+	if (options.onComplete) {
+		var onComplete = options.onComplete;
+		options.onComplete = function(jml, cx) {
+			// callback
+			onComplete(cx);
+
+			// free closure references
+			onComplete = null;
+		};
+	}
+
+	return JsonFx.IO.sendJsonRequest(url, options);
 };
 
 /* DataDump ----------------------------------------------------*/
@@ -1243,9 +1284,11 @@ JsonFx.UI.Animate.Engine = function(/*element*/ elem) {
 				initFilter(op);
 				if (alpha) {
 					try {
-						// this might have side-effects, but should be rare
 						if (!elem.currentStyle.hasLayout) {
-							es.zoom = "100%";
+							// this might have side-effects, but should be rare
+							// http://msdn.microsoft.com/workshop/author/dhtml/reference/properties/haslayout.asp
+							// http://www.satzansatz.de/cssd/onhavinglayout.html
+							es.zoom = "1";
 						}
 						alpha.opacity = JsonFx.UI.lerpInt(100*start.f, 100*op.f, step);
 						alpha.enabled = true;
@@ -1258,9 +1301,11 @@ JsonFx.UI.Animate.Engine = function(/*element*/ elem) {
 				initFilter(op);
 				if (blur) {
 					try {
-						// this might have side-effects, but should be rare
 						if (!elem.currentStyle.hasLayout) {
-							es.zoom = "100%";
+							// this might have side-effects, but should be rare
+							// http://msdn.microsoft.com/workshop/author/dhtml/reference/properties/haslayout.asp
+							// http://www.satzansatz.de/cssd/onhavinglayout.html
+							es.zoom = "1";
 						}
 						blur.pixelRadius = JsonFx.UI.lerpInt(start.bl, op.bl, step);
 						blur.enabled = true;

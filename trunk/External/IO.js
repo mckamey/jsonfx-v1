@@ -58,9 +58,11 @@ JsonFx.IO = {};
 		params : string,
 
 		// callbacks
+		onCreate : function(XMLHttpRequest, context){},
 		onSuccess : function(XMLHttpRequest, context){},
 		onFailure : function(XMLHttpRequest, context){},
 		onTimeout : function(XMLHttpRequest, context){},
+		onComplete : function(XMLHttpRequest, context){},
 
 		// callback context
 		context : object
@@ -89,9 +91,12 @@ JsonFx.IO = {};
 	if ("string" !== typeof options.method) {
 		options.method = "POST";
 	}
+	if ("string" !== typeof options.params) {
+		options.params = null;
+	}
 	if ("object" !== typeof options.headers) {
 		options.headers = {};
-		if (options.method === "POST") {
+		if (options.method === "POST" && options.params) {
 			options.headers["Content-Type"] = "application/x-www-form-urlencoded";
 		}
 	}
@@ -101,11 +106,11 @@ JsonFx.IO = {};
 	options.headers["Cache-Control"] = "no-cache";
 	options.headers.Pragma = "no-cache";
 
-	if ("string" !== typeof options.params) {
-		options.params = null;
-	}
 	if ("number" !== typeof options.timeout) {
 		options.timeout = 10000;// 10 seconds
+	}
+	if ("function" !== typeof options.onCreate) {
+		options.onCreate = null;
 	}
 	if ("function" !== typeof options.onSuccess) {
 		options.onSuccess = null;
@@ -115,6 +120,9 @@ JsonFx.IO = {};
 	}
 	if ("function" !== typeof options.onTimeout) {
 		options.onTimeout = options.onFailure;
+	}
+	if ("function" !== typeof options.onComplete) {
+		options.onComplete = null;
 	}
 	if ("undefined" === typeof options.context) {
 		options.context = null;
@@ -132,6 +140,11 @@ JsonFx.IO = {};
 
 	// ensure defaults
 	options = JsonFx.IO.validateOptions(options);
+
+	if ("function" === typeof options.onCreate) {
+		// create
+		options.onCreate(xhr, options.context);
+	}
 
 	// kill the request if takes too long
 	var cancel = window.setTimeout(
@@ -175,9 +188,14 @@ JsonFx.IO = {};
 				// Firefox throws exception, which we set to zero
 				// options.onTimeout has already been called so do nothing
 
-			} else if ("function" === typeof options.onFailure) {
+			} else if (options.onFailure) { // status not 200-299
 				// failure
 				options.onFailure(xhr, options.context);
+			}
+
+			if (options.onComplete) { // all
+				// complete
+				options.onComplete(xhr, options.context);
 			}
 			xhr = null;
 		}
@@ -308,18 +326,18 @@ JsonFx.IO = {};
 			try {
 				json = json.parseJSON();
 			} catch (ex) {
-				if ("function" === typeof onFailure) {
+				if (onFailure) {
 					onFailure(ex, cx);
 				}
 			}
 		}
 
 		if (json.error) {
-			if ("function" === typeof onFailure) {
+			if (onFailure) {
 				onFailure(json.error, cx);
 			}
 		} else {
-			if ("function" === typeof onSuccess) {
+			if (onSuccess) {
 				onSuccess(json.result, cx);
 			}
 		}
@@ -336,13 +354,13 @@ JsonFx.IO = {};
 			try {
 				json = json.parseJSON();
 			} catch (ex) {
-				if ("function" === typeof onFailure) {
+				if (onFailure) {
 					onFailure(ex, cx);
 				}
 			}
 		}
 
-		if ("function" === typeof onFailure) {
+		if (onFailure) {
 			onFailure(json, cx);
 		}
 
@@ -404,30 +422,17 @@ if ("undefined" === typeof JsonFx.IO.JsonRpcService) {
 		if ("function" === typeof this.onEndRequest) {
 			var self = this;
 
-			// intercept onSuccess to call onEndRequest
-			var onSuccess = options.onSuccess;
-			options.onSuccess = function(/*JSON*/ json, /*object*/ cx) {
+			// intercept onComplete to call onEndRequest
+			var onComplete = options.onComplete;
+			options.onComplete = function(/*JSON*/ json, /*object*/ cx) {
 				self.onEndRequest(cx);
 
-				if ("function" === typeof onSuccess) {
-					onSuccess(json, cx);
+				if (onComplete) {
+					onComplete(json, cx);
 				}
 
 				// free closure references				
-				self = onSuccess = null;
-			};
-
-			// intercept onFailure to call onEndRequest
-			var onFailure = options.onFailure;
-			options.onFailure = function(/*JSON*/ json, /*object*/ cx) {
-				self.onEndRequest(cx);
-
-				if ("function" === typeof onFailure) {
-					onFailure(json, cx);
-				}
-
-				// free closure references				
-				self = onFailure = null;
+				self = onComplete = null;
 			};
 		}
 
