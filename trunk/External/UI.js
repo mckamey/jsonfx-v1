@@ -409,7 +409,7 @@ JsonFx.UI.History.onchange = null;
 	return container;
 };
 
-/*void*/ JsonFx.UI.loadJsonML = function(
+/*void*/ JsonFx.UI.loadJsonML = function (
 	/*string*/ url,
 	/*element|string*/ container,
 	/*RequestOptions*/ options) {
@@ -419,8 +419,8 @@ JsonFx.UI.History.onchange = null;
 
 	if (options.onCreate) {
 		var onCreate = options.onCreate;
-		options.onCreate = function(jml, cx) {
-			// callback
+		options.onCreate = function (/*JSON*/ jml, /*object*/ cx) {
+			// create callback
 			onCreate(cx);
 
 			// free closure references
@@ -429,11 +429,11 @@ JsonFx.UI.History.onchange = null;
 	}
 
 	var onSuccess = options.onSuccess;
-	options.onSuccess = function(jml, cx) {
+	options.onSuccess = function (/*JSON*/ jml, /*object*/ cx) {
 		// display UI
 		JsonFx.UI.displayJsonML(jml, container);
 
-		// callback
+		// success callback
 		if (onSuccess) { onSuccess(cx); }
 
 		// free closure references
@@ -442,9 +442,9 @@ JsonFx.UI.History.onchange = null;
 
 	if (options.onFailure) {
 		var onFailure = options.onFailure;
-		options.onFailure = function(jml, cx) {
-			// callback
-			onFailure(cx);
+		options.onFailure = function (/*JSON*/ jml, /*object*/ cx, /*Error*/ ex) {
+			// failure callback
+			onFailure(cx, ex);
 
 			// free closure references
 			onFailure = null;
@@ -453,9 +453,9 @@ JsonFx.UI.History.onchange = null;
 
 	if (options.onTimeout) {
 		var onTimeout = options.onTimeout;
-		options.onTimeout = function(jml, cx) {
-			// callback
-			onTimeout(cx);
+		options.onTimeout = function (/*JSON*/ jml, /*object*/ cx, /*Error*/ ex) {
+			// timeout callback
+			onTimeout(cx, ex);
 
 			// free closure references
 			onTimeout = null;
@@ -464,12 +464,12 @@ JsonFx.UI.History.onchange = null;
 
 	if (options.onComplete) {
 		var onComplete = options.onComplete;
-		options.onComplete = function(jml, cx) {
-			// callback
+		options.onComplete = function (/*JSON*/ jml, /*object*/ cx) {
+			// complete callback
 			onComplete(cx);
 
 			// free closure references
-			onComplete = null;
+			onComplete = 1;
 		};
 	}
 
@@ -522,7 +522,11 @@ JsonFx.UI.History.onchange = null;
 				}
 			}
 			if (target) {
-				elem.style.cursor = "pointer";
+				try {
+					elem.style.cursor = "pointer";
+				} catch (ex) {
+					elem.style.cursor = "hand";
+				}
 				elem.className += " jsonfx-expanded";
 
 				elem.onclick = function (/*event*/ evt) {
