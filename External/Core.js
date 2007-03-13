@@ -1,9 +1,9 @@
-/*extern JsonFx*/
+/*extern JsonFx, ActiveXObject */
 /*---------------------------------------------------------*\
-	Modifications to global objects
+	Modifications to browser global objects
 	Copyright (c)2006-2007 Stephen M. McKamey
 	Created: 2006-11-14-0928
-	Modified: 2007-02-21-0540
+	Modified: 2007-03-12-2349
 \*---------------------------------------------------------*/
 
 /* namespace JsonFx */
@@ -136,6 +136,39 @@ if ("undefined" === typeof(String.prototype.contains)) {
 		return (this.indexOf(str) >= 0);
 	};
 }
+
+/* ----------------------------------------------------*/
+
+// XMLHttpRequest: augment browser to have "native" XHR
+(function () {
+	if ("undefined" === typeof window.XMLHttpRequest) {
+
+		// these IDs are as per MSDN documentation (including case)
+		/*string[]*/ var xhrOCXs = [
+			"Msxml2.XMLHTTP.6.0",
+			"Msxml2.XMLHttp.5.0",
+			"Msxml2.XMLHttp.4.0",
+			"MSXML2.XMLHTTP.3.0",
+			"MSXML2.XMLHTTP",
+			"Microsoft.XMLHTTP" ];
+
+		window.XMLHttpRequest = function() {
+			while (xhrOCXs.length) {
+				try {
+					return new ActiveXObject(xhrOCXs[0]);
+				} catch (ex) {
+					// remove the failed xhrOCXs for future requests
+					xhrOCXs.shift();
+				}
+			}
+
+			// all xhrOCXs failed		
+			return null;
+		};
+	}
+})();
+
+/* ----------------------------------------------------*/
 
 JsonFx.Timer = function() {
 	/*object*/ var s = {};
