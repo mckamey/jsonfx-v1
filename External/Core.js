@@ -14,30 +14,30 @@ if ("undefined" === typeof JsonFx) {
 ///*float*/ JsonFx.JScriptVersion = ("undefined" === typeof window.ScriptEngineMajorVersion) ? NaN :
 //		Number(window.ScriptEngineMajorVersion()+"."+window.ScriptEngineMinorVersion());
 
-if ("undefined" === typeof(window.global)) {
+if ("undefined" === typeof window.global) {
 	/*object*/ window.global = window;
 }
 
-if ("undefined" === typeof(Object.prototype.hasOwnProperty)) {
+if ("undefined" === typeof Object.prototype.hasOwnProperty) {
 	/*bool*/ Object.prototype.hasOwnProperty = function(/*object*/ p) {
 		return ("undefined" !== typeof(this[p]) && ("undefined" === typeof(this.constructor.prototype[p])));
 	};
 }
 
-if ("undefined" === typeof(Object.prototype.propertyIsEnumerable)) {
+if ("undefined" === typeof Object.prototype.propertyIsEnumerable) {
 	/*bool*/ Object.prototype.propertyIsEnumerable = function(/*object*/ p) {
 		return this.hasOwnProperty(p);
 	};
 }
 
-if ("undefined" === typeof(Array.prototype.push)) {
+if ("undefined" === typeof Array.prototype.push) {
 	/*int*/ Array.prototype.push = function(/*object*/ obj) {
 		this[this.length] = obj;
 		return this.length;
 	};
 }
 
-if ("undefined" === typeof(Array.prototype.pop)) {
+if ("undefined" === typeof Array.prototype.pop) {
 	/*object*/ Array.prototype.pop = function() {
 		if (this.length < 1) {
 			return undefined;
@@ -48,7 +48,7 @@ if ("undefined" === typeof(Array.prototype.pop)) {
 	};
 }
 
-if ("undefined" === typeof(String.prototype.charCodeAt)) {
+if ("undefined" === typeof String.prototype.charCodeAt) {
 	/*int*/ String.prototype.charCodeAt = function (/*int*/ i) {
 		if (isNaN(i) || i<0 || i>=this.length) {
 			return NaN;
@@ -57,7 +57,7 @@ if ("undefined" === typeof(String.prototype.charCodeAt)) {
 	};
 }
 
-if ("undefined" === typeof(Number.prototype.toPrecision)) {
+if ("undefined" === typeof Number.prototype.toPrecision) {
 	/*string*/ Number.prototype.toPrecision = function(/*int*/ digits) {
 		var str = this.toString();
 		if (isNaN(digits) || digits < 1 || digits > 21) {
@@ -70,7 +70,7 @@ if ("undefined" === typeof(Number.prototype.toPrecision)) {
 	};
 }
 
-if ("undefined" === typeof(Object.prototype.isPrototypeOf)) {
+if ("undefined" === typeof Object.prototype.isPrototypeOf) {
 	/*bool*/ Object.prototype.isPrototypeOf = function (/*object*/ obj) {
 		while ("undefined" !== typeof(obj.prototype)) {
 			if (this === obj.prototype) {
@@ -82,56 +82,56 @@ if ("undefined" === typeof(Object.prototype.isPrototypeOf)) {
 	};
 }
 
-if ("undefined" === typeof(window.encodeURI)) {
+if ("undefined" === typeof window.encodeURI) {
 	/*string*/ window.encodeURI = function (/*string*/ str) {
 		// placeholder method
 		return str;
 	};
 }
 
-if ("undefined" === typeof(window.encodeURIComponent)) {
+if ("undefined" === typeof window.encodeURIComponent) {
 	/*string*/ window.encodeURIComponent = function (/*string*/ str) {
 		// placeholder method
 		return str;
 	};
 }
 
-if ("undefined" === typeof(window.decodeURI)) {
+if ("undefined" === typeof window.decodeURI) {
 	/*string*/ window.decodeURI = function (/*string*/ str) {
 		// placeholder method
 		return str;
 	};
 }
 
-if ("undefined" === typeof(window.decodeURIComponent)) {
+if ("undefined" === typeof window.decodeURIComponent) {
 	/*string*/ window.decodeURIComponent = function (/*string*/ str) {
 		// placeholder method
 		return str;
 	};
 }
 
-//if ("undefined" === typeof(Array.prototype.shift)) {
+//if ("undefined" === typeof Array.prototype.shift) {
 //	/*array*/ Array.prototype.shift = function(...) {
 //	};
 //}
 
-//if ("undefined" === typeof(Array.prototype.unshift)) {
+//if ("undefined" === typeof Array.prototype.unshift) {
 //	/*array*/ Array.prototype.unshift = function(...) {
 //	};
 //}
 
-//if ("undefined" === typeof(Array.prototype.splice)) {
+//if ("undefined" === typeof Array.prototype.splice) {
 //	/*array*/ Array.prototype.splice = function(...) {
 //	};
 //}
 
-if ("undefined" === typeof(String.prototype.trim)) {
+if ("undefined" === typeof String.prototype.trim) {
 	/*string*/ String.prototype.trim = function () {
 		return this.replace(/^\s*|\s*$/g, "");
 	};
 }
 
-if ("undefined" === typeof(String.prototype.contains)) {
+if ("undefined" === typeof String.prototype.contains) {
 	/*string*/ String.prototype.contains = function (str) {
 		return (this.indexOf(str) >= 0);
 	};
@@ -139,25 +139,31 @@ if ("undefined" === typeof(String.prototype.contains)) {
 
 /* ----------------------------------------------------*/
 
-// XMLHttpRequest: augment browser to have "native" XHR
 (function () {
+	// wrapping in anonymous function so that the XHR-ID list
+	// will be only available as a closure, as this will not
+	// modify the global namespace, and it will be shared
+
 	if ("undefined" === typeof window.XMLHttpRequest) {
 
 		// these IDs are as per MSDN documentation (including case)
-		/*string[]*/ var xhrOCXs = [
-			"Msxml2.XMLHTTP.6.0",
-			"Msxml2.XMLHttp.5.0",
-			"Msxml2.XMLHttp.4.0",
-			"MSXML2.XMLHTTP.3.0",
-			"MSXML2.XMLHTTP",
-			"Microsoft.XMLHTTP" ];
+		/*string[]*/ var xhrOCXs =
+			[
+				"Msxml2.XMLHTTP.6.0",
+				"Msxml2.XMLHttp.5.0",
+				"Msxml2.XMLHttp.4.0",
+				"MSXML2.XMLHTTP.3.0",
+				"MSXML2.XMLHTTP",
+				"Microsoft.XMLHTTP"
+			];
 
-		window.XMLHttpRequest = function() {
+		// XMLHttpRequest: augment browser to have "native" XHR
+		/*XMLHttpRequest*/ window.XMLHttpRequest = function() {
 			while (xhrOCXs.length) {
 				try {
 					return new ActiveXObject(xhrOCXs[0]);
 				} catch (ex) {
-					// remove the failed xhrOCXs for future requests
+					// remove the failed xhrOCXs for all future requests
 					xhrOCXs.shift();
 				}
 			}
