@@ -1,15 +1,14 @@
-2007-01-16 @ 00:58
+2007-03-12 @ 23:49
 
-- Add error callback on JSON calls
-- Implement browser history stack
+- Add callbacks to Animate (onBeforeStart, onEachStep, onAfterStop), see http://wiki.script.aculo.us/scriptaculous/show/CoreEffects
+- Change Animation speed to be seconds based? fps?
+
 - Add IFrame support for downlevel browsers? (http://ajaxpatterns.org/archive/XMLHttpRequest_Call.php)
 - Add messaging framework
 
 - Implement class hinting
-- Implement proxy JavaScript Classes
-- Implement better test page with actual argument lists
 - Implement centralized error handling
 
-- Implement arrays for arguments in JSON-RPC for HTTP GET.
+- Implement arrays for arguments in JSON-RPC for server-side HTTP GET.
 - Convert reader so can read from stream rather than from complete string
 - Fix intelisense & syntax coloring in JsonService
