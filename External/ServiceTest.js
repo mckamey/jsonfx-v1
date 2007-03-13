@@ -51,9 +51,9 @@ JsonFx.IO.ServiceTest.Context = function(/*string*/ request, /*element*/ target)
 };
 
 /* display result callback */
-/*void*/ JsonFx.IO.ServiceTest.cb_displayError = function(/*object*/ result, /*JsonFx.IO.ServiceTest.Context*/ context) {
+/*void*/ JsonFx.IO.ServiceTest.cb_displayError = function(/*object*/ result, /*JsonFx.IO.ServiceTest.Context*/ context, /*object*/ ex) {
 	context.resultType = "JSON-RPC Error";
-	JsonFx.IO.ServiceTest.cb_displayResult(result, context);
+	JsonFx.IO.ServiceTest.cb_displayResult(ex, context);
 };
 
 /* creates actual method call */		
