@@ -1,4 +1,4 @@
-/*extern JsonFx, ActiveXObject */
+/*extern JsonFx */
 /*---------------------------------------------------------*\
 	Modifications to browser global objects
 	Copyright (c)2006-2007 Stephen M. McKamey
@@ -147,7 +147,7 @@ if ("undefined" === typeof String.prototype.contains) {
 	if ("undefined" === typeof window.XMLHttpRequest) {
 
 		// these IDs are as per MSDN documentation (including case)
-		/*string[]*/ var xhrOCXs =
+		/*string[]*/ var xhrOCXs = !window.ActiveXObject ? [] :
 			[
 				"Msxml2.XMLHTTP.6.0",
 				"Msxml2.XMLHttp.5.0",
@@ -161,7 +161,7 @@ if ("undefined" === typeof String.prototype.contains) {
 		/*XMLHttpRequest*/ window.XMLHttpRequest = function() {
 			while (xhrOCXs.length) {
 				try {
-					return new ActiveXObject(xhrOCXs[0]);
+					return new window.ActiveXObject(xhrOCXs[0]);
 				} catch (ex) {
 					// remove the failed xhrOCXs for all future requests
 					xhrOCXs.shift();
