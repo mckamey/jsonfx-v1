@@ -3,7 +3,7 @@
 	JsonFx UI
 	Copyright (c)2006-2007 Stephen M. McKamey
 	Created: 2006-11-11-1759
-	Modified: 2007-03-11-2235
+	Modified: 2007-03-12-2349
 \*---------------------------------------------------------*/
 
 /* namespace JsonFx */
@@ -188,10 +188,6 @@ JsonFx.UI.Bindings = function() {
 	/*element*/ var performOne = function(/*element*/ elem, /*actionKey*/ a) {
 		if (elem && elem.tagName && elem.className) {
 
-//TIMER
-//JsonFx.Timer.start(a+"_one");
-//TIMER
-
 			// only perform on registered tags
 			var tag = elem.tagName.toLowerCase();
 			if (bindings[tag]) {
@@ -208,21 +204,12 @@ JsonFx.UI.Bindings = function() {
 					}
 				}
 			}
-
-//TIMER
-//JsonFx.Timer.stop(a+"_one", true);//48/16,46/31,62/0
-//TIMER
-
 		}
 		return elem;
 	};
 
 	// perform a binding action on child elements
 	/*void*/ var perform = function(/*element*/ root, /*actionKey*/ a) {
-
-//TIMER
-//JsonFx.Timer.start(a+"_all");
-//TIMER
 		if (root && root.getElementsByTagName) {
 
 			// for each registered tag
@@ -237,10 +224,6 @@ JsonFx.UI.Bindings = function() {
 				}
 			}
 		}
-
-//TIMER
-//JsonFx.Timer.stop(a+"_all", true);//32,31,31
-//TIMER
 	};
 
 	// used as JsonML filter
@@ -379,10 +362,6 @@ JsonFx.UI.History.onchange = null;
 	returns the container element if one was specified */
 /*element*/ JsonFx.UI.displayJsonML = function(/*JsonML*/ jml, /*element|string*/ container) {
 
-//TIMER
-//JsonFx.Timer.start("display");
-//TIMER
-
 	// either DOM element or id
 	container = ("string" === typeof container) ?
 		document.getElementById(container) : container;
@@ -427,14 +406,10 @@ JsonFx.UI.History.onchange = null;
 			}
 		}
 	}
-//TIMER
-//JsonFx.Timer.stop("display", true);//265,266,266
-//TIMER
 	return container;
 };
 
-/* returns true if request was sent */
-/*bool*/ JsonFx.UI.loadJsonML = function(
+/*void*/ JsonFx.UI.loadJsonML = function(
 	/*string*/ url,
 	/*element|string*/ container,
 	/*RequestOptions*/ options) {
@@ -498,7 +473,7 @@ JsonFx.UI.History.onchange = null;
 		};
 	}
 
-	return JsonFx.IO.sendJsonRequest(url, options);
+	JsonFx.IO.sendJsonRequest(url, options);
 };
 
 /* DataDump ----------------------------------------------------*/

@@ -1,41 +1,10 @@
-/*extern JsonFx, ActiveXObject */
+/*extern JsonFx */
 /*---------------------------------------------------------*\
 	JsonFx IO
 	Copyright (c)2006-2007 Stephen M. McKamey
 	Created: 2006-11-09-0120
-	Modified: 2007-03-11-2235
+	Modified: 2007-03-12-2349
 \*---------------------------------------------------------*/
-
-// XMLHttpRequest: augment browser to have "native" XHR
-(function () {
-	if ("undefined" === typeof window.XMLHttpRequest) {
-
-		// these IDs are as per MSDN documentation (including case)
-		/*string[]*/ var xhrOCXs = [
-			"Msxml2.XMLHTTP.6.0",
-			"Msxml2.XMLHttp.5.0",
-			"Msxml2.XMLHttp.4.0",
-			"MSXML2.XMLHTTP.3.0",
-			"MSXML2.XMLHTTP",
-			"Microsoft.XMLHTTP" ];
-
-		window.XMLHttpRequest = function() {
-			while (xhrOCXs.length) {
-				try {
-					return new ActiveXObject(xhrOCXs[0]);
-				} catch (ex) {
-					// remove the failed xhrOCXs for future requests
-					xhrOCXs.shift();
-				}
-			}
-
-			// all xhrOCXs failed		
-			return null;
-		};
-	}
-})();
-
-/* ----------------------------------------------------*/
 
 /* namespace JsonFx */
 if ("undefined" === typeof JsonFx) {
@@ -130,20 +99,22 @@ JsonFx.IO = {};
 	return options;
 };
 
-/* returns true if request was sent */
-/*bool*/ JsonFx.IO.sendRequest = function(/*string*/ url, /*RequestOptions*/ options) {
-
-	var xhr = new XMLHttpRequest();
-	if (!xhr) {
-		return false;
-	}
+/*void*/ JsonFx.IO.sendRequest = function(/*string*/ url, /*RequestOptions*/ options) {
 
 	// ensure defaults
 	options = JsonFx.IO.validateOptions(options);
 
-	if ("function" === typeof options.onCreate) {
+	var xhr = new XMLHttpRequest();
+
+	if (options.onCreate) {
 		// create
 		options.onCreate(xhr, options.context);
+	}
+
+	if (!xhr && options.onFailure) {
+		// immediate failure: xhr wasn't created
+		options.onFailure(xhr, options.context);
+		return;
 	}
 
 	// kill the request if takes too long
@@ -175,9 +146,6 @@ JsonFx.IO = {};
 			if (Math.floor(status/100) === 2) {// 200-299
 				// success
 				if (options.onSuccess) {
-//TIMER
-//JsonFx.Timer.stop("request", true);//250,250,250
-//TIMER
 					options.onSuccess(xhr, options.context);
 				}
 
@@ -212,18 +180,14 @@ JsonFx.IO = {};
 				}
 			}
 		}
-//TIMER
-//JsonFx.Timer.start("request");
-//TIMER
 		xhr.send(options.params);
-		return true;
 
 	} catch (ex) {
-		// immediate failure
-		if ("function" === typeof options.onFailure) {
+		// immediate failure: exception thrown
+		if (options.onFailure) {
 			options.onFailure(ex, options.context);
 		}
-		return false;
+
 	} finally {
 		// in case immediately returns?
 		onRSC();
@@ -232,7 +196,7 @@ JsonFx.IO = {};
 
 /* JsonRequest ----------------------------------------------------*/
 
-/*bool*/ JsonFx.IO.sendJsonRequest = function(
+/*void*/ JsonFx.IO.sendJsonRequest = function(
 	/*string*/ restUrl,
 	/*RequestOptions*/ options) {
 
@@ -244,17 +208,11 @@ JsonFx.IO = {};
 
 	var onSuccess = options.onSuccess;
 	options.onSuccess = function(/*XMLHttpRequest*/ xhr, /*object*/ context) {
-//TIMER
-//JsonFx.Timer.start("decode");
-//TIMER
 
 		// decode response as JSON
 		try {
 			var json = xhr.responseText;
 			json = json.parseJSON();
-//TIMER
-//JsonFx.Timer.stop("decode", true);//32,31,22500(greedy regex)
-//TIMER
 			if ("function" === typeof onSuccess) {
 				onSuccess(json, context);
 			}
@@ -268,7 +226,7 @@ JsonFx.IO = {};
 		}
 	};
 
-	return JsonFx.IO.sendRequest(restUrl, options);
+	JsonFx.IO.sendRequest(restUrl, options);
 };
 
 /* JSON-RPC ----------------------------------------------------*/
@@ -300,8 +258,7 @@ JsonFx.IO = {};
 	}
 };
 
-/* returns true if request was sent */
-/*bool*/ JsonFx.IO.sendJsonRpc = function(
+/*void*/ JsonFx.IO.sendJsonRpc = function(
 	/*string*/ rpcUrl,
 	/*string*/ rpcMethod,
 	/*object|array*/ rpcParams,
@@ -396,7 +353,7 @@ JsonFx.IO = {};
 		options.headers["Content-Type"] = "application/json";
 		options.headers["Content-Length"] = rpcRequest.length;
 	}
-	return JsonFx.IO.sendRequest(rpcUrl, options);
+	JsonFx.IO.sendRequest(rpcUrl, options);
 };
 
 /* JsonRpcService ----------------------------------------------------*/
