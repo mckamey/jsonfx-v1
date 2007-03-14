@@ -1012,6 +1012,77 @@ JsonFx.UI.Animate.Op = function() {
 };
 
 /* class JsonFx.UI.Animate.Engine -------------------------------------------- */
+
+
+/*Dictionary<string,bool>*/ JsonFx.UI.Animate.filterable =
+	{
+		a : true,
+		abbr : true,
+		acronym : true,
+		address : true,
+		b : true,
+		bdo : true,
+		big : true,
+		blockquote : true,
+		body : true,
+		button : true,
+		caption : true,
+		center : true,
+		cite : true,
+		code : true,
+		custom : true,
+		dd : true,
+		del : true,
+		dfn : true,
+		dir : true,
+		div : true,
+		dl : true,
+		dt : true,
+		em : true,
+		fieldset : true,
+		font : true,
+		form : true,
+		frame : true,
+		hn : true,
+		iframe : true,
+		frameset : true,
+		i : true,
+		ins : true,
+		img : true,
+		input : true,
+		kbd : true,
+		label : true,
+		legend : true,
+		li : true,
+		marquee : true,
+		menu : true,
+		nobr : true,
+		ol : true,
+		p : true,
+		plaintext : true,
+		pre : true,
+		q : true,
+		rt : true,
+		ruby : true,
+		s : true,
+		samp : true,
+		small : true,
+		span : true,
+		strike : true,
+		strong : true,
+		sub : true,
+		sup : true,
+		table : true,
+		textarea : true,
+		th : true,
+		td : true,
+		tt : true,
+		u : true,
+		ul : true,
+		"var" : true,
+		xmp : true
+	};
+
 JsonFx.UI.Animate.Engine = function(/*element*/ elem) {
 
 	if ("string" === typeof elem) {
@@ -1019,9 +1090,13 @@ JsonFx.UI.Animate.Engine = function(/*element*/ elem) {
 		elem = document.getElementById(elem);
 	}
 
-	if (!elem || !elem.tagName) {
+	var tn = elem ? elem.tagName : null;
+
+	if (!tn) {
 		throw new Error("Invalid element");
 	}
+
+	tn = tn.toLowerCase();
 
 	var es = elem.style,
 	/*JsonFx.UI.Animate.Op*/ start = null,
@@ -1029,7 +1104,8 @@ JsonFx.UI.Animate.Engine = function(/*element*/ elem) {
 	/*bool*/ mutex = false,
 	/*bool*/ state = false,
 	/*const float*/ STEP_MIN = 0, // start
-	/*const float*/ STEP_MAX = 1; // end
+	/*const float*/ STEP_MAX = 1, // end
+	/*Dictionary<string,bool>*/ filerable = JsonFx.UI.Animate.filterable;
 
 	var userHeight = "",
 		userWidth = "",
@@ -1138,7 +1214,11 @@ JsonFx.UI.Animate.Engine = function(/*element*/ elem) {
 
 	/*void*/ function initFilter(op) {
 		try {
-			if (elem.filters) {
+			// first look up tagName to determine if
+			// element can even have filters applied
+			// to prevent incurring calculation cost
+			if (filerable[tn] &&
+				elem.filters) {
 				if (op.hasFade() && !alpha) {
 					if (elem.filters.length > 0) {
 						try {
