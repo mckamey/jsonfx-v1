@@ -28,6 +28,16 @@
 		</capabilities>
 	</browser>
 
+    <browser id="JsonFxOpera8" parentID="JsonFx">
+        <identification>
+            <capability name="etc" match="\bopera/8" />
+        </identification>
+
+        <capabilities>
+			<capability name="preferredRenderingMime" value="text/plain" />
+        </capabilities>
+    </browser>
+
     <browser id="JsonFxBeta" parentID="JsonFx">
         <identification>
             <capability name="verInfo" match="^[b|B]" />
@@ -53,7 +63,7 @@
 			<capability name="minorversion" value="${minor}" />
 			<capability name="etc" value="${info}" />
 			<capability name="verInfo" value="${verInfo}" />
-			<capability name="preferredRenderingMime" value="text/plain" />
+			<capability name="preferredRenderingMime" value="application/json" />
 			<capability name="supportsJson" value="true" />
 			<capability name="tagWriter"  value="JsonFx.UI.JsonXhtmlTextWriter, JsonFx" />
 		</capabilities>
