@@ -5,7 +5,6 @@
 		</identification>
 		<capture>
 			<userAgent match="^JsonFx/(?'version'(?'major'\d+)\.(?'minor'\d+)(\.(?'release'\d+))?(\.(?'build'\d+))?)\s*(?'verInfo'\w*)\s*(?'info'.*)$" />
-			<header name="Accept" match="(?'json'application/json)" />
 		</capture>
 		<capabilities>
 			<capability name="browser" value="JsonFx" />
@@ -17,11 +16,12 @@
 			<capability name="verInfo" value="${verInfo}" />
 			<capability name="ecmaScriptVersion" value="1.2" />
 			<capability name="javaScript" value="true" />
-			<capability name="preferredRenderingMime" value="${json}" />
+			<capability name="preferredRenderingMime" value="application/json" />
 			<capability name="preferredRequestEncoding" value="UTF-8" />
 			<capability name="preferredResponseEncoding" value="UTF-8" />
 			<capability name="supportsCss" value="true" />
 			<capability name="supportsXmlHttp" value="true" />
+			<capability name="supportsJson" value="true" />
 			<capability name="tables" value="true" />
 			<capability name="tagWriter"  value="JsonFx.UI.JsonXhtmlTextWriter, JsonFx" />
 			<capability name="w3cDomVersion" value="1.0" />
@@ -44,7 +44,6 @@
 		</identification>
 		<capture>
 			<userAgent match="^JsonFx/(?'version'(?'major'\d+)\.(?'minor'\d+)(\.(?'release'\d+))?(\.(?'build'\d+))?)\s*(?'verInfo'\w*)\s*(?'info'.*)$" />
-			<header name="Accept" match="(?'json'application/json)" />
 		</capture>
 		<capabilities>
 			<capability name="browser" value="JsonFx" />
@@ -54,7 +53,8 @@
 			<capability name="minorversion" value="${minor}" />
 			<capability name="etc" value="${info}" />
 			<capability name="verInfo" value="${verInfo}" />
-			<capability name="supportsJson" value="${json}" />
+			<capability name="preferredRenderingMime" value="text/plain" />
+			<capability name="supportsJson" value="true" />
 			<capability name="tagWriter"  value="JsonFx.UI.JsonXhtmlTextWriter, JsonFx" />
 		</capabilities>
 	</browser>

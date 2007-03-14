@@ -14,7 +14,6 @@ if ("undefined" === typeof JsonFx) {
 /* namespace JsonFx.IO */
 JsonFx.IO = {};
 
-/*string*/ JsonFx.IO.userAgent = "JsonFx/1.0";
 /*bool*/ JsonFx.IO.hasAjax = !!(new XMLHttpRequest());
 
 /*
@@ -91,7 +90,7 @@ JsonFx.IO = {};
 		options.onFailure = JsonFx.IO.onFailure;
 	}
 	if ("function" !== typeof options.onTimeout) {
-		options.onTimeout = options.onFailure;
+		options.onTimeout = null;
 	}
 	if ("function" !== typeof options.onComplete) {
 		options.onComplete = null;
@@ -128,16 +127,20 @@ JsonFx.IO = {};
 		return;
 	}
 
-	// kill the request if takes too long
+	// kill off request if takes too long
 	var cancel = window.setTimeout(
 		function () {
 			if (xhr) {
+				xhr.onreadystatechange = function(){};
 				xhr.abort();
 				xhr = null;
 			}
 			if (options.onTimeout) {
-				// timeout
+				// timeout-specific handler
 				options.onTimeout(xhr, options.context, new Error("Request Timeout"));
+			} else if (options.onFailure) {
+				// general-failure handler
+				options.onFailure(xhr, options.context, new Error("Request Timeout"));
 			}
 			if (options.onComplete) {
 				// complete
@@ -146,6 +149,17 @@ JsonFx.IO = {};
 		}, options.timeout);
 
 	function onRSC() {
+		/*
+			var readyStates = [
+					"uninitialized",
+					"loading",
+					"loaded",
+					"interactive",
+					"complete"
+				];
+
+			try { document.body.appendChild(document.createTextNode((xhr?readyStates[xhr.readyState]:"null")+";")); } catch (ex) {}
+		*/
 		if (xhr && xhr.readyState === 4 /*complete*/) {
 
 			// stop the timeout
@@ -159,13 +173,7 @@ JsonFx.IO = {};
 				// Firefox doesn't allow status to be accessed after xhr.abort()
 			}
 
-			if (Math.floor(status/100) === 2) {// 200-299
-				// success
-				if (options.onSuccess) {
-					options.onSuccess(xhr, options.context);
-				}
-
-			} else if (status === 0) {
+			if (status === 0) {
 				// timeout
 
 				// IE reports status zero when aborted
@@ -173,6 +181,12 @@ JsonFx.IO = {};
 				// options.onTimeout has already been called so do nothing
 				// timeout calls onComplete
 				return;
+
+			} else if (Math.floor(status/100) === 2) {// 200-299
+				// success
+				if (options.onSuccess) {
+					options.onSuccess(xhr, options.context);
+				}
 
 			} else if (options.onFailure) { // status not 200-299
 				// failure
@@ -194,10 +208,14 @@ JsonFx.IO = {};
 		xhr.open(options.method, url, options.async);
 
 		if (options.headers) {
-			for (var h in options.headers) {
-				if (options.headers.hasOwnProperty(h)) {
-					xhr.setRequestHeader(h, options.headers[h]);
+			try {// Opera 8.0 doesn't have xhr.setRequestHeader
+				for (var h in options.headers) {
+					if (options.headers.hasOwnProperty(h)) {
+						xhr.setRequestHeader(h, options.headers[h]);
+					}
 				}
+			} catch (ex) {
+				alert("xhr.setRequestHeader: "+(ex.message?ex.message:ex));
 			}
 		}
 		xhr.send(options.params);
@@ -223,7 +241,7 @@ JsonFx.IO = {};
 	// ensure defaults
 	options = JsonFx.IO.validateOptions(options);
 
-	options.headers["User-Agent"] = JsonFx.IO.userAgent;
+	options.headers["User-Agent"] = JsonFx.userAgent;
 	options.headers.Accept = "application/json";
 
 	var onSuccess = options.onSuccess;
@@ -251,7 +269,7 @@ JsonFx.IO = {};
 		var onFailure = options.onFailure;
 		options.onFailure = function (/*XMLHttpRequest*/ xhr, /*object*/ context, /*Error*/ ex) {
 
-			onFailure(null, context, ex);
+			onFailure((xhr ? xhr.responseText : null), context, ex);
 
 			// free closure references
 			onFailure = null;
@@ -299,7 +317,7 @@ JsonFx.IO = {};
 	// ensure defaults
 	options = JsonFx.IO.validateOptions(options);
 
-	options.headers["User-Agent"] = JsonFx.IO.userAgent;
+	options.headers["User-Agent"] = JsonFx.userAgent;
 	options.headers.Accept = "application/json";
 
 	// wrap callbacks with RPC layer

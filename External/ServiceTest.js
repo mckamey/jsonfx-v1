@@ -17,19 +17,18 @@ JsonFx.IO.ServiceTest.Context = function(/*string*/ request, /*element*/ target)
 	var cx = this;
 	var start = new Date().valueOf();
 	cx.target = target;
-	cx["JSON-RPC"] = request;
+	cx["Remote Procedure Call"] = request;
 	cx["Time Stamp"] = new Date(start).toString();
 	cx.setResponseTime = function() {
 		cx["Response Time"] = (new Date().valueOf()-start)+" ms";
 		delete cx.setResponseTime;
 	};
-	cx.resultType = "JSON-RPC Result";
 };
 
 /* display result callback */
-/*void*/ JsonFx.IO.ServiceTest.cb_displayResult = function(/*object*/ result, /*JsonFx.IO.ServiceTest.Context*/ context) {
+/*void*/ JsonFx.IO.ServiceTest.cb_displayResult = function(/*object*/ result, /*JsonFx.IO.ServiceTest.Context*/ context, /*Error*/ error) {
 	var target = null;
-	if (context) {
+	if (context instanceof JsonFx.IO.ServiceTest.Context) {
 		target = context.target;
  		delete context.target;
 		context.setResponseTime();
@@ -45,15 +44,9 @@ JsonFx.IO.ServiceTest.Context = function(/*string*/ request, /*element*/ target)
 		JsonFx.UI.clear(target);
 	}
 
-	var label = context.resultType;
-	delete context.resultType;
-	JsonFx.UI.displayJsonML(["div",JsonFx.UI.dumpData("Call Context", context),["hr"],JsonFx.UI.dumpData(label, result)], target);
-};
-
-/* display result callback */
-/*void*/ JsonFx.IO.ServiceTest.cb_displayError = function(/*object*/ result, /*JsonFx.IO.ServiceTest.Context*/ context, /*object*/ ex) {
-	context.resultType = "JSON-RPC Error";
-	JsonFx.IO.ServiceTest.cb_displayResult(ex, context);
+	var label = error ? "JSON-RPC Error" : "JSON-RPC Result";
+	var data = error ? error+"\n"+result : result;
+	JsonFx.UI.displayJsonML(["div",JsonFx.UI.dumpData("Call Context", context),["hr"],JsonFx.UI.dumpData(label, data)], target);
 };
 
 /* creates actual method call */		
@@ -130,7 +123,7 @@ JsonFx.IO.ServiceTest.Context = function(/*string*/ request, /*element*/ target)
 		service.$describe(
 			{
 				onSuccess : JsonFx.IO.ServiceTest.cb_buildTestUI,
-				onFailure : JsonFx.IO.ServiceTest.cb_displayError,
+				onFailure : JsonFx.IO.ServiceTest.cb_displayResult,
 				context : { "service":service, "container":container, "target":target }
 			});
 	}

@@ -12,7 +12,9 @@ if ("undefined" === typeof JsonFx) {
 }
 
 /* namespace JsonFx.UI */
-JsonFx.UI = {};
+if ("undefined" === typeof JsonFx.UI) {
+	JsonFx.UI = {};
+}
 
 /* Utilities ----------------------------------------------------*/
 

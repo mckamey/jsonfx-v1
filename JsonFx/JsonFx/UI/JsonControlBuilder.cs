@@ -227,7 +227,7 @@ namespace JsonFx.UI
 		private string ToJavaScriptStyle(string property)
 		{
 			if ("float".Equals(property, StringComparison.OrdinalIgnoreCase))
-				return "floatStyle";
+				return "styleFloat";
 
 			// break into words
 			string[] parts = property.Split('-');
