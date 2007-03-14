@@ -94,7 +94,17 @@ namespace JsonFx.Handlers
 		private void HandleRequest(System.Web.HttpContext context, JsonRequest request, ref JsonResponse response)
 		{
 			context.Response.Clear();
-			context.Response.ContentType = JsonServiceHandler.JsonContentType;
+			if (context.Request.Browser["etc"].Contains("opera/8"))
+			{
+				// this is a specific fix for Opera 8.x
+				// it can only handle "text/plain" & "text/html"
+				// otherwise the content encoding is whacked
+				context.Response.ContentType = "text/plain";
+			}
+			else
+			{
+				context.Response.ContentType = JsonServiceHandler.JsonContentType;
+			}
 			context.Response.ContentEncoding = System.Text.Encoding.UTF8;
 			context.Response.AddHeader("Content-Disposition", "inline;filename=JsonResponse"+JsonServiceHandler.JsonFileExtension);
 
@@ -200,6 +210,17 @@ namespace JsonFx.Handlers
 			{
 				try
 				{
+					using (JsonWriter writer = new JsonWriter(context.Response.Output))
+					{
+						writer.Write(response);
+					}
+				}
+				catch (TargetInvocationException ex)
+				{
+					context.Response.ClearContent();
+					response.Result = null;
+					response.Error = new JsonError(ex.InnerException);
+
 					using (JsonWriter writer = new JsonWriter(context.Response.Output))
 					{
 						writer.Write(response);

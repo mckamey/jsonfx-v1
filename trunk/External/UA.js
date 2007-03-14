@@ -17,31 +17,15 @@ if ("undefined" === typeof JsonFx.UI) {
 	JsonFx.UI = {};
 }
 
-/*	Dynamically appends CSS classes to document.body based upon user-agent.*/
-/*void*/ JsonFx.UI.setCssUserAgent = function() {
+/*string*/ JsonFx.userAgent = "JsonFx/1.0";
 
+(function() {
 	// anonymous function doesn't affect global namespace and can't be called externally
-	// variables and helper functions available via JavaScript closures
-	var PREFIX = " ua-";
+	// variables and helper functions only available via JavaScript closures
 
-	/*string*/ function formatCss(/*string*/ b, /*string*/ v) {
-		if (!b) {
-			return "";
-		}
+	/*string*/ function parse() {
+		/*{b,v}[]*/ var details = [];
 
-		b = b.replace(/\s+/g, '-');
-		var vi = parseInt(v, 10);
-		var vf = parseFloat(v);
-		vf = (vf === vi && vf.toFixed) ?
-			vf.toFixed(1) : vf.toString();
-		vf = vf.replace(/\./g, '-');
-		if (!isFinite(vi)) {
-			return PREFIX+b;
-		}
-		return PREFIX+b+PREFIX+b+vi+PREFIX+b+vf;
-	}
-
-	/*string*/ function buildCss() {
 		// Regex tested against (2006-06-11 @ 1600): http://en.wikipedia.org/wiki/User_agent
 		var R_MSIE = new RegExp("(msie|microsoft internet explorer)[\\s/]*([0-9]+[\\.]?[0-9]*)");
 		var R_Gecko = new RegExp("rv[:]([0-9]+[\\.]?[0-9]*).*?gecko[/][0-9]+(\\s+(\\S+)[/]([0-9]+[\\.]?[0-9]*))?");
@@ -53,79 +37,115 @@ if ("undefined" === typeof JsonFx.UI) {
 		var R_AOL = new RegExp("(america online browser|aol)[\\s/]*([0-9]+[\\.]?[0-9]*)");
 
 		var ua = navigator.userAgent.toLowerCase();
-		var css = PREFIX+navigator.platform.toLowerCase();
-		var bName = null;// browser name
-		var bVer = null;// browser version
+		var name = null;// browser name
+		var ver = null;// browser version
 
 		// aol uses multiple browsers so don't stop
 		if (R_AOL.exec(ua)) {
-			css += formatCss("aol", RegExp.$2);
+			details.push( { b : "aol", v : RegExp.$2 } );
 		}
 
 		// order is important as user-agents spoof each other	
 		if (R_Opera.exec(ua)) {
-			bName = "opera";
-			bVer = RegExp.$1;
+			name = "opera";
+			ver = RegExp.$1;
 		} else if (R_MSIE.exec(ua)) {
-			bName = "msie";
-			bVer = RegExp.$2;
+			name = "msie";
+			ver = RegExp.$2;
 		} else if (R_MSPIE.exec(ua)) {
-			bName = "mspie";
-			bVer = RegExp.$2;
+			name = "mspie";
+			ver = RegExp.$2;
 		} else if (R_AppleWebKit.exec(ua)) {
-			bName = "applewebkit";
-			bVer = RegExp.$1;
+			name = "applewebkit";
+			ver = RegExp.$1;
 
 			// also add AppleWebKit-brand version
-			css += formatCss(RegExp.$2, RegExp.$3);
+			details.push( { b : RegExp.$2, v : RegExp.$3 } );
 		} else if (R_Gecko.exec(ua)) {
-			bName = "gecko";
-			bVer = RegExp.$1;
+			name = "gecko";
+			ver = RegExp.$1;
 
 			// also add Gecko-brand version
-			css += formatCss(RegExp.$3, RegExp.$4);
+			details.push( { b : RegExp.$3, v : RegExp.$4 } );
 		} else if (R_MozCompat.exec(ua)) {
-			bName = RegExp.$1;
-			bVer = RegExp.$2;
+			name = RegExp.$1;
+			ver = RegExp.$2;
 		} else if (R_Other.exec(ua)) {
-			bName = RegExp.$1;
-			bVer = RegExp.$2;
+			name = RegExp.$1;
+			ver = RegExp.$2;
 		}
 
-		// bVer should hold parsed version string
-		if (bVer) {
-			css += formatCss(bName, bVer);
-		}
+		// name = browser, ver = parsed version string
+		details.push( { b : name, v : ver } );
 		
-		return css;
+		return details;
 	}
 
 	// calculate styles immediately, loop until can apply them
-	var uaCss = buildCss();
-
-	// using JavaScript closures to access the calculated css
-	/*void*/ function appendCss() {
-
-		// assign user-agent classes
-		if (document.body.className) {
-			document.body.className += uaCss;
-		} else {
-			document.body.className += uaCss.substring(1);
+	/*string*/ var uaDetails = parse();
+	if (uaDetails.length) {
+		JsonFx.userAgent += " (";
+		for (var i=0; i<uaDetails.length;i ++) {
+			if (i>0) {
+				JsonFx.userAgent += " ";
+			}
+			JsonFx.userAgent += uaDetails[i].b+"/"+uaDetails[i].v;
 		}
-
-		// DEBUG
-		//alert("\""+document.body.className+"\"");
+		JsonFx.userAgent += ")";
 	}
 
-	// using setTimeout to poll until body exists
-	/*void*/ function appendCssLoop() {
+	/*	Dynamically appends CSS classes to document.body based upon user-agent.*/
+	/*void*/ JsonFx.UI.setCssUserAgent = function() {
 
-		if (!document.body) {
-			setTimeout(appendCssLoop, 100);
-		} else {
-			appendCss();
+		/*string*/ function formatCss(/*string*/ b, /*string*/ v) {
+			/*const string*/ var PREFIX = " ua-";
+
+			if (!b) {
+				return "";
+			}
+
+			b = b.replace(/\s+/g, '-');
+			var vi = parseInt(v, 10);
+			var vf = parseFloat(v);
+			vf = (vf === vi && vf.toFixed) ?
+				vf.toFixed(1) : vf.toString();
+			vf = vf.replace(/\./g, '-');
+			if (!isFinite(vi)) {
+				return PREFIX+b;
+			}
+			return PREFIX+b+PREFIX+b+vi+PREFIX+b+vf;
 		}
-	}
 
-	appendCssLoop();
-};
+		// using JavaScript closures to access the parsed UA
+		/*void*/ function appendCss(/*{b,v}[]*/ d) {
+			var uaCss = "";
+
+			while (d.length) {
+				ua = d.pop();
+				uaCss += formatCss(ua.b, ua.v);
+			}
+
+			// assign user-agent classes
+			if (document.body.className) {
+				document.body.className += uaCss;
+			} else {
+				document.body.className += uaCss.substring(1);
+			}
+
+			// DEBUG
+			//alert("\""+document.body.className+"\"");
+		}
+
+		// using setTimeout to poll until body exists
+		/*void*/ function appendCssPoll() {
+
+			if (!document.body) {
+				setTimeout(appendCssPoll, 100);
+			} else {
+				appendCss(uaDetails);
+			}
+		}
+
+		appendCssPoll();
+	};
+})();
