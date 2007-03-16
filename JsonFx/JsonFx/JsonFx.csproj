@@ -115,9 +115,6 @@
     <EmbeddedResource Include="Scripts\Compacted\UI.js" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Scripts\JSON_Alt.js" />
-  </ItemGroup>
-  <ItemGroup>
     <EmbeddedResource Include="Scripts\Core.js" />
   </ItemGroup>
   <ItemGroup>
