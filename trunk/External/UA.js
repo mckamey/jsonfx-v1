@@ -27,14 +27,14 @@ if ("undefined" === typeof JsonFx.UI) {
 		/*{b,v}[]*/ var details = [];
 
 		// Regex tested against (2006-06-11 @ 1600): http://en.wikipedia.org/wiki/User_agent
-		var R_MSIE = new RegExp("(msie|microsoft internet explorer)[\\s/]*([0-9]+[\\.]?[0-9]*)");
-		var R_Gecko = new RegExp("rv[:]([0-9]+[\\.]?[0-9]*).*?gecko[/][0-9]+(\\s+(\\S+)[/]([0-9]+[\\.]?[0-9]*))?");
-		var R_AppleWebKit = new RegExp("applewebkit[/]([0-9]+[\\.]?[0-9]*).*?(\\S+)[/][v]?([0-9]+[\\.]?[0-9]*)");
-		var R_Opera = new RegExp("opera[\\s/]*([0-9]+[\\.]?[0-9]*)");
-		var R_MSPIE = new RegExp("(mspie|microsoft pocket internet explorer)[\\s/]*([0-9]+[\\.]?[0-9]*)");
-		var R_MozCompat = new RegExp("[(].*?(\\S+)[/]([0-9]+[\\.]?[0-9]*).*?[)]");
-		var R_Other = new RegExp("^([^/]+)[/]([0-9]+[\\.]?[0-9]*)");
-		var R_AOL = new RegExp("(america online browser|aol)[\\s/]*([0-9]+[\\.]?[0-9]*)");
+		var R_MSIE = /(msie|microsoft internet explorer)[\s\/]*([0-9]+[\.]?[0-9]*)/;
+		var R_Gecko = /rv[:]([0-9]+[\.]?[0-9]*).*?gecko[\/][0-9]+(\s+(\S+)[\/]([0-9]+[\.]?[0-9]*))?/;
+		var R_AppleWebKit = /applewebkit[\/]([0-9]+[\.]?[0-9]*).*?(\S+)[\/][v]?([0-9]+[\.]?[0-9]*)/;
+		var R_Opera = /opera[\s\/]*([0-9]+[\.]?[0-9]*)/;
+		var R_MSPIE = /(mspie|microsoft pocket internet explorer)[\s\/]*([0-9]+[\.]?[0-9]*)/;
+		var R_MozCompat = /[(].*?(\S+)[\/]([0-9]+[\.]?[0-9]*).*?[)]/;
+		var R_Other = /^([^\/]+)[\/]([0-9]+[\.]?[0-9]*)/;
+		var R_AOL = /(america online browser|aol)[\s\/]*([0-9]+[\.]?[0-9]*)/;
 
 		var ua = navigator.userAgent.toLowerCase();
 		var name = null;// browser name
@@ -87,7 +87,7 @@ if ("undefined" === typeof JsonFx.UI) {
 		JsonFx.userAgent += " (";
 		for (var i=0; i<uaDetails.length;i ++) {
 			if (i>0) {
-				JsonFx.userAgent += " ";
+				JsonFx.userAgent += "; ";
 			}
 			JsonFx.userAgent += uaDetails[i].b+"/"+uaDetails[i].v;
 		}
