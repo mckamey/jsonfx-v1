@@ -12,6 +12,8 @@ namespace JsonFx.Services
 
 		public abstract String Proxy { get; }
 
+		public abstract String DebugProxy { get; }
+
 		#endregion JsonServiceInfo Properties
 
 		#region JsonServiceInfo Methods

@@ -40,13 +40,15 @@ namespace JsonFx.Handlers
 			context.Response.ContentEncoding = System.Text.Encoding.UTF8;
 			context.Response.AddHeader("Content-Disposition", String.Format("inline;filename={0}.js", this.serviceInfo.ServiceType.FullName));
 
-			string proxyScript = this.serviceInfo.Proxy;
+			bool isDebug = "debug".Equals(context.Request.QueryString[null], StringComparison.InvariantCultureIgnoreCase);
+
+			string proxyScript = isDebug ? this.serviceInfo.DebugProxy :  this.serviceInfo.Proxy;
 			if (String.IsNullOrEmpty(proxyScript))
 			{
 				// if wasn't generated, generate on the fly with reflection
 				JsonServiceDescription desc = new JsonServiceDescription(this.serviceInfo.ServiceType, this.serviceUrl);
-				JsonServiceProxy proxy = new JsonServiceProxy(desc, this.serviceInfo.ServiceType.Namespace);
-				proxy.OutputProxy(context.Response.Output);
+				JsonServiceProxyGenerator proxy = new JsonServiceProxyGenerator(desc, this.serviceInfo.ServiceType.Namespace);
+				proxy.OutputProxy(context.Response.Output, isDebug);
 			}
 			else
 			{
@@ -54,7 +56,9 @@ namespace JsonFx.Handlers
 				context.Response.Output.Write(proxyScript);
 			}
 			context.Response.Output.Write(this.serviceUrl);
-			context.Response.Output.Write(JsonServiceProxy.ProxyEnd);
+			context.Response.Output.Write(JsonServiceProxyGenerator.ProxyEnd);
+			if (isDebug)
+				context.Response.Output.WriteLine();
 		}
 
 		#endregion IHttpHandler Members
