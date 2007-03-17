@@ -3,7 +3,7 @@
 	Modifications to browser global objects
 	Copyright (c)2006-2007 Stephen M. McKamey
 	Created: 2006-11-14-0928
-	Modified: 2007-03-12-2349
+	Modified: 2007-03-17-1241
 \*---------------------------------------------------------*/
 
 /* namespace JsonFx */
@@ -31,8 +31,9 @@ if ("undefined" === typeof Object.prototype.propertyIsEnumerable) {
 }
 
 if ("undefined" === typeof Array.prototype.push) {
-	/*int*/ Array.prototype.push = function(/*object*/ obj) {
-		this[this.length] = obj;
+	/*int*/ Array.prototype.push = function(/*object*/ item) {
+		// add item to end
+		this[this.length] = item;
 		return this.length;
 	};
 }
@@ -42,10 +43,98 @@ if ("undefined" === typeof Array.prototype.pop) {
 		if (this.length < 1) {
 			return undefined;
 		}
-		var obj = this[this.length-1];
+
+		// grab the last item
+		var item = this[this.length-1];
+
+		// reduce the length
 		this.length--;
-		return obj;
+		return item;
 	};
+}
+
+if ("undefined" === typeof Array.prototype.splice) {
+	/*array*/ Array.prototype.splice = function (/*int*/ start, /*int*/ del) {
+		// based on http://javascript.crockford.com/remedial.html
+        var max = Math.max,
+            min = Math.min,
+            a = [], // The return value array
+            e,  // element
+            i = max(arguments.length-2, 0),   // insert count
+            k = 0,
+            l = this.length,
+            n,  // new length
+            v,  // delta
+            x;  // shift count
+
+        start = start || 0;
+        if (start < 0) {
+            start += l;
+        }
+
+        // start point
+        start = max(min(start, l), 0);
+
+        // delete count
+        del = max(min((typeof del === 'number' && isFinite(del)) ? del : l, l - start), 0);
+
+        v = i - del;
+        n = l + v;
+        while (k < del) {
+            e = this[start + k];
+            if (e !== undefined) {
+                a[k] = e;
+            }
+            k += 1;
+        }
+        x = l - start - del;
+        if (v < 0) {
+            k = start + i;
+            while (x) {
+                this[k] = this[k - v];
+                k += 1;
+                x -= 1;
+            }
+            this.length = n;
+        } else if (v > 0) {
+            k = 1;
+            while (x) {
+                this[n - k] = this[l - k];
+                k += 1;
+                x -= 1;
+            }
+        }
+        for (k = 0; k < i; ++k) {
+            this[start + k] = arguments[k + 2];
+        }
+        return a;
+    };
+}
+
+if ("undefined" === typeof Array.prototype.shift) {
+	/*object*/ Array.prototype.shift = function() {
+		return this.splice(0, 1)[0];
+	};
+}
+
+if ("undefined" === typeof Array.prototype.unshift) {
+	/*void*/ Array.prototype.unshift = function () {
+		var a = arguments;
+		if (a && a.length) {
+			var i, l = this.length, al = a.length;
+
+			// move this array items onto end of arguments list
+			for (i=0; i<l; i++) {
+				a[al] = a[i];
+				al++;
+			}
+
+			// copy concat'ed arguments list back into this array
+			for (i=0; i<al; i++) {
+				this[i] = a[i];
+			}
+		}
+    };
 }
 
 if ("undefined" === typeof String.prototype.charCodeAt) {
@@ -84,63 +173,34 @@ if ("undefined" === typeof Object.prototype.isPrototypeOf) {
 
 if ("undefined" === typeof window.encodeURI) {
 	/*string*/ window.encodeURI = function (/*string*/ str) {
-		// placeholder method
+		// placeholder method, not yet implemented
 		return str;
 	};
 }
 
 if ("undefined" === typeof window.encodeURIComponent) {
 	/*string*/ window.encodeURIComponent = function (/*string*/ str) {
-		// placeholder method
+		// placeholder method, not yet implemented
 		return str;
 	};
 }
 
 if ("undefined" === typeof window.decodeURI) {
 	/*string*/ window.decodeURI = function (/*string*/ str) {
-		// placeholder method
+		// placeholder method, not yet implemented
 		return str;
 	};
 }
 
 if ("undefined" === typeof window.decodeURIComponent) {
 	/*string*/ window.decodeURIComponent = function (/*string*/ str) {
-		// placeholder method
+		// placeholder method, not yet implemented
 		return str;
 	};
 }
 
-//if ("undefined" === typeof Array.prototype.shift) {
-//	/*array*/ Array.prototype.shift = function(...) {
-//	};
-//}
-
-//if ("undefined" === typeof Array.prototype.unshift) {
-//	/*array*/ Array.prototype.unshift = function(...) {
-//	};
-//}
-
-//if ("undefined" === typeof Array.prototype.splice) {
-//	/*array*/ Array.prototype.splice = function(...) {
-//	};
-//}
-
-if ("undefined" === typeof String.prototype.trim) {
-	/*string*/ String.prototype.trim = function () {
-		return this.replace(/^\s*|\s*$/g, "");
-	};
-}
-
-if ("undefined" === typeof String.prototype.contains) {
-	/*string*/ String.prototype.contains = function (str) {
-		return (this.indexOf(str) >= 0);
-	};
-}
-
-/* ----------------------------------------------------*/
-
 (function () {
-	// wrapping in anonymous function so that the XHR-ID list
+	// wrapping in anonymous function so that the XHR ID list
 	// will be only available as a closure, as this will not
 	// modify the global namespace, and it will be shared
 
@@ -173,6 +233,20 @@ if ("undefined" === typeof String.prototype.contains) {
 		};
 	}
 })();
+
+/* ----------------------------------------------------*/
+
+if ("undefined" === typeof String.prototype.trim) {
+	/*string*/ String.prototype.trim = function () {
+		return this.replace(/^\s*|\s*$/g, "");
+	};
+}
+
+if ("undefined" === typeof String.prototype.contains) {
+	/*bool*/ String.prototype.contains = function (/*string*/ str) {
+		return (this.indexOf(str) >= 0);
+	};
+}
 
 /* ----------------------------------------------------*/
 
