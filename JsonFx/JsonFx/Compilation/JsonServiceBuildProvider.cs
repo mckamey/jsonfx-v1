@@ -112,8 +112,9 @@ namespace JsonFx.Compilation
 			// build proxy from main service type
 			Type serviceType = this.GetTypeToCache(this.serviceTypeName, tempAssembly);
 			JsonServiceDescription desc = new JsonServiceDescription(serviceType, base.VirtualPath);
-			JsonServiceProxy proxy = new JsonServiceProxy(desc, serviceType.Namespace);
-			string proxyOutput = proxy.OutputProxy();
+			JsonServiceProxyGenerator proxy = new JsonServiceProxyGenerator(desc, serviceType.Namespace);
+			string proxyOutput = proxy.OutputProxy(false);
+			string debugProxyOutput = proxy.OutputProxy(true);
 
 			// generate a service factory
 			CodeCompileUnit generatedUnit = new CodeCompileUnit();
@@ -139,6 +140,20 @@ namespace JsonFx.Compilation
 			descriptorType.Members.Add(proxyProp);
 
 			#endregion JsonServiceInfo.Proxy
+
+			#region JsonServiceInfo.DebugProxy
+
+			// add a readonly property with the debug proxy code string
+			proxyProp = new CodeMemberProperty();
+			proxyProp.Name = "DebugProxy";
+			proxyProp.Type = new CodeTypeReference(typeof(String));
+			proxyProp.Attributes = MemberAttributes.Public|MemberAttributes.Override;
+			proxyProp.HasGet = true;
+			// get { return debugProxyOutput; }
+			proxyProp.GetStatements.Add(new CodeMethodReturnStatement(new CodePrimitiveExpression(debugProxyOutput)));
+			descriptorType.Members.Add(proxyProp);
+
+			#endregion JsonServiceInfo.DebugProxy
 
 			#region JsonServiceInfo.ServiceType
 

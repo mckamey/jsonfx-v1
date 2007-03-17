@@ -16,8 +16,8 @@ namespace JsonFx.Handlers
 			JsonServiceInfo serviceInfo = BuildManager.CreateInstanceFromVirtualPath(url, descriptorType) as JsonServiceInfo;
 
 			if ("GET".Equals(verb, StringComparison.InvariantCultureIgnoreCase) &&
-				String.IsNullOrEmpty(context.Request.PathInfo) &&
-				String.IsNullOrEmpty(context.Request.Url.Query))
+				String.IsNullOrEmpty(context.Request.PathInfo) /*&&
+				String.IsNullOrEmpty(context.Request.Url.Query)*/)
 			{
 				// output service javascript proxy
 				return new JsonFx.Handlers.JsonServiceProxyHandler(serviceInfo, url);
