@@ -73,6 +73,21 @@ namespace ScriptTools
 
 		#region Methods
 
+		//protected static void RunScript(String script)
+		//{
+		//    // Microsoft Script Control 1.0
+		//    // http://msdn2.microsoft.com/en-us/library/ms974577.aspx
+		//    // http://msdn.microsoft.com/msdnmag/issues/02/08/VisualStudioforApplications/
+
+		//    MSScriptControl.ScriptControl sc = new MSScriptControl.ScriptControl();
+		//    //sc.AddObject
+		//    //sc.AddCode(script);
+		//    sc.Language = "JavaScript";
+		//    Object result = sc.Eval("JSLINT(source, option);");
+		//    Console.WriteLine("result: {0}", (string)result);
+		//    Console.ReadLine();
+		//}
+
 		public void Run(TextReader reader, string filename)
 		{
 			if (reader == null)
