@@ -337,7 +337,10 @@ JsonFx.UI.History.onchange = null;
 			if (info.charAt(0) === '?') {
 				info = info.substring(1);
 			}
-			info = decodeURIComponent(info).parseJSON();
+			info = decodeURIComponent(info);
+			if (info) {
+				info = info.parseJSON();
+			}
 			if ("function" === typeof JsonFx.UI.History.onchange) {
 				JsonFx.UI.History.onchange(info);
 			}
