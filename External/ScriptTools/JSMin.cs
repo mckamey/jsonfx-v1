@@ -35,9 +35,7 @@ namespace ScriptTools
 	public enum JSMinOptions
 	{
 		None = 0x0,
-		Overwrite = 0x1,
-		TimeStamp = 0x2,
-		AutoVersion = 0x4,
+		Overwrite = 0x1
 	}
 
 	public class JSMinifier
@@ -61,7 +59,7 @@ namespace ScriptTools
 
 		#region Public Methods
 
-		public void Minify(string inputFile, string outputFile, string copyright, JSMinOptions options)
+		public void Minify(string inputFile, string outputFile, string copyright, string timeStamp, JSMinOptions options)
 		{
 			if (!File.Exists(inputFile))
 				throw new FileNotFoundException(String.Format("File (\"{0}\") not found.", inputFile), inputFile);
@@ -77,12 +75,12 @@ namespace ScriptTools
 				JSMinifier.PrepSavePath(outputFile);
 				using (TextWriter output = new StreamWriter(outputFile, false))
 				{
-					this.Minify(input, output, copyright, options);
+					this.Minify(input, output, copyright, timeStamp, options);
 				}
 			}
 		}
 
-		public void Minify(TextReader input, TextWriter output, string copyright, JSMinOptions options)
+		public void Minify(TextReader input, TextWriter output, string copyright, string timeStamp, JSMinOptions options)
 		{
 			if (input == null)
 				throw new NullReferenceException("Input TextReader was null.");
@@ -93,28 +91,33 @@ namespace ScriptTools
 			this.reader = input;
 			this.writer = output;
 
-			bool addTimeStamp = (options & JSMinOptions.TimeStamp) != 0x0;
-			bool autoVersion = (options & JSMinOptions.AutoVersion) != 0x0;
-
-			if (!String.IsNullOrEmpty(copyright) || addTimeStamp || autoVersion)
+			if (!String.IsNullOrEmpty(copyright) || !String.IsNullOrEmpty(timeStamp))
 			{
-				this.writer.WriteLine("/*----------------------------------------------------------------------*\\", copyright);
+				int width = 6;
 				if (!String.IsNullOrEmpty(copyright))
 				{
-					this.writer.WriteLine("\t"+(copyright.Replace("*/", "")));
+					copyright = copyright.Replace("*/", "");
+					width = Math.Max(copyright.Length+6, width);
+				}
+				if (!String.IsNullOrEmpty(timeStamp))
+				{
+					timeStamp = DateTime.Now.ToString(timeStamp).Replace("*/", "");
+					width = Math.Max(timeStamp.Length+6, width);
 				}
 
-				if (autoVersion)
+				this.writer.WriteLine("/*".PadRight(width, '-')+"*\\");
+
+				if (!String.IsNullOrEmpty(copyright))
 				{
-					// this is a hard-coded version string for JsonFx
-					this.writer.WriteLine(DateTime.Now.ToString("'\tVersion 1.0.'yyMM.ddHH"));
+					this.writer.WriteLine("\t"+copyright);
 				}
 
-				if (addTimeStamp)
+				if (!String.IsNullOrEmpty(timeStamp))
 				{
-					this.writer.WriteLine(DateTime.Now.ToString("'\tScript Compacted 'yyyy-MM-dd @ HH:mm:ss"));
+					this.writer.WriteLine("\t"+timeStamp);
 				}
-				this.writer.WriteLine("\\*----------------------------------------------------------------------*/", copyright);
+
+				this.writer.WriteLine("\\*".PadRight(width, '-')+"*/");
 			}
 			this.JSMin();
 		}
