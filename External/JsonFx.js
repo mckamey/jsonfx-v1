@@ -1,9 +1,9 @@
-/*extern JsonFx*/
+/*extern JsonFx */
 /*---------------------------------------------------------*\
-	Modifications to global objects
+	Modifications to browser global objects
 	Copyright (c)2006-2007 Stephen M. McKamey
 	Created: 2006-11-14-0928
-	Modified: 2007-02-21-0540
+	Modified: 2007-03-17-1241
 \*---------------------------------------------------------*/
 
 /* namespace JsonFx */
@@ -14,41 +14,130 @@ if ("undefined" === typeof JsonFx) {
 ///*float*/ JsonFx.JScriptVersion = ("undefined" === typeof window.ScriptEngineMajorVersion) ? NaN :
 //		Number(window.ScriptEngineMajorVersion()+"."+window.ScriptEngineMinorVersion());
 
-if ("undefined" === typeof(window.global)) {
+if ("undefined" === typeof window.global) {
 	/*object*/ window.global = window;
 }
 
-if ("undefined" === typeof(Object.prototype.hasOwnProperty)) {
+if ("undefined" === typeof Object.prototype.hasOwnProperty) {
 	/*bool*/ Object.prototype.hasOwnProperty = function(/*object*/ p) {
 		return ("undefined" !== typeof(this[p]) && ("undefined" === typeof(this.constructor.prototype[p])));
 	};
 }
 
-if ("undefined" === typeof(Object.prototype.propertyIsEnumerable)) {
+if ("undefined" === typeof Object.prototype.propertyIsEnumerable) {
 	/*bool*/ Object.prototype.propertyIsEnumerable = function(/*object*/ p) {
 		return this.hasOwnProperty(p);
 	};
 }
 
-if ("undefined" === typeof(Array.prototype.push)) {
-	/*int*/ Array.prototype.push = function(/*object*/ obj) {
-		this[this.length] = obj;
+if ("undefined" === typeof Array.prototype.push) {
+	/*int*/ Array.prototype.push = function(/*object*/ item) {
+		// add item to end
+		this[this.length] = item;
 		return this.length;
 	};
 }
 
-if ("undefined" === typeof(Array.prototype.pop)) {
+if ("undefined" === typeof Array.prototype.pop) {
 	/*object*/ Array.prototype.pop = function() {
 		if (this.length < 1) {
 			return undefined;
 		}
-		var obj = this[this.length-1];
+
+		// grab the last item
+		var item = this[this.length-1];
+
+		// reduce the length
 		this.length--;
-		return obj;
+		return item;
 	};
 }
 
-if ("undefined" === typeof(String.prototype.charCodeAt)) {
+if ("undefined" === typeof Array.prototype.splice) {
+	/*array*/ Array.prototype.splice = function (/*int*/ start, /*int*/ del) {
+		// based on http://javascript.crockford.com/remedial.html
+        var max = Math.max,
+            min = Math.min,
+            a = [], // The return value array
+            e,  // element
+            i = max(arguments.length-2, 0),   // insert count
+            k = 0,
+            l = this.length,
+            n,  // new length
+            v,  // delta
+            x;  // shift count
+
+        start = start || 0;
+        if (start < 0) {
+            start += l;
+        }
+
+        // start point
+        start = max(min(start, l), 0);
+
+        // delete count
+        del = max(min((typeof del === 'number' && isFinite(del)) ? del : l, l - start), 0);
+
+        v = i - del;
+        n = l + v;
+        while (k < del) {
+            e = this[start + k];
+            if (e !== undefined) {
+                a[k] = e;
+            }
+            k += 1;
+        }
+        x = l - start - del;
+        if (v < 0) {
+            k = start + i;
+            while (x) {
+                this[k] = this[k - v];
+                k += 1;
+                x -= 1;
+            }
+            this.length = n;
+        } else if (v > 0) {
+            k = 1;
+            while (x) {
+                this[n - k] = this[l - k];
+                k += 1;
+                x -= 1;
+            }
+        }
+        for (k = 0; k < i; ++k) {
+            this[start + k] = arguments[k + 2];
+        }
+        return a;
+    };
+}
+
+if ("undefined" === typeof Array.prototype.shift) {
+	/*object*/ Array.prototype.shift = function() {
+		return this.splice(0, 1)[0];
+	};
+}
+
+if ("undefined" === typeof Array.prototype.unshift) {
+	/*void*/ Array.prototype.unshift = function () {
+		var a = arguments;
+		if (a && a.length) {
+			var i, l = this.length, al = a.length;
+
+			// move this array items onto end of arguments list
+			for (i=0; i<l; i++) {
+				a[al] = a[i];
+				al++;
+			}
+
+			// copy concat'ed arguments list back into this array
+			for (i=0; i<al; i++) {
+				this[i] = a[i];
+			}
+		}
+    };
+}
+
+if ("undefined" === typeof String.prototype.charCodeAt) {
 	/*int*/ String.prototype.charCodeAt = function (/*int*/ i) {
 		if (isNaN(i) || i<0 || i>=this.length) {
 			return NaN;
@@ -57,7 +146,7 @@ if ("undefined" === typeof(String.prototype.charCodeAt)) {
 	};
 }
 
-if ("undefined" === typeof(Number.prototype.toPrecision)) {
+if ("undefined" === typeof Number.prototype.toPrecision) {
 	/*string*/ Number.prototype.toPrecision = function(/*int*/ digits) {
 		var str = this.toString();
 		if (isNaN(digits) || digits < 1 || digits > 21) {
@@ -70,7 +159,7 @@ if ("undefined" === typeof(Number.prototype.toPrecision)) {
 	};
 }
 
-if ("undefined" === typeof(Object.prototype.isPrototypeOf)) {
+if ("undefined" === typeof Object.prototype.isPrototypeOf) {
 	/*bool*/ Object.prototype.isPrototypeOf = function (/*object*/ obj) {
 		while ("undefined" !== typeof(obj.prototype)) {
 			if (this === obj.prototype) {
@@ -82,60 +171,84 @@ if ("undefined" === typeof(Object.prototype.isPrototypeOf)) {
 	};
 }
 
-if ("undefined" === typeof(window.encodeURI)) {
+if ("undefined" === typeof window.encodeURI) {
 	/*string*/ window.encodeURI = function (/*string*/ str) {
-		// placeholder method
+		// placeholder method, not yet implemented
 		return str;
 	};
 }
 
-if ("undefined" === typeof(window.encodeURIComponent)) {
+if ("undefined" === typeof window.encodeURIComponent) {
 	/*string*/ window.encodeURIComponent = function (/*string*/ str) {
-		// placeholder method
+		// placeholder method, not yet implemented
 		return str;
 	};
 }
 
-if ("undefined" === typeof(window.decodeURI)) {
+if ("undefined" === typeof window.decodeURI) {
 	/*string*/ window.decodeURI = function (/*string*/ str) {
-		// placeholder method
+		// placeholder method, not yet implemented
 		return str;
 	};
 }
 
-if ("undefined" === typeof(window.decodeURIComponent)) {
+if ("undefined" === typeof window.decodeURIComponent) {
 	/*string*/ window.decodeURIComponent = function (/*string*/ str) {
-		// placeholder method
+		// placeholder method, not yet implemented
 		return str;
 	};
 }
 
-//if ("undefined" === typeof(Array.prototype.shift)) {
-//	/*array*/ Array.prototype.shift = function(...) {
-//	};
-//}
+(function () {
+	// wrapping in anonymous function so that the XHR ID list
+	// will be only available as a closure, as this will not
+	// modify the global namespace, and it will be shared
 
-//if ("undefined" === typeof(Array.prototype.unshift)) {
-//	/*array*/ Array.prototype.unshift = function(...) {
-//	};
-//}
+	if ("undefined" === typeof window.XMLHttpRequest) {
 
-//if ("undefined" === typeof(Array.prototype.splice)) {
-//	/*array*/ Array.prototype.splice = function(...) {
-//	};
-//}
+		// these IDs are as per MSDN documentation (including case)
+		/*string[]*/ var xhrOCXs = !window.ActiveXObject ? [] :
+			[
+				"Msxml2.XMLHTTP.6.0",
+				"Msxml2.XMLHttp.5.0",
+				"Msxml2.XMLHttp.4.0",
+				"MSXML2.XMLHTTP.3.0",
+				"MSXML2.XMLHTTP",
+				"Microsoft.XMLHTTP"
+			];
 
-if ("undefined" === typeof(String.prototype.trim)) {
+		// XMLHttpRequest: augment browser to have "native" XHR
+		/*XMLHttpRequest*/ window.XMLHttpRequest = function() {
+			while (xhrOCXs.length) {
+				try {
+					return new window.ActiveXObject(xhrOCXs[0]);
+				} catch (ex) {
+					// remove the failed xhrOCXs for all future requests
+					xhrOCXs.shift();
+				}
+			}
+
+			// all xhrOCXs failed		
+			return null;
+		};
+	}
+})();
+
+/* ----------------------------------------------------*/
+
+if ("undefined" === typeof String.prototype.trim) {
 	/*string*/ String.prototype.trim = function () {
 		return this.replace(/^\s*|\s*$/g, "");
 	};
 }
 
-if ("undefined" === typeof(String.prototype.contains)) {
-	/*string*/ String.prototype.contains = function (str) {
+if ("undefined" === typeof String.prototype.contains) {
+	/*bool*/ String.prototype.contains = function (/*string*/ str) {
 		return (this.indexOf(str) >= 0);
 	};
 }
+
+/* ----------------------------------------------------*/
 
 JsonFx.Timer = function() {
 	/*object*/ var s = {};
@@ -187,7 +300,9 @@ JsonFx.Timer = function() {
 JsonFx.Timer = new JsonFx.Timer();
 /*
     json.js
-    2007-01-10
+    2007-03-06
+
+    Public Domain
 
     This file adds these methods to JavaScript:
 
@@ -226,13 +341,25 @@ JsonFx.Timer = new JsonFx.Timer();
 
     It is expected that these methods will formally become part of the
     JavaScript Programming Language in the Fourth Edition of the
-    ECMAScript standard in 2007.
+    ECMAScript standard in 2008.
 */
+
+// Augment the basic prototypes if they have not already been augmented.
+
 if (!Object.prototype.toJSONString) {
+
     Array.prototype.toJSONString = function () {
-        var a = ['['], b, i, l = this.length, v;
+        var a = ['['],  // The array holding the text fragments.
+            b,          // A boolean indicating that a comma is required.
+            i,          // Loop counter.
+            l = this.length,
+            v;          // The value to be stringified.
 
         function p(s) {
+
+// p accumulates text fragments in an array. It inserts a comma before all
+// except the first fragment.
+
             if (b) {
                 a.push(',');
             }
@@ -240,13 +367,23 @@ if (!Object.prototype.toJSONString) {
             b = true;
         }
 
+// For each value in this array...
+
         for (i = 0; i < l; i += 1) {
             v = this[i];
             switch (typeof v) {
+
+// Values without a JSON representation are ignored.
+
             case 'undefined':
             case 'function':
             case 'unknown':
                 break;
+
+// Serialize a JavaScript object value. Ignore objects thats lack the
+// toJSONString method. Due to a specification error in ECMAScript,
+// typeof null is 'object', so watch out for that case.
+
             case 'object':
                 if (v) {
                     if (typeof v.toJSONString === 'function') {
@@ -256,21 +393,34 @@ if (!Object.prototype.toJSONString) {
                     p("null");
                 }
                 break;
+
+// Otherwise, serialize the value.
+
             default:
                 p(v.toJSONString());
             }
         }
+
+// Join all of the fragments together and return.
+
         a.push(']');
         return a.join('');
     };
+
 
     Boolean.prototype.toJSONString = function () {
         return String(this);
     };
 
+
     Date.prototype.toJSONString = function () {
 
+// Ultimately, this method will be equivalent to the date.toISOString method.
+
         function f(n) {
+
+// Format integers to have at least two digits.
+
             return n < 10 ? '0' + n : n;
         }
 
@@ -282,29 +432,51 @@ if (!Object.prototype.toJSONString) {
                 f(this.getSeconds()) + '"';
     };
 
+
     Number.prototype.toJSONString = function () {
+
+// JSON numbers must be finite. Encode non-finite numbers as null.
+
         return isFinite(this) ? String(this) : "null";
     };
 
+
     Object.prototype.toJSONString = function () {
-        var a = ['{'], b, i, v;
+        var a = ['{'],  // The array holding the text fragments.
+            b,          // A boolean indicating that a comma is required.
+            k,          // The current key.
+            v;          // The current value.
 
         function p(s) {
+
+// p accumulates text fragment pairs in an array. It inserts a comma before all
+// except the first fragment pair.
+
             if (b) {
                 a.push(',');
             }
-            a.push(i.toJSONString(), ':', s);
+            a.push(k.toJSONString(), ':', s);
             b = true;
         }
 
-        for (i in this) {
-            if (this.hasOwnProperty(i)) {
-                v = this[i];
+// Iterate through all of the keys in the object, ignoring the proto chain.
+
+        for (k in this) {
+            if (this.hasOwnProperty(k)) {
+                v = this[k];
                 switch (typeof v) {
+
+// Values without a JSON representation are ignored.
+
                 case 'undefined':
                 case 'function':
                 case 'unknown':
                     break;
+
+// Serialize a JavaScript object value. Ignore objects that lack the
+// toJSONString method. Due to a specification error in ECMAScript,
+// typeof null is 'object', so watch out for that case.
+
                 case 'object':
                     if (v) {
                         if (typeof v.toJSONString === 'function') {
@@ -319,12 +491,21 @@ if (!Object.prototype.toJSONString) {
                 }
             }
         }
+
+// Join all of the fragments together and return.
+
         a.push('}');
         return a.join('');
     };
 
 
     (function (s) {
+
+// Augment String.prototype. We do this in an immediate anonymous function to
+// avoid defining global variables.
+
+// m is a table of character substitutions.
+
         var m = {
             '\b': '\\b',
             '\t': '\\t',
@@ -335,12 +516,31 @@ if (!Object.prototype.toJSONString) {
             '\\': '\\\\'
         };
 
+
         s.parseJSON = function (filter) {
+
+// Parsing happens in three stages. In the first stage, we run the text against
+// a regular expression which looks for non-JSON characters. We are especially
+// concerned with '()' and 'new' because they can cause invocation, and '='
+// because it can cause mutation. But just to be safe, we will reject all
+// unexpected characters.
+
             try {
                 if (/^("(\\.|[^"\\\n\r])*?"|[,:{}\[\]0-9.\-+Eaeflnr-u \n\r\t])+?$/.
                         test(this)) {
+
+// In the second stage we use the eval function to compile the text into a
+// JavaScript structure. The '{' operator is subject to a syntactic ambiguity
+// in JavaScript: it can begin a block or an object literal. We wrap the text
+// in parens to eliminate the ambiguity.
+
                     var j = eval('(' + this + ')');
+
+// In the optional third stage, we recursively walk the new structure, passing
+// each name/value pair to a filter function for possible transformation.
+
                     if (typeof filter === 'function') {
+
                         function walk(k, v) {
                             if (v && typeof v === 'object') {
                                 for (var i in v) {
@@ -351,16 +551,27 @@ if (!Object.prototype.toJSONString) {
                             }
                             return filter(k, v);
                         }
-                        return walk('', j);
+
+                        j = walk('', j);
                     }
                     return j;
                 }
             } catch (e) {
+
+// Fall through if the regexp test fails.
+
             }
             throw new SyntaxError("parseJSON");
         };
 
+
         s.toJSONString = function () {
+
+// If the string contains no control characters, no quote characters, and no
+// backslash characters, then we can simply slap some quotes around it.
+// Otherwise we must also replace the offending characters with safe
+// sequences.
+
             if (/["\\\x00-\x1f]/.test(this)) {
                 return '"' + this.replace(/([\x00-\x1f\\"])/g, function(a, b) {
                     var c = m[b];
@@ -383,7 +594,7 @@ if (!Object.prototype.toJSONString) {
 	Created: 2006-11-09-0116
 	Modified: 2007-02-15-2226
 
-	Released under a BSD-style open-source license:
+	Released under an open-source license:
 	http://jsonml.org/License.htm
 
     This file adds these methods to JavaScript:
@@ -520,7 +731,7 @@ if (!Object.prototype.toJSONString) {
 			}
 		}
 
-		return (el && filter) ? filter(el) : el;
+		return (el && "function" === typeof filter) ? filter(el) : el;
 	}
 
 	return p(this);
@@ -535,12 +746,164 @@ if (!Object.prototype.toJSONString) {
 	return (jml instanceof Array) ? jml.parseJsonML(filter) : null;
 };
 
-/*extern JsonFx, ActiveXObject */
+/*extern JsonFx */
+/*---------------------------------------------------------------------------*\
+	JsonFx.UI.setCssUserAgent
+
+	Copyright (c)2006-2007 Stephen M. McKamey
+	Created: 2006-06-10-1635
+	Modified: 2007-03-16-0123
+\*---------------------------------------------------------------------------*/
+
+/* namespace JsonFx */
+if ("undefined" === typeof JsonFx) {
+	window.JsonFx = {};
+}
+
+/* namespace JsonFx.UI */
+if ("undefined" === typeof JsonFx.UI) {
+	JsonFx.UI = {};
+}
+
+/*string*/ JsonFx.userAgent = "JsonFx/1.0";
+
+(function() {
+	// anonymous function doesn't affect global namespace and can't be called externally
+	// variables and helper functions only available via JavaScript closures
+
+	/*string*/ function parse() {
+		/*{b,v}[]*/ var details = [];
+
+		// Regex tested against (2006-06-11 @ 1600): http://en.wikipedia.org/wiki/User_agent
+		var R_MSIE = /(msie|microsoft internet explorer)[\s\/]*([0-9]+[\.]?[0-9]*)/;
+		var R_Gecko = /rv[:]([0-9]+[\.]?[0-9]*).*?gecko[\/][0-9]+(\s+(\S+)[\/]([0-9]+[\.]?[0-9]*))?/;
+		var R_AppleWebKit = /applewebkit[\/]([0-9]+[\.]?[0-9]*).*?(\S+)[\/][v]?([0-9]+[\.]?[0-9]*)/;
+		var R_Opera = /opera[\s\/]*([0-9]+[\.]?[0-9]*)/;
+		var R_MSPIE = /(mspie|microsoft pocket internet explorer)[\s\/]*([0-9]+[\.]?[0-9]*)/;
+		var R_MozCompat = /[(].*?(\S+)[\/]([0-9]+[\.]?[0-9]*).*?[)]/;
+		var R_Other = /^([^\/]+)[\/]([0-9]+[\.]?[0-9]*)/;
+		var R_AOL = /(america online browser|aol)[\s\/]*([0-9]+[\.]?[0-9]*)/;
+
+		var ua = navigator.userAgent.toLowerCase();
+		var name = null;// browser name
+		var ver = null;// browser version
+
+		// aol uses multiple browsers so don't stop
+		if (R_AOL.exec(ua)) {
+			details.push( { b : "aol", v : RegExp.$2 } );
+		}
+
+		// order is important as user-agents spoof each other	
+		if (R_Opera.exec(ua)) {
+			name = "opera";
+			ver = RegExp.$1;
+		} else if (R_MSIE.exec(ua)) {
+			name = "msie";
+			ver = RegExp.$2;
+		} else if (R_MSPIE.exec(ua)) {
+			name = "mspie";
+			ver = RegExp.$2;
+		} else if (R_AppleWebKit.exec(ua)) {
+			name = "applewebkit";
+			ver = RegExp.$1;
+
+			// also add AppleWebKit-brand version
+			details.push( { b : RegExp.$2, v : RegExp.$3 } );
+		} else if (R_Gecko.exec(ua)) {
+			name = "gecko";
+			ver = RegExp.$1;
+
+			// also add Gecko-brand version
+			details.push( { b : RegExp.$3, v : RegExp.$4 } );
+		} else if (R_MozCompat.exec(ua)) {
+			name = RegExp.$1;
+			ver = RegExp.$2;
+		} else if (R_Other.exec(ua)) {
+			name = RegExp.$1;
+			ver = RegExp.$2;
+		}
+
+		// name = browser, ver = parsed version string
+		details.push( { b : name, v : ver } );
+		
+		return details;
+	}
+
+	// calculate styles immediately, loop until can apply them
+	/*string*/ var uaDetails = parse();
+	if (uaDetails.length) {
+		JsonFx.userAgent += " (";
+		for (var i=0; i<uaDetails.length;i ++) {
+			if (i>0) {
+				JsonFx.userAgent += "; ";
+			}
+			JsonFx.userAgent += uaDetails[i].b+"/"+uaDetails[i].v;
+		}
+		JsonFx.userAgent += ")";
+	}
+
+	/*	Dynamically appends CSS classes to document.body based upon user-agent.*/
+	/*void*/ JsonFx.UI.setCssUserAgent = function() {
+
+		/*string*/ function formatCss(/*string*/ b, /*string*/ v) {
+			/*const string*/ var PREFIX = " ua-";
+
+			if (!b) {
+				return "";
+			}
+
+			b = b.replace(/\s+/g, '-');
+			var vi = parseInt(v, 10);
+			var vf = parseFloat(v);
+			vf = (vf === vi && vf.toFixed) ?
+				vf.toFixed(1) : vf.toString();
+			vf = vf.replace(/\./g, '-');
+			if (!isFinite(vi)) {
+				return PREFIX+b;
+			}
+			return PREFIX+b+PREFIX+b+vi+PREFIX+b+vf;
+		}
+
+		// using JavaScript closures to access the parsed UA
+		/*void*/ function appendCss(/*{b,v}[]*/ d) {
+			var uaCss = "";
+
+			while (d.length) {
+				ua = d.pop();
+				uaCss += formatCss(ua.b, ua.v);
+			}
+
+			// assign user-agent classes
+			if (document.body.className) {
+				document.body.className += uaCss;
+			} else {
+				document.body.className += uaCss.substring(1);
+			}
+
+			// DEBUG
+			//alert("\""+document.body.className+"\"");
+		}
+
+		// using setTimeout to poll until body exists
+		/*void*/ function appendCssPoll() {
+
+			if (!document.body) {
+				setTimeout(appendCssPoll, 100);
+			} else {
+				appendCss(uaDetails);
+			}
+		}
+
+		appendCssPoll();
+	};
+})();
+
+/*extern JsonFx */
 /*---------------------------------------------------------*\
 	JsonFx IO
 	Copyright (c)2006-2007 Stephen M. McKamey
 	Created: 2006-11-09-0120
-	Modified: 2007-02-07-2339
+	Modified: 2007-03-12-2349
 \*---------------------------------------------------------*/
 
 /* namespace JsonFx */
@@ -548,287 +911,447 @@ if ("undefined" === typeof JsonFx) {
 	window.JsonFx = {};
 }
 
-/* singleton JsonFx.IO */
+/* namespace JsonFx.IO */
 JsonFx.IO = {};
 
-JsonFx.IO.userAgent = "JsonFx/1.0 beta";
-JsonFx.IO.callTimeout = 10000;// 10 sec
+/*bool*/ JsonFx.IO.hasAjax = !!(new XMLHttpRequest());
 
-/* XMLHttpRequest ----------------------------------------------------*/
+/*
+	RequestOptions = {
+		// HTTP Options
+		async : bool,
+		method : string,
+		headers : Dictionary<string, string>,
+		timeout : number,
+		params : string,
 
-/*object*/ JsonFx.IO.GetXMLHttpRequest = function () {
-	if ("undefined" === typeof window.XMLHttpRequest) {
-		var progIDs = [
-			"Msxml2.XMLHTTP.6.0",
-			"Msxml2.XMLHttp.5.0",
-			"Msxml2.XMLHttp.4.0",
-			"MSXML2.XMLHTTP.3.0",
-			"MSXML2.XMLHTTP",
-			"Microsoft.XMLHTTP" ];
+		// callbacks
+		onCreate : function(XMLHttpRequest, context){},
+		onSuccess : function(XMLHttpRequest, context){},
+		onFailure : function(XMLHttpRequest, context, Error){},
+		onTimeout : function(XMLHttpRequest, context, Error){},
+		onComplete : function(XMLHttpRequest, context){},
 
-		for (var i=0; i<progIDs.length; i++) {
-			try {
-				return new ActiveXObject(progIDs[i]);
-			} catch (ex) {}
+		// callback context
+		context : object
+	};
+*/
+
+/*RequestOptions*/ JsonFx.IO.onFailure = function(/*XMLHttpRequest|JSON*/ obj, /*object*/ cx, /*error*/ ex) {
+	if (ex) {
+		var name = ex.name ? ex.name : "Error";
+		var msg = ex.message ? ex.message : "";
+		var code = isFinite(ex.code) ? Number(ex.code) : Number(ex.number);
+
+		if (isFinite(code)) {
+			name += " ("+code+")";
 		}
 
-		return null;
+		window.alert("Request Failed - "+name+":\n\""+msg+"\"");
 	}
-
-	return new XMLHttpRequest();
 };
-/*bool*/ JsonFx.IO.supportsXMLHttp = !!JsonFx.IO.GetXMLHttpRequest();
 
-/* returns true if request was sent */
-/*bool*/ JsonFx.IO.SendRequest = function(
-	/*string*/ url,
-	/*string*/ params,
-	/*string*/ HttpMethod,
-	/*bool*/ bAsync,
-	/*object*/ headers,
-	/*function(response,context)*/ cb_responseSuccess,
-	/*function(response,context)*/ cb_responseFail,
-	/*object*/ context) {
-
-	if (!HttpMethod) {
-		HttpMethod = "POST";
+/*RequestOptions*/ JsonFx.IO.validateOptions = function(/*RequestOptions*/ options) {
+	// establish defaults
+	if ("object" !== typeof options) {
+		options = {};
 	}
-
-	var request = JsonFx.IO.GetXMLHttpRequest();
-	var timeout = setTimeout(
-		function() {
-			if (request) {
-				request.abort();
-				request = null;
-				cb_responseFail(null, context);
-			}
-		},
-		JsonFx.IO.callTimeout);
-
-	function cb_readyStateChanged() {
-		if (request && request.readyState === 4 /*complete*/) {
-			clearTimeout(timeout);
-			var status;
-			try {
-				status = request.status;
-			} catch (ex) {
-				/* Firefox doesn't allow status to be accessed after request.abort() */
-				status = 0;
-			}
-			if (status === 200) {
-				/* data was retrieved successfully */
-				if (cb_responseSuccess) {
-//TIMER
-//JsonFx.Timer.stop("request", true);//250,250,250
-//TIMER
-					cb_responseSuccess(request, context);
-				}
-			} else if (status === 0) {
-				/*	IE reports status zero when aborted.
-					firefox throws exception, which we set also to zero,
-					suppress these as cb_responseFail has already been called. */
-			} else {
-				if (cb_responseFail) {
-					cb_responseFail(request, context);
-				}
-			}
-			request = null;
+	if ("boolean" !== typeof options.async) {
+		options.async = true;
+	}
+	if ("string" !== typeof options.method) {
+		options.method = "POST";
+	}
+	if ("string" !== typeof options.params) {
+		options.params = null;
+	}
+	if ("object" !== typeof options.headers) {
+		options.headers = {};
+		if (options.method === "POST" && options.params) {
+			options.headers["Content-Type"] = "application/x-www-form-urlencoded";
 		}
 	}
+	// prevent server from sending 304 Not-Modified response
+	// since we don't have a way to access the browser cache
+	options.headers["If-Modified-Since"] = "Sun, 1 Jan 1995 00:00:00 GMT";
+	options.headers["Cache-Control"] = "no-cache";
+	options.headers.Pragma = "no-cache";
 
-	if (!request) {
-		return false;
+	if ("number" !== typeof options.timeout) {
+		options.timeout = 10000;// 10 seconds
+	}
+	if ("function" !== typeof options.onCreate) {
+		options.onCreate = null;
+	}
+	if ("function" !== typeof options.onSuccess) {
+		options.onSuccess = null;
+	}
+	if ("function" !== typeof options.onFailure) {
+		options.onFailure = JsonFx.IO.onFailure;
+	}
+	if ("function" !== typeof options.onTimeout) {
+		options.onTimeout = null;
+	}
+	if ("function" !== typeof options.onComplete) {
+		options.onComplete = null;
+	}
+	if ("undefined" === typeof options.context) {
+		options.context = null;
+	}
+	return options;
+};
+
+/*void*/ JsonFx.IO.sendRequest = function(
+	/*string*/ url,
+	/*RequestOptions*/ options) {
+
+	// ensure defaults
+	options = JsonFx.IO.validateOptions(options);
+
+	var xhr = new XMLHttpRequest();
+
+	if (options.onCreate) {
+		// create
+		options.onCreate(xhr, options.context);
+	}
+
+	if (!xhr) {
+		if (options.onFailure) {
+			// immediate failure: xhr wasn't created
+			options.onFailure(xhr, options.context, new Error("XMLHttpRequest not supported"));
+		}
+		if (options.onComplete) {
+			// complete
+			options.onComplete(xhr, options.context);
+		}
+		return;
+	}
+
+	// kill off request if takes too long
+	var cancel = window.setTimeout(
+		function () {
+			if (xhr) {
+				xhr.onreadystatechange = function(){};
+				xhr.abort();
+				xhr = null;
+			}
+			if (options.onTimeout) {
+				// timeout-specific handler
+				options.onTimeout(xhr, options.context, new Error("Request Timeout"));
+			} else if (options.onFailure) {
+				// general-failure handler
+				options.onFailure(xhr, options.context, new Error("Request Timeout"));
+			}
+			if (options.onComplete) {
+				// complete
+				options.onComplete(xhr, options.context);
+			}
+		}, options.timeout);
+
+	function onRSC() {
+		/*
+			var readyStates = [
+					"uninitialized",
+					"loading",
+					"loaded",
+					"interactive",
+					"complete"
+				];
+
+			try { document.body.appendChild(document.createTextNode((xhr?readyStates[xhr.readyState]:"null")+";")); } catch (ex) {}
+		*/
+		if (xhr && xhr.readyState === 4 /*complete*/) {
+
+			// stop the timeout
+			window.clearTimeout(cancel);
+
+			// check the status
+			var status = 0;
+			try {
+				status = Number(xhr.status);
+			} catch (ex) {
+				// Firefox doesn't allow status to be accessed after xhr.abort()
+			}
+
+			if (status === 0) {
+				// timeout
+
+				// IE reports status zero when aborted
+				// Firefox throws exception, which we set to zero
+				// options.onTimeout has already been called so do nothing
+				// timeout calls onComplete
+				return;
+
+			} else if (Math.floor(status/100) === 2) {// 200-299
+				// success
+				if (options.onSuccess) {
+					options.onSuccess(xhr, options.context);
+				}
+
+			} else if (options.onFailure) { // status not 200-299
+				// failure
+				var ex = new Error(xhr.statusText);
+				ex.code = status;
+				options.onFailure(xhr, options.context, ex);
+			}
+
+			if (options.onComplete) { // all
+				// complete
+				options.onComplete(xhr, options.context);
+			}
+			xhr = null;
+		}
 	}
 
 	try {
-		request.onreadystatechange = cb_readyStateChanged;
-		request.open(HttpMethod, url, bAsync);
+		xhr.onreadystatechange = onRSC;
+		xhr.open(options.method, url, options.async);
 
-		// this prevents server from sending 304 Not-Modified response
-		request.setRequestHeader("If-Modified-Since", "Sat, 17 Jun 1995 00:00:00 GMT");
-		request.setRequestHeader("Pragma", "no-cache");
-		request.setRequestHeader("Cache-Control", "no-cache");
-		if (headers) {
-			for (var header in headers) {
-				if (typeof(headers[header]) === "string") {
-					request.setRequestHeader(header, headers[header]);
+		if (options.headers) {
+			try {// Opera 8.0 doesn't have xhr.setRequestHeader
+				for (var h in options.headers) {
+					if (options.headers.hasOwnProperty(h)) {
+						xhr.setRequestHeader(h, options.headers[h]);
+					}
 				}
+			} catch (ex) {
+				alert("xhr.setRequestHeader: "+(ex.message?ex.message:ex));
 			}
-		} else if (HttpMethod === "POST") {
-			request.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
 		}
-//TIMER
-//JsonFx.Timer.start("request");
-//TIMER
-		request.send(params);
-		return true;
+		xhr.send(options.params);
+
 	} catch (ex) {
-		//throw new Error("HTTP Request Error: "+ex.message+"\n\n"+url);
-		return false;
+		// immediate failure: exception thrown
+		if (options.onFailure) {
+			options.onFailure(xhr, options.context, ex);
+		}
+
 	} finally {
 		// in case immediately returns?
-		cb_readyStateChanged();
+		onRSC();
 	}
 };
 
 /* JsonRequest ----------------------------------------------------*/
 
-/*void*/ JsonFx.IO.onRequestFailed = function(/*XMLHTTP*/response, /*object*/context) {
-	if (response) {
-		window.alert("JsonFx.IO ERROR: "+response.statusText+" ("+response.status+")");
-	} else {
-		window.alert("JsonFx.IO ERROR: Timeout");
-	}
-};
+/*void*/ JsonFx.IO.sendJsonRequest = function (
+	/*string*/ restUrl,
+	/*RequestOptions*/ options) {
 
-/* returns true if request was sent */
-/*bool*/ JsonFx.IO.PostJsonRequest = function(
-	/*string*/ serviceUrl,
-	/*string*/ method,
-	/*object*/ params,
-	/*object*/ id,
-	/*function(data,context)*/ cb_responseSuccess,
-	/*object*/ context) {
+	// ensure defaults
+	options = JsonFx.IO.validateOptions(options);
 
-	function cb_decodeResponse(response, context) {
-		var data = response.responseText;
-		if (typeof(data) === "string") {
-			try {
-				data = data.parseJSON();
-			} catch (ex) {}
+	options.headers["User-Agent"] = JsonFx.userAgent;
+	options.headers.Accept = "application/json";
+
+	var onSuccess = options.onSuccess;
+	options.onSuccess = function(/*XMLHttpRequest*/ xhr, /*object*/ context) {
+
+		// decode response as JSON
+		var json = xhr ? xhr.responseText : null;
+		try {
+			json = ("string" === typeof json) ? json.parseJSON() : null;
+
+			if ("function" === typeof onSuccess) {
+				onSuccess(json, context);
+			}
+		} catch (ex) {
+			if (options.onFailure) {
+				options.onFailure(xhr, context, ex);
+			}
+		} finally {
+			// free closure references
+			onSuccess = options = null;
 		}
-		cb_responseSuccess(data, context);
-	}
+	};
 
-	if (params && typeof(params) !== "object") {
-		params = [ params ];
-	}
-	
-	var rpcRequest = { "version":"1.1", "method":method, "params":params, "id":id };
+	if (options.onFailure) {
+		var onFailure = options.onFailure;
+		options.onFailure = function (/*XMLHttpRequest*/ xhr, /*object*/ context, /*Error*/ ex) {
 
-	try {
-		// JSON encode request
-		rpcRequest = rpcRequest.toJSONString();
-		
-		var headers = {
-			"User-Agent" : JsonFx.IO.userAgent,
-			"Content-Type" : "application/json",
-			"Content-Length" : rpcRequest.length,
-			"Accept" : "application/json"
+			onFailure((xhr ? xhr.responseText : null), context, ex);
+
+			// free closure references
+			onFailure = null;
 		};
-
-		return JsonFx.IO.SendRequest(serviceUrl, rpcRequest, "POST", true, headers, cb_decodeResponse, JsonFx.IO.onRequestFailed, context);
-	} catch (ex) {
-		return false;
 	}
+
+	JsonFx.IO.sendRequest(restUrl, options);
 };
 
-/* returns true if request was sent */
-/*bool*/ JsonFx.IO.GetJsonRequest = function(
-	/*string*/ serviceUrl,
-	/*string*/ method,
-	/*object*/ params,
-	/*function(data,context)*/ cb_responseSuccess,
-	/*object*/ context) {
+/* JSON-RPC ----------------------------------------------------*/
 
-	function cb_decodeResponse(response, context) {
-//TIMER
-//JsonFx.Timer.start("decode");
-//TIMER
-		var data = response.responseText;
-		if (typeof(data) === "string") {
-			try {
-				data = data.parseJSON();
-			} catch (ex) { }
-		}
-//TIMER
-//JsonFx.Timer.stop("decode", true);//32,31,22500(greedy regex)
-//TIMER
-		cb_responseSuccess(data, context);
+/*string*/ JsonFx.IO.jsonRpcPathEncode = function (/*string*/ rpcMethod, /*object|array*/ rpcParams) {
+	var enc = encodeURIComponent;
+	var rpcUrl = "/";
+	if (rpcMethod) {
+		rpcUrl += enc(rpcMethod);
 	}
-
-	if (method) {
-		serviceUrl += "/"+encodeURIComponent(method);
-	}
-	if (params) {
-		serviceUrl += "?";
-		if (params instanceof Array)
-		{
-			for (var i=0; i<params.length; i++) {
+	if ("object" === typeof rpcParams) {
+		rpcUrl += "?";
+		if (rpcParams instanceof Array) {
+			for (var i=0; i<rpcParams.length; i++) {
 				if (i > 0) {
-					serviceUrl += "&";
+					rpcUrl += "&";
 				}
-				serviceUrl += encodeURIComponent(i);
-				serviceUrl += "=";
-				serviceUrl += encodeURIComponent(params[i]);
+				rpcUrl += enc(i);
+				rpcUrl += "=";
+				rpcUrl += enc(rpcParams[i]);
 			}
 		} else {
-			for (var param in params) {
-				serviceUrl += encodeURIComponent(param);
-				serviceUrl += "=";
-				serviceUrl += encodeURIComponent(params[param]);
+			for (var p in rpcParams) {
+				rpcUrl += enc(p);
+				rpcUrl += "=";
+				rpcUrl += enc(rpcParams[p]);
 			}
 		}
 	}
-
-	try {
-		var headers = {
-			"User-Agent" : JsonFx.IO.userAgent,
-//				"Content-Type" : "application/json",
-//				"Content-Length" : 0,
-			"Accept" : "application/json"
-		};
-
-		return JsonFx.IO.SendRequest(serviceUrl, null, "GET", true, headers, cb_decodeResponse, JsonFx.IO.onRequestFailed, context);
-	} catch (ex) {
-		return false;
-	}
 };
 
-/* JsonRequest ----------------------------------------------------*/
+/*void*/ JsonFx.IO.sendJsonRpc = function(
+	/*string*/ rpcUrl,
+	/*string*/ rpcMethod,
+	/*object|array*/ rpcParams,
+	/*RequestOptions*/ options) {
 
-/* Base type for generated JSON Services */
-if (typeof(JsonFx.IO.JsonServiceBase) === "undefined") {
+	// ensure defaults
+	options = JsonFx.IO.validateOptions(options);
 
-	/* Ctor */
-	JsonFx.IO.JsonServiceBase = function() {
-	};
+	options.headers["User-Agent"] = JsonFx.userAgent;
+	options.headers.Accept = "application/json";
 
-	/*event*/ JsonFx.IO.JsonServiceBase.prototype.onBeginRequest = null;
+	// wrap callbacks with RPC layer
+	var onSuccess = options.onSuccess;
+	var onFailure = options.onFailure;
 
-	/*event*/ JsonFx.IO.JsonServiceBase.prototype.onEndRequest = null;
+	// this calls onSuccess with the results of the method (not the RPC wrapper)
+	// or it calls onFailure with the error of the method (not the RPC wrapper)
+	options.onSuccess = function(/*XMLHttpRequest*/ xhr, /*object*/ cx) {
 
-	/*void*/ JsonFx.IO.JsonServiceBase.prototype.callService = function(
-		/*string*/ method,
-		/*object*/ params,
-		/*function(string,object)*/ callback,
-		/*object*/ context) {
+		var json = xhr ? xhr.responseText : null;
+		try {
+			json = ("string" === typeof json) ? json.parseJSON() : null;
 
-		var self = this;
+			if (json.error) {
+				if (onFailure) {
+					onFailure(json, cx, json.error);
+				}
+			} else {
+				if (onSuccess) {
+					onSuccess(json.result, cx);
+				}
+			}
 
-		if (this.onBeginRequest) {
-			this.onBeginRequest(context);
+		} catch (ex) {
+			if (onFailure) {
+				onFailure(json, cx, ex);
+			}
 		}
 
-		JsonFx.IO.PostJsonRequest(
-			this.address,
-			method,
-			params,
-			null,
-			function(data,ctxt){
-				if (self.onEndRequest) {
-					self.onEndRequest(ctxt);
-				}
-				callback(data,ctxt);
-			},
-			context);
+		// free closure references
+		onFailure = onSuccess = null;
 	};
 
-	/*string*/ JsonFx.IO.JsonServiceBase.prototype["system.describe"] = function(
-		/*function(string,object)*/ callback,
-		/*object*/ context) {
+	// this calls onFailure with the RPC response
+	options.onFailure = function(/*XMLHttpRequest*/ xhr, /*object*/ cx, /*Error*/ ex) {
 
-		this.callService("system.describe", null, callback, context);
+		var json = xhr ? xhr.responseText : null;
+		try {
+			json = ("string" === typeof json) ? json.parseJSON() : null;
+
+			if (onFailure) {
+				onFailure(json, cx, ex);
+			}
+		} catch (ex2) {
+			if (onFailure) {
+				onFailure(json, cx, ex?ex:ex2);
+			}
+		}
+
+		// free closure references
+		onFailure = null;
+	};
+
+	if ("object" !== typeof rpcParams) {// must be object or array, else wrap in one
+		rpcParams = [ rpcParams ];
+	}
+
+	if (options.method === "GET") {
+		// GET RPC is encoded as part the URL
+		rpcUrl += JsonFx.IO.jsonRpcPathEncode(rpcMethod, rpcParams);
+
+	} else {
+		// POST RPC is encoded as a JSON body
+		var rpcRequest = {
+				"version" : "1.1",
+				"method" : rpcMethod,
+				"params" : rpcParams
+			};
+
+		try {
+			// JSON encode request object
+			rpcRequest = rpcRequest.toJSONString();
+		} catch (ex) {
+			// if violates JSON, then fail
+			return false;
+		}
+
+		options.params = rpcRequest;
+		options.headers["Content-Type"] = "application/json";
+		options.headers["Content-Length"] = rpcRequest.length;
+	}
+	JsonFx.IO.sendRequest(rpcUrl, options);
+};
+
+/* JsonRpcService ----------------------------------------------------*/
+
+/* Base type for generated JSON Services */
+if ("undefined" === typeof JsonFx.IO.JsonRpcService) {
+
+	/* Ctor */
+	JsonFx.IO.JsonRpcService = function() {};
+
+	/*event*/ JsonFx.IO.JsonRpcService.prototype.onBeginRequest = null;
+
+	/*event*/ JsonFx.IO.JsonRpcService.prototype.onEndRequest = null;
+
+	/*void*/ JsonFx.IO.JsonRpcService.prototype.callService = function(
+		/*string*/ rpcMethod,
+		/*object*/ rpcParams,
+		/*RequestOptions*/ options) {
+
+		// ensure defaults
+		options = JsonFx.IO.validateOptions(options);
+
+		if ("function" === typeof this.onEndRequest) {
+			var self = this;
+
+			// intercept onComplete to call onEndRequest
+			var onComplete = options.onComplete;
+			options.onComplete = function(/*JSON*/ json, /*object*/ cx) {
+				self.onEndRequest(cx);
+
+				if (onComplete) {
+					onComplete(json, cx);
+				}
+
+				// free closure references				
+				self = onComplete = null;
+			};
+		}
+
+		if ("function" === typeof this.onBeginRequest) {
+			this.onBeginRequest(options.context);
+		}
+
+		JsonFx.IO.sendJsonRpc(this.address, rpcMethod, rpcParams, options);
+	};
+
+	// service description is callable via two methods
+	/*string*/ JsonFx.IO.JsonRpcService.prototype["system.describe"] = JsonFx.IO.JsonRpcService.prototype.$describe = function(
+		/*RequestOptions*/ options) {
+
+		this.callService("system.describe", null, options);
 	};
 }
 
@@ -837,7 +1360,7 @@ if (typeof(JsonFx.IO.JsonServiceBase) === "undefined") {
 	JsonFx UI
 	Copyright (c)2006-2007 Stephen M. McKamey
 	Created: 2006-11-11-1759
-	Modified: 2007-03-02-0612
+	Modified: 2007-03-12-2349
 \*---------------------------------------------------------*/
 
 /* namespace JsonFx */
@@ -846,12 +1369,14 @@ if ("undefined" === typeof JsonFx) {
 }
 
 /* namespace JsonFx.UI */
-JsonFx.UI = {};
+if ("undefined" === typeof JsonFx.UI) {
+	JsonFx.UI = {};
+}
 
 /* Utilities ----------------------------------------------------*/
 
 /*string*/ JsonFx.UI.getStyle = function(/*element*/ elem, /*string*/ style) {
-	if (typeof(elem) === "string") {
+	if ("string" === typeof elem) {
 		elem = document.getElementById(elem);
 	}
 	if (window.getComputedStyle) {
@@ -1022,10 +1547,6 @@ JsonFx.UI.Bindings = function() {
 	/*element*/ var performOne = function(/*element*/ elem, /*actionKey*/ a) {
 		if (elem && elem.tagName && elem.className) {
 
-//TIMER
-//JsonFx.Timer.start(a+"_one");
-//TIMER
-
 			// only perform on registered tags
 			var tag = elem.tagName.toLowerCase();
 			if (bindings[tag]) {
@@ -1042,21 +1563,12 @@ JsonFx.UI.Bindings = function() {
 					}
 				}
 			}
-
-//TIMER
-//JsonFx.Timer.stop(a+"_one", true);//48/16,46/31,62/0
-//TIMER
-
 		}
 		return elem;
 	};
 
 	// perform a binding action on child elements
 	/*void*/ var perform = function(/*element*/ root, /*actionKey*/ a) {
-
-//TIMER
-//JsonFx.Timer.start(a+"_all");
-//TIMER
 		if (root && root.getElementsByTagName) {
 
 			// for each registered tag
@@ -1071,10 +1583,6 @@ JsonFx.UI.Bindings = function() {
 				}
 			}
 		}
-
-//TIMER
-//JsonFx.Timer.stop(a+"_all", true);//32,31,31
-//TIMER
 	};
 
 	// used as JsonML filter
@@ -1211,17 +1719,13 @@ JsonFx.UI.History.onchange = null;
 
 /*	if container is null then uses ID(s) to replace page elements
 	returns the container element if one was specified */
-/*element*/ JsonFx.UI.displayJsonML = function(/*JsonML*/ jml, /*element or string*/ container) {
-
-//TIMER
-//JsonFx.Timer.start("display");
-//TIMER
+/*element*/ JsonFx.UI.displayJsonML = function(/*JsonML*/ jml, /*element|string*/ container) {
 
 	// either DOM element or id
-	container = (typeof(container) !== "string") ?
-		container : document.getElementById(container);
+	container = ("string" === typeof container) ?
+		document.getElementById(container) : container;
 
-	if (jml && typeof(jml.parseJsonML) === "function") {
+	if (jml && ("function" === typeof jml.parseJsonML)) {
 		jml = jml.parseJsonML(JsonFx.UI.Bindings.bindOne);
 		if (jml) {
 			if (container) {
@@ -1261,29 +1765,74 @@ JsonFx.UI.History.onchange = null;
 			}
 		}
 	}
-//TIMER
-//JsonFx.Timer.stop("display", true);//265,266,266
-//TIMER
 	return container;
 };
 
-/* returns true if request was sent */
-/*bool*/ JsonFx.UI.loadJsonML = function(/*string*/ url, /*element or string*/ container, /*function*/ callback, /*object*/ context) {
+/*void*/ JsonFx.UI.loadJsonML = function (
+	/*string*/ url,
+	/*element|string*/ container,
+	/*RequestOptions*/ options) {
 
-//TIMER
-//JsonFx.Timer.start("load");
-//TIMER
+	options = JsonFx.IO.validateOptions(options);
+	options.method = "GET";
 
-	return JsonFx.IO.GetJsonRequest(url, null, null,
-			function(jml,obj) {
+	if (options.onCreate) {
+		var onCreate = options.onCreate;
+		options.onCreate = function (/*JSON*/ jml, /*object*/ cx) {
+			// create callback
+			onCreate(cx);
 
-//TIMER
-//JsonFx.Timer.stop("load", true);//282,281,22750(greedy regex)
-//TIMER
-				JsonFx.UI.displayJsonML(jml, container);
-				if ("function" === typeof callback) { callback(context); }
-			}
-		, null);
+			// free closure references
+			onCreate = null;
+		};
+	}
+
+	var onSuccess = options.onSuccess;
+	options.onSuccess = function (/*JSON*/ jml, /*object*/ cx) {
+		// display UI
+		JsonFx.UI.displayJsonML(jml, container);
+
+		// success callback
+		if (onSuccess) { onSuccess(cx); }
+
+		// free closure references
+		onSuccess = container = null;
+	};
+
+	if (options.onFailure) {
+		var onFailure = options.onFailure;
+		options.onFailure = function (/*JSON*/ jml, /*object*/ cx, /*Error*/ ex) {
+			// failure callback
+			onFailure(cx, ex);
+
+			// free closure references
+			onFailure = null;
+		};
+	}
+
+	if (options.onTimeout) {
+		var onTimeout = options.onTimeout;
+		options.onTimeout = function (/*JSON*/ jml, /*object*/ cx, /*Error*/ ex) {
+			// timeout callback
+			onTimeout(cx, ex);
+
+			// free closure references
+			onTimeout = null;
+		};
+	}
+
+	if (options.onComplete) {
+		var onComplete = options.onComplete;
+		options.onComplete = function (/*JSON*/ jml, /*object*/ cx) {
+			// complete callback
+			onComplete(cx);
+
+			// free closure references
+			onComplete = 1;
+		};
+	}
+
+	JsonFx.IO.sendJsonRequest(url, options);
 };
 
 /* DataDump ----------------------------------------------------*/
@@ -1332,7 +1881,11 @@ JsonFx.UI.History.onchange = null;
 				}
 			}
 			if (target) {
-				elem.style.cursor = "pointer";
+				try {
+					elem.style.cursor = "pointer";
+				} catch (ex) {
+					elem.style.cursor = "hand";
+				}
 				elem.className += " jsonfx-expanded";
 
 				elem.onclick = function (/*event*/ evt) {
@@ -1362,41 +1915,36 @@ JsonFx.UI.History.onchange = null;
 };
 
 /*int*/ JsonFx.UI.dumpDataID = 0;
-/*JsonML*/ JsonFx.UI.dumpData = function(/*json*/ data) {
-	if (data === null) {
-		return "null";
+/*JsonML*/ JsonFx.UI.dumpData = function(/*string*/ name, /*json*/ val) {
+	var c = ["span"];
+	var type = typeof val;
+
+	var a = false;
+	if ("object" === type && val) {
+		a = ["label", {"class":"jsonfx-expando"}];
+		c.push(a);
 	}
-	var ul = ["ul", {"id":"JsonFx_UI_Dump_"+(JsonFx.UI.dumpDataID++),"class":"jsonfx-object"}];
+	(a?a:c).push(["span", {"class":"jsonfx-type"}, (val instanceof Array) ? "array" : type]);
+	(a?a:c).push(["span", {"class":"jsonfx-name"}, name]);
 
-	for (var pn in data) {
-		if (!data.hasOwnProperty(pn)) {
-			continue;
-		}
-		var pv = data[pn];
-		var pt = typeof(pv);
-
-		var li = ["li"];
-		var a = null;
-		if ("object" === pt && pv) {
-			a = ["label", {"class":"jsonfx-expando"}];
-			li.push(a);
-		}
-		(a?a:li).push(["span", {"class":"jsonfx-type"}, (pv instanceof Array) ? "array" : pt]);
-		(a?a:li).push(["span", {"class":"jsonfx-name"}, pn]);
-
-		if ("object" === pt) {
-			var o = JsonFx.UI.dumpData(pv);
-			if (a && o[1].id) {
-				a[1]["for"] = o[1].id;
+	if ("object" === type && val) {
+		var ul = ["ul", {"id":"JsonFx_UI_Dump_"+(JsonFx.UI.dumpDataID++),"class":"jsonfx-object"}];
+		for (var pn in val) {
+			if (!val.hasOwnProperty(pn)) {
+				continue;
 			}
-			li.push(o);
-		} else {
-			li.push(["span", {"class":"jsonfx-value"}, String(pv)]);
+			ul.push(["li", JsonFx.UI.dumpData(pn, val[pn])]);
 		}
-		ul.push(li);
+
+		if (a) {
+			a[1]["for"] = ul[1].id;
+		}
+		c.push(ul);
+	} else {
+		c.push(["span", {"class":"jsonfx-value"}, String(val)]);
 	}
 
-	return ul;
+	return c;
 };
 
 /*---------------------*\
@@ -1452,7 +2000,8 @@ JsonFx.UI.Animate.Unit.prototype.toString = function() {
 JsonFx.UI.Animate.Op = function() {
 	this.x = this.y = this.w = this.h =
 	this.z = this.t = this.r = this.b = this.l = 
-	this.f = this.cL = this.cR = this.cT = this.cB = NaN;
+	this.cL = this.cR = this.cT = this.cB =
+	this.f = this.bl = NaN;
 	this.c = { "r":NaN, "g":NaN, "b":NaN };
 	this.bc = { "r":NaN, "g":NaN, "b":NaN };
 	this.s = 0.05;// 20 steps
@@ -1468,6 +2017,16 @@ JsonFx.UI.Animate.Op = function() {
 };
 /*bool*/ JsonFx.UI.Animate.Op.prototype.hasFade = function() {
 	return isFinite(this.f);
+};
+
+/*void*/ JsonFx.UI.Animate.Op.prototype.blur = function(/*float*/ b) {
+	if (!isFinite(b) || b<0) {
+		throw new Error("Blur is a number greater than 0");
+	}
+	this.bl = Number(b);
+};
+/*bool*/ JsonFx.UI.Animate.Op.prototype.hasBlur = function() {
+	return isFinite(this.bl);
 };
 
 /*void*/ JsonFx.UI.Animate.Op.prototype.color = function(/*int*/ r, /*int*/ g, /*int*/ b) {
@@ -1730,11 +2289,15 @@ JsonFx.UI.Animate.Op = function() {
 		op.scale(1, 1);
 
 		// fade
-		if (!!es.zoom && isFinite(es.opacity)) {
+		if (!!es.opacity && isFinite(es.opacity)) {
 			op.fade(es.opacity);
 		} else {
 			op.fade(1);
 		}
+
+		// blur
+		//warning: should extract blur?
+		op.blur(0);
 
 		// zoom
 		if (!!es.zoom && isFinite(es.zoom)) {
@@ -1806,16 +2369,91 @@ JsonFx.UI.Animate.Op = function() {
 };
 
 /* class JsonFx.UI.Animate.Engine -------------------------------------------- */
+
+
+/*Dictionary<string,bool>*/ JsonFx.UI.Animate.filterable =
+	{
+		a : true,
+		abbr : true,
+		acronym : true,
+		address : true,
+		b : true,
+		bdo : true,
+		big : true,
+		blockquote : true,
+		body : true,
+		button : true,
+		caption : true,
+		center : true,
+		cite : true,
+		code : true,
+		custom : true,
+		dd : true,
+		del : true,
+		dfn : true,
+		dir : true,
+		div : true,
+		dl : true,
+		dt : true,
+		em : true,
+		fieldset : true,
+		font : true,
+		form : true,
+		frame : true,
+		hn : true,
+		iframe : true,
+		frameset : true,
+		i : true,
+		ins : true,
+		img : true,
+		input : true,
+		kbd : true,
+		label : true,
+		legend : true,
+		li : true,
+		marquee : true,
+		menu : true,
+		nobr : true,
+		ol : true,
+		p : true,
+		plaintext : true,
+		pre : true,
+		q : true,
+		rt : true,
+		ruby : true,
+		s : true,
+		samp : true,
+		small : true,
+		span : true,
+		strike : true,
+		strong : true,
+		sub : true,
+		sup : true,
+		table : true,
+		textarea : true,
+		th : true,
+		td : true,
+		tt : true,
+		u : true,
+		ul : true,
+		"var" : true,
+		xmp : true
+	};
+
 JsonFx.UI.Animate.Engine = function(/*element*/ elem) {
 
-	if (typeof(elem) === "string") {
+	if ("string" === typeof elem) {
 		// either DOM element or id
 		elem = document.getElementById(elem);
 	}
 
-	if (!elem || !elem.tagName) {
+	var tn = elem ? elem.tagName : null;
+
+	if (!tn) {
 		throw new Error("Invalid element");
 	}
+
+	tn = tn.toLowerCase();
 
 	var es = elem.style,
 	/*JsonFx.UI.Animate.Op*/ start = null,
@@ -1823,7 +2461,8 @@ JsonFx.UI.Animate.Engine = function(/*element*/ elem) {
 	/*bool*/ mutex = false,
 	/*bool*/ state = false,
 	/*const float*/ STEP_MIN = 0, // start
-	/*const float*/ STEP_MAX = 1; // end
+	/*const float*/ STEP_MAX = 1, // end
+	/*Dictionary<string,bool>*/ filerable = JsonFx.UI.Animate.filterable;
 
 	var userHeight = "",
 		userWidth = "",
@@ -1843,7 +2482,8 @@ JsonFx.UI.Animate.Engine = function(/*element*/ elem) {
 		userClip = "",
 		userColor = "",
 		userBGColor = "",
-		alpha = null;
+		alpha = null,
+		blur = null;
 
 	if (elem && es) {
 		userOverflow = es.overflow;
@@ -1899,6 +2539,13 @@ JsonFx.UI.Animate.Engine = function(/*element*/ elem) {
 				}
 			} catch (ex) {}
 		}
+		if (op.hasBlur()) {
+			try {
+				if (userFilter) {
+					es.filter = userFilter;
+				}
+			} catch (ex) {}
+		}
 		if (op.hasZoom()) {
 			es.zoom = userZoom;
 		}
@@ -1922,35 +2569,71 @@ JsonFx.UI.Animate.Engine = function(/*element*/ elem) {
 		}
 	}
 
-	/*void*/ function initAlpha() {
-		if (elem.filters && !alpha) {
-			if (elem.filters.length > 0) {
-				try {
-					// check IE5.5+
-					alpha = elem.filters.item("DXImageTransform.Microsoft.Alpha");
-				} catch (ex) { alpha = null; }
-				if (!alpha) {
-					try {
-						// check IE4.0+
-						alpha = elem.filters.item("alpha");
-					} catch (ex) { alpha = null; }
+	/*void*/ function initFilter(op) {
+		try {
+			// first look up tagName to determine if
+			// element can even have filters applied
+			// to prevent incurring calculation cost
+			if (filerable[tn] &&
+				elem.filters) {
+				if (op.hasFade() && !alpha) {
+					if (elem.filters.length > 0) {
+						try {
+							// check IE5.5+
+							alpha = elem.filters.item("DXImageTransform.Microsoft.Alpha");
+						} catch (ex) { alpha = null; }
+						if (!alpha) {
+							try {
+								// check IE4.0+
+								alpha = elem.filters.item("alpha");
+							} catch (ex) { alpha = null; }
+						}
+					}
+					if (!alpha) {
+						// try IE5.5+
+						es.filter += " progid:DXImageTransform.Microsoft.Alpha(enabled=false)";
+						try {
+							alpha = elem.filters.item("DXImageTransform.Microsoft.Alpha");
+						} catch (ex) { alpha = null; }
+						if (!alpha) {
+							// try IE4.0+
+							es.filter += " alpha(enabled=false)";
+							try {
+								alpha = elem.filters.item("alpha");
+							} catch (ex) { alpha = null; }
+						}
+					}
+				}
+				if (op.hasBlur() && !blur) {
+					if (elem.filters.length > 0) {
+						try {
+							// check IE5.5+
+							blur = elem.filters.item("DXImageTransform.Microsoft.Blur");
+						} catch (ex) { blur = null; }
+						if (!blur) {
+							try {
+								// check IE4.0+
+								blur = elem.filters.item("blur");
+							} catch (ex) { blur = null; }
+						}
+					}
+					if (!blur) {
+						// try IE5.5+
+						es.filter += " progid:DXImageTransform.Microsoft.Blur(enabled=false)";
+						try {
+							blur = elem.filters.item("DXImageTransform.Microsoft.Blur");
+						} catch (ex) { blur = null; }
+						if (!blur) {
+							// try IE4.0+
+							es.filter += " blur(enabled=false)";
+							try {
+								blur = elem.filters.item("blur");
+							} catch (ex) { blur = null; }
+						}
+					}
 				}
 			}
-			if (!alpha) {
-				// try IE5.5+
-				es.filter += " progid:DXImageTransform.Microsoft.Alpha(enabled=false)";
-				try {
-					alpha = elem.filters.item("DXImageTransform.Microsoft.Alpha");
-				} catch (ex) { alpha = null; }
-				if (!alpha) {
-					// try IE4.0+
-					es.filter += " alpha(enabled=false)";
-					try {
-						alpha = elem.filters.item("alpha");
-					} catch (ex) { alpha = null; }
-				}
-			}
-		}
+		} catch (ex) {}
 	}
 
 	/*bool*/ this.hasAppliedOp = function() {
@@ -1959,7 +2642,12 @@ JsonFx.UI.Animate.Engine = function(/*element*/ elem) {
 
 	// if newOp is null, the previous operation is reversed
 	// immediate doesn't animate but applies operation
-	/*void*/ this.apply = function(/*JsonFx.UI.Animate.Op*/ newOp, /*bool*/ immediate, /*function(cx)*/ callback, /*object*/ context) {
+	/*void*/ this.apply = function(
+		/*JsonFx.UI.Animate.Op*/ newOp,
+		/*bool*/ immediate,
+		/*function(cx)*/ callback,
+		/*object*/ context) {
+
 		if (!es) { return; }
 
 		// state: true = perform op, false = reverse op
@@ -2011,15 +2699,41 @@ JsonFx.UI.Animate.Engine = function(/*element*/ elem) {
 			if (op.hasFade() && start.hasFade()) {
 				// opacity
 				es["-khtml-opacity"] = es["-moz-opacity"] = es.opacity = JsonFx.UI.lerp(start.f, op.f, step);
-				initAlpha();
+				initFilter(op);
 				if (alpha) {
 					try {
+						if (!elem.currentStyle.hasLayout) {
+							// this might have side-effects, but should be rare
+							// http://msdn.microsoft.com/workshop/author/dhtml/reference/properties/haslayout.asp
+							// http://www.satzansatz.de/cssd/onhavinglayout.html
+							es.zoom = "1";
+						}
 						alpha.opacity = JsonFx.UI.lerpInt(100*start.f, 100*op.f, step);
 						alpha.enabled = true;
 					} catch (ex) {
 						alpha = null;
 					}
 				}
+			}
+			if (op.hasBlur()) {
+				initFilter(op);
+				if (blur) {
+					try {
+						if (!elem.currentStyle.hasLayout) {
+							// this might have side-effects, but should be rare
+							// http://msdn.microsoft.com/workshop/author/dhtml/reference/properties/haslayout.asp
+							// http://www.satzansatz.de/cssd/onhavinglayout.html
+							es.zoom = "1";
+						}
+						blur.pixelRadius = JsonFx.UI.lerpInt(start.bl, op.bl, step);
+						blur.enabled = true;
+					} catch (ex) {
+						blur = null;
+					}
+				}
+			}
+			if (op.hasZoom() && start.hasZoom()) {
+				es.zoom = JsonFx.UI.lerpInt(100*start.z, 100*op.z, step)+"%";
 			}
 			if (op.hasBackgroundColor() && start.hasBackgroundColor()) {
 				es.backgroundColor = JsonFx.UI.toHtmlColor(
@@ -2034,9 +2748,6 @@ JsonFx.UI.Animate.Engine = function(/*element*/ elem) {
 					JsonFx.UI.lerpInt(start.c.g, op.c.g, step),
 					JsonFx.UI.lerpInt(start.c.b, op.c.b, step)
 				);
-			}
-			if (op.hasZoom() && start.hasZoom()) {
-				es.zoom = JsonFx.UI.lerpInt(100*start.z, 100*op.z, step)+"%";
 			}
 			if (op.hasClip()) {
 				var clip = ["auto","auto","auto","auto"];
@@ -2116,136 +2827,4 @@ JsonFx.UI.Animate.Engine = function(/*element*/ elem) {
 		// immediate forces to far end of step
 		t(state^immediate ? STEP_MIN : STEP_MAX);
 	};
-};
-
-/*extern JsonFx */
-/*---------------------------------------------------------------------------*\
-	JsonFx.UI.setCssUserAgent
-
-	Copyright (c)2006-2007 Stephen M. McKamey
-	Created: 2006-06-10-1635
-	Modified: 2007-03-01-0313
-\*---------------------------------------------------------------------------*/
-
-/* namespace JsonFx */
-if ("undefined" === typeof JsonFx) {
-	window.JsonFx = {};
-}
-
-/* namespace JsonFx.UI */
-if ("undefined" === typeof JsonFx.UI) {
-	JsonFx.UI = {};
-}
-
-/*	Dynamically appends CSS classes to document.body based upon user-agent.*/
-/*void*/ JsonFx.UI.setCssUserAgent = function() {
-
-	// anonymous function doesn't affect global namespace and can't be called externally
-	// variables and helper functions available via JavaScript closures
-	var PREFIX = " ua-";
-
-	/*string*/ function formatCss(/*string*/ b, /*string*/ v) {
-		if (!b) {
-			return "";
-		}
-
-		b = b.replace(/\s+/g, '-');
-		var vi = parseInt(v, 10);
-		var vf = parseFloat(v);
-		vf = (vf === vi && vf.toFixed) ?
-			vf.toFixed(1) : vf.toString();
-		vf = vf.replace(/\./g, '-');
-		if (!isFinite(vi)) {
-			return PREFIX+b;
-		}
-		return PREFIX+b+PREFIX+b+vi+PREFIX+b+vf;
-	}
-
-	/*string*/ function buildCss() {
-		// Regex tested against (2006-06-11 @ 1600): http://en.wikipedia.org/wiki/User_agent
-		var R_MSIE = new RegExp("(msie|microsoft internet explorer)[\\s/]*([0-9]+[\\.]?[0-9]*)");
-		var R_Gecko = new RegExp("rv[:]([0-9]+[\\.]?[0-9]*).*?gecko[/][0-9]+(\\s+(\\S+)[/]([0-9]+[\\.]?[0-9]*))?");
-		var R_AppleWebKit = new RegExp("applewebkit[/]([0-9]+[\\.]?[0-9]*).*?(\\S+)[/][v]?([0-9]+[\\.]?[0-9]*)");
-		var R_Opera = new RegExp("opera[\\s/]*([0-9]+[\\.]?[0-9]*)");
-		var R_MSPIE = new RegExp("(mspie|microsoft pocket internet explorer)[\\s/]*([0-9]+[\\.]?[0-9]*)");
-		var R_MozCompat = new RegExp("[(].*?(\\S+)[/]([0-9]+[\\.]?[0-9]*).*?[)]");
-		var R_Other = new RegExp("^([^/]+)[/]([0-9]+[\\.]?[0-9]*)");
-		var R_AOL = new RegExp("(america online browser|aol)[\\s/]*([0-9]+[\\.]?[0-9]*)");
-
-		var ua = navigator.userAgent.toLowerCase();
-		var css = PREFIX+navigator.platform.toLowerCase();
-		var bName = null;// browser name
-		var bVer = null;// browser version
-
-		// aol uses multiple browsers so don't stop
-		if (R_AOL.exec(ua)) {
-			css += formatCss("aol", RegExp.$2);
-		}
-
-		// order is important as user-agents spoof each other	
-		if (R_Opera.exec(ua)) {
-			bName = "opera";
-			bVer = RegExp.$1;
-		} else if (R_MSIE.exec(ua)) {
-			bName = "msie";
-			bVer = RegExp.$2;
-		} else if (R_MSPIE.exec(ua)) {
-			bName = "mspie";
-			bVer = RegExp.$2;
-		} else if (R_AppleWebKit.exec(ua)) {
-			bName = "applewebkit";
-			bVer = RegExp.$1;
-
-			// also add AppleWebKit-brand version
-			css += formatCss(RegExp.$2, RegExp.$3);
-		} else if (R_Gecko.exec(ua)) {
-			bName = "gecko";
-			bVer = RegExp.$1;
-
-			// also add Gecko-brand version
-			css += formatCss(RegExp.$3, RegExp.$4);
-		} else if (R_MozCompat.exec(ua)) {
-			bName = RegExp.$1;
-			bVer = RegExp.$2;
-		} else if (R_Other.exec(ua)) {
-			bName = RegExp.$1;
-			bVer = RegExp.$2;
-		}
-
-		// bVer should hold parsed version string
-		if (bVer) {
-			css += formatCss(bName, bVer);
-		}
-		
-		return css;
-	}
-
-	// calculate styles immediately, loop until can apply them
-	var uaCss = buildCss();
-
-	// using JavaScript closures to access the calculated css
-	/*void*/ function appendCss() {
-
-		// assign user-agent classes
-		if (document.body.className) {
-			document.body.className += uaCss;
-		} else {
-			document.body.className += uaCss.substring(1);
-		}
-
-		// DEBUG
-		//alert("\""+document.body.className+"\"");
-	}
-
-	// using setTimeout to poll until body exists
-	/*void*/ function appendCssLoop() {
-
-		if (!document.body) {
-			setTimeout(appendCssLoop, 100);
-		} else {
-			appendCss();
-		}
-	}
-
-	appendCssLoop();
 };

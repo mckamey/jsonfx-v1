@@ -67,7 +67,7 @@ namespace JsonFx.Compilation
 				{
 					using (StringWriter writer = new StringWriter())
 					{
-						jsMin.Minify(reader, writer, false, null);
+						jsMin.Minify(reader, writer, null, null, ScriptTools.JSMinOptions.None);
 						writer.Flush();
 						return writer.ToString();
 					}
