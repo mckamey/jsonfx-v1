@@ -1,4 +1,6 @@
-2007-03-12 @ 23:49
+2007-03-18 @ 09:53
+
+- Check out competition (http://www.daniel-zeiss.de/AJAXComparison/Results.htm)
 
 - add support wrapper for responseXML? (http://domscripting.com/presentations/fowa07/slides/03_data_formats.html(
 
