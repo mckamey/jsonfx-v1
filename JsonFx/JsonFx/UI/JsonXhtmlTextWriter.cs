@@ -1,6 +1,8 @@
 using System;
 using System.IO;
 using System.Web.UI;
+using System.Web.RegularExpressions;
+using System.Text.RegularExpressions;
 
 namespace JsonFx.UI
 {
@@ -9,6 +11,8 @@ namespace JsonFx.UI
 		#region Fields
 
 		private JsonControlBuilder builder;
+		private static readonly TagRegex Regex_Tag = new TagRegex();
+		private static readonly EndTagRegex Regex_EndTag = new EndTagRegex();
 
 		#endregion Fields
 
@@ -270,8 +274,7 @@ namespace JsonFx.UI
 
 		public override void Write(char value)
 		{
-			if (value != '>')
-				this.Write("{0}", value);
+			this.Write("{0}", value);
 		}
 
 		public override void Write(char[] buffer)
@@ -343,7 +346,70 @@ namespace JsonFx.UI
 		public override void Write(string value)
 		{
 			//base.Write(value);
-			this.builder.AddLiteral(value);
+
+			if (String.IsNullOrEmpty(value))
+			{
+				return;
+			}
+
+			// Need to check for and parse literal HTML here :(
+
+			int start = 0;
+			int end = value.IndexOf('<');
+			while (end >= 0)
+			{
+				this.builder.AddLiteral(value.Substring(start, end-start));
+
+				// check if wasn't part of a tag
+				start = value.IndexOf('>', end)+1;
+				if (start < 0)
+				{
+					start = end+1;
+					break;
+				}
+
+				Match match = Regex_Tag.Match(value, end, start-end);
+				if (match.Success)
+				{
+					string tagName = match.Groups["tagname"].Value;
+					if (!String.IsNullOrEmpty(match.Groups["empty"].Value))
+					{
+						// found a full tag
+						this.WriteFullBeginTag(tagName);
+					}
+					else
+					{
+						// found a begin tag
+						this.WriteBeginTag(tagName);
+						int attribCount = match.Groups["attrname"].Captures.Count;
+						attribCount = Math.Min(attribCount, match.Groups["attrval"].Captures.Count);
+						for (int i=0; i<attribCount; i++)
+						{
+							this.WriteAttribute(
+								match.Groups["attrname"].Captures[i].Value,
+								match.Groups["attrval"].Captures[i].Value);
+						}
+					}
+				}
+				else
+				{
+					match = Regex_EndTag.Match(value, end, start-end);
+					if (match.Success)
+					{
+						// found a closing tag
+						this.WriteEndTag(match.Groups["tagname"].Value);
+					}
+					else
+					{
+						// wasn't part of a valid tag
+						this.builder.AddLiteral(value.Substring(end, start-end));
+					}
+				}
+
+				end = value.IndexOf('<', start);
+			}
+
+			this.builder.AddLiteral(value.Substring(start));
 		}
 
 		public override void Write(uint value)
