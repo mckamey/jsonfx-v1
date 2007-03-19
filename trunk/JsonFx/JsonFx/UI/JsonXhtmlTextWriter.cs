@@ -364,11 +364,15 @@ namespace JsonFx.UI
 				this.builder.AddLiteral(value.Substring(start, end-start));
 
 				// check if wasn't part of a tag
-				start = value.IndexOf('>', end)+1;
+				start = value.IndexOf('>', end);
 				if (start < 0)
 				{
 					start = end+1;
 					break;
+				}
+				else
+				{
+					start++;
 				}
 
 				Match match = Regex_Tag.Match(value, end, start-end);
