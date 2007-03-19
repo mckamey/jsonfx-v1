@@ -3,7 +3,7 @@
 	JsonFx UI
 	Copyright (c)2006-2007 Stephen M. McKamey
 	Created: 2006-11-11-1759
-	Modified: 2007-03-12-2349
+	Modified: 2007-03-18-1846
 \*---------------------------------------------------------*/
 
 /* namespace JsonFx */
