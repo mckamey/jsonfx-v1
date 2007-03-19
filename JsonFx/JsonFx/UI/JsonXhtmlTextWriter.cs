@@ -10,9 +10,12 @@ namespace JsonFx.UI
 	{
 		#region Fields
 
+		private const string Pattern_Comment = @"(<!DOCTYPE[^>]*>)|(<!--[^->]*-->)";
+
 		private JsonControlBuilder builder;
-		private static readonly TagRegex Regex_Tag = new TagRegex();
-		private static readonly EndTagRegex Regex_EndTag = new EndTagRegex();
+		private static readonly Regex Regex_Tag = new TagRegex();
+		private static readonly Regex Regex_EndTag = new EndTagRegex();
+		private static readonly Regex Regex_Comment = new Regex(Pattern_Comment, RegexOptions.Singleline|RegexOptions.Multiline|RegexOptions.IgnoreCase);
 
 		#endregion Fields
 
@@ -401,8 +404,16 @@ namespace JsonFx.UI
 					}
 					else
 					{
-						// wasn't part of a valid tag
-						this.builder.AddLiteral(value.Substring(end, start-end));
+						match = Regex_Comment.Match(value, end, start-end);
+						if (match.Success)
+						{
+							// was a comment or DOCTYPE, just exclude
+						}
+						else
+						{
+							// wasn't part of a valid tag, but output as text
+							this.builder.AddLiteral(value.Substring(end, start-end));
+						}
 					}
 				}
 
