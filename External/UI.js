@@ -1180,14 +1180,14 @@ JsonFx.UI.Animate.Engine = function(/*element*/ elem) {
 			es["-moz-opacity"] = userMoz;
 			es.opacity = userOpacity;
 			try {
-				if (userFilter) {
+				if (es.filter) {
 					es.filter = userFilter;
 				}
 			} catch (ex) {}
 		}
 		if (op.hasBlur()) {
 			try {
-				if (userFilter) {
+				if (es.filter) {
 					es.filter = userFilter;
 				}
 			} catch (ex) {}
