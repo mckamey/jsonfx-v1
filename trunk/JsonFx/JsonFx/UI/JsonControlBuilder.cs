@@ -3,6 +3,8 @@ using System.Text.RegularExpressions;
 
 namespace JsonFx.UI
 {
+	public delegate void PreProcessLiteral(string value);
+
 	public class JsonControlBuilder : IDisposable
 	{
 		#region Constants
@@ -21,6 +23,10 @@ namespace JsonFx.UI
 		bool normalizeWhitespace = true;
 		private bool dirty = false;
 		private bool disposed = false;
+
+		private string cachedLiteral = null;
+		internal PreProcessLiteral PreProcess = null;
+		private bool processingLiteral = false;
 
 		#endregion Fields
 
@@ -56,46 +62,109 @@ namespace JsonFx.UI
 
 		#region Methods
 
-		public void AddLiteral(string text)
+		private void ProcessLiteral()
 		{
-			if (text == null || text.Trim().Length == 0)
+			if (this.processingLiteral)
+			{
 				return;
+			}
+
+			try
+			{
+				this.processingLiteral = true;
+
+				string cached = this.cachedLiteral;
+				this.cachedLiteral = null;
+				if (!String.IsNullOrEmpty(cached))
+				{
+					if (this.PreProcess != null)
+					{
+						// allow second-chance processing
+						this.PreProcess(cached);
+					}
+				}
+			}
+			finally
+			{
+				this.processingLiteral = false;
+			}
+		}
+
+		private void FlushLiteralCache()
+		{
+			this.ProcessLiteral();
+
+			// output anything remaining after second-chance processing
+			string cached = this.cachedLiteral;
+			this.cachedLiteral = null;
+			if (!String.IsNullOrEmpty(cached))
+			{
+				this.OutputLiteral(cached);
+			}
+		}
+
+		protected void OutputLiteral(string text)
+		{
+			text = this.ScrubLiteral(text);
+			if (String.IsNullOrEmpty(text))
+			{
+				return;
+			}
+
+			if (this.current == null)
+			{
+				if (this.AllowLiteralsInRoot)
+				{
+					this.controls.Add(new JsonLiteral(text));
+				}
+			}
+			else
+			{
+				this.current.ChildControls.Add(new JsonLiteral(text));
+			}
+		}
+
+		/// <summary>
+		/// Normalizes Whitespace, HtmlDecode content
+		/// </summary>
+		/// <param name="text"></param>
+		/// <returns></returns>
+		private string ScrubLiteral(string text)
+		{
+			if (text == null || text.Trim().Length < 1)
+			{
+				return null;
+			}
 
 			if (this.NormalizeWhitespace)
 			{
 				text = RegexWhitespace.Replace(text, " ");
 			}
 
+			// this allows HTML entities to be encoded as unicode
 			text = System.Web.HttpUtility.HtmlDecode(text);
-
-			if (this.current == null)
-			{
-				if (this.AllowLiteralsInRoot)
-				{
-					this.AddOrAppendLiteral(this.controls, text);
-				}
-			}
-			else
-			{
-				this.AddOrAppendLiteral(this.current.ChildControls, text);
-			}
+			return text;
 		}
 
-		protected void AddOrAppendLiteral(JsonControlCollection controls, string text)
+		public void AddLiteral(string text)
 		{
-			JsonLiteral literal = controls.Last as JsonLiteral;
-			if (literal == null)
+			if (this.cachedLiteral == null)
 			{
-				controls.Add(new JsonLiteral(text));
+				this.cachedLiteral = text;
 			}
 			else
 			{
-				literal.Text += text;
+				this.cachedLiteral += text;
 			}
+
+			this.ProcessLiteral();
 		}
 
 		public void PushTag(string tagName)
 		{
+			// flush any accumulated literals
+			this.FlushLiteralCache();
+
 			JsonControl control = this.next;
 			if (control == null)
 			{
@@ -121,6 +190,9 @@ namespace JsonFx.UI
 
 		public void PopTag()
 		{
+			// flush any accumulated literals
+			this.FlushLiteralCache();
+
 			if (this.next != null)
 				throw new InvalidOperationException("Pop mismatch? (Next is null)");
 
@@ -151,6 +223,9 @@ namespace JsonFx.UI
 
 		public void SetAttribute(JsonControl target, string name, string value)
 		{
+			// flush any accumulated literals
+			this.FlushLiteralCache();
+
 			value = System.Web.HttpUtility.HtmlDecode(value);
 			if ("style".Equals(name, StringComparison.InvariantCultureIgnoreCase))
 			{
@@ -180,6 +255,9 @@ namespace JsonFx.UI
 
 		public void SetStyle(JsonControl target, string name, string value)
 		{
+			// flush any accumulated literals
+			this.FlushLiteralCache();
+
 			if (target == null)
 				throw new NullReferenceException("target is null");
 
@@ -287,6 +365,9 @@ namespace JsonFx.UI
 				{
 					using (this.writer)
 					{
+						// flush any accumulated literals
+						this.FlushLiteralCache();
+
 						while (this.current != null)
 						{
 							this.PopTag();

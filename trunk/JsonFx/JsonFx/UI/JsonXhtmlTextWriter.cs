@@ -24,6 +24,7 @@ namespace JsonFx.UI
 		public JsonXhtmlTextWriter(TextWriter writer) : base(new NullTextWriter())
 		{
 			this.builder = new JsonControlBuilder(writer);
+			this.builder.PreProcess = new PreProcessLiteral(this.ParseLiteral);
 		}
 
 		public JsonXhtmlTextWriter(TextWriter writer, string tabString) : base(new NullTextWriter(), tabString)
@@ -355,85 +356,7 @@ namespace JsonFx.UI
 				return;
 			}
 
-			// Need to check for and parse literal HTML here :(
-
-#warning This has an issue when tag is broken up by literal replacement
-			// For instance:
-			// <li><a class="AsyncLink" href="
-			// <%=this.ResolveUrl("~/FAQ/") %>
-			// ">FAQ</a></li>
-
-			int start = 0;
-			int end = value.IndexOf('<');
-			while (end >= 0)
-			{
-				if (end-start > 0)
-				{
-					this.builder.AddLiteral(value.Substring(start, end-start));
-				}
-
-				// check if wasn't part of a tag
-				start = value.IndexOf('>', end);
-				if (start < 0)
-				{
-					start = end;
-					break;
-				}
-				else
-				{
-					start++;
-				}
-
-				Match match = Regex_Tag.Match(value, end, start-end);
-				if (match.Success)
-				{
-					string tagName = match.Groups["tagname"].Value;
-					if (!String.IsNullOrEmpty(match.Groups["empty"].Value))
-					{
-						// found a full tag
-						this.WriteFullBeginTag(tagName);
-					}
-					else
-					{
-						// found a begin tag
-						this.WriteBeginTag(tagName);
-						int attribCount = match.Groups["attrname"].Captures.Count;
-						attribCount = Math.Min(attribCount, match.Groups["attrval"].Captures.Count);
-						for (int i=0; i<attribCount; i++)
-						{
-							this.WriteAttribute(
-								match.Groups["attrname"].Captures[i].Value,
-								match.Groups["attrval"].Captures[i].Value);
-						}
-					}
-				}
-				else
-				{
-					match = Regex_EndTag.Match(value, end, start-end);
-					if (match.Success)
-					{
-						// found a closing tag
-						this.WriteEndTag(match.Groups["tagname"].Value);
-					}
-					else
-					{
-						match = Regex_Comment.Match(value, end, start-end);
-						if (match.Success)
-						{
-							// was a comment or DOCTYPE, just exclude
-						}
-						else
-						{
-							// wasn't part of a valid tag, but output as text
-							this.builder.AddLiteral(value.Substring(end, start-end));
-						}
-					}
-				}
-
-				end = value.IndexOf('<', start);
-			}
-
-			this.builder.AddLiteral(value.Substring(start));
+			this.builder.AddLiteral(value);
 		}
 
 		public override void Write(uint value)
@@ -603,5 +526,91 @@ namespace JsonFx.UI
 		}
 
 		#endregion Methods
+
+		#region Callback
+
+		private void ParseLiteral(string value)
+		{
+			// Need to check for and parse for literal HTML here :(
+
+			// Handles this:
+			// <li><a class="AsyncLink" href="
+			// <%=this.ResolveUrl("~/FAQ/") %>
+			// ">FAQ</a></li>
+
+			int start = 0;
+			int end = value.IndexOf('<');
+			while (end >= 0)
+			{
+				if (end-start > 0)
+				{
+					this.builder.AddLiteral(value.Substring(start, end-start));
+				}
+
+				// check if wasn't part of a tag
+				start = value.IndexOf('>', end);
+				if (start < 0)
+				{
+					start = end;
+					break;
+				}
+				else
+				{
+					start++;
+				}
+
+				Match match = Regex_Tag.Match(value, end, start-end);
+				if (match.Success)
+				{
+					string tagName = match.Groups["tagname"].Value;
+					if (!String.IsNullOrEmpty(match.Groups["empty"].Value))
+					{
+						// found a full tag
+						this.WriteFullBeginTag(tagName);
+					}
+					else
+					{
+						// found a begin tag
+						this.WriteBeginTag(tagName);
+						int attribCount = match.Groups["attrname"].Captures.Count;
+						attribCount = Math.Min(attribCount, match.Groups["attrval"].Captures.Count);
+						for (int i=0; i<attribCount; i++)
+						{
+							this.WriteAttribute(
+								match.Groups["attrname"].Captures[i].Value,
+								match.Groups["attrval"].Captures[i].Value);
+						}
+					}
+				}
+				else
+				{
+					match = Regex_EndTag.Match(value, end, start-end);
+					if (match.Success)
+					{
+						// found a closing tag
+						this.WriteEndTag(match.Groups["tagname"].Value);
+					}
+					else
+					{
+						match = Regex_Comment.Match(value, end, start-end);
+						if (match.Success)
+						{
+							// was a comment or DOCTYPE, just exclude
+						}
+						else
+						{
+							// wasn't part of a valid tag, but output as text
+							this.builder.AddLiteral(value.Substring(end, start-end));
+						}
+					}
+				}
+
+				end = value.IndexOf('<', start);
+			}
+
+			this.builder.AddLiteral(value.Substring(start));
+		}
+
+		#endregion Callback
 	}
 }
