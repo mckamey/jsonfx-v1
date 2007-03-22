@@ -1,4 +1,10 @@
-2007-03-18 @ 09:53
+2007-03-20 @ 08:18
+
+- Handle errors in server JsonML rendering, render error as JsonML rather than HTML (getting "parseJSON" error)
+
+- find "Pop Mismatch?" error
+
+- Move History & Animation to Options object (onChange? onComplete)
 
 - Check out competition (http://www.daniel-zeiss.de/AJAXComparison/Results.htm)
 

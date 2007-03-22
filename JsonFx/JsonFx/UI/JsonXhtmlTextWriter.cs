@@ -357,17 +357,26 @@ namespace JsonFx.UI
 
 			// Need to check for and parse literal HTML here :(
 
+#warning This has an issue when tag is broken up by literal replacement
+			// For instance:
+			// <li><a class="AsyncLink" href="
+			// <%=this.ResolveUrl("~/FAQ/") %>
+			// ">FAQ</a></li>
+
 			int start = 0;
 			int end = value.IndexOf('<');
 			while (end >= 0)
 			{
-				this.builder.AddLiteral(value.Substring(start, end-start));
+				if (end-start > 0)
+				{
+					this.builder.AddLiteral(value.Substring(start, end-start));
+				}
 
 				// check if wasn't part of a tag
 				start = value.IndexOf('>', end);
 				if (start < 0)
 				{
-					start = end+1;
+					start = end;
 					break;
 				}
 				else
