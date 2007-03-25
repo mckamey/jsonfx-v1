@@ -1,3 +1,10 @@
+/*------------------------------------------------------*\
+	Copyright (c) 2007 Stephen M. McKamey
+
+	CssCompactor is open-source under The MIT License
+	http://www.opensource.org/licenses/mit-license.php
+\*------------------------------------------------------*/
+
 using System;
 using System.IO;
 using System.Collections.Generic;
