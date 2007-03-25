@@ -66,7 +66,10 @@ namespace BuildTools.CssCompactor
 
 		#region StyleSheet
 
-		protected void ParseStyleSheet()
+		/// <summary>
+		/// (BNF) stylesheet : [ CDO | CDC | S | statement ]*;
+		/// </summary>
+		private void ParseStyleSheet()
 		{
 			using (this.reader = new LineReader(filePath, CssParser.ReadFilters))
 			{
@@ -77,7 +80,7 @@ namespace BuildTools.CssCompactor
 				{
 					switch (ch)
 					{
-						case '\uFEFF': // UTF marker?
+						case '\uFEFF': // BOM (UTF byte order mark)
 						case '\t': //TAB
 						case '\n': //LF
 						case '\r': //CR
@@ -135,7 +138,11 @@ namespace BuildTools.CssCompactor
 
 		#region Statement
 
-		protected CssStatement ParseStatement()
+		/// <summary>
+		/// (BNF) statement : ruleset | at-rule;
+		/// </summary>
+		/// <returns></returns>
+		private CssStatement ParseStatement()
 		{
 			if (this.reader.Current == '@')
 			{
@@ -152,6 +159,10 @@ namespace BuildTools.CssCompactor
 
 		#region At-Rule
 
+		/// <summary>
+		/// (BNF) at-rule : ATKEYWORD S* any* [ block | ';' S* ];
+		/// </summary>
+		/// <returns></returns>
 		private CssAtRule ParseAtRule()
 		{
 			CssAtRule atRule = new CssAtRule();
@@ -178,9 +189,25 @@ namespace BuildTools.CssCompactor
 					case '{': //Block Begin
 					{
 						atRule.Value = this.Copy(start);
-						CssBlock block = this.ParseBlock();
-						atRule.Block = block;
-						return atRule;
+						//CssBlock block = this.ParseBlock();
+						//atRule.Block = block;
+
+						while (true)
+						{
+							while (this.Read(out ch) && Char.IsWhiteSpace(ch))
+							{
+								// consume whitespace
+							}
+
+							if (ch != '}')
+							{
+								CssStatement statement = this.ParseStatement();
+								atRule.Block.Add(statement);
+								continue;
+							}
+
+							return atRule;
+						}
 					}
 					case ';': //At-Rule End
 					{
@@ -196,29 +223,79 @@ namespace BuildTools.CssCompactor
 
 		#region Block
 
+		/// <summary>
+		/// NBF block : '{' S* [ any | block | ATKEYWORD S* | ';' S* ]* '}' S*;
+		/// </summary>
+		/// <returns></returns>
 		private CssBlock ParseBlock()
 		{
 			CssBlock block = new CssBlock();
 			int start = this.Position;// start with current char
 			char ch;
 
-			while (this.Read(out ch) && ch != '}')
+			while (this.Read(out ch))
 			{
-#warning This should parse block
-				if (ch == '{')
+				switch (ch)
 				{
-					CssBlock innerBlock = this.ParseBlock();
+					case '@':
+					{
+						// copy anything before
+						string value = this.Copy(start);
+						if (value != null && !String.IsNullOrEmpty(value = value.Trim()))
+						{
+							block.Values.Add(new CssString(value));
+						}
+
+						// parse inner block
+						CssAtRule atRule = this.ParseAtRule();
+						block.Values.Add(atRule);
+
+						// reset start with current char
+						start = this.Position;
+						break;
+					}
+					case '{':
+					{
+						// copy anything before
+						string value = this.Copy(start);
+						if (value != null && !String.IsNullOrEmpty(value = value.Trim()))
+						{
+							block.Values.Add(new CssString(value));
+						}
+
+						// parse inner block
+						CssBlock innerBlock = this.ParseBlock();
+						block.Values.Add(innerBlock);
+
+						// reset start with current char
+						start = this.Position;
+						break;
+					}
+					case '}':
+					{
+						// copy anything before
+						string value = this.Copy(start);
+						if (value != null && !String.IsNullOrEmpty(value = value.Trim()))
+						{
+							block.Values.Add(new CssString(value));
+						}
+
+						return block;
+					}
 				}
 			}
 
-			block.Value = this.Copy(start);
-			return block;
+			throw new UnexpectedEndOfFile("Unclosed block", this.reader.FilePath, this.reader.Line, this.reader.Col);
 		}
 
 		#endregion Block
 
 		#region RuleSet
 
+		/// <summary>
+		/// (BNF) ruleset : selector? '{' S* declaration? [ ';' S* declaration? ]* '}' S*;
+		/// </summary>
+		/// <returns></returns>
 		private CssRuleSet ParseRuleSet()
 		{
 			char ch;
@@ -313,6 +390,10 @@ namespace BuildTools.CssCompactor
 
 		#region Selector
 
+		/// <summary>
+		/// (BNF) selector: any+;
+		/// </summary>
+		/// <returns></returns>
 		private CssSelector ParseSelector()
 		{
 			CssSelector selector = new CssSelector();
@@ -377,6 +458,11 @@ namespace BuildTools.CssCompactor
 
 		#region Declaration
 
+		/// <summary>
+		/// (BNF) declaration : property ':' S* value;
+		/// (BNF) property    : IDENT S*;
+		/// </summary>
+		/// <returns></returns>
 		private CssDeclaration ParseDeclaration()
 		{
 			CssDeclaration declaration = new CssDeclaration();
@@ -439,7 +525,19 @@ namespace BuildTools.CssCompactor
 
 			return declaration;
 		}
+		
+		#endregion Declaration
 
+		#region Value
+
+		/// <summary>
+		/// (BNF) value :	[ any | block | ATKEYWORD S* ]+;
+		/// (BNF) any :		[ IDENT | NUMBER | PERCENTAGE | DIMENSION | STRING
+		///					| DELIM | URI | HASH | UNICODE-RANGE | INCLUDES
+		///					| FUNCTION S* any* ')' | DASHMATCH | '(' S* any* ')'
+		///					| '[' S* any* ']' ] S*;
+		/// </summary>
+		/// <returns></returns>
 		private CssValueList ParseValue()
 		{
 			CssValueList value = new CssValueList();
@@ -477,7 +575,7 @@ namespace BuildTools.CssCompactor
 					case '}':
 					case ';':
 					{
-#warning According to the grammar CssValue can be more complicated than a string
+#warning According to the grammar CssValue can be [ any | block | ATKEYWORD S* ]+
 						value.Values.Add(new CssString(this.Copy(start)));
 						if (ch == '}')
 						{
@@ -490,7 +588,7 @@ namespace BuildTools.CssCompactor
 			throw new UnexpectedEndOfFile("Unclosed declaration", this.reader.FilePath, this.reader.Line, this.reader.Col);
 		}
 
-		#endregion Declaration
+		#endregion Value
 
 		#endregion Parse Methods
 
@@ -564,7 +662,7 @@ namespace BuildTools.CssCompactor
 		/// </summary>
 		private void PutBack()
 		{
-			this.reader.PutBack(1);
+			this.reader.PutBack();
 		}
 
 		#endregion Reader Methods
