@@ -12,10 +12,14 @@ namespace BuildTools.IO
 		private int line = 1;
 		private int col = 0;
 		private int position = -1;
+
 		private string filePath;
-		private string styles;
+		private string css;
+
 		private readonly ReadFilter[] filters;
 		private readonly FilterTrie trie;
+
+		private bool normalizeWhiteSpace = false;
 
 		#endregion Fields
 
@@ -29,8 +33,8 @@ namespace BuildTools.IO
 			}
 			this.filePath = filePath;
 
-			this.styles = File.ReadAllText(filePath);
-			if (String.IsNullOrEmpty(this.styles))
+			this.css = File.ReadAllText(filePath);
+			if (String.IsNullOrEmpty(this.css))
 			{
 				throw new FileError("The stylesheet was empty", filePath, 0, 0);
 			}
@@ -69,18 +73,24 @@ namespace BuildTools.IO
 
 		public bool EndOfStream
 		{
-			get { return this.position == this.styles.Length; }
+			get { return this.position >= this.css.Length; }
+		}
+
+		public bool NormalizeWhiteSpace
+		{
+			get { return this.normalizeWhiteSpace; }
+			set { this.normalizeWhiteSpace = value; }
 		}
 
 		public int Current
 		{
 			get
 			{
-				if (this.position >= this.styles.Length)
+				if (this.position >= this.css.Length)
 				{
 					return -1;
 				}
-				return this.styles[this.position];
+				return this.css[this.position];
 			}
 		}
 
@@ -115,7 +125,7 @@ namespace BuildTools.IO
 			{
 				throw new InvalidOperationException("Already at start of source");
 			}
-			switch (this.styles[this.position])
+			switch (this.css[this.position])
 			{
 				case '\r':
 				case '\n':
@@ -156,18 +166,22 @@ namespace BuildTools.IO
 			char[] buffer = new char[end-start+1];
 
 			int count = 0;
-			do
+			while (copyPosition < end)
 			{
 				int ch = this.CopyRead(ref copyPosition);
 				if (ch == -1)
 				{
 					throw new UnexpectedEndOfFile("Read past end of file", this.FilePath, this.Line, this.Col);
 				}
-				buffer[count++] = (char)ch;
+				buffer[count] = (char)ch;
+				count++;
 			}
-			while (copyPosition < end);
 
-			return new String(buffer, 0, count);
+			if (count < 1)
+			{
+				return null;
+			}
+			return new String(buffer, 0, count).Trim();
 		}
 
 		#endregion Utility Methods
@@ -182,46 +196,91 @@ namespace BuildTools.IO
 		protected int Peek(int lookahead)
 		{
 			int pos = this.position+lookahead;
-			if (pos >= this.styles.Length)
+			if (pos >= this.css.Length)
 			{
 				return -1;
 			}
-			return this.styles[pos];
+			return this.css[pos];
 		}
 
 		protected int Read(bool filter)
 		{
-			if (this.position+1 >= this.styles.Length)
+			if (this.position+1 >= this.css.Length)
 			{
+				this.position = this.css.Length;
 				return -1;
 			}
 
+			// increment counters
 			this.position++;
 			this.col++;
-			char ch = this.styles[this.position];
+			char ch = this.css[this.position];
 
-			// increment counters
-			switch (ch)
+			if (Char.IsWhiteSpace(ch))
 			{
-				case '\r': //CR
-				case '\n': //LF
-				{
-					this.line++;
-					this.col = 0;
+				ch = this.NormalizeSpaces(ch, ref this.position, ref this.line, ref this.col);
+			}
 
-					if ((ch == '\r') && (this.Peek(1) == '\n'))
-					{
-						this.position++;
-					}
-					ch = '\n';
-					break;
-				}
-				default:
+			return filter ? this.Filter(ch) : ch;
+		}
+
+		private char NormalizeSpaces(char ch, ref int pos, ref int line, ref int col)
+		{
+			int length = this.css.Length;
+			if (this.normalizeWhiteSpace)
+			{
+				// normalize runs of WhiteSpace to ' '
+				while ((pos+1 < length) && Char.IsWhiteSpace(this.css, pos+1))
 				{
-					break;
+					pos++;
+					col++;
+
+					// increment line count
+					switch (this.css[pos])
+					{
+						case '\r': //CR
+						{
+							if ((pos+1 < length) && this.css[pos+1] == '\n')
+							{
+								pos++;
+							}
+							goto case '\n';
+						}
+						case '\n': //LF
+						case '\f': //FF
+						{
+							line++;
+							col = 0;
+							break;
+						}
+					}
+				}
+				ch = ' ';
+			}
+			else
+			{
+				// normalize NewLines to '\n', increment line count
+				switch (ch)
+				{
+					case '\r': //CR
+					{
+						if ((pos+1 < length) && this.css[pos+1] == '\n')
+						{
+							pos++;
+						}
+						goto case '\n';
+					}
+					case '\n': //LF
+					case '\f': //FF
+					{
+						line++;
+						col = 0;
+						ch = '\n';
+						break;
+					}
 				}
 			}
-			return filter ? this.Filter(ch) : ch;
+			return ch;
 		}
 
 		/// <summary>
@@ -231,35 +290,23 @@ namespace BuildTools.IO
 		/// <returns></returns>
 		protected int CopyRead(ref int copyPosition)
 		{
-			if (copyPosition+1 >= this.styles.Length)
+			if (copyPosition+1 >= this.css.Length)
 			{
 				return -1;
 			}
 
-			copyPosition++;
-			char ch = this.styles[copyPosition];
-
 			// increment counters
-			switch (ch)
+			copyPosition++;
+			char ch = this.css[copyPosition];
+
+			if (Char.IsWhiteSpace(ch))
 			{
-				case '\r': //CR
-				case '\n': //LF
-				{
-					if ((ch == '\r') && (this.styles[copyPosition+1] == '\n'))
-					{
-						copyPosition++;
-					}
-					ch = '\n';
-					break;
-				}
-				default:
-				{
-					break;
-				}
+				int dummyLine = 0, dummyCol = 0;
+				ch = this.NormalizeSpaces(ch, ref copyPosition, ref dummyLine, ref dummyCol);
 			}
+
 			return this.Filter(ch);
 		}
-
 
 		private int Filter(char ch)
 		{
@@ -394,7 +441,7 @@ namespace BuildTools.IO
 		{
 			base.Dispose(disposing);
 
-			this.styles = null;
+			this.css = null;
 		}
 
 		#endregion IDisposable Members
