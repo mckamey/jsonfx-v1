@@ -60,6 +60,11 @@ namespace BuildTools.CssCompactor
 			}
 		}
 
+		private int Position
+		{
+			get { return this.reader.Position; }
+		}
+
 		#endregion Properties
 
 		#region Parse Methods
@@ -75,6 +80,11 @@ namespace BuildTools.CssCompactor
 			{
 				this.reader.NormalizeWhiteSpace = true;
 				this.styleSheet = new CssStyleSheet();
+
+#if DEBUG
+				System.Diagnostics.Stopwatch watch = new System.Diagnostics.Stopwatch();
+				watch.Start();
+#endif
 
 				char ch;
 				while (this.Read(out ch))
@@ -130,6 +140,11 @@ namespace BuildTools.CssCompactor
 						}
 					}
 				}
+
+#if DEBUG
+				watch.Stop();
+				Console.WriteLine("CSS parse duration: {0} ms for {1} chars", watch.ElapsedMilliseconds, this.reader.Length);
+#endif
 			}
 
 			this.reader = null;
@@ -611,11 +626,6 @@ namespace BuildTools.CssCompactor
 
 		#region Reader Methods
 
-		private int Position
-		{
-			get { return this.reader.Position; }
-		}
-
 		/// <summary>
 		/// 
 		/// </summary>
@@ -623,7 +633,7 @@ namespace BuildTools.CssCompactor
 		/// <returns>Success</returns>
 		private bool Read(out char ch)
 		{
-			if (this.reader.EndOfStream)
+			if (this.reader.EndOfFile)
 			{
 				throw new UnexpectedEndOfFile("Reading past end of file", this.reader.FilePath, this.reader.Line, this.reader.Col);
 			}

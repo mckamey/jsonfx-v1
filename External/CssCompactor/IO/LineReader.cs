@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Collections.Generic;
 
 using BuildTools.Collections;
 
@@ -16,7 +17,6 @@ namespace BuildTools.IO
 		private string filePath;
 		private string css;
 
-		private readonly ReadFilter[] filters;
 		private readonly FilterTrie trie;
 
 		private bool normalizeWhiteSpace = false;
@@ -25,7 +25,12 @@ namespace BuildTools.IO
 
 		#region Init
 
-		public LineReader(string filePath, ReadFilter[] filters)
+		/// <summary>
+		/// Ctor.
+		/// </summary>
+		/// <param name="filePath"></param>
+		/// <param name="filters"></param>
+		public LineReader(string filePath, IEnumerable<ReadFilter> filters)
 		{
 			if (!File.Exists(filePath))
 			{
@@ -39,10 +44,13 @@ namespace BuildTools.IO
 				throw new FileError("The stylesheet was empty", filePath, 0, 0);
 			}
 
-			this.filters = filters;
 			this.trie = new FilterTrie(filters);
 		}
 
+		/// <summary>
+		/// Ctor.
+		/// </summary>
+		/// <param name="filePath"></param>
 		public LineReader(string filePath) : this(filePath, new ReadFilter[0])
 		{
 		}
@@ -51,42 +59,71 @@ namespace BuildTools.IO
 
 		#region Properties
 
+		/// <summary>
+		/// Gets the path to the source file
+		/// </summary>
 		public string FilePath
 		{
 			get { return this.filePath; }
 		}
 
+		/// <summary>
+		/// Gets the size of source file in chars
+		/// </summary>
+		public int Length
+		{
+			get { return this.css.Length; }
+		}
+
+		/// <summary>
+		/// Gets the current line number
+		/// </summary>
 		public int Line
 		{
 			get { return this.line; }
 		}
 
+		/// <summary>
+		/// Gets the current col number
+		/// </summary>
 		public int Col
 		{
 			get { return this.col; }
 		}
 
+		/// <summary>
+		/// Gets the current char position
+		/// </summary>
 		public int Position
 		{
 			get { return this.position; }
 		}
 
-		public bool EndOfStream
+		/// <summary>
+		/// Gets if at end the end of file
+		/// </summary>
+		public bool EndOfFile
 		{
 			get { return this.position >= this.css.Length; }
 		}
 
+		/// <summary>
+		/// Gets and sets if whitespace is normalized while reading
+		/// </summary>
 		public bool NormalizeWhiteSpace
 		{
 			get { return this.normalizeWhiteSpace; }
 			set { this.normalizeWhiteSpace = value; }
 		}
 
+		/// <summary>
+		/// Gets the current char
+		/// </summary>
 		public int Current
 		{
 			get
 			{
-				if (this.position >= this.css.Length)
+				if (this.EndOfFile)
 				{
 					return -1;
 				}
@@ -98,13 +135,17 @@ namespace BuildTools.IO
 
 		#region TextReader Members
 
+		/// <summary>
+		/// Unfiltered look ahead
+		/// </summary>
+		/// <returns></returns>
 		public override int Peek()
 		{
 			return this.Peek(1);
 		}
 
 		/// <summary>
-		/// Performs a filtered read of the source.  Counters are incremented.
+		/// Filtered read of the next source char.  Counters are incremented.
 		/// </summary>
 		/// <returns></returns>
 		/// <remarks>
@@ -119,6 +160,9 @@ namespace BuildTools.IO
 
 		#region Utility Methods
 
+		/// <summary>
+		/// Backs the current position up one.
+		/// </summary>
 		public void PutBack()
 		{
 			if (this.position < 0)
@@ -203,6 +247,11 @@ namespace BuildTools.IO
 			return this.css[pos];
 		}
 
+		/// <summary>
+		/// Reads the next char 
+		/// </summary>
+		/// <param name="filter">if filtering</param>
+		/// <returns>the next char, or -1 if at EOF</returns>
 		protected int Read(bool filter)
 		{
 			if (this.position+1 >= this.css.Length)
@@ -224,6 +273,14 @@ namespace BuildTools.IO
 			return filter ? this.Filter(ch) : ch;
 		}
 
+		/// <summary>
+		/// Normalized CR/CRLF/LF/FF to LF, or all whitespace to SPACE if NormalizeWhiteSpace is true
+		/// </summary>
+		/// <param name="ch"></param>
+		/// <param name="pos"></param>
+		/// <param name="line"></param>
+		/// <param name="col"></param>
+		/// <returns></returns>
 		private char NormalizeSpaces(char ch, ref int pos, ref int line, ref int col)
 		{
 			int length = this.css.Length;
@@ -308,6 +365,11 @@ namespace BuildTools.IO
 			return this.Filter(ch);
 		}
 
+		/// <summary>
+		/// Filters based upon an internal Trie
+		/// </summary>
+		/// <param name="ch"></param>
+		/// <returns></returns>
 		private int Filter(char ch)
 		{
 			int lookAhead = 0;
@@ -354,89 +416,44 @@ namespace BuildTools.IO
 			return ch;
 		}
 
-		private int Filter1(char ch)
-		{
-			foreach (ReadFilter filter in this.filters)
-			{
-				// check for start token
-				int length = filter.StartToken.Length;
-				bool match = true;
-				for (int i=0; i<length; i++)
-				{
-					if (this.Peek(i) != filter.StartToken[i])
-					{
-						match = false;
-						break;
-					}
-				}
-				if (match)
-				{
-					// move to end of StartToken
-					this.position += length;
+		///// <summary>
+		///// This filter method is twice as fast as the Trie but hard-coded for C-Style comments.
+		///// If there are two filters (e.g. "/*"..."*/" && "//"..."LF") this would be slower.
+		///// </summary>
+		///// <param name="ch"></param>
+		///// <returns></returns>
+		//private int Filter(char ch)
+		//{
+		//    // skip C-Style comments 
+		//    if (ch == '/' && this.Peek() == (int)'*')
+		//    {
+		//        int c = this.Read(false);// consume opening star
 
-					length = filter.EndToken.Length;
-
-					while (!this.EndOfStream)
-					{
-						if (this.Read(false) == filter.EndToken[0])
-						{
-							match = true;
-							for (int i=1; i<length; i++)
-							{
-								// peek until completed filter.EndToken
-								if (this.Peek(i) != filter.EndToken[i])
-								{
-									match = false;
-									break;
-								}
-							}
-							if (match)
-							{
-								// move to end of EndToken
-								this.position += length-1;
-
-								// return the next filtered char
-								return this.Read(true);
-							}
-						}
-					}
-					if (this.EndOfStream)
-					{
-						throw new UnexpectedEndOfFile("Unclosed "+filter.StartToken+"..."+filter.EndToken, this.FilePath, this.Line, this.Col);
-					}
-				}
-			}
-			return ch;
-		}
-
-		private int Filter0(char ch)
-		{
-			// skip C-Style comments 
-			if (ch == '/' && this.Peek() == (int)'*')
-			{
-				int c = this.Read(false);// consume opening star
-
-				while ((c = this.Read(false)) >= 0)
-				{
-					if (c == (int)'*' && this.Peek() == (int)'/')
-					{
-						this.Read(false);// consume closing slash
-						break;
-					}
-				}
-				if (this.EndOfStream || (c = this.Read(false)) < 0)
-				{
-					throw new UnexpectedEndOfFile("Unclosed comment", this.FilePath, this.Line, this.Col);
-				}
-				ch = (char)c;
-			}
-			return ch;
-		}
+		//        while ((c = this.Read(false)) >= 0)
+		//        {
+		//            if (c == (int)'*' && this.Peek() == (int)'/')
+		//            {
+		//                this.Read(false);// consume closing slash
+		//                break;
+		//            }
+		//        }
+		//        if (this.EndOfStream || (c = this.Read(false)) < 0)
+		//        {
+		//            throw new UnexpectedEndOfFile("Unclosed comment", this.FilePath, this.Line, this.Col);
+		//        }
+		//        ch = (char)c;
+		//    }
+		//    return ch;
+		//}
 
 		#endregion Filter Methods
 
 		#region IDisposable Members
 
+		/// <summary>
+		/// Free source resources.
+		/// </summary>
+		/// <param name="disposing"></param>
 		protected override void Dispose(bool disposing)
 		{
 			base.Dispose(disposing);
