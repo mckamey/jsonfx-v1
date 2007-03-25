@@ -9,7 +9,7 @@ namespace BuildTools.IO
 	{
 		#region Fields
 
-		private int line = 0;
+		private int line = 1;
 		private int col = 0;
 		private int position = -1;
 		private string filePath;
@@ -111,7 +111,7 @@ namespace BuildTools.IO
 
 		public void PutBack()
 		{
-			if (this.position == -1)
+			if (this.position < 0)
 			{
 				throw new InvalidOperationException("Already at start of source");
 			}
@@ -149,33 +149,25 @@ namespace BuildTools.IO
 				return null;
 			}
 
-			int savedPos = this.position;
-			try
+			// set to just before read, next char is start
+			int copyPosition = start-1;
+
+			// allocate the full range but may not use due to filtering
+			char[] buffer = new char[end-start+1];
+
+			int count = 0;
+			do
 			{
-				// set to just before read, next char is start
-				this.position = start-1;
-
-				// allocate the full range but may not use due to filtering
-				char[] buffer = new char[end-start+1];
-
-				int count = 0;
-				do
+				int ch = this.CopyRead(ref copyPosition);
+				if (ch == -1)
 				{
-					int ch = this.Read(true);
-					if (ch == -1)
-					{
-						throw new UnexpectedEndOfFile("Read past end of file", this.FilePath, this.Line, this.Col);
-					}
-					buffer[count++] = (char)ch;
+					throw new UnexpectedEndOfFile("Read past end of file", this.FilePath, this.Line, this.Col);
 				}
-				while (this.position < end);
+				buffer[count++] = (char)ch;
+			}
+			while (copyPosition < end);
 
-				return new String(buffer, 0, count);
-			}
-			finally
-			{
-				this.position = savedPos;
-			}
+			return new String(buffer, 0, count);
 		}
 
 		#endregion Utility Methods
@@ -214,10 +206,10 @@ namespace BuildTools.IO
 				case '\r': //CR
 				case '\n': //LF
 				{
-					this.col = 0;
 					this.line++;
+					this.col = 0;
 
-					if ((ch == '\r') && (this.Peek() == '\n'))
+					if ((ch == '\r') && (this.Peek(1) == '\n'))
 					{
 						this.position++;
 					}
@@ -231,6 +223,43 @@ namespace BuildTools.IO
 			}
 			return filter ? this.Filter(ch) : ch;
 		}
+
+		/// <summary>
+		/// Read for Copying (doesn't reset line.col counters)
+		/// </summary>
+		/// <param name="filter"></param>
+		/// <returns></returns>
+		protected int CopyRead(ref int copyPosition)
+		{
+			if (copyPosition+1 >= this.styles.Length)
+			{
+				return -1;
+			}
+
+			copyPosition++;
+			char ch = this.styles[copyPosition];
+
+			// increment counters
+			switch (ch)
+			{
+				case '\r': //CR
+				case '\n': //LF
+				{
+					if ((ch == '\r') && (this.styles[copyPosition+1] == '\n'))
+					{
+						copyPosition++;
+					}
+					ch = '\n';
+					break;
+				}
+				default:
+				{
+					break;
+				}
+			}
+			return this.Filter(ch);
+		}
+
 
 		private int Filter(char ch)
 		{
