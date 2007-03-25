@@ -97,6 +97,15 @@ namespace BuildTools.IO
 
 		#region Utility Methods
 
+		public void PutBack(int count)
+		{
+			if (count > this.position)
+			{
+				throw new ArgumentOutOfRangeException("count");
+			}
+			this.position -= count;
+		}
+
 		/// <summary>
 		/// Copies a range from the source
 		/// </summary>
@@ -155,7 +164,7 @@ namespace BuildTools.IO
 		/// Peeks with n chars of lookahead.
 		/// </summary>
 		/// <param name="lookahead"></param>
-		/// <returns></returns>
+		/// <returns>unfiltered read</returns>
 		protected int Peek(int lookahead)
 		{
 			int pos = this.position+lookahead;

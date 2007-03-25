@@ -222,10 +222,11 @@ namespace BuildTools.CssCompactor
 			ruleSet.Selector.Value = this.Copy(start);
 			if (ruleSet.Selector.Value != null)
 			{
-#warning shouldn't have to trim
+#warning shouldn't have to trim, should parse individual selectors splitting on comma
 				ruleSet.Selector.Value = ruleSet.Selector.Value.Trim();
 			}
 
+ParseDeclarations:
 			while (true)
 			{
 				try
@@ -241,9 +242,27 @@ namespace BuildTools.CssCompactor
 				{
 					Console.Error.WriteLine(ex);
 
-					while (this.Read(out ch) && ch != ';' && ch != '}')
+					while (this.Read(out ch))
 					{
 						// restabalize on next declaration
+						switch (ch)
+						{
+							case '{':
+							{
+								throw new SyntaxError("Error parsing RuleSet", this.reader.FilePath, this.reader.Line, this.reader.Col);
+							}
+							//case ':':// keep going
+							case ';':
+							{
+								// continue parsing rest of delcarations
+								goto ParseDeclarations;
+							}
+							case '}':
+							{
+								// no more declarations
+								return ruleSet;
+							}
+						}
 					}
 				}
 			}
@@ -265,14 +284,20 @@ namespace BuildTools.CssCompactor
 				// skip whitespace, and empty declarations
 			}
 
-			if (ch == '}')
+			// consume property name
+			switch (ch)
 			{
-				// no more declarations
-				return null;
-			}
-			if (ch == ':')
-			{
-				throw new SyntaxError("Declaration missing property", this.reader.FilePath, this.reader.Line, this.reader.Col);
+				case '{':
+				case ':':
+				//case ';':
+				{
+					throw new SyntaxError("Declaration missing property name", this.reader.FilePath, this.reader.Line, this.reader.Col);
+				}
+				case '}':
+				{
+					// no more declarations
+					return null;
+				}
 			}
 
 			// read property, starting with current char
@@ -280,10 +305,15 @@ namespace BuildTools.CssCompactor
 			while (this.Read(out ch) && !Char.IsWhiteSpace(ch) && ch != ':')
 			{
 				// consume property name
-
-				if (ch == ';' || ch == '}')
+				switch (ch)
 				{
-					throw new SyntaxError("Error in declaration property", this.reader.FilePath, this.reader.Line, this.reader.Col);
+					case '{':
+					//case ':':
+					case ';':
+					case '}':
+					{
+						throw new SyntaxError("Invalid Property name: "+this.Copy(start), this.reader.FilePath, this.reader.Line, this.reader.Col);
+					}
 				}
 			}
 			declaration.Property = this.Copy(start);
@@ -298,7 +328,7 @@ namespace BuildTools.CssCompactor
 
 			if (ch != ':')
 			{
-				throw new SyntaxError("Declaration missing value", this.reader.FilePath, this.reader.Line, this.reader.Col);
+				throw new SyntaxError("Expected ':'", this.reader.FilePath, this.reader.Line, this.reader.Col);
 			}
 
 			CssValue value = this.ParseValue();
@@ -317,21 +347,44 @@ namespace BuildTools.CssCompactor
 				// skip whitespace, and empty declarations
 			}
 
-			if (ch == '}' || ch == ';')
+			switch (ch)
 			{
-				throw new SyntaxError("Declaration missing value", this.reader.FilePath, this.reader.Line, this.reader.Col);
+				case '{':
+				case ':':
+				case ';':
+				case '}':
+				{
+					throw new SyntaxError("Invalid char in property value: '"+ch+"'", this.reader.FilePath, this.reader.Line, this.reader.Col);
+				}
 			}
 
 			// read value, starting with current char
 			int start = this.Position;
-			while (this.Read(out ch) && ch != ';' && ch != '}')
+			while (this.Read(out ch))
 			{
 				// consume declaration value
-			}
 
+				switch (ch)
+				{
+					case '{':
+					//case ':':// leave in for "filter: progid:DXImageTransform.Microsoft..."
+					{
+						throw new SyntaxError("Invalid property value: "+this.Copy(start), this.reader.FilePath, this.reader.Line, this.reader.Col);
+					}
+					case '}':
+					case ';':
+					{
 #warning According to the grammar CssValue can be more complicated than a string
-			value.Values.Add(new CssString(this.Copy(start)));
-			return value;
+						value.Values.Add(new CssString(this.Copy(start)));
+						if (ch == '}')
+						{
+							this.reader.PutBack(1);
+						}
+						return value;
+					}
+				}
+			}
+			throw new UnexpectedEndOfFile("Unclosed declaration", this.reader.FilePath, this.reader.Line, this.reader.Col);
 		}
 
 		#endregion Declaration

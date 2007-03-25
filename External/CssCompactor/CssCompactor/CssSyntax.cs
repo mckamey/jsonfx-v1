@@ -120,7 +120,6 @@ namespace BuildTools.CssCompactor
 				if (prettyPrint)
 				{
 					writer.WriteLine();
-					writer.WriteLine();
 				}
 			}
 		}
@@ -282,10 +281,6 @@ namespace BuildTools.CssCompactor
 				dec.Write(writer, options);
 			}
 
-			if (prettyPrint)
-			{
-				writer.WriteLine();
-			}
 			writer.Write("}");
 			if (prettyPrint)
 			{
