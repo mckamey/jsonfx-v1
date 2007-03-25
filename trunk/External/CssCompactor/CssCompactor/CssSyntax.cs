@@ -67,10 +67,7 @@ namespace BuildTools.CssCompactor
 		public virtual string Value
 		{
 			get { return this.value; }
-			set
-			{
-				this.value = String.IsNullOrEmpty(value) ? null : value.Trim();
-			}
+			set { this.value = value; }
 		}
 
 		#endregion Properties
@@ -147,19 +144,13 @@ namespace BuildTools.CssCompactor
 		public string Ident
 		{
 			get { return this.ident; }
-			set
-			{
-				this.ident = String.IsNullOrEmpty(value) ? null : value.Trim();
-			}
+			set { this.ident = value; }
 		}
 
 		public string Value
 		{
 			get { return this.value; }
-			set
-			{
-				this.value = String.IsNullOrEmpty(value) ? null : value.Trim();
-			}
+			set { this.value = value; }
 		}
 
 		// replacing block with Statement list
@@ -338,10 +329,7 @@ namespace BuildTools.CssCompactor
 		public string Property
 		{
 			get { return this.property; }
-			set
-			{
-				this.property = String.IsNullOrEmpty(value) ? null : value.Trim();
-			}
+			set { this.property = value; }
 		}
 
 		public CssValueList Value

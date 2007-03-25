@@ -73,6 +73,7 @@ namespace BuildTools.CssCompactor
 		{
 			using (this.reader = new LineReader(filePath, CssParser.ReadFilters))
 			{
+				this.reader.NormalizeWhiteSpace = true;
 				this.styleSheet = new CssStyleSheet();
 
 				char ch;
@@ -499,9 +500,13 @@ namespace BuildTools.CssCompactor
 					case '{':
 					//case ':':
 					case ';':
-					case '}':
 					{
 						throw new SyntaxError("Invalid Property name: "+this.Copy(start), this.reader.FilePath, this.reader.Line, this.reader.Col);
+					}
+					case '}':
+					{
+						this.PutBack();
+						goto case ';';
 					}
 				}
 			}
