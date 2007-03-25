@@ -77,11 +77,11 @@ namespace BuildTools.CssCompactor
 				{
 					switch (ch)
 					{
-						case '\uFEFF':
-						case '\u0009': //TAB
-						case '\u000A': //LF
-						case '\u000D': //CR
-						case '\u0020': //Space
+						case '\uFEFF': // UTF marker?
+						case '\t': //TAB
+						case '\n': //LF
+						case '\r': //CR
+						case ' ': //Space
 						{
 							// skip whitespace
 							continue;
@@ -108,8 +108,20 @@ namespace BuildTools.CssCompactor
 						}
 						default:
 						{
-							CssStatement statement = this.ParseStatement(ch);
-							this.styleSheet.Statements.Add(statement);
+							try
+							{
+								CssStatement statement = this.ParseStatement(ch);
+								this.styleSheet.Statements.Add(statement);
+							}
+							catch (ParseError ex)
+							{
+								Console.Error.WriteLine(ex);
+
+								while (this.Read(out ch) && ch != '}')
+								{
+									// restabalize on next statement
+								}
+							}
 							continue;
 						}
 					}
@@ -152,6 +164,11 @@ namespace BuildTools.CssCompactor
 
 			atRule.Ident = this.Copy(start);
 
+			while (this.Read(out ch) && Char.IsWhiteSpace(ch))
+			{
+				// consuming whitespace
+			}
+
 			start = this.Position;// start with current char
 			while (this.Read(out ch))
 			{
@@ -159,24 +176,19 @@ namespace BuildTools.CssCompactor
 				{
 					case '{': //Block Begin
 					{
+						atRule.Value = this.Copy(start);
 						CssBlock block = this.ParseBlock();
 						atRule.Block = block;
-						break;
+						return atRule;
 					}
 					case ';': //At-Rule End
 					{
 						atRule.Value = this.Copy(start);
-						break;
-					}
-					default:
-					{
-						// consume until whitespace
-						continue;
+						return atRule;
 					}
 				}
 			}
-
-			return atRule;
+			throw new UnexpectedEndOfFile("Unclosed At-Rule", this.reader.FilePath, this.reader.Line, this.reader.Col);
 		}
 
 		#endregion At-Rule
