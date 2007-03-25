@@ -72,6 +72,18 @@ namespace BuildTools.IO
 			get { return this.position == this.styles.Length; }
 		}
 
+		public int Current
+		{
+			get
+			{
+				if (this.position >= this.styles.Length)
+				{
+					return -1;
+				}
+				return this.styles[this.position];
+			}
+		}
+
 		#endregion Properties
 
 		#region TextReader Members

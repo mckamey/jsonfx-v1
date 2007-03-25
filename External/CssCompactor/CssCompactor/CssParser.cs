@@ -110,7 +110,7 @@ namespace BuildTools.CssCompactor
 						{
 							try
 							{
-								CssStatement statement = this.ParseStatement(ch);
+								CssStatement statement = this.ParseStatement();
 								this.styleSheet.Statements.Add(statement);
 							}
 							catch (ParseError ex)
@@ -135,15 +135,16 @@ namespace BuildTools.CssCompactor
 
 		#region Statement
 
-		protected CssStatement ParseStatement(char ch)
+		protected CssStatement ParseStatement()
 		{
-			if (ch == '@')
+			if (this.reader.Current == '@')
 			{
 				return this.ParseAtRule();
 			}
 			else
 			{
-				return this.ParseRuleSet(ch);
+				this.PutBack();
+				return this.ParseRuleSet();
 			}
 		}
 
@@ -218,27 +219,53 @@ namespace BuildTools.CssCompactor
 
 		#region RuleSet
 
-		private CssRuleSet ParseRuleSet(char ch)
+		private CssRuleSet ParseRuleSet()
 		{
+			char ch;
 			CssRuleSet ruleSet = new CssRuleSet();
-			int start = this.Position;// start with current char
 
-			if (ch != '{')
+		ParseSelectors:
+			while (true)
 			{
-				while (this.Read(out ch) && ch != '{')
+				try
 				{
-					// continue consuming selector
+					CssSelector selector = this.ParseSelector();
+					if (selector == null)
+					{
+						break;
+					}
+					ruleSet.Selectors.Add(selector);
+				}
+				catch (ParseError ex)
+				{
+					Console.Error.WriteLine(ex);
+
+					while (this.Read(out ch))
+					{
+						// restabalize on next rulset
+						switch (ch)
+						{
+							case ',':
+							{
+								// continue parsing rest of Selectors
+								goto ParseSelectors;
+							}
+							case '{':
+							{
+								goto ParseDeclarations;
+							}
+							//case ':':// keep going
+							case ';':
+							case '}':
+							{
+								throw new SyntaxError("Error parsing Selectors", this.reader.FilePath, this.reader.Line, this.reader.Col);
+							}
+						}
+					}
 				}
 			}
 
-			ruleSet.Selector.Value = this.Copy(start);
-			if (ruleSet.Selector.Value != null)
-			{
-#warning shouldn't have to trim, should parse individual selectors splitting on comma
-				ruleSet.Selector.Value = ruleSet.Selector.Value.Trim();
-			}
-
-ParseDeclarations:
+		ParseDeclarations:
 			while (true)
 			{
 				try
@@ -283,6 +310,70 @@ ParseDeclarations:
 		}
 
 		#endregion RuleSet
+
+		#region Selector
+
+		private CssSelector ParseSelector()
+		{
+			CssSelector selector = new CssSelector();
+			char ch;
+
+			while (this.Read(out ch) && (Char.IsWhiteSpace(ch) || ch == ','))
+			{
+				// skip whitespace, and empty selectors
+			}
+
+			// consume property name
+			switch (ch)
+			{
+				case '{':
+				{
+					// no more declarations
+					return null;
+				}
+				//case ':':// pseudoclass
+				case ';':
+				case '}':
+				{
+					throw new SyntaxError("Invalid chars in Selector", this.reader.FilePath, this.reader.Line, this.reader.Col);
+				}
+			}
+
+			int start = this.Position;// start with current char
+
+			while (this.Read(out ch))
+			{
+				// continue consuming selector
+				switch (ch)
+				{
+					case ',':
+					case '{':
+					{
+						selector.Value = this.Copy(start);
+
+						if (selector.Value != null)
+						{
+#warning shouldn't have to trim
+							selector.Value = selector.Value.Trim();
+						}
+						if (ch == '{')
+						{
+							this.PutBack();
+						}
+						return selector;
+					}
+					//case ':':// pseudoclass
+					case ';':
+					case '}':
+					{
+						throw new SyntaxError("Error parsing Selector", this.reader.FilePath, this.reader.Line, this.reader.Col);
+					}
+				}
+			}
+			throw new UnexpectedEndOfFile("Unclosed Selector", this.reader.FilePath, this.reader.Line, this.reader.Col);
+		}
+
+		#endregion Selector
 
 		#region Declaration
 
@@ -343,15 +434,15 @@ ParseDeclarations:
 				throw new SyntaxError("Expected ':'", this.reader.FilePath, this.reader.Line, this.reader.Col);
 			}
 
-			CssValue value = this.ParseValue();
+			CssValueList value = this.ParseValue();
 			declaration.Value = value;
 
 			return declaration;
 		}
 
-		private CssValue ParseValue()
+		private CssValueList ParseValue()
 		{
-			CssValue value = new CssValue();
+			CssValueList value = new CssValueList();
 			char ch;
 
 			while (this.Read(out ch) && Char.IsWhiteSpace(ch))
@@ -390,7 +481,7 @@ ParseDeclarations:
 						value.Values.Add(new CssString(this.Copy(start)));
 						if (ch == '}')
 						{
-							this.reader.PutBack(1);
+							this.PutBack();
 						}
 						return value;
 					}
@@ -466,6 +557,14 @@ ParseDeclarations:
 		{
 			// read block
 			return this.reader.Copy(start, this.reader.Position-1);
+		}
+
+		/// <summary>
+		/// Put one character back
+		/// </summary>
+		private void PutBack()
+		{
+			this.reader.PutBack(1);
 		}
 
 		#endregion Reader Methods
