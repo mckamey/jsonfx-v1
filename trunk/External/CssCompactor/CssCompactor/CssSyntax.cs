@@ -137,7 +137,10 @@ namespace BuildTools.CssCompactor
 
 		private string ident = null;
 		private string value = null;
-		private CssBlock block = null;
+
+		// replacing block with Statement list
+		//private CssBlock block = null;
+		private List<CssStatement> block = new List<CssStatement>();
 
 		#endregion Fields
 
@@ -155,7 +158,9 @@ namespace BuildTools.CssCompactor
 			set { this.value = value; }
 		}
 
-		public CssBlock Block
+		// replacing block with Statement list
+		//public CssBlock Block
+		public List<CssStatement> Block
 		{
 			get { return this.block; }
 			set { this.block = value; }
@@ -172,16 +177,33 @@ namespace BuildTools.CssCompactor
 			writer.Write('@');
 			writer.Write(this.ident);
 
-			writer.Write(' ');
-			writer.Write(this.value);
+			if (!String.IsNullOrEmpty(this.value))
+			{
+				writer.Write(' ');
+				writer.Write(this.value);
+			}
 
-			if (this.block != null)
+			if (this.block.Count > 0)
 			{
 				if (prettyPrint)
 				{
 					writer.WriteLine();
 				}
-				this.block.Write(writer, options);
+				writer.Write('{');
+				if (prettyPrint)
+				{
+					writer.WriteLine();
+				}
+				//this.block.Write(writer, options);
+				foreach (CssStatement statement in this.block)
+				{
+					statement.Write(writer, options);
+				}
+				if (prettyPrint)
+				{
+					writer.WriteLine();
+				}
+				writer.Write('}');
 				if (prettyPrint)
 				{
 					writer.WriteLine();
@@ -196,24 +218,8 @@ namespace BuildTools.CssCompactor
 		#endregion Methods
 	}
 
-	public class CssBlock : CssObject, ICssValue
+	public class CssBlock : CssValueList, ICssValue
 	{
-		#region Fields
-
-		private string value = null;
-
-		#endregion Fields
-
-		#region Properties
-
-		public string Value
-		{
-			get { return this.value; }
-			set { this.value = value; }
-		}
-
-		#endregion Properties
-
 		#region Methods
 
 		public override void Write(TextWriter writer, CssOptions options)
@@ -225,7 +231,7 @@ namespace BuildTools.CssCompactor
 			{
 				writer.WriteLine();
 			}
-			writer.Write(this.value);
+			base.Write(writer, options);
 			if (prettyPrint)
 			{
 				writer.WriteLine();

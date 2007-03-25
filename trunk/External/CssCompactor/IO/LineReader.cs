@@ -109,13 +109,23 @@ namespace BuildTools.IO
 
 		#region Utility Methods
 
-		public void PutBack(int count)
+		public void PutBack()
 		{
-			if (count > this.position)
+			if (this.position == -1)
 			{
-				throw new ArgumentOutOfRangeException("count");
+				throw new InvalidOperationException("Already at start of source");
 			}
-			this.position -= count;
+			switch (this.styles[this.position])
+			{
+				case '\r':
+				case '\n':
+				{
+					this.line--;
+					break;
+				}
+			}
+			this.col--;
+			this.position--;
 		}
 
 		/// <summary>
