@@ -243,7 +243,9 @@ namespace BuildTools.CssCompactor
 						string value = this.Copy(start);
 						if (value != null && !String.IsNullOrEmpty(value = value.Trim()))
 						{
-							block.Values.Add(new CssString(value));
+							CssString any = new CssString();
+							any.Value = value;
+							block.Values.Add(any);
 						}
 
 						// parse inner block
@@ -260,7 +262,9 @@ namespace BuildTools.CssCompactor
 						string value = this.Copy(start);
 						if (value != null && !String.IsNullOrEmpty(value = value.Trim()))
 						{
-							block.Values.Add(new CssString(value));
+							CssString any = new CssString();
+							any.Value = value;
+							block.Values.Add(any);
 						}
 
 						// parse inner block
@@ -277,7 +281,9 @@ namespace BuildTools.CssCompactor
 						string value = this.Copy(start);
 						if (value != null && !String.IsNullOrEmpty(value = value.Trim()))
 						{
-							block.Values.Add(new CssString(value));
+							CssString any = new CssString();
+							any.Value = value;
+							block.Values.Add(any);
 						}
 
 						return block;
@@ -431,12 +437,6 @@ namespace BuildTools.CssCompactor
 					case '{':
 					{
 						selector.Value = this.Copy(start);
-
-						if (selector.Value != null)
-						{
-#warning shouldn't have to trim
-							selector.Value = selector.Value.Trim();
-						}
 						if (ch == '{')
 						{
 							this.PutBack();
@@ -575,8 +575,11 @@ namespace BuildTools.CssCompactor
 					case '}':
 					case ';':
 					{
-#warning According to the grammar CssValue can be [ any | block | ATKEYWORD S* ]+
-						value.Values.Add(new CssString(this.Copy(start)));
+#warning Should this parse value further?
+
+						CssString any = new CssString();
+						any.Value = this.Copy(start);
+						value.Values.Add(any);
 						if (ch == '}')
 						{
 							this.PutBack();
