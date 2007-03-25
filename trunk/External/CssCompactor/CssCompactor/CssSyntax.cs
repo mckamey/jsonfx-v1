@@ -240,16 +240,16 @@ namespace BuildTools.CssCompactor
 	{
 		#region Fields
 
-		private CssSelector selector = new CssSelector();
+		private List<CssSelector> selectors = new List<CssSelector>();
 		private List<CssDeclaration> declarations = new List<CssDeclaration>();
 
 		#endregion Fields
 
 		#region Properties
 
-		public CssSelector Selector
+		public List<CssSelector> Selectors
 		{
-			get { return this.selector; }
+			get { return this.selectors; }
 		}
 
 		public List<CssDeclaration> Declarations
@@ -265,7 +265,26 @@ namespace BuildTools.CssCompactor
 		{
 			bool prettyPrint = IsPrettyPrint(options);
 
-			this.Selector.Write(writer, options);
+			bool comma = false;
+
+			foreach (CssString selector in this.Selectors)
+			{
+				if (comma)
+				{
+					writer.Write(",");
+					if (prettyPrint)
+					{
+						writer.WriteLine();
+					}
+				}
+				else
+				{
+					comma = true;
+				}
+
+				selector.Write(writer, options);
+			}
+			
 			if (prettyPrint)
 			{
 				writer.WriteLine();
@@ -300,7 +319,7 @@ namespace BuildTools.CssCompactor
 		#region Fields
 
 		private string property = null;
-		private CssValue value = null;
+		private CssValueList value = null;
 
 		#endregion Fields
 
@@ -312,7 +331,7 @@ namespace BuildTools.CssCompactor
 			set { this.property = value; }
 		}
 
-		public CssValue Value
+		public CssValueList Value
 		{
 			get { return this.value; }
 			set { this.value = value; }
@@ -346,7 +365,7 @@ namespace BuildTools.CssCompactor
 		#endregion Methods
 	}
 
-	public class CssValue : CssObject
+	public class CssValueList : CssObject
 	{
 		#region Fields
 
