@@ -6,49 +6,50 @@
 \*-----------------------------------------------------------------------*/
 
 using System;
+using System.Runtime.Serialization;
 
 namespace BuildTools
 {
-	public abstract class BaseParseException : Exception
+	public enum ParseExceptionType
 	{
-		#region Constants
+		Warning,
+		Error
+	}
 
-		protected const string ErrorType = "error";
-		protected const string WarningType = "error";
-
-		#endregion Constants
-
+	[Serializable]
+	public abstract class ParseException : ApplicationException
+	{
 		#region Fields
 
 		private string file;
 		private int line;
-		private int col;
+		private int column;
 
 		#endregion Fields
 
 		#region Init
 
-		public BaseParseException(string message, string file, int line, int col)
+		public ParseException(string message, string file, int line, int column)
 			: base(message)
 		{
 			this.file = file;
 			this.line = line;
-			this.col = col;
+			this.column = column;
 		}
 
-		public BaseParseException(string message, string file, int line, int col, Exception innerException)
+		public ParseException(string message, string file, int line, int column, Exception innerException)
 			: base(message, innerException)
 		{
 			this.file = file;
 			this.line = line;
-			this.col = col;
+			this.column = column;
 		}
 
 		#endregion Init
 
 		#region Properties
 
-		public abstract string Type
+		public abstract ParseExceptionType Type
 		{
 			get;
 		}
@@ -68,16 +69,21 @@ namespace BuildTools
 			get { return this.line; }
 		}
 
-		public int Col
+		public int Column
 		{
-			get { return this.col; }
+			get { return this.column; }
 		}
 
 		#endregion Properties
 
-		#region Object Overrides
+		#region Methods
 
-		public override string ToString()
+		public virtual string GetCompilerMessage()
+		{
+			return this.GetCompilerMessage(this.Type == ParseExceptionType.Warning);
+		}
+
+		public virtual string GetCompilerMessage(bool isWarning)
 		{
 			string message = String.IsNullOrEmpty(this.ErrorCode) ?
 				this.Message :
@@ -85,28 +91,29 @@ namespace BuildTools
 
 			// format as a VS2005 error/warning
 			return String.Format(
-				"{0}({1},{2}): {3} {4}",
+				"{0}({1},{2}): {4} {3}",
 				this.File,
 				this.Line,
-				this.Col,
-				this.Type,
-				message);
+				this.Column,
+				message,
+				isWarning ? "warning" : "error");
 		}
 
-		#endregion Object Overrides
+		#endregion Methods
 	}
 
-	public class ParseWarning : BaseParseException
+	[Serializable]
+	public class ParseWarning : ParseException
 	{
 		#region Init
 
-		public ParseWarning(string message, string file, int line, int col)
-			: base(message, file, line, col)
+		public ParseWarning(string message, string file, int line, int column)
+			: base(message, file, line, column)
 		{
 		}
 
-		public ParseWarning(string message, string file, int line, int col, Exception innerException)
-			: base(message, file, line, col, innerException)
+		public ParseWarning(string message, string file, int line, int column, Exception innerException)
+			: base(message, file, line, column, innerException)
 		{
 		}
 
@@ -114,25 +121,26 @@ namespace BuildTools
 
 		#region Properties
 
-		public override string Type
+		public override ParseExceptionType Type
 		{
-			get { return BaseParseException.WarningType; }
+			get { return ParseExceptionType.Warning; }
 		}
 
 		#endregion Properties
 	}
 
-	public class ParseError : BaseParseException
+	[Serializable]
+	public class ParseError : ParseException
 	{
 		#region Init
 
-		public ParseError(string message, string file, int line, int col)
-			: base(message, file, line, col)
+		public ParseError(string message, string file, int line, int column)
+			: base(message, file, line, column)
 		{
 		}
 
-		public ParseError(string message, string file, int line, int col, Exception innerException)
-			: base(message, file, line, col, innerException)
+		public ParseError(string message, string file, int line, int column, Exception innerException)
+			: base(message, file, line, column, innerException)
 		{
 		}
 
@@ -140,25 +148,26 @@ namespace BuildTools
 
 		#region Properties
 
-		public override string Type
+		public override ParseExceptionType Type
 		{
-			get { return BaseParseException.ErrorType; }
+			get { return ParseExceptionType.Error; }
 		}
 
 		#endregion Properties
 	}
 
+	[Serializable]
 	public class UnexpectedEndOfFile : ParseError
 	{
 		#region Init
 
-		public UnexpectedEndOfFile(string message, string file, int line, int col)
-			: base(message, file, line, col)
+		public UnexpectedEndOfFile(string message, string file, int line, int column)
+			: base(message, file, line, column)
 		{
 		}
 
-		public UnexpectedEndOfFile(string message, string file, int line, int col, Exception innerException)
-			: base(message, file, line, col, innerException)
+		public UnexpectedEndOfFile(string message, string file, int line, int column, Exception innerException)
+			: base(message, file, line, column, innerException)
 		{
 		}
 
@@ -174,17 +183,18 @@ namespace BuildTools
 		#endregion Properties
 	}
 
+	[Serializable]
 	public class FileError : ParseWarning
 	{
 		#region Init
 
-		public FileError(string message, string file, int line, int col)
-			: base(message, file, line, col)
+		public FileError(string message, string file, int line, int column)
+			: base(message, file, line, column)
 		{
 		}
 
-		public FileError(string message, string file, int line, int col, Exception innerException)
-			: base(message, file, line, col, innerException)
+		public FileError(string message, string file, int line, int column, Exception innerException)
+			: base(message, file, line, column, innerException)
 		{
 		}
 
@@ -200,17 +210,18 @@ namespace BuildTools
 		#endregion Properties
 	}
 
+	[Serializable]
 	public class SyntaxError : ParseError
 	{
 		#region Init
 
-		public SyntaxError(string message, string file, int line, int col)
-			: base(message, file, line, col)
+		public SyntaxError(string message, string file, int line, int column)
+			: base(message, file, line, column)
 		{
 		}
 
-		public SyntaxError(string message, string file, int line, int col, Exception innerException)
-			: base(message, file, line, col, innerException)
+		public SyntaxError(string message, string file, int line, int column, Exception innerException)
+			: base(message, file, line, column, innerException)
 		{
 		}
 
@@ -220,7 +231,7 @@ namespace BuildTools
 
 		public override string ErrorCode
 		{
-			get { return "Syntax"; }
+			get { return "Syntax error"; }
 		}
 
 		#endregion Properties

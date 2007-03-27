@@ -26,6 +26,7 @@ namespace BuildTools.CssCompactor
 
 		#region Fields
 
+		List<ParseException> errors = new List<ParseException>();
 		LineReader reader;
 		CssStyleSheet styleSheet = null;
 		string filePath = null;
@@ -57,6 +58,11 @@ namespace BuildTools.CssCompactor
 		#endregion Init
 
 		#region Properties
+
+		public List<ParseException> Errors
+		{
+			get { return this.errors; }
+		}
 
 		public CssStyleSheet StyleSheet
 		{
@@ -135,7 +141,7 @@ namespace BuildTools.CssCompactor
 							if (!this.Read(out ch) || ch != '-' ||
 								!this.Read(out ch) || ch != '>')
 							{
-								throw new SyntaxError("Expected \"<!--\"", this.reader.FilePath, this.reader.Line, this.reader.Col);
+								throw new SyntaxError("Expected \"-->\"", this.reader.FilePath, this.reader.Line, this.reader.Col);
 							}
 							continue;
 						}
@@ -146,9 +152,9 @@ namespace BuildTools.CssCompactor
 								CssStatement statement = this.ParseStatement();
 								styleSheet.Statements.Add(statement);
 							}
-							catch (ParseError ex)
+							catch (ParseException ex)
 							{
-								Console.Error.WriteLine(ex);
+								this.errors.Add(ex);
 
 								while (this.Read(out ch) && ch != '}')
 								{
@@ -357,9 +363,9 @@ namespace BuildTools.CssCompactor
 					}
 					ruleSet.Selectors.Add(selector);
 				}
-				catch (ParseError ex)
+				catch (ParseException ex)
 				{
-					Console.Error.WriteLine(ex);
+					this.errors.Add(ex);
 
 					while (this.Read(out ch))
 					{
@@ -398,9 +404,9 @@ namespace BuildTools.CssCompactor
 					}
 					ruleSet.Declarations.Add(declaration);
 				}
-				catch (ParseError ex)
+				catch (ParseException ex)
 				{
-					Console.Error.WriteLine(ex);
+					this.errors.Add(ex);
 
 					while (this.Read(out ch))
 					{
@@ -559,7 +565,7 @@ namespace BuildTools.CssCompactor
 
 			if (ch != ':')
 			{
-				throw new SyntaxError("Expected ':'", this.reader.FilePath, this.reader.Line, this.reader.Col);
+				throw new SyntaxError("Expected <property> : <value>", this.reader.FilePath, this.reader.Line, this.reader.Col);
 			}
 
 			CssValueList value = this.ParseValue();
