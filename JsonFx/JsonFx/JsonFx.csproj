@@ -32,6 +32,10 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="CssCompactor, Version=1.0.703.2700, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\SolnItems\CssCompactor\CssCompactor.exe</HintPath>
+    </Reference>
     <Reference Include="ScriptTools, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\SolnItems\ScriptCompactor\ScriptTools.dll</HintPath>
@@ -44,6 +48,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Compilation\CssCompactorBuildProvider.cs" />
     <Compile Include="Properties\AssemblyVersion.cs" />
     <Compile Include="Compilation\JsonFxScriptBuildProvider.cs" />
     <Compile Include="Compilation\ScriptCompactorBuildProvider.cs" />

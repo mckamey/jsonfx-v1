@@ -23,6 +23,8 @@ xcopy "%2Scripts\Compacted\JsonML.js" "%2..\JsonML\JsonML_min.js" /Y /R
 %1FileConcat\FileConcat.exe "%2Scripts\JsonFx.js" "%2Scripts\Core.js" "%2Scripts\JSON.js" "%2Scripts\JsonML.js" "%2Scripts\UA.js" "%2Scripts\IO.js" "%2Scripts\UI.js"
 %1ScriptCompactor\ScriptCompactor.exe "%2Scripts\JsonFx.js" "%2Scripts\Compacted\JsonFx.js" %copyright% %timestamp% -F
 
+rem %1CssCompactor\CssCompactor.exe /IN:"D:\Dev\SMM-VSS\PseudoCode\Dev\JsonFx\JsonFx.Website\Styles\Style.css" /OUT:"D:\Dev\SMM-VSS\PseudoCode\Dev\JsonFx\JsonFx.Website\Styles\Compacted\Style.css" /INFO:%copyright% /TIME:%timestamp%
+
 GOTO DONE
 
 :HANDLE_ERROR
