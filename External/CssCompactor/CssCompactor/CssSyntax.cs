@@ -1,9 +1,9 @@
-/*------------------------------------------------------*\
+/*-----------------------------------------------------------------------*\
 	Copyright (c) 2007 Stephen M. McKamey
 
-	CssCompactor is open-source under The MIT License
+	CssCompactor is distributed under the terms of an MIT-style license
 	http://www.opensource.org/licenses/mit-license.php
-\*------------------------------------------------------*/
+\*-----------------------------------------------------------------------*/
 
 using System;
 using System.IO;
@@ -421,8 +421,9 @@ namespace BuildTools.CssCompactor
 	[Flags]
 	public enum CssOptions
 	{
-		None=0x00,
-		PrettyPrint=0x01
+		None = 0x00,
+		PrettyPrint = 0x01,
+		Overwrite = 0x02
 	}
 
 	#endregion Options
