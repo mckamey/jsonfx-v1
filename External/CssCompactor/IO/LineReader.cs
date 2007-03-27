@@ -22,7 +22,7 @@ namespace BuildTools.IO
 		private int position = -1;
 
 		private string filePath;
-		private string css;
+		private string source;
 
 		private readonly FilterTrie trie;
 
@@ -36,29 +36,41 @@ namespace BuildTools.IO
 		/// Ctor.
 		/// </summary>
 		/// <param name="filePath"></param>
+		/// <param name="source"></param>
 		/// <param name="filters"></param>
-		public LineReader(string filePath, IEnumerable<ReadFilter> filters)
+		public LineReader(string filePath, IEnumerable<ReadFilter> filters) : this(filePath, null, filters) { }
+
+		/// <summary>
+		/// Ctor.
+		/// </summary>
+		/// <param name="filePath"></param>
+		/// <param name="source"></param>
+		/// <param name="filters"></param>
+		public LineReader(string filePath, string source, IEnumerable<ReadFilter> filters)
 		{
-			if (!File.Exists(filePath))
-			{
-				throw new FileError("File Not Found", filePath, 0, 0);
-			}
+			this.trie = new FilterTrie(filters);
+			this.source = source;
 			this.filePath = filePath;
 
-			this.css = File.ReadAllText(filePath);
-			if (String.IsNullOrEmpty(this.css))
+			if (String.IsNullOrEmpty(this.source))
 			{
-				throw new FileError("The stylesheet was empty", filePath, 0, 0);
+				if (File.Exists(filePath))
+				{
+					this.source = File.ReadAllText(filePath);
+				}
+				else
+				{
+					throw new FileError("File Not Found", filePath, 0, 0);
+				}
 			}
-
-			this.trie = new FilterTrie(filters);
 		}
 
 		/// <summary>
 		/// Ctor.
 		/// </summary>
 		/// <param name="filePath"></param>
-		public LineReader(string filePath) : this(filePath, new ReadFilter[0])
+		/// <param name="source"></param>
+		public LineReader(string filePath, string source) : this(filePath, source, new ReadFilter[0])
 		{
 		}
 
@@ -79,7 +91,7 @@ namespace BuildTools.IO
 		/// </summary>
 		public int Length
 		{
-			get { return this.css.Length; }
+			get { return this.source.Length; }
 		}
 
 		/// <summary>
@@ -111,7 +123,7 @@ namespace BuildTools.IO
 		/// </summary>
 		public bool EndOfFile
 		{
-			get { return this.position >= this.css.Length; }
+			get { return this.position >= this.source.Length; }
 		}
 
 		/// <summary>
@@ -134,7 +146,7 @@ namespace BuildTools.IO
 				{
 					return -1;
 				}
-				return this.css[this.position];
+				return this.source[this.position];
 			}
 		}
 
@@ -176,7 +188,7 @@ namespace BuildTools.IO
 			{
 				throw new InvalidOperationException("Already at start of source");
 			}
-			switch (this.css[this.position])
+			switch (this.source[this.position])
 			{
 				case '\r':
 				case '\n':
@@ -247,11 +259,11 @@ namespace BuildTools.IO
 		protected int Peek(int lookahead)
 		{
 			int pos = this.position+lookahead;
-			if (pos >= this.css.Length)
+			if (pos >= this.source.Length)
 			{
 				return -1;
 			}
-			return this.css[pos];
+			return this.source[pos];
 		}
 
 		/// <summary>
@@ -261,16 +273,16 @@ namespace BuildTools.IO
 		/// <returns>the next char, or -1 if at EOF</returns>
 		protected int Read(bool filter)
 		{
-			if (this.position+1 >= this.css.Length)
+			if (this.position+1 >= this.source.Length)
 			{
-				this.position = this.css.Length;
+				this.position = this.source.Length;
 				return -1;
 			}
 
 			// increment counters
 			this.position++;
 			this.col++;
-			char ch = this.css[this.position];
+			char ch = this.source[this.position];
 
 			if (Char.IsWhiteSpace(ch))
 			{
@@ -290,21 +302,21 @@ namespace BuildTools.IO
 		/// <returns></returns>
 		private char NormalizeSpaces(char ch, ref int pos, ref int line, ref int col)
 		{
-			int length = this.css.Length;
+			int length = this.source.Length;
 			if (this.normalizeWhiteSpace)
 			{
 				// normalize runs of WhiteSpace to ' '
-				while ((pos+1 < length) && Char.IsWhiteSpace(this.css, pos+1))
+				while ((pos+1 < length) && Char.IsWhiteSpace(this.source, pos+1))
 				{
 					pos++;
 					col++;
 
 					// increment line count
-					switch (this.css[pos])
+					switch (this.source[pos])
 					{
 						case '\r': //CR
 						{
-							if ((pos+1 < length) && this.css[pos+1] == '\n')
+							if ((pos+1 < length) && this.source[pos+1] == '\n')
 							{
 								pos++;
 							}
@@ -328,7 +340,7 @@ namespace BuildTools.IO
 				{
 					case '\r': //CR
 					{
-						if ((pos+1 < length) && this.css[pos+1] == '\n')
+						if ((pos+1 < length) && this.source[pos+1] == '\n')
 						{
 							pos++;
 						}
@@ -354,14 +366,14 @@ namespace BuildTools.IO
 		/// <returns></returns>
 		protected int CopyRead(ref int copyPosition)
 		{
-			if (copyPosition+1 >= this.css.Length)
+			if (copyPosition+1 >= this.source.Length)
 			{
 				return -1;
 			}
 
 			// increment counters
 			copyPosition++;
-			char ch = this.css[copyPosition];
+			char ch = this.source[copyPosition];
 
 			if (Char.IsWhiteSpace(ch))
 			{
@@ -465,7 +477,7 @@ namespace BuildTools.IO
 		{
 			base.Dispose(disposing);
 
-			this.css = null;
+			this.source = null;
 		}
 
 		#endregion IDisposable Members

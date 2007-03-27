@@ -415,16 +415,4 @@ namespace BuildTools.CssCompactor
 	}
 
 	#endregion Grammar
-
-	#region Options
-
-	[Flags]
-	public enum CssOptions
-	{
-		None = 0x00,
-		PrettyPrint = 0x01,
-		Overwrite = 0x02
-	}
-
-	#endregion Options
 }
