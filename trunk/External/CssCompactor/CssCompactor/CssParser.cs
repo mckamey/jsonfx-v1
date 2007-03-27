@@ -20,27 +20,38 @@ namespace BuildTools.CssCompactor
 
 		// this defines comments for CSS
 		private static readonly ReadFilter[] ReadFilters = new ReadFilter[] { new ReadFilter("/*", "*/") };
+		private readonly object SyncLock = new object();
 
-		private object SyncLock = new object();
+		#endregion Constants
+
+		#region Fields
+
 		LineReader reader;
 		CssStyleSheet styleSheet = null;
 		string filePath = null;
+		string source = null;
 
-		#endregion Constants
+		#endregion Fields
 
 		#region Init
 
 		/// <summary>
 		/// Ctor.
 		/// </summary>
-		public CssParser(String filePath)
+		/// <param name="filePath">path to source</param>
+		public CssParser(string filePath) : this(filePath, null)
 		{
-			if (String.IsNullOrEmpty(filePath))
-			{
-				throw new ArgumentNullException("filePath");
-			}
+		}
 
+		/// <summary>
+		/// Ctor.
+		/// </summary>
+		/// <param name="filePath">path to source</param>
+		/// <param name="source">actual source</param>
+		public CssParser(string filePath, string source)
+		{
 			this.filePath = filePath;
+			this.source = source;
 		}
 
 		#endregion Init
@@ -59,7 +70,7 @@ namespace BuildTools.CssCompactor
 						// so we don't parse twice
 						if (this.styleSheet == null)
 						{
-							this.ParseStyleSheet();
+							this.styleSheet = this.ParseStyleSheet();
 						}
 					}
 				}
@@ -81,12 +92,13 @@ namespace BuildTools.CssCompactor
 		/// <summary>
 		/// (BNF) stylesheet : [ CDO | CDC | S | statement ]*;
 		/// </summary>
-		private void ParseStyleSheet()
+		/// <returns>CSS StyleSheet parse tree</returns>
+		private CssStyleSheet ParseStyleSheet()
 		{
-			using (this.reader = new LineReader(filePath, CssParser.ReadFilters))
+			CssStyleSheet styleSheet = new CssStyleSheet();
+			using (this.reader = new LineReader(this.filePath, this.source, CssParser.ReadFilters))
 			{
 				this.reader.NormalizeWhiteSpace = true;
-				this.styleSheet = new CssStyleSheet();
 
 #if DEBUG
 				System.Diagnostics.Stopwatch watch = new System.Diagnostics.Stopwatch();
@@ -132,7 +144,7 @@ namespace BuildTools.CssCompactor
 							try
 							{
 								CssStatement statement = this.ParseStatement();
-								this.styleSheet.Statements.Add(statement);
+								styleSheet.Statements.Add(statement);
 							}
 							catch (ParseError ex)
 							{
@@ -155,6 +167,9 @@ namespace BuildTools.CssCompactor
 			}
 
 			this.reader = null;
+			this.source = null;
+
+			return styleSheet;
 		}
 
 		#endregion StyleSheet
