@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Collections.Generic;
 
 namespace BuildTools.CssCompactor
 {
@@ -19,7 +20,7 @@ namespace BuildTools.CssCompactor
 	{
 		#region Static Methods
 
-		public static void Compact(string inputFile, string outputFile, string copyright, string timeStamp, CssOptions options)
+		public static List<ParseException> Compact(string inputFile, string outputFile, string copyright, string timeStamp, CssOptions options)
 		{
 			if (!File.Exists(inputFile))
 			{
@@ -39,11 +40,11 @@ namespace BuildTools.CssCompactor
 			CssCompactor.PrepSavePath(outputFile);
 			using (TextWriter output = File.CreateText(outputFile))
 			{
-				CssCompactor.Compact(inputFile, null, output, copyright, timeStamp, options);
+				return CssCompactor.Compact(inputFile, null, output, copyright, timeStamp, options);
 			}
 		}
 
-		public static void Compact(string inputFile, string inputSource, TextWriter output, string copyright, string timeStamp, CssOptions options)
+		public static List<ParseException> Compact(string inputFile, string inputSource, TextWriter output, string copyright, string timeStamp, CssOptions options)
 		{
 			if (output == null)
 			{
@@ -54,6 +55,7 @@ namespace BuildTools.CssCompactor
 
 			CssParser parser = new CssParser(inputFile, inputSource);
 			parser.Write(output, options);
+			return parser.Errors;
 		}
 
 		internal static void WriteHeader(TextWriter writer, string copyright, string timeStamp)
