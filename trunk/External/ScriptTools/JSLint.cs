@@ -1,8 +1,8 @@
 using System;
 using System.IO;
-using System.Diagnostics;
 using System.Reflection;
-using System.Text.RegularExpressions;
+using System.ComponentModel;
+using System.Runtime.InteropServices;
 
 /*
 	.NET Wrapper for running JSLint
@@ -14,17 +14,105 @@ using System.Text.RegularExpressions;
 
 namespace ScriptTools
 {
+	#region JSLintOptions
+
+	[ComVisible(true)]
+	public class JSLintOptions
+	{
+		/// <summary>
+		/// true if the standard browser globals should be predefined
+		/// </summary>
+		[Description("IsBrowser")]
+        public bool browser = false;
+
+		/// <summary>
+		/// true if upper case HTML should be allowed
+		/// </summary>
+		[Description("AllowUpperCaseHtml")]
+		public bool cap = false;
+
+		/// <summary>
+		/// true if debugger statements should be allowed
+		/// </summary>
+		[Description("AllowDebugger")]
+        public bool debug = false;
+
+		/// <summary>
+		/// true if === should be required
+		/// </summary>
+		[Description("RequireStrictEquals")]
+		public bool eqeqeq = false;
+
+		/// <summary>
+		/// true if eval should be allowed
+		/// </summary>
+		[Description("AllowEval")]
+        public bool evil = false;
+
+		/// <summary>
+		/// true if jscript deviations should be allowed
+		/// </summary>
+		[Description("AllowJScript")]
+		public bool jscript = false;
+
+		/// <summary>
+		/// true if line breaks should not be checked
+		/// </summary>
+		[Description("AllowLaxLineEnding")]
+        public bool laxLineEnd = false;
+
+		/// <summary>
+		/// true if the scan should stop on first error
+		/// </summary>
+		[Description("StopOnFirstError")]
+		public bool passfail = false;
+
+		/// <summary>
+		/// true if increment/decrement should not be allowed
+		/// </summary>
+		[Description("NoIncDec")]
+		public bool plusplus = false;
+
+		/// <summary>
+		/// true if var redefinition should be allowed
+		/// </summary>
+		[Description("AllowVarRedef")]
+		public bool redef = false;
+
+		/// <summary>
+		/// true if the Rhino environment globals should be predefined
+		/// </summary>
+		[Description("IsRhino")]
+		public bool rhino = false;
+
+		/// <summary>
+		/// true if undefined variables are errors
+		/// </summary>
+		[Description("NoUndefVars")]
+        public bool undef = false;
+
+		/// <summary>
+		/// true if the Yahoo Widgets globals should be predefined
+		/// </summary>
+		[Description("IsYahooWidget")]
+		public bool widget = false;
+	}
+
+	#endregion JSLintOptions
+
 	public class JSLint
 	{
 		#region Constants
 
-		private const string JSLintScript = "jslint_wsh.js";
+		private const string JSLintScript = "jslint_full.js";
+		private const string JSLintScript_WSH = "jslint_wsh.js";
 
 		#endregion Constants
 
 		#region Fields
 
 		private string jsLintPath = null;
+		private JSLintOptions options = new JSLintOptions();
 
 		#endregion Fields
 
@@ -32,32 +120,6 @@ namespace ScriptTools
 
 		public JSLint()
 		{
-			// look next to assembly for script
-			Assembly assembly = Assembly.GetAssembly(typeof(JSLint));
-			string assemblyPath = Path.GetDirectoryName(assembly.Location);
-			this.jsLintPath = Path.Combine(assemblyPath, JSLintScript);
-
-			// generate if does not exist
-			if (!File.Exists(this.JSLintPath))
-			{
-				JSMinifier.PrepSavePath(this.JSLintPath);
-
-				// stored as a resource file
-				string resourceName = "ScriptTools"/*assembly.GetName().Name*/+"."+JSLintScript;
-				if (assembly.GetManifestResourceInfo(resourceName) == null)
-				{
-					throw new FileNotFoundException("Cannot find the JSLint script file.", JSLintScript);
-				}
-
-				// output next to assembly
-				using (Stream input = assembly.GetManifestResourceStream(resourceName))
-				{
-					using (StreamReader reader = new StreamReader(input))
-					{
-						File.WriteAllText(this.JSLintPath, reader.ReadToEnd());
-					}
-				}
-			}
 		}
 
 		#endregion Init
@@ -69,24 +131,194 @@ namespace ScriptTools
 			get { return this.jsLintPath; }
 		}
 
+		/// <summary>
+		/// true if the standard browser globals should be predefined
+		/// </summary>
+		public bool IsBrowser
+		{
+			get { return this.options.browser; }
+			set { this.options.browser = value; }
+		}
+
+		/// <summary>
+		/// true if upper case HTML should be allowed
+		/// </summary>
+		public bool AllowUpperCaseHtml
+		{
+			get { return this.options.cap; }
+			set { this.options.cap = value; }
+		}
+
+		/// <summary>
+		/// true if debugger statements should be allowed
+		/// </summary>
+		public bool AllowDebugger
+		{
+			get { return this.options.debug; }
+			set { this.options.debug = value; }
+		}
+
+		/// <summary>
+		/// true if === should be required
+		/// </summary>
+		public bool RequireStrictEquals
+		{
+			get { return this.options.eqeqeq; }
+			set { this.options.eqeqeq = value; }
+		}
+
+		/// <summary>
+		/// true if eval should be allowed
+		/// </summary>
+		public bool AllowEval
+		{
+			get { return this.options.evil; }
+			set { this.options.evil = value; }
+		}
+
+		/// <summary>
+		/// true if jscript deviations should be allowed
+		/// </summary>
+		public bool AllowJScript
+		{
+			get { return this.options.jscript; }
+			set { this.options.jscript = value; }
+		}
+
+		/// <summary>
+		/// true if line breaks should not be checked
+		/// </summary>
+		public bool AllowLaxLineEnding
+		{
+			get { return this.options.laxLineEnd; }
+			set { this.options.laxLineEnd = value; }
+		}
+
+		/// <summary>
+		/// true if the scan should stop on first error
+		/// </summary>
+		public bool StopOnFirstError
+		{
+			get { return this.options.passfail; }
+			set { this.options.passfail = value; }
+		}
+
+		/// <summary>
+		/// true if increment/decrement should not be allowed
+		/// </summary>
+		public bool NoIncDec
+		{
+			get { return this.options.plusplus; }
+			set { this.options.plusplus = value; }
+		}
+
+		/// <summary>
+		/// true if var redefinition should be allowed
+		/// </summary>
+		public bool AllowVarRedef
+		{
+			get { return this.options.redef; }
+			set { this.options.redef = value; }
+		}
+
+		/// <summary>
+		/// true if the Rhino environment globals should be predefined
+		/// </summary>
+		public bool IsRhino
+		{
+			get { return this.options.rhino; }
+			set { this.options.rhino = value; }
+		}
+
+		/// <summary>
+		/// true if undefined variables are errors
+		/// </summary>
+		public bool NoUndefVars
+		{
+			get { return this.options.undef; }
+			set { this.options.undef = value; }
+		}
+
+		/// <summary>
+		/// true if the Yahoo Widgets globals should be predefined
+		/// </summary>
+		public bool IsYahooWidget
+		{
+			get { return this.options.widget; }
+			set { this.options.widget = value; }
+		}
+
 		#endregion Properties
 
 		#region Methods
 
-		//protected static void RunScript(String script)
-		//{
-		//    // Microsoft Script Control 1.0
-		//    // http://msdn2.microsoft.com/en-us/library/ms974577.aspx
-		//    // http://msdn.microsoft.com/msdnmag/issues/02/08/VisualStudioforApplications/
+		public void Run(string filename, string script)
+		{
+			if (String.IsNullOrEmpty(script))
+			{
+				if (String.IsNullOrEmpty(filename) || !File.Exists(filename))
+				{
+					throw new FileNotFoundException("Cannot find the script file.", filename);
+				}
+				script = File.ReadAllText(filename);
+			}
 
-		//    MSScriptControl.ScriptControl sc = new MSScriptControl.ScriptControl();
-		//    //sc.AddObject
-		//    //sc.AddCode(script);
-		//    sc.Language = "JavaScript";
-		//    Object result = sc.Eval("JSLINT(source, option);");
-		//    Console.WriteLine("result: {0}", (string)result);
-		//    Console.ReadLine();
-		//}
+			// Microsoft Script Control 1.0
+			// http://weblogs.asp.net/rosherove/pages/DotNetScripting.aspx
+			// http://msdn2.microsoft.com/en-us/library/ms974577.aspx
+			// http://msdn.microsoft.com/msdnmag/issues/02/08/VisualStudioforApplications/
+			// http://msdn2.microsoft.com/en-us/library/ms974586.aspx
+			// http://msdn2.microsoft.com/en-us/library/ms950396.aspx
+			// Must be built with x86 as Target (not Any CPU/x64/Itanium)
+			// http://forums.microsoft.com/MSDN/ShowPost.aspx?PostID=1406892&SiteID=1
+
+			string jsLintSource = null;
+
+			// JSLint stored as a resource file
+			string resourceName = "ScriptTools"/*assembly.GetName().Name*/+"."+JSLintScript;
+			Assembly assembly = Assembly.GetAssembly(typeof(JSLint));
+			if (assembly.GetManifestResourceInfo(resourceName) == null)
+			{
+				throw new FileNotFoundException("Cannot find the JSLint script file.", resourceName);
+			}
+
+			// output next to assembly
+			using (Stream input = assembly.GetManifestResourceStream(resourceName))
+			{
+				using (StreamReader reader = new StreamReader(input))
+				{
+					jsLintSource = reader.ReadToEnd();
+				}
+			}
+
+			MSScriptControl.ScriptControlClass sc = new MSScriptControl.ScriptControlClass();
+			sc.Language = "JScript";
+			sc.AddCode(jsLintSource);
+
+			this.IsBrowser = true;
+			this.AllowDebugger = true;
+			this.RequireStrictEquals = true;
+			this.NoUndefVars = true;
+
+			object[] p = new object[] { script, this.options };
+			bool result = (bool)sc.Run("JSLINT", ref p);
+			if (!result)
+			{
+				int length = (int)sc.Eval("JSLINT.errors.length");
+				for (int i=0; i<length; i++)
+				{
+					bool fatal = (bool)sc.Eval("!JSLINT.errors["+i+"]");
+					if (!fatal)
+					{
+						int line = (int)sc.Eval("JSLINT.errors["+i+"].line");
+						int col = (int)sc.Eval("JSLINT.errors["+i+"].character");
+						string reason = sc.Eval("JSLINT.errors["+i+"].reason") as string;
+						//string evidence = sc.Eval("JSLINT.errors["+i+"].evidence") as string;
+						throw new ParseException(reason, null, filename, script, line, col);
+					}
+				}
+			}
+		}
 
 		public void Run(TextReader reader, string filename)
 		{
@@ -96,59 +328,7 @@ namespace ScriptTools
 			// read input file into memory
 			string scriptText = reader.ReadToEnd();
 
-			using (Process myProcess = new Process())
-			{
-				myProcess.StartInfo.FileName = "cscript";
-				myProcess.StartInfo.Arguments = String.Format("\"{0}\" //NoLogo", this.JSLintPath);
-				myProcess.StartInfo.CreateNoWindow = true;
-				myProcess.StartInfo.UseShellExecute = false;
-				myProcess.StartInfo.RedirectStandardInput = true;
-				myProcess.StartInfo.RedirectStandardOutput = true;
-				myProcess.StartInfo.RedirectStandardError = true;
-				myProcess.Start();
-
-				// pipe input file to script
-				myProcess.StandardInput.Write(scriptText);
-				myProcess.StandardInput.Flush();
-				myProcess.StandardInput.Close();
-
-				string stdErr = String.Empty;
-				string stdOut = String.Empty;
-
-				int attempts = 0;
-				while (!myProcess.WaitForExit(5000))
-				{
-					attempts++;
-					if (attempts > 6)
-					{
-						throw new ParseException("JSLint Error: External script is timing out (30 sec).", null, this.JSLintPath, scriptText, 0, 0);
-					}
-				}
-				stdOut += myProcess.StandardOutput.ReadToEnd();
-				stdErr += myProcess.StandardError.ReadToEnd();
-
-				if (myProcess.ExitCode != 0)
-				{
-					string message = stdOut+stdErr;
-					int line = 0, column = 0;
-					Match match = Regex.Match(message, "Lint at line (?<Line>[\\d]+) character (?<Char>[\\d]+)[:]\\s*(?<Error>[^\\n\\r]*)\\s*(?<Source>.*)$", RegexOptions.ExplicitCapture|RegexOptions.Compiled|RegexOptions.Singleline);
-					if (match.Success)
-					{
-						string lineStr = match.Groups["Line"].Value;
-						Int32.TryParse(lineStr, out line);
-						string columnStr = match.Groups["Char"].Value;
-						Int32.TryParse(columnStr, out column);
-						string error = match.Groups["Error"].Value;
-						if (!String.IsNullOrEmpty(error))
-							message = error;
-						string source = match.Groups["Source"].Value;
-						if (!String.IsNullOrEmpty(source))
-							scriptText = source;
-					}
-
-					throw new ParseException(message, null, filename, scriptText, line, column);
-				}
-			}
+			this.Run(filename, scriptText);
 		}
 
 		public void Run(string filename)
