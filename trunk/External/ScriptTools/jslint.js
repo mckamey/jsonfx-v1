@@ -1,5 +1,5 @@
 // jslint.js
-// 2007-02-19
+// 2007-03-28
 /*
 Copyright (c) 2002 Douglas Crockford  (www.JSLint.com)
 
@@ -40,18 +40,20 @@ SOFTWARE.
     have a default value of false.
 
     {
+        bitwise    : true if bitwise operators should not be allowed
         browser    : true if the standard browser globals should be predefined
         cap        : true if upper case HTML should be allowed
         debug      : true if debugger statements should be allowed
         eqeqeq     : true if === should be required
         evil       : true if eval should be allowed
-        jscript    : true if jscript deviations should be allowed
         laxLineEnd : true if line breaks should not be checked
+        nomen      : true if names should be checked
         passfail   : true if the scan should stop on first error
         plusplus   : true if increment/decrement should not be allowed
         redef      : true if var redefinition should be allowed
         rhino      : true if the Rhino environment globals should be predefined
         undef      : true if undefined variables are errors
+        white      : true if strict whitespace rules apply
         widget     : true if the Yahoo Widgets globals should be predefined
     }
 
@@ -105,175 +107,192 @@ String.prototype.isDigit = function () {
 var JSLINT;
 JSLINT = function () {
 
-    var anonname,
+    var anonname;
 
 // browser contains a set of global names which are commonly provided by a
 // web browser environment.
 
-        browser = {
-            alert: true,
-            blur: true,
-            clearInterval: true,
-            clearTimeout: true,
-            close: true,
-            closed: true,
-            confirm: true,
-            console: true,
-            Debug: true,
-            defaultStatus: true,
-            document: true,
-            event: true,
-            focus: true,
-            frames: true,
-            history: true,
-            Image: true,
-            length: true,
-            location: true,
-            moveBy: true,
-            moveTo: true,
-            name: true,
-            navigator: true,
-            onblur: true,
-            onerror: true,
-            onfocus: true,
-            onload: true,
-            onresize: true,
-            onunload: true,
-            open: true,
-            opener: true,
-            opera: true,
-            parent: true,
-            print: true,
-            prompt: true,
-            resizeBy: true,
-            resizeTo: true,
-            screen: true,
-            scroll: true,
-            scrollBy: true,
-            scrollTo: true,
-            self: true,
-            setInterval: true,
-            setTimeout: true,
-            status: true,
-            top: true,
-            window: true,
-            XMLHttpRequest: true
-        },
-        funlab, funstack, functions, globals,
+    var browser = {
+        alert: true,
+        blur: true,
+        clearInterval: true,
+        clearTimeout: true,
+        close: true,
+        closed: true,
+        confirm: true,
+        console: true,
+        Debug: true,
+        defaultStatus: true,
+        document: true,
+        event: true,
+        focus: true,
+        frames: true,
+        history: true,
+        Image: true,
+        length: true,
+        location: true,
+        moveBy: true,
+        moveTo: true,
+        name: true,
+        navigator: true,
+        onblur: true,
+        onerror: true,
+        onfocus: true,
+        onload: true,
+        onresize: true,
+        onunload: true,
+        open: true,
+        opener: true,
+        opera: true,
+        parent: true,
+        print: true,
+        prompt: true,
+        resizeBy: true,
+        resizeTo: true,
+        screen: true,
+        scroll: true,
+        scrollBy: true,
+        scrollTo: true,
+        self: true,
+        setInterval: true,
+        setTimeout: true,
+        status: true,
+        top: true,
+        window: true,
+        XMLHttpRequest: true
+    };
+    var funlab;
+    var funstack;
+    var functions;
+    var globals;
+    var inblock;
+    var indent;
 
 // konfab contains the global names which are provided to a Yahoo
 // (fna Konfabulator) widget.
 
-        konfab = {
-            alert: true,
-            animator: true,
-            appleScript: true,
-            beep: true,
-            bytesToUIString: true,
-            chooseColor: true,
-            chooseFile: true,
-            chooseFolder: true,
-            convertPathToHFS: true,
-            convertPathToPlatform: true,
-            closeWidget: true,
-            CustomAnimation: true,
-            escape: true,
-            FadeAnimation: true,
-            focusWidget: true,
-            form: true,
-            include: true,
-            isApplicationRunning: true,
-            iTunes: true,
-            konfabulatorVersion: true,
-            log: true,
-            MoveAnimation: true,
-            openURL: true,
-            play: true,
-            popupMenu: true,
-            print: true,
-            prompt: true,
-            reloadWidget: true,
-            resolvePath: true,
-            resumeUpdates: true,
-            RotateAnimation: true,
-            runCommand: true,
-            runCommandInBg: true,
-            saveAs: true,
-            savePreferences: true,
-            showWidgetPreferences: true,
-            sleep: true,
-            speak: true,
-            suppressUpdates: true,
-            tellWidget: true,
-            unescape: true,
-            updateNow: true,
-            yahooCheckLogin: true,
-            yahooLogin: true,
-            yahooLogout: true,
-            COM: true,
-            filesystem: true,
-            preferenceGroups: true,
-            preferences: true,
-            screen: true,
-            system: true,
-            URL: true,
-            XMLDOM: true,
-            XMLHttpRequest: true
-        },
-        lines, lookahead, member, noreach, option, prevtoken,
-        rhino = {
-            defineClass: true,
-            deserialize: true,
-            gc: true,
-            help: true,
-            load: true,
-            loadClass: true,
-            print: true,
-            quit: true,
-            readFile: true,
-            readUrl: true,
-            runCommand: true,
-            seal: true,
-            serialize: true,
-            spawn: true,
-            sync: true,
-            toint32: true,
-            version: true
-        },
-        stack,
+    var konfab = {
+        alert: true,
+        appleScript: true,
+        animator: true,
+        appleScript: true,
+        beep: true,
+        bytesToUIString: true,
+        chooseColor: true,
+        chooseFile: true,
+        chooseFolder: true,
+        convertPathToHFS: true,
+        convertPathToPlatform: true,
+        closeWidget: true,
+        CustomAnimation: true,
+        escape: true,
+        FadeAnimation: true,
+        focusWidget: true,
+        form: true,
+        include: true,
+        isApplicationRunning: true,
+        iTunes: true,
+        konfabulatorVersion: true,
+        log: true,
+        MoveAnimation: true,
+        openURL: true,
+        play: true,
+        popupMenu: true,
+        print: true,
+        prompt: true,
+        reloadWidget: true,
+        resolvePath: true,
+        resumeUpdates: true,
+        RotateAnimation: true,
+        runCommand: true,
+        runCommandInBg: true,
+        saveAs: true,
+        savePreferences: true,
+        showWidgetPreferences: true,
+        sleep: true,
+        speak: true,
+        suppressUpdates: true,
+        tellWidget: true,
+        unescape: true,
+        updateNow: true,
+        yahooCheckLogin: true,
+        yahooLogin: true,
+        yahooLogout: true,
+        COM: true,
+        filesystem: true,
+        preferenceGroups: true,
+        preferences: true,
+        screen: true,
+        system: true,
+        URL: true,
+        XMLDOM: true,
+        XMLHttpRequest: true
+    };
+    var lines;
+    var lookahead;
+    var member;
+    var nexttoken;
+    var noreach;
+    var option;
+    var prevtoken;
+    var quit;
+    var rhino = {
+        defineClass: true,
+        deserialize: true,
+        gc: true,
+        help: true,
+        load: true,
+        loadClass: true,
+        print: true,
+        quit: true,
+        readFile: true,
+        readUrl: true,
+        runCommand: true,
+        seal: true,
+        serialize: true,
+        spawn: true,
+        sync: true,
+        toint32: true,
+        version: true
+    };
+    var stack;
 
 // standard contains the global names that are provided by standard JavaScript.
 
-        standard = {
-            Array: true,
-            Boolean: true,
-            Date: true,
-            decodeURI: true,
-            decodeURIComponent: true,
-            encodeURI: true,
-            encodeURIComponent: true,
-            Error: true,
-            escape: true,
-            'eval': true,
-            EvalError: true,
-            Function: true,
-            isFinite: true,
-            isNaN: true,
-            Math: true,
-            Number: true,
-            Object: true,
-            parseInt: true,
-            parseFloat: true,
-            RangeError: true,
-            ReferenceError: true,
-            RegExp: true,
-            String: true,
-            SyntaxError: true,
-            TypeError: true,
-            unescape: true,
-            URIError: true
-        },
-        syntax = {}, token, verb,
+    var standard = {
+        Array: true,
+        Boolean: true,
+        Date: true,
+        decodeURI: true,
+        decodeURIComponent: true,
+        encodeURI: true,
+        encodeURIComponent: true,
+        Error: true,
+        escape: true,
+        'eval': true,
+        EvalError: true,
+        Function: true,
+        isFinite: true,
+        isNaN: true,
+        Math: true,
+        Number: true,
+        Object: true,
+        parseInt: true,
+        parseFloat: true,
+        RangeError: true,
+        ReferenceError: true,
+        RegExp: true,
+        String: true,
+        SyntaxError: true,
+        TypeError: true,
+        unescape: true,
+        URIError: true
+    };
+    var syntax = {};
+    var token;
+    var verb;
+    var warnings;
+    var wmode;
 
 //  xmode is used to adapt to the exceptions in XML parsing.
 //  It can have these states:
@@ -283,7 +302,7 @@ JSLINT = function () {
 //      content The content of a script tag
 //      CDATA   A CDATA block
 
-        xmode,
+    var xmode;
 
 //  xtype identifies the type of document being analyzed.
 //  It can have these states:
@@ -291,27 +310,27 @@ JSLINT = function () {
 //      html    .html file
 //      widget  .kon Konfabulator file
 
-        xtype,
+    var xtype;
 // token
-        tx = /^([(){}[.,:;'"~]|\](\]>)?|\?>?|==?=?|\/(\*(global|extern)*|=|)|\*[\/=]?|\+[+=]?|-[-=]?|%[=>]?|&[&=]?|\|[|=]?|>>?>?=?|<([\/=%\?]|\!(\[|--)?|<=?)?|\^=?|\!=?=?|[a-zA-Z_$][a-zA-Z0-9_$]*|[0-9]+([xX][0-9a-fA-F]+|\.[0-9]*)?([eE][+-]?[0-9]+)?)/,
+    var tx = /^([(){}[.,:;'"~]|\](\]>)?|\?>?|==?=?|\/(\*(global|extern)*|=|)|\*[\/=]?|\+[+=]?|-[-=]?|%[=>]?|&[&=]?|\|[|=]?|>>?>?=?|<([\/=%\?]|\!(\[|--)?|<=?)?|\^=?|\!=?=?|[a-zA-Z_$][a-zA-Z0-9_$]*|[0-9]+([xX][0-9a-fA-F]+|\.[0-9]*)?([eE][+-]?[0-9]+)?)/;
 // string ending in single quote
-        sx = /^((\\[^\x00-\x1f]|[^\x00-\x1f'\\])*)'/,
-        sxx = /^(([^\x00-\x1f'])*)'/,
+    var sx = /^((\\[^\x00-\x1f]|[^\x00-\x1f'\\])*)'/;
+    var sxx = /^(([^\x00-\x1f'])*)'/;
 // string ending in double quote
-        qx = /^((\\[^\x00-\x1f]|[^\x00-\x1f"\\])*)"/,
-        qxx = /^(([^\x00-\x1f"])*)"/,
+    var qx = /^((\\[^\x00-\x1f]|[^\x00-\x1f"\\])*)"/;
+    var qxx = /^(([^\x00-\x1f"])*)"/;
 // regular expression
-        rx = /^(\\[^\x00-\x1f]|\[(\\[^\x00-\x1f]|[^\x00-\x1f\\\/])*\]|[^\x00-\x1f\\\/\[])+\/[gim]*/,
+    var rx = /^(\\[^\x00-\x1f]|\[(\\[^\x00-\x1f]|[^\x00-\x1f\\\/])*\]|[^\x00-\x1f\\\/\[])+\/[gim]*/;
 // star slash
-        lx = /\*\/|\/\*/,
+    var lx = /\*\/|\/\*/;
 // global identifier
-        gx = /^([a-zA-Z_$][a-zA-Z0-9_$]*)/,
+    var gx = /^([a-zA-Z_$][a-zA-Z0-9_$]*)/;
 // identifier
-        ix = /^([a-zA-Z_$][a-zA-Z0-9_$]*$)/,
+    var ix = /^([a-zA-Z_$][a-zA-Z0-9_$]*$)/;
 // global separators
-        hx = /^[\x00-\x20,]*(\*\/)?/,
+    var hx = /^[\x00-\x20,]*(\*\/)?/;
 // whitespace
-        wx = /^\s*(\/\/.*\r*$)?/;
+    var wx = /^\s*(\/\/.*\r*$)?/;
 
 // Make a new object that inherits from an existing object.
 
@@ -323,43 +342,60 @@ JSLINT = function () {
 
 // Produce an error warning.
 
+
     function warning(m, x, y) {
-        var l, c, t = typeof x === 'object' ? x : token;
+        var l;
+        var c;
+        var t = typeof x === 'object' ? x : nexttoken;
+        var w;
         if (typeof x === 'number') {
             l = x;
             c = y || 0;
         } else {
             if (t.id === '(end)') {
-                t = prevtoken;
+                t = token;
             }
             l = t.line || 0;
             c = t.from || 0;
         }
-        JSLINT.errors.push({
+        w = {
             id: '(error)',
             reason: m,
             evidence: lines[l] || '',
             line: l,
             character: c
-        });
+        };
+        JSLINT.errors.push(w);
         if (option.passfail) {
-            JSLINT.errors.push(null);
-            throw null;
+            quit('Stopping. ', l, c);
         }
+        warnings += 1;
+        if (warnings === 50) {
+            quit("Too many errors.", l, c);
+        }
+        return w;
     }
 
     function error(m, x, y) {
-        warning(m, x, y);
-        warning("Stopping, unable to continue.", x, y);
+        var w = warning(m, x, y);
+        quit("Stopping, unable to continue.", w.line, w.character);
+    }
+
+    quit = function quit(m, l, c) {
+        warning(m + ' (' + Math.floor((l / lines.length) * 100) + '% scanned)', l, c);
         JSLINT.errors.push(null);
         throw null;
-    }
+    };
+
 
 
 // lexical analysis
 
     var lex = function () {
-        var character, from, line, s;
+        var character;
+        var from;
+        var line;
+        var s;
 
 // Private lex methods
 
@@ -425,10 +461,15 @@ JSLINT = function () {
 // token -- this is called by advance to get the next token.
 
             token: function () {
-                var c, i, l, r, t;
+                var c;
+                var i;
+                var l;
+                var r;
+                var t;
 
                 function string(x) {
-                    var a, j;
+                    var a;
+                    var j;
                     r = x.exec(s);
                     if (r) {
                         t = r[1];
@@ -438,7 +479,7 @@ JSLINT = function () {
                         if (xmode === 'script') {
                             if (t.indexOf('<\/') >= 0) {
                                 warning(
-    'Expected "...<\\/..." and instead saw "...<\/...".', token);
+    'Expected "...<\\/..." and instead saw "...<\/...".', nexttoken);
                             }
                         }
                         return it('(string)', r[1]);
@@ -490,10 +531,10 @@ JSLINT = function () {
 //      number
 
                     if (c.isDigit()) {
-                        if (token.id === '.') {
+                        if (nexttoken.id === '.') {
                             warning(
             "A decimal fraction should have a zero before the decimal point.",
-                                token);
+                                nexttoken);
                         }
                         if (!isFinite(Number(t))) {
                             warning("Bad number: '" + t + "'.",
@@ -537,7 +578,7 @@ JSLINT = function () {
                                 break;
                             }
                             if (!nextLine()) {
-                                error("Unclosed comment.", token);
+                                error("Unclosed comment.", nexttoken);
                             }
                         }
                         character += i + 2;
@@ -572,7 +613,7 @@ JSLINT = function () {
                                     error("Bad extern identifier: '" +
                                         s + "'.", line, character);
                                 }
-                             } else if (!nextLine()) {
+                            } else if (!nextLine()) {
                                 error("Unclosed comment.");
                             }
                         }
@@ -591,21 +632,22 @@ JSLINT = function () {
 // This is used to ignore HTML content. Return false if it isn't found.
 
             skip: function (t) {
-                if (token.id) {
+                var i;
+                if (nexttoken.id) {
                     if (!t) {
                         t = '';
-                        if (token.id.substr(0, 1) === '<') {
-                            lookahead.push(token);
+                        if (nexttoken.id.substr(0, 1) === '<') {
+                            lookahead.push(nexttoken);
                             return true;
                         }
-                    } else if (token.id.indexOf(t) >= 0) {
+                    } else if (nexttoken.id.indexOf(t) >= 0) {
                         return true;
                     }
                 }
-                prevtoken = token;
-                token = syntax['(error)'];
+                token = nexttoken;
+                nexttoken = syntax['(error)'];
                 for (;;) {
-                    var i = s.indexOf(t || '<');
+                    i = s.indexOf(t || '<');
                     if (i >= 0) {
                         character += i + t.length;
                         s = s.substr(i + t.length);
@@ -621,7 +663,9 @@ JSLINT = function () {
 // regex -- this is called by parse when it sees '/' being used as a prefix.
 
             regex: function () {
-                var l, r = rx.exec(s), x;
+                var l;
+                var r = rx.exec(s);
+                var x;
                 if (r) {
                     l = r[0].length;
                     character += l;
@@ -656,7 +700,7 @@ JSLINT = function () {
                 case 'global':
                     if (type === 'var') {
                         warning('Var ' + t +
-                            ' was used before it was declared.', prevtoken);
+                            ' was used before it was declared.', token);
                         return;
                     }
                     if (type === 'var*' || type === 'global') {
@@ -671,7 +715,7 @@ JSLINT = function () {
                     break;
                 }
                 warning("Identifier '" + t + "' already declared as " +
-                        funlab[t], prevtoken);
+                        funlab[t], token);
             }
             funlab[t] = type;
         }
@@ -685,9 +729,10 @@ JSLINT = function () {
 //     for ( var i = ...
 
     function peek(i) {
-        var j = 0, t;
-        if (token === syntax['(error)']) {
-            return token;
+        var j = 0;
+        var t;
+        if (nexttoken === syntax['(error)']) {
+            return nexttoken;
         }
         if (typeof i === 'undefined') {
             i = 0;
@@ -703,62 +748,68 @@ JSLINT = function () {
     }
 
 
-    var badbreak = {')': true, ']': true, '++': true, '--': true};
+    var badbreak = {
+        ')': true,
+        ']': true,
+        '++': true,
+        '--': true
+    };
 
 // Produce the next token. It looks for programming errors.
 
     function advance(id, t) {
         var l;
-        switch (prevtoken.id) {
+        switch (token.id) {
         case '(number)':
-            if (token.id === '.') {
+            if (nexttoken.id === '.') {
                 warning(
-"A dot following a number can be confused with a decimal point.", prevtoken);
+"A dot following a number can be confused with a decimal point.", token);
             }
             break;
         case '-':
-            if (token.id === '-' || token.id === '--') {
+            if (nexttoken.id === '-' || nexttoken.id === '--') {
                 warning("Confusing minusses.");
             }
             break;
         case '+':
-            if (token.id === '+' || token.id === '++') {
+            if (nexttoken.id === '+' || nexttoken.id === '++') {
                 warning("Confusing plusses.");
             }
             break;
         }
-        if (prevtoken.type === '(string)' || prevtoken.identifier) {
-            anonname = prevtoken.value;
+        if (token.type === '(string)' || token.identifier) {
+            anonname = token.value;
         }
 
-        if (id && token.value !== id) {
+        if (id && nexttoken.value !== id) {
             if (t) {
-                if (token.id === '(end)') {
+                if (nexttoken.id === '(end)') {
                     warning("Unmatched '" + t.id + "'.", t);
                 } else {
                     warning("Expected '" + id + "' to match '" +
                             t.id + "' from line " + (t.line + 1) +
-                            " and instead saw '" + token.value + "'.");
+                            " and instead saw '" + nexttoken.value + "'.");
                 }
             } else {
                 warning("Expected '" + id + "' and instead saw '" +
-                        token.value + "'.");
+                        nexttoken.value + "'.");
             }
         }
         prevtoken = token;
+        token = nexttoken;
         for (;;) {
-            token = lookahead.shift() || lex.token();
-            if (token.id === '<![') {
+            nexttoken = lookahead.shift() || lex.token();
+            if (nexttoken.id === '<![') {
                 if (xtype === 'html') {
                     error("Unexpected token '<!['");
                 }
                 if (xmode === 'script') {
-                    token = lex.token();
-                    if (token.value !== 'CDATA') {
+                    nexttoken = lex.token();
+                    if (nexttoken.value !== 'CDATA') {
                         error("Expected 'CDATA'");
                     }
-                    token = lex.token();
-                    if (token.id !== '[') {
+                    nexttoken = lex.token();
+                    if (nexttoken.id !== '[') {
                         error("Expected '['");
                     }
                     xmode = 'CDATA';
@@ -767,61 +818,65 @@ JSLINT = function () {
                 } else {
                     error("Unexpected token '<!['");
                 }
-            } else if (token.id === ']]>') {
+            } else if (nexttoken.id === ']]>') {
                 if (xmode === 'CDATA') {
                     xmode = 'script';
                 } else {
                     error("Unexpected token ']]>");
                 }
-            } else if (token.id !== '(endline)') {
+            } else if (nexttoken.id !== '(endline)') {
                 break;
             }
             if (xmode === '"' || xmode === "'") {
-                error("Missing '" + xmode + "'.", prevtoken);
+                error("Missing '" + xmode + "'.", token);
             }
             l = !xmode && !option.laxLineEnd &&
-                (prevtoken.type === '(string)' || prevtoken.type === '(number)' ||
-                prevtoken.type === '(identifier)' || badbreak[prevtoken.id]);
+                (token.type === '(string)' || token.type === '(number)' ||
+                token.type === '(identifier)' || badbreak[token.id]);
         }
         if (l) {
-            switch (token.id) {
+            switch (nexttoken.id) {
             case '{':
             case '}':
             case ']':
                 break;
             case ')':
-                switch (prevtoken.id) {
+                switch (token.id) {
                 case ')':
                 case '}':
                 case ']':
                     break;
                 default:
-                    warning("Line breaking error: ')'.", prevtoken);
+                    warning("Line breaking error: ')'.", token);
                 }
                 break;
             default:
-                warning("Line breaking error: '" + prevtoken.value + "'.",
-                        prevtoken);
+                warning("Line breaking error: '" + token.value + "'.",
+                        token);
             }
         }
-        if (xtype === 'widget' && xmode === 'script' && token.id) {
-            l = token.id.charAt(0);
+        if (xtype === 'widget' && xmode === 'script' && nexttoken.id) {
+            l = nexttoken.id.charAt(0);
             if (l === '<' || l === '&') {
-                token.nud = token.led = null;
-                token.lbp = 0;
-                token.reach = true;
+                nexttoken.nud = nexttoken.led = null;
+                nexttoken.lbp = 0;
+                nexttoken.reach = true;
             }
         }
     }
 
 
     function advanceregex() {
-        token = lex.regex();
+        nexttoken = lex.regex();
     }
 
 
     function beginfunction(i) {
-        var f = {'(name)': i, '(line)': token.line + 1, '(context)': funlab};
+        var f = {
+            '(name)': i,
+            '(line)': nexttoken.line + 1,
+            '(context)': funlab
+        };
         funstack.push(funlab);
         funlab = f;
         functions.push(funlab);
@@ -848,54 +903,54 @@ JSLINT = function () {
 // They are key to the parsing method called Top Down Operator Precedence.
 
     function parse(rbp, initial) {
-        var l, left, o;
-        if (token.id && token.id === '/') {
-            if (prevtoken.id !== '(' && prevtoken.id !== '=' &&
-                    prevtoken.id !== ':' && prevtoken.id !== ',' &&
-                    prevtoken.id !== '=' && prevtoken.id !== '[') {
+        var l;
+        var left;
+        var o;
+        if (nexttoken.id && nexttoken.id === '/') {
+            if ('(=:,!?[&|'.indexOf(token.id.charAt(0)) < 0) {
                 warning(
 "Expected to see a '(' or '=' or ':' or ',' or '[' preceding a regular expression literal, and instead saw '" +
-                        prevtoken.value + "'.", prevtoken);
+                        token.value + "'.", token);
             }
             advanceregex();
         }
-        if (token.id === '(end)') {
-            warning("Unexpected early end of program", prevtoken);
+        if (nexttoken.id === '(end)') {
+            warning("Unexpected early end of program", token);
         }
         advance();
         if (initial) {
             anonname = 'anonymous';
-            verb = prevtoken.value;
+            verb = token.value;
         }
-        if (initial && prevtoken.fud) {
-            prevtoken.fud();
+        if (initial && token.fud) {
+            token.fud();
         } else {
-            if (prevtoken.nud) {
-                o = prevtoken.exps;
-                left = prevtoken.nud();
+            if (token.nud) {
+                o = token.exps;
+                left = token.nud();
             } else {
-                if (token.type === '(number)' && prevtoken.id === '.') {
+                if (nexttoken.type === '(number)' && token.id === '.') {
                     warning(
-"A leading decimal point can be confused with a dot: ." + token.value,
-                            prevtoken);
+"A leading decimal point can be confused with a dot: ." + nexttoken.value,
+                            token);
                 }
                 error("Expected an identifier and instead saw '" +
-                        prevtoken.id + "'.", prevtoken);
+                        token.id + "'.", token);
             }
-            while (rbp < token.lbp) {
-                o = token.exps;
+            while (rbp < nexttoken.lbp) {
+                o = nexttoken.exps;
                 advance();
-                if (prevtoken.led) {
-                    left = prevtoken.led(left);
+                if (token.led) {
+                    left = token.led(left);
                 } else {
                     error("Expected an operator and instead saw '" +
-                        prevtoken.id + "'.");
+                        token.id + "'.");
                 }
             }
             if (initial && !o) {
                 warning(
 "Expected an assignment or function call and instead saw an expression.",
-                        prevtoken);
+                        token);
             }
         }
         if (l) {
@@ -908,11 +963,48 @@ JSLINT = function () {
     }
 
 
+// Functions for conformance of style.
+
+    function adjacent(left, right) {
+        if (option.white) {
+            if (left.character !== right.from) {
+                warning("Unexpected space after '" + left.value + "'.");
+            }
+        }
+    }
+
+
+    function nonadjacent(left, right) {
+        if (option.white) {
+            if (left.character === right.from) {
+                warning("Expected space after '" + left.value + "'.");
+            }
+        }
+    }
+
+    function indentation(bias) {
+        var i;
+        if (option.white) {
+            i = indent + (bias || 0);
+            if (nexttoken.from !== i) {
+                warning("Expected '" + nexttoken.value +
+                        "' to have an indentation of " + i +
+                        " instead of " + nexttoken.from + ".");
+            }
+        }
+    }
+
+
+
 // Parasitic constructors for making the symbols that will be inherited by
 // tokens.
 
     function symbol(s, p) {
-        return syntax[s] || (syntax[s] = {id: s, lbp: p, value: s});
+        return syntax[s] || (syntax[s] = {
+            id: s,
+            lbp: p,
+            value: s
+        });
     }
 
 
@@ -950,7 +1042,7 @@ JSLINT = function () {
         reserveName(x);
         x.nud = (typeof f === 'function') ? f : function () {
             if (option.plusplus && (this.id === '++' || this.id === '--')) {
-                warning(this.id + " is considered harmful.", this);
+                warning("Unexpected use of " + this.id + ".", this);
             }
             parse(150);
             return this;
@@ -985,6 +1077,8 @@ JSLINT = function () {
         var x = symbol(s, p);
         reserveName(x);
         x.led = (typeof f === 'function') ? f : function (left) {
+            nonadjacent(prevtoken, token);
+            nonadjacent(token, nexttoken);
             return [this.id, left, parse(p)];
         };
         return x;
@@ -994,6 +1088,8 @@ JSLINT = function () {
     function relation(s, f) {
         var x = symbol(s, 100);
         x.led = function (left) {
+            nonadjacent(prevtoken, token);
+            nonadjacent(token, nexttoken);
             var right = parse(100);
             if ((left && left.id === 'NaN') || (right && right.id === 'NaN')) {
                 warning("Use the isNaN function to compare with NaN.", this);
@@ -1019,6 +1115,8 @@ JSLINT = function () {
     function assignop(s, f) {
         symbol(s, 20).exps = true;
         return infix(s, function (left) {
+            nonadjacent(prevtoken, token);
+            nonadjacent(token, nexttoken);
             if (left) {
                 if (left.id === '.' || left.id === '[' ||
                         (left.identifier && !left.reserved)) {
@@ -1026,14 +1124,47 @@ JSLINT = function () {
                     return left;
                 }
                 if (left === syntax['function']) {
-                    if (option.jscript) {
-                        parse(19);
-                        return left;
-                    } else {
-                        warning(
+                    warning(
 "Expected an identifier in an assignment, and instead saw a function invocation.",
-                                prevtoken);
-                    }
+                                token);
+                }
+            }
+            error("Bad assignment.", this);
+        }, 20);
+    }
+
+    function bitwise(s, f, p) {
+        var x = symbol(s, p);
+        reserveName(x);
+        x.led = (typeof f === 'function') ? f : function (left) {
+            if (option.bitwise) {
+                warning("Unexpected bitwise operator '" + this.id + "'.", this);
+            }
+            nonadjacent(prevtoken, token);
+            nonadjacent(token, nexttoken);
+            return [this.id, left, parse(p)];
+        };
+        return x;
+    }
+
+    function bitwiseassignop(s) {
+        symbol(s, 20).exps = true;
+        return infix(s, function (left) {
+            if (option.bitwise) {
+                warning("Unexpected bitwise operator '" + this.id + "'.", this);
+            }
+            nonadjacent(prevtoken, token);
+            nonadjacent(token, nexttoken);
+            if (left) {
+                if (left.id === '.' || left.id === '[' ||
+                        (left.identifier && !left.reserved)) {
+                    parse(19);
+                    return left;
+                }
+                if (left === syntax['function']) {
+                    warning(
+"Expected an identifier in an assignment, and instead saw a function invocation.",
+                                token);
                 }
             }
             error("Bad assignment.", this);
@@ -1045,7 +1176,7 @@ JSLINT = function () {
         var x = symbol(s, 150);
         x.led = function (left) {
             if (option.plusplus) {
-                warning(this.id + " is considered harmful.", this);
+                warning("Unexpected use of " + this.id + ".", this);
             }
             return [f, left];
         };
@@ -1054,13 +1185,20 @@ JSLINT = function () {
 
 
     function optionalidentifier() {
-        if (token.reserved) {
+        if (nexttoken.reserved) {
             warning("Expected an identifier and instead saw '" +
-                token.id + "' (a reserved word).");
+                nexttoken.id + "' (a reserved word).");
         }
-        if (token.identifier) {
+        if (nexttoken.identifier) {
+            if (option.nomen) {
+                if (nexttoken.value.charAt(0) === '_' ||
+                        nexttoken.value.indexOf('$') >= 0) {
+                    warning("Unexpected characters in '" +
+                        nexttoken.value + "'.");
+                }
+            }
             advance();
-            return prevtoken.value;
+            return token.value;
         }
     }
 
@@ -1070,18 +1208,18 @@ JSLINT = function () {
         if (i) {
             return i;
         }
-        if (prevtoken.id === 'function' && token.id === '(') {
+        if (token.id === 'function' && nexttoken.id === '(') {
             warning("Missing name in function statement.");
         } else {
             error("Expected an identifier and instead saw '" +
-                    token.value + "'.", token);
+                    nexttoken.value + "'.", nexttoken);
         }
     }
 
-
     function reachable(s) {
-        var i = 0, t;
-        if (token.id !== ';' || noreach) {
+        var i = 0;
+        var t;
+        if (nexttoken.id !== ';' || noreach) {
             return;
         }
         for (;;) {
@@ -1105,7 +1243,7 @@ JSLINT = function () {
 
 
     function statement() {
-        var t = token;
+        var t = nexttoken;
         if (t.id === ';') {
             warning("Unnecessary semicolon", t);
             advance(';');
@@ -1115,51 +1253,63 @@ JSLINT = function () {
             advance();
             advance(':');
             addlabel(t.value, 'live*');
-            if (!token.labelled) {
+            if (!nexttoken.labelled) {
                 warning("Label '" + t.value +
-                        "' on unlabelable statement '" + token.value + "'.",
-                        token);
+                        "' on unlabelable statement '" + nexttoken.value + "'.",
+                        nexttoken);
             }
             if (t.value.toLowerCase() === 'javascript') {
                 warning("Label '" + t.value +
                         "' looks like a javascript url.",
-                        token);
+                        nexttoken);
             }
-            token.label = t.value;
-            t = token;
+            nexttoken.label = t.value;
+            t = nexttoken;
         }
         parse(0, true);
         if (!t.block) {
-            if (token.id !== ';') {
-                warning("Missing ';'", prevtoken.line,
-                        prevtoken.from + prevtoken.value.length);
+            if (nexttoken.id !== ';') {
+                warning("Missing ';'", token.line,
+                        token.from + token.value.length);
             } else {
+                adjacent(token, nexttoken);
                 advance(';');
+                nonadjacent(token, nexttoken);
             }
         }
     }
 
 
     function statements() {
-        while (!token.reach && token.id !== '(end)') {
+        while (!nexttoken.reach && nexttoken.id !== '(end)') {
+            indentation();
             statement();
         }
     }
 
 
-    function block() {
-        var t = token;
-        if (token.id === '{') {
+    function block(f) {
+        var b = inblock;
+        inblock = f;
+        nonadjacent(token, nexttoken);
+        var t = nexttoken;
+        if (nexttoken.id === '{') {
             advance('{');
-            statements();
+            if (nexttoken.id !== '}' || token.line !== nexttoken.line) {
+                indent += 4;
+                statements();
+                indent -= 4;
+                indentation();
+            }
             advance('}', t);
         } else {
-            warning("Missing '{' before '" + token.value + "'.");
+            warning("Missing '{' before '" + nexttoken.value + "'.");
             noreach = true;
             statement();
             noreach = false;
         }
         verb = null;
+        inblock = b;
     }
 
 
@@ -1220,7 +1370,9 @@ JSLINT = function () {
                 xmltype.html.script = false;
             },
             doTagName: function (n, p) {
-                var i, t = xmltype.html.tag[n], x;
+                var i;
+                var t = xmltype.html.tag[n];
+                var x;
                 if (!t) {
                     error('Unrecognized tag: <' + n + '>. ' +
                             (n === n.toLowerCase() ?
@@ -1230,14 +1382,14 @@ JSLINT = function () {
                 if (x) {
                     if (x.indexOf(' ' + p + ' ') < 0) {
                         error('A <' + n + '> must be within <' + x + '>',
-                                prevtoken);
+                                token);
                     }
                 } else {
                     i = stack.length;
                     do {
                         if (i <= 0) {
                             error('A <' + n + '> must be within the body',
-                                    prevtoken);
+                                    token);
                         }
                         i -= 1;
                     } while (stack[i].name !== 'body');
@@ -1252,7 +1404,7 @@ JSLINT = function () {
                         return 'string';
                     } else if (a === 'language') {
                         warning("The 'language' attribute is deprecated",
-                                prevtoken);
+                                token);
                         return false;
                     }
                 }
@@ -1324,7 +1476,8 @@ JSLINT = function () {
                 menu:     {},
                 meta:     {empty: true, parent: ' head noscript '},
                 noframes: {parent: ' html body '},
-                noscript: {parent: ' html head body frameset '},
+                noscript: {parent:
+' applet blockquote body button center dd del div fieldset form frameset head html iframe ins li map noframes noscript object td th '},
                 object:   {},
                 ol:       {},
                 optgroup: {parent: ' select '},
@@ -1370,7 +1523,7 @@ JSLINT = function () {
                 var x = t.parent;
                 if (x.indexOf(' ' + p + ' ') < 0) {
                     error('A <' + n + '> must be within <' + x + '>',
-                            prevtoken);
+                            token);
                 }
             },
             doAttribute: function (n, a) {
@@ -1451,6 +1604,7 @@ JSLINT = function () {
                 modifier: {parent: ' hotkey '},
                 name: {parent: ' frame hotkey image preference preferenceGroup scrollbar text textarea timer widget window '},
                 notSaved: {parent: ' preference '},
+                onClick: {parent: ' canvas frame image text textarea scrollbar ', script: true},
                 onContextMenu: {parent: ' frame image text textarea window ', script: true},
                 onDragDrop: {parent: ' frame image text textarea ', script: true},
                 onDragEnter: {parent: ' frame image text textarea ', script: true},
@@ -1463,6 +1617,7 @@ JSLINT = function () {
                 onImageLoaded: {parent: ' image ', script: true},
                 onLoseFocus: {parent: ' textarea window ', script: true},
                 onMouseDown: {parent: ' frame image text textarea ', script: true},
+                onMouseDrag: {parent: ' canvas frame image scrollbar text textArea window ', script: true},
                 onMouseEnter: {parent: ' frame image text textarea ', script: true},
                 onMouseExit: {parent: ' frame image text textarea ', script: true},
                 onMouseMove: {parent: ' frame image text ', script: true},
@@ -1494,7 +1649,7 @@ JSLINT = function () {
                 src: {parent: ' image '},
                 srcHeight: {parent: ' image '},
                 srcWidth: {parent: ' image '},
-                style: {parent: ' about-text about-version preference text textarea '},
+                style: {parent: ' about-text about-version canvas frame image preference scrollbar text textarea window '},
                 text: {parent: ' frame window '},
                 textarea: {parent: ' frame window '},
                 timer: {parent: ' widget '},
@@ -1527,39 +1682,47 @@ JSLINT = function () {
     };
 
     function xmlword(tag) {
-        var w = token.value;
-        if (!token.identifier) {
-            if (token.id === '<') {
+        var w = nexttoken.value;
+        if (!nexttoken.identifier) {
+            if (nexttoken.id === '<') {
                 error(tag ? "Expected &lt; and saw '<'" : "Missing '>'",
-                        prevtoken);
-            } else if (token.id === '(end)') {
+                        token);
+            } else if (nexttoken.id === '(end)') {
                 error("Bad structure");
             } else {
-                warning("Missing quotes", prevtoken);
+                warning("Missing quotes", token);
             }
         }
         advance();
-        while (token.id === '-' || token.id === ':') {
-            w += token.id;
+        while (nexttoken.id === '-' || nexttoken.id === ':') {
+            w += nexttoken.id;
             advance();
-            if (!token.identifier) {
-                error('Bad name: ' + w + token.value);
+            if (!nexttoken.identifier) {
+                error('Bad name: ' + w + nexttoken.value);
             }
-            w += token.value;
+            w += nexttoken.value;
             advance();
         }
         return w;
     }
 
     function xml() {
-        var a, e, n, q, t, v;
+        var a;
+        var e;
+        var n;
+        var q;
+        var t;
+        var v;
         xmode = 'xml';
-        stack = [];
+        stack = null;
         for (;;) {
-            switch (token.value) {
+            switch (nexttoken.value) {
             case '<':
+                if (!stack) {
+                    stack = [];
+                }
                 advance('<');
-                t = token;
+                t = nexttoken;
                 n = xmlword(true);
                 t.name = n;
                 if (!xtype) {
@@ -1575,19 +1738,19 @@ JSLINT = function () {
                         n = n.toLowerCase();
                     }
                     if (stack.length === 0) {
-                        error("What the hell is this?", token);
+                        error("What the hell is this?", nexttoken);
                     }
                     e = xmltype[xtype].doTagName(n,
                             stack[stack.length - 1].type);
                 }
                 t.type = n;
                 for (;;) {
-                    if (token.id === '/') {
+                    if (nexttoken.id === '/') {
                         advance('/');
                         e = true;
                         break;
                     }
-                    if (token.id && token.id.substr(0, 1) === '>') {
+                    if (nexttoken.id && nexttoken.id.substr(0, 1) === '>') {
                         break;
                     }
                     a = xmlword();
@@ -1595,14 +1758,17 @@ JSLINT = function () {
                     case 'script':
                         xmode = 'string';
                         advance('=');
-                        q = token.id;
+                        q = nexttoken.id;
                         if (q !== '"' && q !== "'") {
                             error('Missing quote.');
                         }
                         xmode = q;
+                        wmode = option.white;
+                        option.white = false;
                         advance(q);
                         statements();
-                        if (token.id !== q) {
+                        option.white = wmode;
+                        if (nexttoken.id !== q) {
                             error('Missing close quote on script attribute.');
                         }
                         xmode = 'xml';
@@ -1610,26 +1776,26 @@ JSLINT = function () {
                         break;
                     case 'value':
                         advance('=');
-                        if (!token.identifier &&
-                                token.type !== '(string)' &&
-                                token.type !== '(number)') {
-                            error('Bad value: ' + token.value);
+                        if (!nexttoken.identifier &&
+                                nexttoken.type !== '(string)' &&
+                                nexttoken.type !== '(number)') {
+                            error('Bad value: ' + nexttoken.value);
                         }
                         advance();
                         break;
                     case 'string':
                         advance('=');
-                        if (token.type !== '(string)') {
-                            error('Bad value: ' + token.value);
+                        if (nexttoken.type !== '(string)') {
+                            error('Bad value: ' + nexttoken.value);
                         }
                         advance();
                         break;
                     case 'href':
                         advance('=');
-                        if (token.type !== '(string)') {
-                            error('Bad url: ' + token.value);
+                        if (nexttoken.type !== '(string)') {
+                            error('Bad url: ' + nexttoken.value);
                         }
-                        v = token.value.split(':');
+                        v = nexttoken.value.split(':');
                         if (v.length > 1) {
                             switch (v[0].substring(0, 4).toLowerCase()) {
                             case 'java':
@@ -1642,18 +1808,18 @@ JSLINT = function () {
                         break;
                     case 'define':
                         advance('=');
-                        if (token.type !== '(string)') {
-                            error('Bad value: ' + token.value);
+                        if (nexttoken.type !== '(string)') {
+                            error('Bad value: ' + nexttoken.value);
                         }
-                        addlabel(token.value, 'global');
+                        addlabel(nexttoken.value, 'var*');
                         advance();
                         break;
                     default:
-                        if (token.id === '=') {
+                        if (nexttoken.id === '=') {
                             advance('=');
-                            if (!token.identifier &&
-                                    token.type !== '(string)' &&
-                                    token.type !== '(number)') {
+                            if (!nexttoken.identifier &&
+                                    nexttoken.type !== '(string)' &&
+                                    nexttoken.type !== '(number)') {
                             }
                             advance();
                         }
@@ -1663,9 +1829,10 @@ JSLINT = function () {
                 case 'script':
                     xmode = 'script';
                     advance('>');
+                    indent = nexttoken.from;
                     statements();
-                    if (token.id !== '</') {
-                        warning("Unexpected token.", token);
+                    if (nexttoken.id !== '</') {
+                        warning("Unexpected token.", nexttoken);
                     }
                     xmode = 'xml';
                     break;
@@ -1694,7 +1861,7 @@ JSLINT = function () {
                     error('Expected </' + t.name +
                             '> and instead saw </' + n + '>');
                 }
-                if (token.id !== '>') {
+                if (nexttoken.id !== '>') {
                     error("Expected '>'");
                 }
                 if (stack.length > 0) {
@@ -1706,11 +1873,11 @@ JSLINT = function () {
             case '<!':
                 for (;;) {
                     advance();
-                    if (token.id === '>') {
+                    if (nexttoken.id === '>') {
                         break;
                     }
-                    if (token.id === '<' || token.id === '(end)') {
-                        error("Missing '>'.", prevtoken);
+                    if (nexttoken.id === '<' || nexttoken.id === '(end)') {
+                        error("Missing '>'.", token);
                     }
                 }
                 lex.skip('>');
@@ -1724,12 +1891,12 @@ JSLINT = function () {
             case '<?':
                 for (;;) {
                     advance();
-                    if (token.id === '?>') {
+                    if (nexttoken.id === '?>') {
                         break;
                     }
-                    if (token.id === '<?' || token.id === '<' ||
-                            token.id === '>' || token.id === '(end)') {
-                        error("Missing '?>'.", prevtoken);
+                    if (nexttoken.id === '<?' || nexttoken.id === '<' ||
+                            nexttoken.id === '>' || nexttoken.id === '(end)') {
+                        error("Missing '?>'.", token);
                     }
                 }
                 lex.skip('?>');
@@ -1742,7 +1909,7 @@ JSLINT = function () {
             case '(end)':
                 return;
             }
-            if (stack.length === 0) {
+            if (stack && stack.length === 0) {
                 return;
             }
             if (!lex.skip('')) {
@@ -1764,15 +1931,16 @@ JSLINT = function () {
         lbp: 0,
         identifier: true,
         nud: function () {
+            var c;
             if (option.undef && !builtin(this.value) &&
                     xmode !== '"' && xmode !== "'") {
-                var c = funlab;
+                c = funlab;
                 while (!c[this.value]) {
                     c = c['(context)'];
                     if (!c) {
                         warning("Undefined " +
-                                (token.id === '(' ? "function" : "variable") +
-                                ": " + this.value, prevtoken);
+                                (nexttoken.id === '(' ? "function" : "variable") +
+                                ": " + this.value, token);
                         break;
                     }
                 }
@@ -1782,7 +1950,7 @@ JSLINT = function () {
         },
         led: function () {
             error("Expected an operator and instead saw '" +
-                token.value + "'.");
+                nexttoken.value + "'.");
         }
     };
 
@@ -1811,17 +1979,11 @@ JSLINT = function () {
     delim(';');
     delim(':').reach = true;
     delim(',');
-    reserve('as');          // ES4
     reserve('else');
     reserve('case').reach = true;
     reserve('catch');
     reserve('default').reach = true;
     reserve('finally');
-    reserve('is');          // ES4
-    reserve('namespace');   // ES4
-    reserve('to');          // ES4
-    reserve('use');         // ES4
-    reserve('yield');       // ES4
     reservevar('arguments');
     reservevar('eval');
     reservevar('false');
@@ -1840,12 +2002,12 @@ JSLINT = function () {
                 "A regular expression literal can be confused with '/='.");
     };
     assignop('%=', 'assignmod', 20);
-    assignop('&=', 'assignbitand', 20);
-    assignop('|=', 'assignbitor', 20);
-    assignop('^=', 'assignbitxor', 20);
-    assignop('<<=', 'assignshiftleft', 20);
-    assignop('>>=', 'assignshiftright', 20);
-    assignop('>>>=', 'assignshiftrightunsigned', 20);
+    bitwiseassignop('&=', 'assignbitand', 20);
+    bitwiseassignop('|=', 'assignbitor', 20);
+    bitwiseassignop('^=', 'assignbitxor', 20);
+    bitwiseassignop('<<=', 'assignshiftleft', 20);
+    bitwiseassignop('>>=', 'assignshiftright', 20);
+    bitwiseassignop('>>>=', 'assignshiftrightunsigned', 20);
     infix('?', function (left) {
         parse(10);
         advance(':');
@@ -1854,9 +2016,9 @@ JSLINT = function () {
 
     infix('||', 'or', 40);
     infix('&&', 'and', 50);
-    infix('|', 'bitor', 70);
-    infix('^', 'bitxor', 80);
-    infix('&', 'bitand', 90);
+    bitwise('|', 'bitor', 70);
+    bitwise('^', 'bitxor', 80);
+    bitwise('&', 'bitand', 90);
     relation('==', function (left, right) {
         if (option.eqeqeq) {
             warning("Use '===' instead of '=='.", this);
@@ -1869,7 +2031,7 @@ JSLINT = function () {
     });
     relation('===');
     relation('!=', function (left, right) {
-        var t = token;
+        var t = nexttoken;
         if (option.eqeqeq) {
             warning("Use '!==' instead of '!='.", t);
         } else if (isPoorRelation(left)) {
@@ -1884,9 +2046,9 @@ JSLINT = function () {
     relation('>');
     relation('<=');
     relation('>=');
-    infix('<<', 'shiftleft', 120);
-    infix('>>', 'shiftright', 120);
-    infix('>>>', 'shiftrightunsigned', 120);
+    bitwise('<<', 'shiftleft', 120);
+    bitwise('>>', 'shiftright', 120);
+    bitwise('>>>', 'shiftrightunsigned', 120);
     infix('in', 'in', 120);
     infix('instanceof', 'instanceof', 120);
     infix('+', 'addconcat', 130);
@@ -1909,27 +2071,33 @@ JSLINT = function () {
     }).exps = true;
 
 
-    prefix('~', 'bitnot');
+    prefix('~', function () {
+        if (option.bitwise) {
+            warning("Unexpected bitwise operator.", this);
+        }
+        parse(150);
+        return this;
+    });
     prefix('!', 'not');
     prefix('typeof', 'typeof');
     prefix('new', function () {
-        var c = parse(155),
-            i;
+        var c = parse(155);
+        var i;
         if (c) {
             if (c.identifier) {
                 c['new'] = true;
                 switch (c.value) {
                 case 'Object':
-                    warning('Use the object literal notation {}.', prevtoken);
+                    warning('Use the object literal notation {}.', token);
                     break;
                 case 'Array':
-                    warning('Use the array literal notation [].', prevtoken);
+                    warning('Use the array literal notation [].', token);
                     break;
                 case 'Number':
                 case 'String':
                 case 'Boolean':
                     warning("Do not use the " + c.value +
-                        " function as a constructor.", prevtoken);
+                        " function as a constructor.", token);
                     break;
                 case 'Function':
                     if (!option.evil) {
@@ -1937,26 +2105,30 @@ JSLINT = function () {
                     }
                     break;
                 default:
-                    i = c.value.substr(0, 1);
-                    if (i < 'A' || i > 'Z') {
-                        warning(
-                'A constructor name should start with an uppercase letter.', c);
+                    if (c.id !== 'function') {
+                        i = c.value.substr(0, 1);
+                        if (i < 'A' || i > 'Z') {
+                            warning(
+                    'A constructor name should start with an uppercase letter.',
+                                token);
+                        }
                     }
                 }
             } else {
                 if (c.id !== '.' && c.id !== '[' && c.id !== '(') {
-                    warning('Bad constructor', prevtoken);
+                    warning('Bad constructor', token);
                 }
             }
         } else {
             warning("Weird construction. Delete 'new'.", this);
         }
-        if (token.id === '(') {
+        adjacent(token, nexttoken);
+        if (nexttoken.id === '(') {
             advance('(');
-            if (token.id !== ')') {
+            if (nexttoken.id !== ')') {
                 for (;;) {
                     parse(10);
-                    if (token.id !== ',') {
+                    if (nexttoken.id !== ',') {
                         break;
                     }
                     advance(',');
@@ -1971,6 +2143,7 @@ JSLINT = function () {
     syntax['new'].exps = true;
 
     infix('.', function (left) {
+        adjacent(prevtoken, token);
         var m = identifier();
         if (typeof m === 'string') {
             countMember(m);
@@ -1985,7 +2158,9 @@ JSLINT = function () {
     }, 160);
 
     infix('(', function (left) {
-        var n = 0, p = [];
+        adjacent(prevtoken, token);
+        var n = 0;
+        var p = [];
         if (left && left.type === '(identifier)') {
             if (left.value.match(/^[A-Z](.*[a-z].*)?$/)) {
                 if (left.value !== 'Number' && left.value !== 'String' &&
@@ -1995,11 +2170,11 @@ JSLINT = function () {
                 }
             }
         }
-        if (token.id !== ')') {
+        if (nexttoken.id !== ')') {
             for (;;) {
                 p[p.length] = parse(10);
                 n += 1;
-                if (token.id !== ',') {
+                if (nexttoken.id !== ',') {
                     break;
                 }
                 advance(',');
@@ -2041,11 +2216,11 @@ JSLINT = function () {
     });
 
     infix('[', function (left) {
-        var e = parse(0);
+        var e = parse(0), s;
         if (e && e.type === '(string)') {
             countMember(e.value);
             if (ix.test(e.value)) {
-                var s = syntax[e.value];
+                s = syntax[e.value];
                 if (!s || !s.reserved) {
                     warning("This is better written in dot notation.", e);
                 }
@@ -2058,18 +2233,31 @@ JSLINT = function () {
     }, 160);
 
     prefix('[', function () {
-        if (token.id === ']') {
+        if (nexttoken.id === ']') {
             advance(']');
             return;
         }
+        var b = token.line !== nexttoken.line;
+        if (b) {
+            indent += 4;
+        }
         for (;;) {
+            if (b) {
+                indentation();
+            }
             parse(10);
-            if (token.id === ',') {
+            if (nexttoken.id === ',') {
+                adjacent(token, nexttoken);
                 advance(',');
-                if (token.id === ']' || token.id === ',') {
-                    warning('Extra comma.', prevtoken);
+                if (nexttoken.id === ',' || nexttoken.id === ']') {
+                    warning("Extra comma.", token);
                 }
+                nonadjacent(token, nexttoken);
             } else {
+                if (b) {
+                    indent -= 4;
+                    indentation();
+                }
                 advance(']', this);
                 return;
             }
@@ -2079,32 +2267,47 @@ JSLINT = function () {
     (function (x) {
         x.nud = function () {
             var i;
-            if (token.id === '}') {
+            if (nexttoken.id === '}') {
                 advance('}');
                 return;
             }
+            var b = token.line !== nexttoken.line;
+            if (b) {
+                indent += 4;
+            }
             for (;;) {
+                if (b) {
+                    indentation();
+                }
                 i = optionalidentifier(true);
-                if (!i && (token.id === '(string)' ||
-                           token.id === '(number)')) {
-                    i = token.id;
+                if (!i && (nexttoken.id === '(string)' ||
+                           nexttoken.id === '(number)')) {
+                    i = nexttoken.id;
                     advance();
                 }
                 if (!i) {
                     error("Expected an identifier or '}' and instead saw '" +
-                            token.value + "'.");
+                            nexttoken.value + "'.");
                 }
                 if (typeof i.value === 'string') {
                     countMember(i.value);
                 }
+                adjacent(token, nexttoken);
                 advance(':');
+                nonadjacent(token, nexttoken);
                 parse(10);
-                if (token.id === ',') {
+                if (nexttoken.id === ',') {
+                    adjacent(token, nexttoken);
                     advance(',');
-                    if (token.id === ',' || token.id === '}') {
-                        warning("Extra comma.");
+                    if (nexttoken.id === ',' || nexttoken.id === '}') {
+                        warning("Extra comma.", token);
                     }
+                    nonadjacent(token, nexttoken);
                 } else {
+                    if (b) {
+                        indent -= 4;
+                        indentation();
+                    }
                     advance('}', this);
                     return;
                 }
@@ -2117,27 +2320,60 @@ JSLINT = function () {
 
 
     function varstatement() {
-        var i, n;
+
+// JavaScript does not have block scope. It only has function scope. So,
+// declaring a variable in a block can have unexpected consequences. We
+// will keep an inblock flag, which will be set when we enter a block, and
+// cleared when we enter a function.
+
+        var c, i, n, v;
+        if (inblock) {
+            warning("Variable '" + nexttoken.value + "' declared in a block.");
+        }
         for (;;) {
+            nonadjacent(token, nexttoken);
             n = identifier();
             if (!option.redef) {
                 for (i = funstack.length - 1; i >= 0; i -= 1) {
                     if (funstack[i][n]) {
-                        warning("Redefinition of '" + n + "'.", prevtoken);
+                        warning("Redefinition of '" + n + "'.", token);
                         break;
                     }
                 }
             }
             addlabel(n, 'var');
-            if (token.id === '=') {
+            if (nexttoken.id === '=') {
+                v = token;
+                nonadjacent(token, nexttoken);
                 advance('=');
-                parse(20);
+                nonadjacent(token, nexttoken);
+                if (nexttoken.id === '[' || nexttoken.id === '{' ||
+                        nexttoken.id === 'function') {
+                    if (c && option.white) {
+                        warning("Give '" + v.value +
+                                "' its own var statement.", v);
+                        option.white = false;
+                        parse(20);
+                        option.white = true;
+                    } else {
+                        parse(20);
+                    }
+                    if (nexttoken.id === ',' && option.white) {
+                        v = peek(0);
+                        warning("Give '" + v.value +
+                            "' its own var statement.", v);
+                    }
+                } else {
+                    parse(20);
+                }
             }
-            if (token.id === ',') {
-                advance(',');
-            } else {
+            if (nexttoken.id !== ',') {
                 return;
             }
+            adjacent(token, nexttoken);
+            advance(',');
+            nonadjacent(token, nexttoken);
+            c = true;
         }
     }
 
@@ -2150,15 +2386,15 @@ JSLINT = function () {
 
 
     function functionparams() {
-        var t = token;
+        var t = nexttoken;
         advance('(');
-        if (token.id === ')') {
+        if (nexttoken.id === ')') {
             advance(')');
             return;
         }
         for (;;) {
             addlabel(identifier(), 'parameter');
-            if (token.id === ',') {
+            if (nexttoken.id === ',') {
                 advance(',');
             } else {
                 advance(')', t);
@@ -2170,96 +2406,114 @@ JSLINT = function () {
 
     blockstmt('function', function () {
         var i = identifier();
+        if (inblock) {
+            warning("function '" + i + "' declared in a block.", token);
+        }
         addlabel(i, 'var*');
         beginfunction(i);
         addlabel(i, 'function');
+        adjacent(token, nexttoken);
         functionparams();
-        block();
+        block(false);
         endfunction();
-        if (token.id === '(' && token.line === prevtoken.line) {
+        if (nexttoken.id === '(' && nexttoken.line === token.line) {
             error(
 "Function statements are not invocable. Wrap the function expression in parens.");
         }
     });
 
     prefix('function', function () {
-        var i = optionalidentifier() || ('"' + anonname + '"');
+        var i = optionalidentifier();
+        if (i) {
+            adjacent(token, nexttoken);
+        } else {
+            nonadjacent(token, nexttoken);
+            i = '"' + anonname + '"';
+        }
         beginfunction(i);
         addlabel(i, 'function');
         functionparams();
-        block();
+        block(false);
         endfunction();
     });
 
     blockstmt('if', function () {
-        var t = token;
+        var t = nexttoken;
         advance('(');
+        nonadjacent(this, t);
         parse(20);
-        if (token.id === '=') {
+        if (nexttoken.id === '=') {
             warning("Assignment in control part.");
             advance('=');
             parse(20);
         }
         advance(')', t);
-        block();
-        if (token.id === 'else') {
+        block(true);
+        if (nexttoken.id === 'else') {
+            nonadjacent(token, nexttoken);
             advance('else');
-            if (token.id === 'if' || token.id === 'switch') {
+            if (nexttoken.id === 'if' || nexttoken.id === 'switch') {
                 statement();
             } else {
-                block();
+                block(true);
             }
         }
     });
 
     blockstmt('try', function () {
         var b;
-        block();
-        if (token.id === 'catch') {
+        block(true);
+        if (nexttoken.id === 'catch') {
             advance('catch');
             beginfunction('"catch"');
             functionparams();
-            block();
+            block(true);
             endfunction();
             b = true;
         }
-        if (token.id === 'finally') {
+        if (nexttoken.id === 'finally') {
             advance('finally');
             beginfunction('"finally"');
-            block();
+            block(true);
             endfunction();
             return;
         } else if (!b) {
             error("Expected 'catch' or 'finally' and instead saw '" +
-                    token.value + "'.");
+                    nexttoken.value + "'.");
         }
     });
 
     blockstmt('while', function () {
-        var t= token;
+        var t = nexttoken;
         advance('(');
+        nonadjacent(this, t);
         parse(20);
-        if (token.id === '=') {
+        if (nexttoken.id === '=') {
             warning("Assignment in control part.");
             advance('=');
             parse(20);
         }
         advance(')', t);
-        block();
+        block(true);
     }).labelled = true;
 
     reserve('with');
 
     blockstmt('switch', function () {
-        var t = token, g = false;
+        var t = nexttoken;
+        var g = false;
         advance('(');
+        nonadjacent(this, t);
         this.condition = parse(20);
         advance(')', t);
-        t = token;
+        nonadjacent(token, nexttoken);
+        t = nexttoken;
         advance('{');
+        nonadjacent(token, nexttoken);
+        indent += 4;
         this.cases = [];
         for (;;) {
-            switch (token.id) {
+            switch (nexttoken.id) {
             case 'case':
                 switch (verb) {
                 case 'break':
@@ -2272,8 +2526,9 @@ JSLINT = function () {
                 default:
                     warning(
                         "Expected a 'break' statement before 'case'.",
-                        prevtoken);
+                        token);
                 }
+                indentation(-4);
                 advance('case');
                 this.cases.push(parse(20));
                 g = true;
@@ -2290,13 +2545,16 @@ JSLINT = function () {
                 default:
                     warning(
                         "Expected a 'break' statement before 'default'.",
-                        prevtoken);
+                        token);
                 }
+                indentation(-4);
                 advance('default');
                 g = true;
                 advance(':');
                 break;
             case '}':
+                indent -= 4;
+                indentation();
                 advance('}', t);
                 if (this.cases.length === 1 || this.condition.id === 'true' ||
                         this.condition.id === 'false') {
@@ -2308,7 +2566,7 @@ JSLINT = function () {
                 return;
             default:
                 if (g) {
-                    switch (prevtoken.id) {
+                    switch (token.id) {
                     case ',':
                         error("Each value should have its own case label.");
                         return;
@@ -2316,11 +2574,11 @@ JSLINT = function () {
                         statements();
                         break;
                     default:
-                        error("Missing ':' on a case clause.", prevtoken);
+                        error("Missing ':' on a case clause.", token);
                     }
                 } else {
                     error("Expected to see 'case' and instead saw '" +
-                        token.value + "'.");
+                        nexttoken.value + "'.");
                 }
             }
         }
@@ -2333,19 +2591,21 @@ JSLINT = function () {
     });
 
     stmt('do', function () {
-        block();
+        block(true);
         advance('while');
-        var t = token;
+        var t = nexttoken;
+        nonadjacent(token, t);
         advance('(');
         parse(20);
         advance(')', t);
     }).labelled = true;
 
     blockstmt('for', function () {
-        var t = token;
+        var t = nexttoken;
         advance('(');
-        if (peek(token.id === 'var' ? 1 : 0).id === 'in') {
-            if (token.id === 'var') {
+        nonadjacent(this, t);
+        if (peek(nexttoken.id === 'var' ? 1 : 0).id === 'in') {
+            if (nexttoken.id === 'var') {
                 advance('var');
                 addlabel(identifier(), 'var');
             } else {
@@ -2354,17 +2614,17 @@ JSLINT = function () {
             advance('in');
             parse(20);
             advance(')', t);
-            block();
+            block(true);
             return;
         } else {
-            if (token.id !== ';') {
-                if (token.id === 'var') {
+            if (nexttoken.id !== ';') {
+                if (nexttoken.id === 'var') {
                     advance('var');
                     varstatement();
                 } else {
                     for (;;) {
                         parse(0);
-                        if (token.id !== ',') {
+                        if (nexttoken.id !== ',') {
                             break;
                         }
                         advance(',');
@@ -2372,30 +2632,30 @@ JSLINT = function () {
                 }
             }
             advance(';');
-            if (token.id !== ';') {
+            if (nexttoken.id !== ';') {
                 parse(20);
             }
             advance(';');
-            if (token.id === ';') {
+            if (nexttoken.id === ';') {
                 error("Expected to see ')' and instead saw ';'.");
             }
-            if (token.id !== ')') {
+            if (nexttoken.id !== ')') {
                 for (;;) {
                     parse(0);
-                    if (token.id !== ',') {
+                    if (nexttoken.id !== ',') {
                         break;
                     }
                     advance(',');
                 }
             }
             advance(')', t);
-            block();
+            block(true);
         }
     }).labelled = true;
 
 
     function nolinebreak(t) {
-        if (t.line !== token.line) {
+        if (t.line !== nexttoken.line) {
             warning("Statement broken badly.", t);
         }
     }
@@ -2403,7 +2663,7 @@ JSLINT = function () {
 
     stmt('break', function () {
         nolinebreak(this);
-        if (funlab[token.value] === 'live*') {
+        if (funlab[nexttoken.value] === 'live*') {
             advance();
         }
         reachable('break');
@@ -2412,7 +2672,7 @@ JSLINT = function () {
 
     stmt('continue', function () {
         nolinebreak(this);
-        if (funlab[token.id] === 'live*') {
+        if (funlab[nexttoken.value] === 'live*') {
             advance();
         }
         reachable('continue');
@@ -2421,7 +2681,8 @@ JSLINT = function () {
 
     stmt('return', function () {
         nolinebreak(this);
-        if (token.id !== ';' && !token.reach) {
+        if (nexttoken.id !== ';' && !nexttoken.reach) {
+            nonadjacent(token, nexttoken);
             parse(20);
         }
         reachable('return');
@@ -2430,6 +2691,7 @@ JSLINT = function () {
 
     stmt('throw', function () {
         nolinebreak(this);
+        nonadjacent(token, nexttoken);
         parse(20);
         reachable('throw');
     });
@@ -2473,10 +2735,7 @@ JSLINT = function () {
 // The actual JSLINT function itself.
 
     var itself = function (s, o) {
-        option = o;
-        if (!o) {
-            option = {};
-        }
+        option = o || {};
         JSLINT.errors = [];
         globals = {};
         functions = [];
@@ -2487,12 +2746,15 @@ JSLINT = function () {
         member = {};
         funstack = [];
         lookahead = [];
+        inblock = false;
+        indent = 0;
+        warnings = 0;
         lex.init(s);
 
-        prevtoken = token = syntax['(begin)'];
+        prevtoken = token = nexttoken = syntax['(begin)'];
         try {
             advance();
-            if (token.value.charAt(0) === '<') {
+            if (nexttoken.value.charAt(0) === '<') {
                 xml();
             } else {
                 statements();
@@ -2502,9 +2764,9 @@ JSLINT = function () {
             if (e) {
                 JSLINT.errors.push({
                     reason: "JSLint error: " + e.description,
-                    line: token.line,
-                    character: token.from,
-                    evidence: token.value
+                    line: nexttoken.line,
+                    character: nexttoken.from,
+                    evidence: nexttoken.value
                 });
             }
         }
@@ -2515,7 +2777,14 @@ JSLINT = function () {
 // Report generator.
 
     itself.report = function (option) {
-        var a = [], c, cc, f, i, k, o = [], s;
+        var a = [];
+        var c;
+        var cc;
+        var f;
+        var i;
+        var k;
+        var o = [];
+        var s;
 
         function detail(h) {
             if (s.length) {
@@ -2635,7 +2904,7 @@ JSLINT = function () {
                 s = [];
                 for (k in f) {
                     if (k.charAt(0) !== '(') {
-                        switch(f[k]) {
+                        switch (f[k]) {
                         case 'var':
                             s.push('<tt>' + k +
                                     '</tt><small>&nbsp;(unused)</small>');
@@ -2671,7 +2940,7 @@ JSLINT = function () {
                 s = [];
                 for (k in f) {
                     if (k.charAt(0) !== '(' && f[k] === 'label') {
-                       s.push(k);
+                        s.push(k);
                     }
                 }
                 detail('Label');

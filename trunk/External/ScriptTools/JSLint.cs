@@ -4,114 +4,123 @@ using System.Reflection;
 using System.ComponentModel;
 using System.Runtime.InteropServices;
 
-/*
-	.NET Wrapper for running JSLint
-
-	(C)2002 Douglas Crockford
-	www.JSLint.com
-	WSH Edition
-*/
-
 namespace ScriptTools
 {
-	#region JSLintOptions
 
-	[ComVisible(true)]
-	public class JSLintOptions
-	{
-		/// <summary>
-		/// true if the standard browser globals should be predefined
-		/// </summary>
-		[Description("IsBrowser")]
-        public bool browser = false;
-
-		/// <summary>
-		/// true if upper case HTML should be allowed
-		/// </summary>
-		[Description("AllowUpperCaseHtml")]
-		public bool cap = false;
-
-		/// <summary>
-		/// true if debugger statements should be allowed
-		/// </summary>
-		[Description("AllowDebugger")]
-        public bool debug = false;
-
-		/// <summary>
-		/// true if === should be required
-		/// </summary>
-		[Description("RequireStrictEquals")]
-		public bool eqeqeq = false;
-
-		/// <summary>
-		/// true if eval should be allowed
-		/// </summary>
-		[Description("AllowEval")]
-        public bool evil = false;
-
-		/// <summary>
-		/// true if jscript deviations should be allowed
-		/// </summary>
-		[Description("AllowJScript")]
-		public bool jscript = false;
-
-		/// <summary>
-		/// true if line breaks should not be checked
-		/// </summary>
-		[Description("AllowLaxLineEnding")]
-        public bool laxLineEnd = false;
-
-		/// <summary>
-		/// true if the scan should stop on first error
-		/// </summary>
-		[Description("StopOnFirstError")]
-		public bool passfail = false;
-
-		/// <summary>
-		/// true if increment/decrement should not be allowed
-		/// </summary>
-		[Description("NoIncDec")]
-		public bool plusplus = false;
-
-		/// <summary>
-		/// true if var redefinition should be allowed
-		/// </summary>
-		[Description("AllowVarRedef")]
-		public bool redef = false;
-
-		/// <summary>
-		/// true if the Rhino environment globals should be predefined
-		/// </summary>
-		[Description("IsRhino")]
-		public bool rhino = false;
-
-		/// <summary>
-		/// true if undefined variables are errors
-		/// </summary>
-		[Description("NoUndefVars")]
-        public bool undef = false;
-
-		/// <summary>
-		/// true if the Yahoo Widgets globals should be predefined
-		/// </summary>
-		[Description("IsYahooWidget")]
-		public bool widget = false;
-	}
-
-	#endregion JSLintOptions
-
+	/// <summary>
+	/// 
+	/// </summary>
+	/// <remarks>
+	/// http://jslint.com/lint.html
+	/// </remarks>
 	public class JSLint
 	{
+		#region JSLintOptions
+
+		[ComVisible(true)]
+		public class JSLintOptions
+		{
+			/// <summary>
+			/// true if bitwise operators should not be allowed
+			/// </summary>
+			[Description("DisallowBitwise")]
+			public bool bitwise = false;
+
+			/// <summary>
+			/// true if the standard browser globals should be predefined
+			/// </summary>
+			[Description("IsBrowser")]
+			public bool browser = false;
+
+			/// <summary>
+			/// true if upper case HTML should be allowed
+			/// </summary>
+			[Description("AllowUpperCaseHtml")]
+			public bool cap = false;
+
+			/// <summary>
+			/// true if debugger statements should be allowed
+			/// </summary>
+			[Description("AllowDebugger")]
+			public bool debug = false;
+
+			/// <summary>
+			/// true if === should be required
+			/// </summary>
+			[Description("RequireStrictEquals")]
+			public bool eqeqeq = false;
+
+			/// <summary>
+			/// true if eval should be allowed
+			/// </summary>
+			[Description("AllowEval")]
+			public bool evil = false;
+
+			/// <summary>
+			/// true if line breaks should not be checked
+			/// </summary>
+			[Description("AllowLaxLineEnding")]
+			public bool laxLineEnd = false;
+
+			/// <summary>
+			/// true if names should be checked
+			/// </summary>
+			[Description("CheckIdentifiers")]
+			public bool nomen = false;
+
+			/// <summary>
+			/// true if the scan should stop on first error
+			/// </summary>
+			[Description("StopOnFirstError")]
+			public bool passfail = false;
+
+			/// <summary>
+			/// true if increment/decrement should not be allowed
+			/// </summary>
+			[Description("NoIncDec")]
+			public bool plusplus = false;
+
+			/// <summary>
+			/// true if var redefinition should be allowed
+			/// </summary>
+			[Description("AllowVarRedef")]
+			public bool redef = false;
+
+			/// <summary>
+			/// true if the Rhino environment globals should be predefined
+			/// </summary>
+			[Description("IsRhino")]
+			public bool rhino = false;
+
+			/// <summary>
+			/// true if undefined variables are errors
+			/// </summary>
+			[Description("NoUndefVars")]
+			public bool undef = false;
+
+			/// <summary>
+			/// true if strict whitespace rules apply
+			/// </summary>
+			[Description("StrictWhitespace")]
+			public bool white = false;
+
+			/// <summary>
+			/// true if the Yahoo Widgets globals should be predefined
+			/// </summary>
+			[Description("IsYahooWidget")]
+			public bool widget = false;
+		}
+
+		#endregion JSLintOptions
+
 		#region Constants
 
-		private const string JSLintScript = "jslint_full.js";
-		private const string JSLintScript_WSH = "jslint_wsh.js";
+		private const string JSLintScript = "jslint.js";
 
 		#endregion Constants
 
 		#region Fields
 
-		private string jsLintPath = null;
 		private JSLintOptions options = new JSLintOptions();
 
 		#endregion Fields
@@ -126,9 +135,13 @@ namespace ScriptTools
 
 		#region Properties
 
-		public string JSLintPath
+		/// <summary>
+		/// true if bitwise operators should not be allowed
+		/// </summary>
+		public bool DisallowBitwise
 		{
-			get { return this.jsLintPath; }
+			get { return this.options.bitwise; }
+			set { this.options.bitwise = value; }
 		}
 
 		/// <summary>
@@ -177,21 +190,21 @@ namespace ScriptTools
 		}
 
 		/// <summary>
-		/// true if jscript deviations should be allowed
-		/// </summary>
-		public bool AllowJScript
-		{
-			get { return this.options.jscript; }
-			set { this.options.jscript = value; }
-		}
-
-		/// <summary>
 		/// true if line breaks should not be checked
 		/// </summary>
 		public bool AllowLaxLineEnding
 		{
 			get { return this.options.laxLineEnd; }
 			set { this.options.laxLineEnd = value; }
+		}
+
+		/// <summary>
+		/// true if names should be checked
+		/// </summary>
+		public bool CheckIdentifiers
+		{
+			get { return this.options.nomen; }
+			set { this.options.nomen = value; }
 		}
 
 		/// <summary>
@@ -237,6 +250,15 @@ namespace ScriptTools
 		{
 			get { return this.options.undef; }
 			set { this.options.undef = value; }
+		}
+
+		/// <summary>
+		/// true if strict whitespace rules apply
+		/// </summary>
+		public bool StrictWhitespace
+		{
+			get { return this.options.white; }
+			set { this.options.white = value; }
 		}
 
 		/// <summary>
@@ -310,11 +332,18 @@ namespace ScriptTools
 					bool fatal = (bool)sc.Eval("!JSLINT.errors["+i+"]");
 					if (!fatal)
 					{
-						int line = (int)sc.Eval("JSLINT.errors["+i+"].line");
-						int col = (int)sc.Eval("JSLINT.errors["+i+"].character");
-						string reason = sc.Eval("JSLINT.errors["+i+"].reason") as string;
-						//string evidence = sc.Eval("JSLINT.errors["+i+"].evidence") as string;
-						throw new ParseException(reason, null, filename, script, line, col);
+						try
+						{
+							int line = (int)sc.Eval("JSLINT.errors["+i+"].line");
+							int col = (int)sc.Eval("JSLINT.errors["+i+"].character");
+							string reason = sc.Eval("JSLINT.errors["+i+"].reason") as string;
+							//string evidence = sc.Eval("JSLINT.errors["+i+"].evidence") as string;
+							throw new ParseException(reason, null, filename, script, line, col);
+						}
+						catch (ParseException ex)
+						{
+							Console.Error.WriteLine(ex.GetCompilerMessage(false));
+						}
 					}
 				}
 			}
