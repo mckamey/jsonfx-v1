@@ -94,7 +94,8 @@ namespace JsonFx.Handlers
 		private void HandleRequest(System.Web.HttpContext context, JsonRequest request, ref JsonResponse response)
 		{
 			context.Response.Clear();
-			if (context.Request.Browser["etc"].Contains("opera/8"))
+			string browserEtc = context.Request.Browser["etc"];
+			if (browserEtc != null && browserEtc.Contains("opera/8"))
 			{
 				// this is a specific fix for Opera 8.x
 				// it can only handle "text/plain" & "text/html"
