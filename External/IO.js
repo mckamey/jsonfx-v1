@@ -78,7 +78,7 @@ JsonFx.IO = {};
 	options.headers.Pragma = "no-cache";
 
 	if ("number" !== typeof options.timeout) {
-		options.timeout = 10000;// 10 seconds
+		options.timeout = 60000;// 60 seconds
 	}
 	if ("function" !== typeof options.onCreate) {
 		options.onCreate = null;
