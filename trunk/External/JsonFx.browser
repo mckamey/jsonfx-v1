@@ -79,20 +79,32 @@
         </capabilities>
     </browser>
 
-	<browser id="JsonFxSafari"  parentID="Safari1Plus">
-		<identification>
-			<userAgent match="Safari/(?'version'(?'major'\d+)\.(?'minor'\d+))" />
-			<header name="Accept" match="application/json" />
-		</identification>
+	<browser refID="Safari">
 		<capture>
-			<userAgent match="Safari/(?'version'(?'major'\d+)\.(?'minor'\d+))" />
+			<userAgent match="Safari/(?'version'(?'major'\d+)(\.(?'minor'\d+))?)" />
 		</capture>
 		<capabilities>
-			<capability name="browser" value="JsonFx" />
-            <capability name="type" value="JsonFx${major}" />
+			<capability name="browser" value="Safari" />
+            <capability name="type" value="Safari${major}" />
 			<capability name="version" value="${version}" />
 			<capability name="majorversion" value="${major}" />
 			<capability name="minorversion" value="${minor}" />
+		</capabilities>
+	</browser>
+
+	<browser id="JsonFxSafari"  parentID="Safari1Plus">
+		<identification>
+			<userAgent match="Safari/\d+(\.\d+)?" />
+			<header name="Accept" match="application/json" />
+		</identification>
+		<capture>
+		</capture>
+		<capabilities>
+			<capability name="browser" value="JsonFx" />
+            <capability name="type" value="JsonFx1" />
+			<capability name="version" value="1.0" />
+			<capability name="majorversion" value="1" />
+			<capability name="minorversion" value="0" />
 			<capability name="preferredRenderingMime" value="application/json" />
 			<capability name="supportsJson" value="true" />
 			<capability name="tagWriter"  value="JsonFx.UI.JsonXhtmlTextWriter, JsonFx" />
@@ -108,5 +120,4 @@
             <capability name="beta" value="true" />
         </capabilities>
     </browser>
-
 </browsers>
