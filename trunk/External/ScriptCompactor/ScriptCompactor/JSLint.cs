@@ -172,7 +172,7 @@ namespace BuildTools.ScriptCompactor
 
 		#region Constants
 
-		private const string JSLintScript = "jslint.js";
+		private const string JSLintScript = "BuildTools.ScriptCompactor.jslint.js";
 
 		#endregion Constants
 
@@ -369,7 +369,7 @@ namespace BuildTools.ScriptCompactor
 			Assembly assembly = Assembly.GetAssembly(typeof(JSLint));
 
 			// JSLint.js stored as a resource file
-			string resourceName = assembly.GetName().Name+"."+JSLintScript;
+			string resourceName = /*assembly.GetName().Name+"."+*/JSLintScript;
 			if (assembly.GetManifestResourceInfo(resourceName) == null)
 			{
 				throw new FileNotFoundException("Cannot find the JSLint script file.", resourceName);
