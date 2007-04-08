@@ -4,11 +4,12 @@ using System.Reflection;
 using System.ComponentModel;
 using System.Runtime.InteropServices;
 
-namespace ScriptTools
-{
+using BuildTools;
 
+namespace BuildTools.ScriptCompactor
+{
 	/// <summary>
-	/// 
+	/// Implements .NET wrapper for JavaScript JSLint
 	/// </summary>
 	/// <remarks>
 	/// http://jslint.com/lint.html
@@ -326,6 +327,9 @@ namespace ScriptTools
 			bool result = (bool)sc.Run("JSLINT", ref p);
 			if (!result)
 			{
+				// Alternatively this could also import JSON.js
+				// but then it would need to parse on the C# side
+				// looping through with Eval is simpler
 				int length = (int)sc.Eval("JSLINT.errors.length");
 				for (int i=0; i<length; i++)
 				{
@@ -338,7 +342,7 @@ namespace ScriptTools
 							int col = (int)sc.Eval("JSLINT.errors["+i+"].character");
 							string reason = sc.Eval("JSLINT.errors["+i+"].reason") as string;
 							//string evidence = sc.Eval("JSLINT.errors["+i+"].evidence") as string;
-							throw new ParseException(reason, null, filename, script, line, col);
+							throw new ParseError(reason, filename, line, col);
 						}
 						catch (ParseException ex)
 						{
