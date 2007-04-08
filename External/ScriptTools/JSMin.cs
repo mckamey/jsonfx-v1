@@ -2,7 +2,7 @@ using System;
 using System.IO;
 
 /*
-	Originally written in C and then converted to C#.
+	Originally written in C and then ported to C#.
 	jsmin.c
 	2003-04-21
 
@@ -29,17 +29,17 @@ using System.IO;
 	SOFTWARE.
 */
 
-namespace ScriptTools
+namespace BuildTools.ScriptCompactor
 {
-	[Flags]
-	public enum JSMinOptions
+	public class JSMin
 	{
-		None = 0x0,
-		Overwrite = 0x1
-	}
+		[Flags]
+		public enum Options
+		{
+			None=0x0,
+			Overwrite=0x1
+		}
 
-	public class JSMinifier
-	{
 		#region Constants
 
 		private const char EOF = Char.MinValue;
@@ -52,19 +52,19 @@ namespace ScriptTools
 		private TextWriter writer;
 		private char theA;
 		private char theB;
-		private char theLookahead = JSMinifier.EOF;
-		private char lastWritten = JSMinifier.EOF;
+		private char theLookahead = JSMin.EOF;
+		private char lastWritten = JSMin.EOF;
 
 		#endregion Fields
 
 		#region Public Methods
 
-		public void Minify(string inputFile, string outputFile, string copyright, string timeStamp, JSMinOptions options)
+		public void Minify(string inputFile, string outputFile, string copyright, string timeStamp, JSMin.Options options)
 		{
 			if (!File.Exists(inputFile))
 				throw new FileNotFoundException(String.Format("File (\"{0}\") not found.", inputFile), inputFile);
 
-			if ((options&JSMinOptions.Overwrite) == 0x0 && File.Exists(outputFile))
+			if ((options&JSMin.Options.Overwrite) == 0x0 && File.Exists(outputFile))
 				throw new AccessViolationException(String.Format("File (\"{0}\") already exists.", outputFile));
 
 			if (inputFile.Equals(outputFile, StringComparison.InvariantCultureIgnoreCase))
@@ -72,7 +72,7 @@ namespace ScriptTools
 
 			using (TextReader input = new StreamReader(inputFile))
 			{
-				JSMinifier.PrepSavePath(outputFile);
+				JSMin.PrepSavePath(outputFile);
 				using (TextWriter output = new StreamWriter(outputFile, false))
 				{
 					this.Minify(input, output, copyright, timeStamp, options);
@@ -80,7 +80,7 @@ namespace ScriptTools
 			}
 		}
 
-		public void Minify(TextReader input, TextWriter output, string copyright, string timeStamp, JSMinOptions options)
+		public void Minify(TextReader input, TextWriter output, string copyright, string timeStamp, JSMin.Options options)
 		{
 			if (input == null)
 				throw new NullReferenceException("Input TextReader was null.");
@@ -119,7 +119,7 @@ namespace ScriptTools
 
 				this.writer.WriteLine("\\*".PadRight(width, '-')+"*/");
 			}
-			this.JSMin();
+			this.Run();
 		}
 
 		/// <summary>
@@ -152,11 +152,11 @@ namespace ScriptTools
 		///		replaced with spaces. Carriage returns will be replaced with linefeeds.
 		///		Most spaces and linefeeds will be removed. 
 		/// </summary>
-		private void JSMin()
+		private void Run()
 		{
 			this.theA = '\n';
 			this.Do(Action.Read);
-			while (this.theA != JSMinifier.EOF)
+			while (this.theA != JSMin.EOF)
 			{
 				switch (this.theA)
 				{
@@ -378,7 +378,7 @@ namespace ScriptTools
 									}
 									break;
 								}
-								case JSMinifier.EOF:
+								case JSMin.EOF:
 								{
 									throw new Exception("Unterminated comment.");
 								}
@@ -414,21 +414,21 @@ namespace ScriptTools
 		{
 			// shift char from look ahead
 			char c = this.theLookahead;
-			this.theLookahead = JSMinifier.EOF;
+			this.theLookahead = JSMin.EOF;
 
-			if (c == JSMinifier.EOF)
+			if (c == JSMin.EOF)
 			{
 				// this is the only place where we use int for char
 				// StreamReader.Read returns -1 for EOF
 				// we are using Char.MinValue since it usually isn't valid anyway
 				// so must first check if we actually found our EOF and replace it
 				int ch = this.reader.Read();
-				if (ch == JSMinifier.EOF)
+				if (ch == JSMin.EOF)
 					ch = ' ';
-				c = (ch == -1) ? JSMinifier.EOF : (char)ch;
+				c = (ch == -1) ? JSMin.EOF : (char)ch;
 			}
 
-			if (c >= ' ' || c == '\n' || c == JSMinifier.EOF)
+			if (c >= ' ' || c == '\n' || c == JSMin.EOF)
 				return c;
 
 			if (c == '\r')
@@ -449,7 +449,7 @@ namespace ScriptTools
 			{
 				switch (this.lastWritten)
 				{
-					case JSMinifier.EOF:
+					case JSMin.EOF:
 					case ',':
 					case '.':
 					case ';':
