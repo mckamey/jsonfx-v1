@@ -71,10 +71,10 @@ namespace BuildTools.ScriptCompactor
 	/// </summary>
 	public class JSLint
 	{
-		#region JSLintOptions
+		#region JSLint.Options
 
 		[ComVisible(true)]
-		public class JSLintOptions
+		public class Options
 		{
 			/// <summary>
 			/// true if bitwise operators should not be allowed
@@ -167,7 +167,7 @@ namespace BuildTools.ScriptCompactor
 			public bool widget = false;
 		}
 
-		#endregion JSLintOptions
+		#endregion JSLint.Options
 
 		#region Constants
 
@@ -177,7 +177,7 @@ namespace BuildTools.ScriptCompactor
 
 		#region Fields
 
-		private JSLintOptions options = new JSLintOptions();
+		private JSLint.Options options = new JSLint.Options();
 
 		#endregion Fields
 
@@ -352,9 +352,10 @@ namespace BuildTools.ScriptCompactor
 
 			string jsLintSource = null;
 
-			// JSLint stored as a resource file
-			string resourceName = "ScriptTools"/*assembly.GetName().Name*/+"."+JSLintScript;
 			Assembly assembly = Assembly.GetAssembly(typeof(JSLint));
+
+			// JSLint stored as a resource file
+			string resourceName = assembly.GetName().Name+"."+JSLintScript;
 			if (assembly.GetManifestResourceInfo(resourceName) == null)
 			{
 				throw new FileNotFoundException("Cannot find the JSLint script file.", resourceName);
