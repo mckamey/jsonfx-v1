@@ -34,32 +34,31 @@ using System.Collections.Generic;
 
 using BuildTools.IO;
 
-namespace BuildTools.CssCompactor
+namespace BuildTools.ScriptCompactor
 {
-	public static class CssCompactor
+	public static class ScriptCompactor
 	{
-		#region CssCompactor.Options
+		#region ScriptCompactor.Options
 
 		[Flags]
 		public enum Options
 		{
 			None=0x00,
-			PrettyPrint=0x01,
-			Overwrite=0x02
+			Overwrite=0x01
 		}
 
-		#endregion CssCompactor.Options
+		#endregion ScriptCompactor.Options
 
 		#region Public Methods
 
-		public static List<ParseException> Compact(string inputFile, string outputFile, string copyright, string timeStamp, CssCompactor.Options options)
+		public static List<ParseException> Compact(string inputFile, string outputFile, string copyright, string timeStamp, ScriptCompactor.Options options)
 		{
 			if (!File.Exists(inputFile))
 			{
 				throw new FileNotFoundException(String.Format("File (\"{0}\") not found.", inputFile), inputFile);
 			}
 
-			if ((options&CssCompactor.Options.Overwrite) == 0x0 && File.Exists(outputFile))
+			if ((options&ScriptCompactor.Options.Overwrite) == 0x0 && File.Exists(outputFile))
 			{
 				throw new AccessViolationException(String.Format("File (\"{0}\") already exists.", outputFile));
 			}
@@ -72,11 +71,11 @@ namespace BuildTools.CssCompactor
 			FileUtility.PrepSavePath(outputFile);
 			using (TextWriter output = File.CreateText(outputFile))
 			{
-				return CssCompactor.Compact(inputFile, null, output, copyright, timeStamp, options);
+				return ScriptCompactor.Compact(inputFile, null, output, copyright, timeStamp, options);
 			}
 		}
 
-		public static List<ParseException> Compact(string inputFile, string inputSource, TextWriter output, string copyright, string timeStamp, CssCompactor.Options options)
+		public static List<ParseException> Compact(string inputFile, string inputSource, TextWriter output, string copyright, string timeStamp, ScriptCompactor.Options options)
 		{
 			if (output == null)
 			{
@@ -84,14 +83,33 @@ namespace BuildTools.CssCompactor
 			}
 
 			// write out header with copyright and timestamp
-			CssCompactor.WriteHeader(output, copyright, timeStamp);
+			ScriptCompactor.WriteHeader(output, copyright, timeStamp);
 
-			// verify, compact and write out results
-			CssParser parser = new CssParser(inputFile, inputSource);
-			parser.Write(output, options);
+			// verify
+			JSLint jslint = new JSLint();
+			jslint.Run(inputFile, inputSource);
+
+			// compact and write out results
+			try
+			{
+				JSMin jsmin = new JSMin();
+				if (String.IsNullOrEmpty(inputSource))
+				{
+					jsmin.Run(File.OpenText(inputFile), output);
+				}
+				else
+				{
+					jsmin.Run(inputSource, output);
+				}
+			}
+			catch (Exception ex)
+			{
+				// a bad JSLint error could cause JSMin to choke
+				jslint.Errors.Add(new ParseError(ex.Message, inputFile, -1, -1, ex));
+			}
 
 			// return any errors
-			return parser.Errors;
+			return jslint.Errors;
 		}
 
 		#endregion Public Methods

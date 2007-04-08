@@ -44,11 +44,11 @@ namespace BuildTools.CssCompactor
 	{
 		#region Methods
 
-		public abstract void Write(TextWriter writer, CssOptions options);
+		public abstract void Write(TextWriter writer, CssCompactor.Options options);
 
-		protected static bool IsPrettyPrint(CssOptions options)
+		protected static bool IsPrettyPrint(CssCompactor.Options options)
 		{
-			return (options & CssOptions.PrettyPrint) > 0;
+			return (options & CssCompactor.Options.PrettyPrint) > 0;
 		}
 
 		#endregion Methods
@@ -59,7 +59,7 @@ namespace BuildTools.CssCompactor
 		{
 			StringWriter writer = new StringWriter();
 
-			this.Write(writer, CssOptions.PrettyPrint);
+			this.Write(writer, CssCompactor.Options.PrettyPrint);
 
 			return writer.ToString();
 		}
@@ -71,7 +71,7 @@ namespace BuildTools.CssCompactor
 	{
 		#region Methods
 
-		void Write(TextWriter writer, CssOptions options);
+		void Write(TextWriter writer, CssCompactor.Options options);
 
 		#endregion Methods
 	}
@@ -104,7 +104,7 @@ namespace BuildTools.CssCompactor
 
 		#region Methods
 
-		public override void Write(TextWriter writer, CssOptions options)
+		public override void Write(TextWriter writer, CssCompactor.Options options)
 		{
 			writer.Write(this.Value);
 		}
@@ -135,7 +135,7 @@ namespace BuildTools.CssCompactor
 
 		#region Methods
 
-		public override void Write(TextWriter writer, CssOptions options)
+		public override void Write(TextWriter writer, CssCompactor.Options options)
 		{
 			bool prettyPrint = IsPrettyPrint(options);
 
@@ -195,7 +195,7 @@ namespace BuildTools.CssCompactor
 
 		#region Methods
 
-		public override void Write(TextWriter writer, CssOptions options)
+		public override void Write(TextWriter writer, CssCompactor.Options options)
 		{
 			bool prettyPrint = IsPrettyPrint(options);
 
@@ -247,7 +247,7 @@ namespace BuildTools.CssCompactor
 	{
 		#region Methods
 
-		public override void Write(TextWriter writer, CssOptions options)
+		public override void Write(TextWriter writer, CssCompactor.Options options)
 		{
 			bool prettyPrint = IsPrettyPrint(options);
 
@@ -292,7 +292,7 @@ namespace BuildTools.CssCompactor
 
 		#region Methods
 
-		public override void Write(TextWriter writer, CssOptions options)
+		public override void Write(TextWriter writer, CssCompactor.Options options)
 		{
 			bool prettyPrint = IsPrettyPrint(options);
 
@@ -372,7 +372,7 @@ namespace BuildTools.CssCompactor
 
 		#region Methods
 
-		public override void Write(TextWriter writer, CssOptions options)
+		public override void Write(TextWriter writer, CssCompactor.Options options)
 		{
 			bool prettyPrint = IsPrettyPrint(options);
 			if (prettyPrint)
@@ -415,7 +415,7 @@ namespace BuildTools.CssCompactor
 
 		#region Methods
 
-		public override void Write(TextWriter writer, CssOptions options)
+		public override void Write(TextWriter writer, CssCompactor.Options options)
 		{
 			bool space = false;
 

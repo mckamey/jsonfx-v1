@@ -69,7 +69,7 @@ namespace BuildTools.ScriptCompactor
 {
 	public class JSMin
 	{
-		#region Options
+		#region JSMin.Options
 
 		[Flags]
 		public enum Options
@@ -78,7 +78,7 @@ namespace BuildTools.ScriptCompactor
 			Overwrite=0x1
 		}
 
-		#endregion Options
+		#endregion JSMin.Options
 
 		#region Constants
 
@@ -99,66 +99,19 @@ namespace BuildTools.ScriptCompactor
 
 		#region Public Methods
 
-		public void Minify(string inputFile, string outputFile, string copyright, string timeStamp, JSMin.Options options)
+		public void Run(string inputSource, TextWriter output)
 		{
-			if (!File.Exists(inputFile))
-				throw new FileNotFoundException(String.Format("File (\"{0}\") not found.", inputFile), inputFile);
-
-			if ((options&JSMin.Options.Overwrite) == 0x0 && File.Exists(outputFile))
-				throw new AccessViolationException(String.Format("File (\"{0}\") already exists.", outputFile));
-
-			if (inputFile.Equals(outputFile, StringComparison.InvariantCultureIgnoreCase))
-				throw new ApplicationException("Input and output file are set to the same path.");
-
-			using (TextReader input = new StreamReader(inputFile))
+			using (StringReader reader = new StringReader(inputSource))
 			{
-				FileUtility.PrepSavePath(outputFile);
-				using (TextWriter output = new StreamWriter(outputFile, false))
-				{
-					this.Minify(input, output, copyright, timeStamp, options);
-				}
+				this.Run(reader, output);
 			}
 		}
 
-		public void Minify(TextReader input, TextWriter output, string copyright, string timeStamp, JSMin.Options options)
+		public void Run(TextReader input, TextWriter output)
 		{
-			if (input == null)
-				throw new NullReferenceException("Input TextReader was null.");
-
-			if (output == null)
-				throw new NullReferenceException("Output TextWriter was null.");
-
 			this.reader = input;
 			this.writer = output;
 
-			if (!String.IsNullOrEmpty(copyright) || !String.IsNullOrEmpty(timeStamp))
-			{
-				int width = 6;
-				if (!String.IsNullOrEmpty(copyright))
-				{
-					copyright = copyright.Replace("*/", "");
-					width = Math.Max(copyright.Length+6, width);
-				}
-				if (!String.IsNullOrEmpty(timeStamp))
-				{
-					timeStamp = DateTime.Now.ToString(timeStamp).Replace("*/", "");
-					width = Math.Max(timeStamp.Length+6, width);
-				}
-
-				this.writer.WriteLine("/*".PadRight(width, '-')+"*\\");
-
-				if (!String.IsNullOrEmpty(copyright))
-				{
-					this.writer.WriteLine("\t"+copyright);
-				}
-
-				if (!String.IsNullOrEmpty(timeStamp))
-				{
-					this.writer.WriteLine("\t"+timeStamp);
-				}
-
-				this.writer.WriteLine("\\*".PadRight(width, '-')+"*/");
-			}
 			this.Run();
 		}
 
@@ -494,7 +447,7 @@ namespace BuildTools.ScriptCompactor
 					case '&':
 					{
 						// safely suppress NewLine
-						// (as per JSLint http://www.jslint.com)
+						// (as per JSLint http://www.jslint.com/lint.html)
 						break;
 					}
 					default:

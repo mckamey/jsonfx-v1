@@ -58,6 +58,7 @@
 
 using System;
 using System.IO;
+using System.Collections.Generic;
 using System.Reflection;
 using System.ComponentModel;
 using System.Runtime.InteropServices;
@@ -178,6 +179,7 @@ namespace BuildTools.ScriptCompactor
 		#region Fields
 
 		private JSLint.Options options = new JSLint.Options();
+		private List<ParseException> errors = new List<ParseException>();
 
 		#endregion Fields
 
@@ -190,6 +192,14 @@ namespace BuildTools.ScriptCompactor
 		#endregion Init
 
 		#region Properties
+
+		/// <summary>
+		/// List of warnings and errors found
+		/// </summary>
+		public List<ParseException> Errors
+		{
+			get { return this.errors; }
+		}
 
 		/// <summary>
 		/// true if bitwise operators should not be allowed
@@ -332,14 +342,7 @@ namespace BuildTools.ScriptCompactor
 
 		public void Run(string filename, string script)
 		{
-			if (String.IsNullOrEmpty(script))
-			{
-				if (String.IsNullOrEmpty(filename) || !File.Exists(filename))
-				{
-					throw new FileNotFoundException("Cannot find the script file.", filename);
-				}
-				script = File.ReadAllText(filename);
-			}
+			#region Microsoft Script Control References
 
 			// Microsoft Script Control 1.0
 			// http://weblogs.asp.net/rosherove/pages/DotNetScripting.aspx
@@ -350,11 +353,22 @@ namespace BuildTools.ScriptCompactor
 			// Must be built with x86 as Target (not Any CPU/x64/Itanium)
 			// http://forums.microsoft.com/MSDN/ShowPost.aspx?PostID=1406892&SiteID=1
 
+			#endregion Microsoft Script Control References
+
+			if (String.IsNullOrEmpty(script))
+			{
+				if (String.IsNullOrEmpty(filename) || !File.Exists(filename))
+				{
+					throw new FileNotFoundException("Cannot find the script file.", filename);
+				}
+				script = File.ReadAllText(filename);
+			}
+
 			string jsLintSource = null;
 
 			Assembly assembly = Assembly.GetAssembly(typeof(JSLint));
 
-			// JSLint stored as a resource file
+			// JSLint.js stored as a resource file
 			string resourceName = assembly.GetName().Name+"."+JSLintScript;
 			if (assembly.GetManifestResourceInfo(resourceName) == null)
 			{
@@ -385,7 +399,7 @@ namespace BuildTools.ScriptCompactor
 			{
 				// Alternatively this could also import JSON.js
 				// but then it would need to parse on the C# side
-				// looping through with Eval is simpler
+				// Just looping through with Eval is simpler
 				int length = (int)sc.Eval("JSLINT.errors.length");
 				for (int i=0; i<length; i++)
 				{
@@ -398,11 +412,14 @@ namespace BuildTools.ScriptCompactor
 							int col = (int)sc.Eval("JSLINT.errors["+i+"].character");
 							string reason = sc.Eval("JSLINT.errors["+i+"].reason") as string;
 							//string evidence = sc.Eval("JSLINT.errors["+i+"].evidence") as string;
+
+							// could just add to errors collection here since this
+							// takes a performance hit to throw, but throwing sets stack dump too
 							throw new ParseError(reason, filename, line, col);
 						}
 						catch (ParseException ex)
 						{
-							Console.Error.WriteLine(ex.GetCompilerMessage(false));
+							this.errors.Add(ex);
 						}
 					}
 				}
