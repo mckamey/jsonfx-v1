@@ -49,11 +49,11 @@ namespace BuildTools.CssCompactor
 
 		#region Fields
 
-		List<ParseException> errors = new List<ParseException>();
-		LineReader reader;
-		CssStyleSheet styleSheet = null;
-		string filePath = null;
-		string source = null;
+		private List<ParseException> errors = new List<ParseException>();
+		private LineReader reader;
+		private CssStyleSheet styleSheet = null;
+		private string filePath = null;
+		private string source = null;
 
 		#endregion Fields
 
@@ -668,7 +668,7 @@ namespace BuildTools.CssCompactor
 
 		#region Methods
 
-		public void Write(TextWriter writer, CssOptions options)
+		public void Write(TextWriter writer, CssCompactor.Options options)
 		{
 			this.StyleSheet.Write(writer, options);
 		}
