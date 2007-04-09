@@ -87,7 +87,7 @@ namespace BuildTools.ScriptCompactor
 			/// true if the standard browser globals should be predefined
 			/// </summary>
 			[Description("IsBrowser")]
-			public bool browser = false;
+			public bool browser = true;
 
 			/// <summary>
 			/// true if upper case HTML should be allowed
@@ -105,7 +105,7 @@ namespace BuildTools.ScriptCompactor
 			/// true if === should be required
 			/// </summary>
 			[Description("RequireStrictEquals")]
-			public bool eqeqeq = false;
+			public bool eqeqeq = true;
 
 			/// <summary>
 			/// true if eval should be allowed
@@ -153,7 +153,7 @@ namespace BuildTools.ScriptCompactor
 			/// true if undefined variables are errors
 			/// </summary>
 			[Description("NoUndefVars")]
-			public bool undef = false;
+			public bool undef = true;
 
 			/// <summary>
 			/// true if strict whitespace rules apply

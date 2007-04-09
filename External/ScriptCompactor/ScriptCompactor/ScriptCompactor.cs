@@ -43,8 +43,8 @@ namespace BuildTools.ScriptCompactor
 		[Flags]
 		public enum Options
 		{
-			None=0x00,
-			Overwrite=0x01
+			None = 0x00,
+			Overwrite = 0x01
 		}
 
 		#endregion ScriptCompactor.Options
