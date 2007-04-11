@@ -15,6 +15,8 @@ namespace PseudoCode.Web.Controls
 	{
 		#region Fields
 
+		private string sourceUrl = null;
+		private string longDescriptionUrl = null;
 		private string alternateText = null;
 		//private const string DefaultAltText = "Your browser does not support IFrames.";
 
@@ -38,14 +40,10 @@ namespace PseudoCode.Web.Controls
 		[DefaultValue("")]
 		[Category(" InlineFrame")]
 		[Description("Gets and sets the source Url.")]
-		public string SourceUrl
+		public virtual string SourceUrl
 		{
-			get { return this.Attributes["src"]; }
-			set
-			{
-				this.EnsureChildControls();
-				this.Attributes["src"] = this.ResolveUrl(value);
-			}
+			get { return this.sourceUrl; }
+			set { this.sourceUrl = value; }
 		}
 
 		/// <summary>
@@ -55,10 +53,10 @@ namespace PseudoCode.Web.Controls
 		[DefaultValue("")]
 		[Category(" InlineFrame")]
 		[Description("Gets and sets the log description Url.")]
-		public string LongDescriptionUrl
+		public virtual string LongDescriptionUrl
 		{
-			get { return this.Attributes["longdesc"]; }
-			set { this.Attributes["longdesc"] = this.ResolveUrl(value); }
+			get { return this.longDescriptionUrl; }
+			set { this.longDescriptionUrl = value; }
 		}
 
 		/// <summary>
@@ -68,7 +66,7 @@ namespace PseudoCode.Web.Controls
 		[DefaultValue(null)]
 		[Category(" InlineFrame")]
 		[Description("Gets and sets the text to be displayed if browser doesn't support the iframe tag.")]
-		public string AlternateText
+		public virtual string AlternateText
 		{
 			get { return this.alternateText; }
 			set { this.alternateText = value; }
@@ -80,12 +78,12 @@ namespace PseudoCode.Web.Controls
 		[Browsable(true)]
 		[Category(" InlineFrame")]
 		[Description("Gets and sets the height of the frame.")]
-		public override System.Web.UI.WebControls.Unit Height
+		public override Unit Height
 		{
 			get
 			{
-				try { return new System.Web.UI.WebControls.Unit(this.Attributes["height"]); }
-				catch { return System.Web.UI.WebControls.Unit.Empty; }
+				try { return new Unit(this.Attributes["height"]); }
+				catch { return Unit.Empty; }
 			}
 			set { this.Attributes["height"] = value.ToString(); }
 		}
@@ -96,12 +94,12 @@ namespace PseudoCode.Web.Controls
 		[Browsable(true)]
 		[Category(" InlineFrame")]
 		[Description("Gets and sets the width of the frame.")]
-		public override System.Web.UI.WebControls.Unit Width
+		public override Unit Width
 		{
 			get
 			{
-				try { return new System.Web.UI.WebControls.Unit(this.Attributes["width"]); }
-				catch { return System.Web.UI.WebControls.Unit.Empty; }
+				try { return new Unit(this.Attributes["width"]); }
+				catch { return Unit.Empty; }
 			}
 			set { this.Attributes["width"] = value.ToString(); }
 		}
@@ -113,7 +111,7 @@ namespace PseudoCode.Web.Controls
 		[DefaultValue(true)]
 		[Category(" InlineFrame")]
 		[Description("Gets and sets the state of frame border.")]
-		public bool FrameBorder
+		public virtual bool FrameBorder
 		{
 			get
 			{
@@ -130,7 +128,7 @@ namespace PseudoCode.Web.Controls
 		[DefaultValue(InlineFrameScrollingType.Auto)]
 		[Category(" InlineFrame")]
 		[Description("Gets and sets the state of frame scrollbar.")]
-		public InlineFrameScrollingType Scrolling
+		public virtual InlineFrameScrollingType Scrolling
 		{
 			get
 			{
@@ -147,7 +145,7 @@ namespace PseudoCode.Web.Controls
 		[DefaultValue(null)]
 		[Category(" InlineFrame")]
 		[Description("Gets and sets the iframe alignment.")]
-		public HorizontalAlign HorizontalAlign
+		public virtual HorizontalAlign HorizontalAlign
 		{
 			get
 			{
@@ -173,7 +171,7 @@ namespace PseudoCode.Web.Controls
 		[Browsable(true)]
 		[Category(" InlineFrame")]
 		[Description("Gets and sets the margin height in pixels.")]
-		public int MarginHeight
+		public virtual int MarginHeight
 		{
 			get
 			{
@@ -189,7 +187,7 @@ namespace PseudoCode.Web.Controls
 		[Browsable(true)]
 		[Category(" InlineFrame")]
 		[Description("Gets and sets the margin width in pixels.")]
-		public int MarginWidth
+		public virtual int MarginWidth
 		{
 			get
 			{
@@ -207,7 +205,7 @@ namespace PseudoCode.Web.Controls
 		[DefaultValue(true)]
 		[Category(" InlineFrame")]
 		[Description("Gets and sets the transparency of the frame.")]
-		public bool AllowTransparency
+		public virtual bool AllowTransparency
 		{
 			get { return (this.Attributes["allowtransparency"] == true.ToString().ToLower()); }
 			set { this.Attributes["allowtransparency"] = value.ToString().ToLower(); }
@@ -221,7 +219,7 @@ namespace PseudoCode.Web.Controls
 		[DefaultValue(true)]
 		[Category(" InlineFrame")]
 		[Description("Gets and sets the z-index of the frame.")]
-		public int ZIndex
+		public virtual int ZIndex
 		{
 			get
 			{
@@ -240,6 +238,21 @@ namespace PseudoCode.Web.Controls
 		#endregion Properties
 
 		#region Page Events
+
+		protected override void AddAttributesToRender(HtmlTextWriter writer)
+		{
+			base.AddAttributesToRender(writer);
+
+			if (!String.IsNullOrEmpty(this.sourceUrl))
+			{
+				writer.AddAttribute(HtmlTextWriterAttribute.Src, this.ResolveUrl(this.sourceUrl));
+			}
+
+			if (!String.IsNullOrEmpty(this.longDescriptionUrl))
+			{
+				writer.AddAttribute(HtmlTextWriterAttribute.Longdesc, this.ResolveUrl(this.longDescriptionUrl));
+			}
+		}
 
 		/// <summary>
 		/// Sets up the controls for rendering.

@@ -334,9 +334,7 @@ JsonFx.UI.History.onchange = null;
 	if (h) {
 		var info = h.location.search;
 		if (info) {
-			if (info.charAt(0) === '?') {
-				info = info.substring(1);
-			}
+			info = info.substring(info.indexOf('?')+1);
 			info = decodeURIComponent(info);
 			if (info) {
 				info = info.parseJSON();
