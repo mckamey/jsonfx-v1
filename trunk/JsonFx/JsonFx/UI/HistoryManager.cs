@@ -1,20 +1,39 @@
 using System;
+using System.ComponentModel;
 using System.Text;
 using System.Web;
 using System.Web.UI;
+using System.Web.UI.WebControls;
 
 using JsonFx.Serialization;
 
 namespace JsonFx.UI
 {
 	[ToolboxData("<{0}:HistoryManager runat=\"server\" />")]
-	public class HistoryManager : PseudoCode.Web.Controls.InlineFrame
+	public class HistoryManager : System.Web.UI.WebControls.WebControl
 	{
-		#region Field
+		#region Constants
+
+		private const string DefaultHistoryUrl = "/robots.txt";
+
+		#endregion Constants
+
+		#region Fields
 
 		private object startState = null;
+		private string historyUrl = null;
+		private bool isDebugMode = false;
 
-		#endregion Field
+		#endregion Fields
+		
+		#region Ctor
+
+		/// <summary>
+		/// Ctor.  Uses iframe as tag name.
+		/// </summary>
+		public HistoryManager() : base(System.Web.UI.HtmlTextWriterTag.Iframe) { }
+
+		#endregion Ctor
 
 		#region Properties
 
@@ -28,62 +47,75 @@ namespace JsonFx.UI
 		}
 
 		/// <summary>
-		/// Gets and sets the URL of the history echo handler
+		/// Gets and sets the URL used for storing information in the browser history.
 		/// </summary>
-		public override string SourceUrl
+		/// <remarks>
+		/// When debugging history, it is often useful to point the HistoryUrl at a handler which
+		/// simply echos back the query string. e.g. JsonFx.Handlers.EchoHandler
+		/// </remarks>
+		[Browsable(true)]
+		[DefaultValue(DefaultHistoryUrl)]
+		[Description("Gets and sets the URL used for storing information in the browser history.")]
+		public virtual string HistoryUrl
 		{
-			get { return base.SourceUrl; }
-			set
+			get
 			{
-				if (value != null)
+				if (String.IsNullOrEmpty(this.historyUrl))
 				{
-					int query = value.IndexOf('?');
-					if (query >= 0)
-					{
-						value = value.Substring(0, query);
-					}
+					return DefaultHistoryUrl;
 				}
-				base.SourceUrl = value;
+				return this.historyUrl;
 			}
+			set { this.historyUrl = value; }
+		}
+
+		/// <summary>
+		/// Gets and sets a value which shows or hides the history iframe.
+		/// </summary>
+		[Browsable(true)]
+		[DefaultValue(false)]
+		[Description("Gets and sets a value which shows or hides the history iframe.")]
+		public bool IsDebugMode
+		{
+			get { return this.isDebugMode; }
+			set { this.isDebugMode = value; }
 		}
 
 		#endregion Properties
 
 		#region Page Events
 
-		protected override void Render(HtmlTextWriter writer)
-		{
-			// preserve the original history url
-			string sourceUrl = base.SourceUrl;
-
-			try
-			{
-				if (this.StartState != null)
-				{
-					// serialize the start state onto URL
-					StringBuilder builder = new StringBuilder();
-					using (JsonWriter jsonWriter = new JsonWriter(builder))
-					{
-						jsonWriter.Write(this.StartState);
-					}
-					base.SourceUrl += "?"+HttpUtility.UrlEncode(builder.ToString());
-				}
-
-				base.Render(writer);
-			}
-			finally
-			{
-				// restore the original history url
-				base.SourceUrl = sourceUrl;
-			}
-		}
-
 		protected override void AddAttributesToRender(HtmlTextWriter writer)
 		{
 			base.AddAttributesToRender(writer);
 
+			string url = this.HistoryUrl;
+
+			if (this.StartState != null)
+			{
+				int query = url.IndexOf('?');
+				if (query >= 0)
+				{
+					url = url.Substring(0, query);
+				}
+
+				// serialize the start state onto URL query string
+				StringBuilder builder = new StringBuilder();
+				using (JsonWriter jsonWriter = new JsonWriter(builder))
+				{
+					jsonWriter.Write(this.StartState);
+				}
+				url += "?"+HttpUtility.UrlEncode(builder.ToString());
+			}
+
+			writer.AddAttribute(HtmlTextWriterAttribute.Src, this.ResolveUrl(url));
+
 			writer.AddAttribute("onload", "JsonFx.UI.History.changed(this)");
-			writer.AddStyleAttribute(HtmlTextWriterStyle.Display, "none");
+
+			if (!this.IsDebugMode)
+			{
+				writer.AddStyleAttribute(HtmlTextWriterStyle.Display, "none");
+			}
 		}
 
 		#endregion Page Events
