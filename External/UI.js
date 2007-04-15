@@ -87,8 +87,18 @@ if ("undefined" === typeof JsonFx.UI) {
 		return null;
 	}
 
-	return ("undefined" !== typeof elem.contentDocument) ?
-		elem.contentDocument : elem.contentWindow.document;
+	if ("undefined" !== typeof elem.contentDocument) {
+		// W3C
+		return elem.contentDocument;
+	} else if ("undefined" !== typeof elem.contentWindow) {
+		// Microsoft
+		return elem.contentWindow.document;
+	} else if ("undefined" !== typeof elem.document) {
+		// deprecated
+		return elem.document;
+	}
+	// not available
+	return null;
 };
 
 /*string*/ JsonFx.UI.toHtmlColor = function(/*int*/ r, /*int*/ g, /*int*/ b) {
@@ -309,38 +319,40 @@ JsonFx.UI.Bindings = function() {
 // instantiate only one, destroying the constructor
 JsonFx.UI.Bindings = new JsonFx.UI.Bindings();
 
-/*------------------*\
-	History Methods
-\*------------------*/
+/*-----------*\
+	History
+\*-----------*/
 
 /* singleton JsonFx.UI.History */
-JsonFx.UI.History = {};
+JsonFx.UI.History = {
 
-JsonFx.UI.History.h = null;
-JsonFx.UI.History.onchange = null;
+	/*elem*/ h: null,
+	/*function(object)*/ onchange: null,
 
-/*void*/ JsonFx.UI.History.add = function(/*object*/ info) {
-	var h = JsonFx.UI.getIFrameDocument(JsonFx.UI.History.h);
-	if (h) {
-		h.location.search = encodeURIComponent(info.toJSONString());
-	}
-};
+	/*void*/ add: function(/*object*/ info) {
+		var h = JsonFx.UI.getIFrameDocument(JsonFx.UI.History.h);
+		if (h && h.location) {
+			info = '?'+encodeURIComponent(info.toJSONString());
+			h.location.href = h.location.href.replace(/[?].*$/, info);
+		}
+	},
 
-/*void*/ JsonFx.UI.History.changed = function(/*element*/ elem) {
-	if (!JsonFx.UI.History.h) {
-		JsonFx.UI.History.h = elem;
-	}
-	var h = JsonFx.UI.getIFrameDocument(elem);
-	if (h) {
-		var info = h.location.search;
-		if (info) {
-			info = info.substring(info.indexOf('?')+1);
-			info = decodeURIComponent(info);
+	/*void*/ changed: function(/*element*/ elem) {
+		if (!JsonFx.UI.History.h && elem) {
+			JsonFx.UI.History.h = elem;
+		}
+		var h = JsonFx.UI.getIFrameDocument(elem);
+		if (h) {
+			var info = h.location.search;
 			if (info) {
-				info = info.parseJSON();
-			}
-			if ("function" === typeof JsonFx.UI.History.onchange) {
-				JsonFx.UI.History.onchange(info);
+				info = info.substring(info.indexOf('?')+1);
+				info = decodeURIComponent(info);
+				if (info) {
+					info = info.parseJSON();
+				}
+				if ("function" === typeof JsonFx.UI.History.onchange) {
+					JsonFx.UI.History.onchange(info);
+				}
 			}
 		}
 	}
