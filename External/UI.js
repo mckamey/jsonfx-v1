@@ -330,10 +330,20 @@ JsonFx.UI.History = {
 	/*function(object)*/ onchange: null,
 
 	/*void*/ add: function(/*object*/ info) {
+		if (!JsonFx.UI.History.h) {
+			// doesn't support history or no binding
+			if ("function" === typeof JsonFx.UI.History.onchange) {
+				JsonFx.UI.History.onchange(info);
+			}
+			return;
+		}
 		var h = JsonFx.UI.getIFrameDocument(JsonFx.UI.History.h);
 		if (h && h.location) {
 			info = '?'+encodeURIComponent(info.toJSONString());
 			h.location.href = h.location.href.replace(/[?].*$/, info);
+		} else {
+			// Opera 8 doesn't trigger onload so no history
+			JsonFx.UI.History.h = null;
 		}
 	},
 
