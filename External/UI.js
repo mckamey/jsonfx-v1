@@ -338,19 +338,21 @@ JsonFx.UI.History = {
 	},
 
 	/*void*/ changed: function(/*element*/ elem) {
-		if (!JsonFx.UI.History.h && elem) {
+		if (!JsonFx.UI.History.h) {
+			// first time through is just for binding
 			JsonFx.UI.History.h = elem;
+			return;
 		}
-		var h = JsonFx.UI.getIFrameDocument(elem);
-		if (h) {
-			var info = h.location.search;
-			if (info) {
-				info = info.substring(info.indexOf('?')+1);
-				info = decodeURIComponent(info);
+		if ("function" === typeof JsonFx.UI.History.onchange) {
+			var h = JsonFx.UI.getIFrameDocument(elem);
+			if (h) {
+				var info = h.location.search;
 				if (info) {
-					info = info.parseJSON();
-				}
-				if ("function" === typeof JsonFx.UI.History.onchange) {
+					info = info.substring(info.indexOf('?')+1);
+					info = decodeURIComponent(info);
+					if (info) {
+						info = info.parseJSON();
+					}
 					JsonFx.UI.History.onchange(info);
 				}
 			}
