@@ -1,7 +1,8 @@
 <browsers>
-	<browser id="JsonFx" parentID="default">
+	<!-- IE/Firefox -->
+    <browser id="JsonFx" parentID="Default" >
 		<identification>
-			<userAgent match="^JsonFx" />
+			<header name="Accept" match="application/json" />
 		</identification>
 		<capture>
 			<userAgent match="^JsonFx/(?'version'(?'major'\d+)\.(?'minor'\d+)(\.(?'release'\d+))?(\.(?'build'\d+))?)\s*(?'verInfo'\w*)\s*(?'info'.*)$" />
@@ -22,12 +23,14 @@
 			<capability name="supportsCss" value="true" />
 			<capability name="supportsXmlHttp" value="true" />
 			<capability name="supportsJson" value="true" />
+			<capability name="supportsJsonML" value="true" />
 			<capability name="tables" value="true" />
 			<capability name="tagWriter"  value="JsonFx.UI.JsonXhtmlTextWriter, JsonFx" />
 			<capability name="w3cDomVersion" value="1.0" />
 		</capabilities>
 	</browser>
 
+	<!-- Opera -->
     <browser id="JsonFxOpera8" parentID="JsonFx">
         <identification>
             <capability name="etc" match="\bopera/8" />
@@ -38,19 +41,9 @@
         </capabilities>
     </browser>
 
-    <browser id="JsonFxBeta" parentID="JsonFx">
-        <identification>
-            <capability name="verInfo" match="^[b|B]" />
-        </identification>
-
-        <capabilities>
-            <capability name="beta" value="true" />
-        </capabilities>
-    </browser>
-
 	<browser id="JsonFxOpera"  parentID="Opera8to9">
 		<identification>
-			<userAgent match="^JsonFx" />
+			<header name="Accept" match="application/json" />
 		</identification>
 		<capture>
 			<userAgent match="^JsonFx/(?'version'(?'major'\d+)\.(?'minor'\d+)(\.(?'release'\d+))?(\.(?'build'\d+))?)\s*(?'verInfo'\w*)\s*(?'info'.*)$" />
@@ -65,20 +58,12 @@
 			<capability name="verInfo" value="${verInfo}" />
 			<capability name="preferredRenderingMime" value="application/json" />
 			<capability name="supportsJson" value="true" />
+			<capability name="supportsJsonML" value="true" />
 			<capability name="tagWriter"  value="JsonFx.UI.JsonXhtmlTextWriter, JsonFx" />
 		</capabilities>
 	</browser>
 
-    <browser id="JsonFxOperaBeta" parentID="JsonFxOpera">
-        <identification>
-            <capability name="verInfo" match="^[b|B]" />
-        </identification>
-
-        <capabilities>
-            <capability name="beta" value="true" />
-        </capabilities>
-    </browser>
-
+	<!-- Safari -->
 	<browser refID="Safari">
 		<capture>
 			<userAgent match="Safari/(?'version'(?'major'\d+)(\.(?'minor'\d+))?)" />
@@ -92,13 +77,14 @@
 		</capabilities>
 	</browser>
 
-	<browser id="JsonFxSafari"  parentID="Safari1Plus">
+	<browser id="JsonFxSafari" parentID="Safari1Plus">
 		<identification>
-			<userAgent match="Safari/\d+(\.\d+)?" />
 			<header name="Accept" match="application/json" />
 		</identification>
-		<capture>
-		</capture>
+
+        <capture>
+        </capture>
+
 		<capabilities>
 			<capability name="browser" value="JsonFx" />
             <capability name="type" value="JsonFx1" />
@@ -107,17 +93,8 @@
 			<capability name="minorversion" value="0" />
 			<capability name="preferredRenderingMime" value="application/json" />
 			<capability name="supportsJson" value="true" />
+			<capability name="supportsJsonML" value="true" />
 			<capability name="tagWriter"  value="JsonFx.UI.JsonXhtmlTextWriter, JsonFx" />
 		</capabilities>
 	</browser>
-
-    <browser id="JsonFxSafariBeta" parentID="JsonFxSafari">
-        <identification>
-            <capability name="verInfo" match="^[b|B]" />
-        </identification>
-
-        <capabilities>
-            <capability name="beta" value="true" />
-        </capabilities>
-    </browser>
 </browsers>
