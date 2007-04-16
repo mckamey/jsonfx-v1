@@ -47,7 +47,7 @@ JsonFx.IO = {};
 			name += " ("+code+")";
 		}
 
-		window.alert("Request Failed - "+name+":\n\""+msg+"\"\n"+obj);
+		window.alert("Request Failed - "+name+":\r\n\""+msg+"\"\r\n"+obj);
 	}
 };
 
@@ -275,7 +275,7 @@ JsonFx.IO = {};
 		var onFailure = options.onFailure;
 		options.onFailure = function (/*XMLHttpRequest*/ xhr, /*object*/ context, /*Error*/ ex) {
 
-			onFailure((xhr ? xhr.responseText : null), context, ex);
+			onFailure((xhr&&xhr.responseText), context, ex);
 
 			// free closure references
 			onFailure = null;
