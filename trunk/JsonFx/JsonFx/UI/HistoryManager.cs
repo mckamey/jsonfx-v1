@@ -115,6 +115,11 @@ namespace JsonFx.UI
 			if (!this.IsDebugMode)
 			{
 				writer.AddStyleAttribute(HtmlTextWriterStyle.Display, "none");
+
+				// it is rhumored that display:none breaks some browsers but I haven't seen it
+				// this could be used instead to not affect the layout
+				//writer.AddStyleAttribute(HtmlTextWriterStyle.Position, "absolute");
+				//writer.AddStyleAttribute(HtmlTextWriterStyle.Visibility, "hidden");
 			}
 		}
 
