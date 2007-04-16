@@ -459,6 +459,8 @@ JsonFx.UI.History = {
 	if (options.onFailure) {
 		var onFailure = options.onFailure;
 		options.onFailure = function (/*JSON*/ jml, /*object*/ cx, /*Error*/ ex) {
+			ex.$error = jml;
+		
 			// failure callback
 			onFailure(cx, ex);
 
