@@ -47,7 +47,7 @@ JsonFx.IO = {};
 			name += " ("+code+")";
 		}
 
-		window.alert("Request Failed - "+name+":\n\""+msg+"\"");
+		window.alert("Request Failed - "+name+":\n\""+msg+"\"\n"+obj);
 	}
 };
 
@@ -61,6 +61,8 @@ JsonFx.IO = {};
 	}
 	if ("string" !== typeof options.method) {
 		options.method = "POST";
+	} else {
+		options.method = options.method.toUpperCase();
 	}
 	if ("string" !== typeof options.params) {
 		options.params = null;
@@ -217,6 +219,10 @@ JsonFx.IO = {};
 			} catch (ex) {
 				alert("xhr.setRequestHeader: "+(ex.message?ex.message:ex));
 			}
+		}
+
+		if (options.method === "POST" && !options.params) {
+			options.params = "";
 		}
 		xhr.send(options.params);
 

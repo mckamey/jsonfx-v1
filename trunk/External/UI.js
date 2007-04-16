@@ -98,7 +98,7 @@ if ("undefined" === typeof JsonFx.UI) {
 		return elem.document;
 	}
 	// not available
-	return null;
+	return elem;
 };
 
 /*string*/ JsonFx.UI.toHtmlColor = function(/*int*/ r, /*int*/ g, /*int*/ b) {
@@ -430,7 +430,6 @@ JsonFx.UI.History = {
 	/*RequestOptions*/ options) {
 
 	options = JsonFx.IO.validateOptions(options);
-	options.method = "GET";
 
 	if (options.onCreate) {
 		var onCreate = options.onCreate;
