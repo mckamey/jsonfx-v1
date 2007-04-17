@@ -3,9 +3,11 @@
 		<identification>
 			<userAgent match="^W3C_Validator" />
 		</identification>
+
 		<capture>
 			<userAgent match="^W3C_Validator/(?'version'(?'major'\d+)\.(?'minor'\d+)(\.(?'release'\d+))?(\.(?'build'\d+))?)" />
 		</capture>
+
 		<capabilities>
 			<capability name="browser" value="W3C Validator" />
 			<capability name="version" value="${version}" />
