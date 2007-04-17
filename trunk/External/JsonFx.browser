@@ -48,9 +48,11 @@
 		<identification>
 			<header name="Accept" match="application/json" />
 		</identification>
+
 		<capture>
 			<userAgent match="^JsonFx/(?'version'(?'major'\d+)\.(?'minor'\d+)(\.(?'release'\d+))?(\.(?'build'\d+))?)\s*(?'verInfo'\w*)\s*(?'info'.*)$" />
 		</capture>
+
 		<capabilities>
 			<capability name="browser" value="JsonFx" />
             <capability name="type" value="JsonFx${major}" />
@@ -70,8 +72,11 @@
 	<browser refID="Safari">
 		<capture>
 			<userAgent match="Safari/(?'version'(?'major'\d+)(\.(?'minor'\d+))?)" />
+			<header match="^(?'accept'.*)$" name="Accept" />
 		</capture>
+
 		<capabilities>
+			<capability name="accept" value="${accept}" />
 			<capability name="browser" value="Safari" />
             <capability name="type" value="Safari${major}" />
 			<capability name="version" value="${version}" />
@@ -84,9 +89,6 @@
 		<identification>
 			<header name="Accept" match="application/json" />
 		</identification>
-
-        <capture>
-        </capture>
 
 		<capabilities>
 			<capability name="browser" value="JsonFx" />
@@ -103,10 +105,15 @@
 
 	<!-- iCab -->
 	<browser id="iCab" parentID="Default">
-		<capture>
+		<identification>
 			<userAgent match="\biCab[/\s]*(?'version'(?'major'\d+)(\.(?'minor'\d+))?)" />
+		</identification>
+		<capture>
+			<header match="^(?'accept'.*)$" name="Accept" />
 		</capture>
+
 		<capabilities>
+			<capability name="accept" value="${accept}" />
 			<capability name="browser" value="iCab" />
             <capability name="type" value="iCab${major}" />
 			<capability name="version" value="${version}" />
@@ -115,32 +122,17 @@
 		</capabilities>
 	</browser>
 
-	<browser id="JsonFxICab" parentID="iCabMozilla">
+	<browser id="iCabMozilla" parentID="Mozilla">
 		<identification>
-			<header name="Accept" match="application/json" />
+			<userAgent match="\biCab[/\s]*(?'version'(?'major'\d+)(\.(?'minor'\d+))?)" />
 		</identification>
 
-        <capture>
-        </capture>
-
-		<capabilities>
-			<capability name="browser" value="JsonFx" />
-            <capability name="type" value="JsonFx1" />
-			<capability name="version" value="1.0" />
-			<capability name="majorversion" value="1" />
-			<capability name="minorversion" value="0" />
-			<capability name="preferredRenderingMime" value="application/json" />
-			<capability name="supportsJson" value="true" />
-			<capability name="supportsJsonML" value="true" />
-			<capability name="tagWriter"  value="JsonFx.UI.JsonXhtmlTextWriter, JsonFx" />
-		</capabilities>
-	</browser>
-
-	<browser id="iCabMozilla" parentID="Mozilla">
 		<capture>
-			<userAgent match="\biCab[/\s]*(?'version'(?'major'\d+)(\.(?'minor'\d+))?)" />
+			<header match="^(?'accept'.*)$" name="Accept" />
 		</capture>
+
 		<capabilities>
+			<capability name="accept" value="${accept}" />
 			<capability name="browser" value="iCab" />
             <capability name="type" value="iCab${major}" />
 			<capability name="version" value="${version}" />
@@ -153,9 +145,6 @@
 		<identification>
 			<header name="Accept" match="application/json" />
 		</identification>
-
-        <capture>
-        </capture>
 
 		<capabilities>
 			<capability name="browser" value="JsonFx" />
