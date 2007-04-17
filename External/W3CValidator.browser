@@ -16,6 +16,8 @@
 			<capability name="preferredRequestEncoding" value="UTF-8" />
 			<capability name="preferredResponseEncoding" value="UTF-8" />
 			<capability name="supportsCss" value="true" />
+			<capability name="supportsJson" value="false" />
+			<capability name="supportsJsonML" value="false" />
 			<capability name="tables" value="true" />
 			<capability name="tagWriter" value="System.Web.UI.HtmlTextWriter" />
 			<capability name="w3cDomVersion" value="1.0" />
