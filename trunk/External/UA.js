@@ -27,14 +27,15 @@ if ("undefined" === typeof JsonFx.UI) {
 		/*{b,v}[]*/ var details = [];
 
 		// Regex tested against (2006-06-11 @ 1600): http://en.wikipedia.org/wiki/User_agent
-		var R_MSIE = /(msie|microsoft internet explorer)[\s\/]*([0-9]+[\.]?[0-9]*)/;
+		var R_MSIE = /(\bmsie|microsoft internet explorer)[\s\/]*([0-9]+[\.]?[0-9]*)/;
 		var R_Gecko = /rv[:]([0-9]+[\.]?[0-9]*).*?gecko[\/][0-9]+(\s+(\S+)[\/]([0-9]+[\.]?[0-9]*))?/;
-		var R_AppleWebKit = /applewebkit[\/]([0-9]+[\.]?[0-9]*).*?(\S+)[\/][v]?([0-9]+[\.]?[0-9]*)/;
-		var R_Opera = /opera[\s\/]*([0-9]+[\.]?[0-9]*)/;
-		var R_MSPIE = /(mspie|microsoft pocket internet explorer)[\s\/]*([0-9]+[\.]?[0-9]*)/;
+		var R_AppleWebKit = /\bapplewebkit[\/]([0-9]+[\.]?[0-9]*).*?(\S+)[\/][v]?([0-9]+[\.]?[0-9]*)/;
+		var R_Opera = /\bopera[\s\/]*([0-9]+[\.]?[0-9]*)/;
+		var R_MSPIE = /\b(mspie|microsoft pocket internet explorer)[\s\/]*([0-9]+[\.]?[0-9]*)/;
+		var R_iCab = /\bicab[\s\/]*([0-9]+[\.]?[0-9]*)/;
 		var R_MozCompat = /[(].*?(\S+)[\/]([0-9]+[\.]?[0-9]*).*?[)]/;
 		var R_Other = /^([^\/]+)[\/]([0-9]+[\.]?[0-9]*)/;
-		var R_AOL = /(america online browser|aol)[\s\/]*([0-9]+[\.]?[0-9]*)/;
+		var R_AOL = /\b(america online browser|aol)[\s\/]*([0-9]+[\.]?[0-9]*)/;
 
 		var ua = navigator.userAgent.toLowerCase();
 		var name = null;// browser name
@@ -49,6 +50,12 @@ if ("undefined" === typeof JsonFx.UI) {
 		if (R_Opera.exec(ua)) {
 			name = "opera";
 			ver = RegExp.$1;
+		} else if (R_iCab.exec(ua)) {
+			name = "icab";
+			ver = RegExp.$1;
+
+			// iCab doesn't allow setting User-Agent on XHR
+			JsonFx.userAgent = null;
 		} else if (R_MSIE.exec(ua)) {
 			name = "msie";
 			ver = RegExp.$2;
@@ -83,7 +90,7 @@ if ("undefined" === typeof JsonFx.UI) {
 
 	// calculate styles immediately, loop until can apply them
 	/*string*/ var uaDetails = parse();
-	if (uaDetails.length) {
+	if (uaDetails.length && JsonFx.userAgent) {
 		JsonFx.userAgent += " (";
 		for (var i=0; i<uaDetails.length;i ++) {
 			if (i>0) {
