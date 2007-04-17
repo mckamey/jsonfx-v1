@@ -3,7 +3,7 @@
 	JsonFx IO
 	Copyright (c)2006-2007 Stephen M. McKamey
 	Created: 2006-11-09-0120
-	Modified: 2007-03-12-2349
+	Modified: 2007-04-15-2234
 \*---------------------------------------------------------*/
 
 /* namespace JsonFx */
