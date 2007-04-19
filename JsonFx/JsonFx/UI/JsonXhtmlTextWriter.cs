@@ -279,7 +279,9 @@ namespace JsonFx.UI
 
 		public override void Write(char value)
 		{
-			this.Write("{0}", value);
+#warning Need to remove this filter
+			if (value != '>')
+				this.Write("{0}", value);
 		}
 
 		public override void Write(char[] buffer)
@@ -433,6 +435,7 @@ namespace JsonFx.UI
 
 		public override void WriteLine(char value)
 		{
+#warning Need to remove this filter
 			if (value != '>')
 				this.Write("{0}", value);
 		}
