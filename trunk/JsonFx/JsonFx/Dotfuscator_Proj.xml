@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<!DOCTYPE dotfuscator SYSTEM "http://www.preemptive.com/dotfuscator/dtd/dotfuscator_v2.1.dtd">
+<dotfuscator version="2.1">
+  <!--This is application generated code. Do not edit manually.-->
+  <global />
+  <input>
+    <asmlist>
+      <inputassembly>
+        <option>honoroas</option>
+        <option>library</option>
+        <file dir="D:\Dev\SMM-VSS\PseudoCode\Dev\JsonFx\JsonFx\bin\Release" name="CssCompactor.exe" />
+      </inputassembly>
+      <inputassembly>
+        <option>honoroas</option>
+        <option>library</option>
+        <file dir="D:\Dev\SMM-VSS\PseudoCode\Dev\JsonFx\JsonFx\bin\Release" name="JsonFx.dll" />
+      </inputassembly>
+      <inputassembly>
+        <option>honoroas</option>
+        <option>library</option>
+        <file dir="D:\Dev\SMM-VSS\PseudoCode\Dev\JsonFx\JsonFx\bin\Release" name="ScriptTools.dll" />
+      </inputassembly>
+    </asmlist>
+  </input>
+  <output>
+    <file dir="D:\Dev\SMM-VSS\PseudoCode\Dev\JsonFx\JsonFx\Dotfuscated" />
+  </output>
+  <renaming>
+    <mapping>
+      <mapoutput overwrite="false">
+        <file dir="${configdir}\Dotfuscated" name="Map.xml" />
+      </mapoutput>
+    </mapping>
+  </renaming>
+</dotfuscator>
