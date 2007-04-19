@@ -7,7 +7,6 @@ using System.CodeDom;
 using System.CodeDom.Compiler;
 using System.Security.Permissions;
 using System.Text.RegularExpressions;
-using System.Web.RegularExpressions;
 using System.IO;
 
 using JsonFx.Services;
@@ -36,7 +35,8 @@ namespace JsonFx.Compilation
 		protected const string ErrorAttribMutExcl = "The \"{0}\" and \"{1}\" attributes are mutually exclusive.";
 		protected const string ErrorMissingAttrib = "The directive is missing a '{0}' attribute.";
 
-		private static readonly SimpleDirectiveRegex RegexDirective = new SimpleDirectiveRegex();
+		private static readonly Regex Regex_Directive = new Regex(Pattern_Directive, RegexOptions.Singleline|RegexOptions.Multiline|RegexOptions.Compiled);
+		private const string Pattern_Directive = "<%\\s*@(\\s*(?<attrname>\\w[\\w:]*(?=\\W))(\\s*(?<equal>=)\\s*\"(?<attrval>[^\"]*)\"|\\s*(?<equal>=)\\s*'(?<attrval>[^']*)'|\\s*(?<equal>=)\\s*(?<attrval>[^\\s%>]*)|(?<equal>)(?<attrval>\\s*?)))*\\s*?%>";
 
 		#endregion Constants
 
@@ -508,7 +508,7 @@ namespace JsonFx.Compilation
 
 		private bool ProcessDirective(string source, out string directiveName, out IDictionary attribs, ref int index)
 		{
-			Match match = RegexDirective.Match(source, index);
+			Match match = Regex_Directive.Match(source, index);
 			if (!match.Success)
 			{
 				attribs = null;
