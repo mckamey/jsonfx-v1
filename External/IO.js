@@ -210,13 +210,13 @@ JsonFx.IO = {};
 		xhr.open(options.method, url, options.async);
 
 		if (options.headers) {
-			try {// Opera 8.0 doesn't have xhr.setRequestHeader
-				for (var h in options.headers) {
-					if (options.headers.hasOwnProperty(h) && options.headers[h]) {
+			for (var h in options.headers) {
+				if (options.headers.hasOwnProperty(h) && options.headers[h]) {
+					try {// Opera 8.0 doesn't have xhr.setRequestHeader
 						xhr.setRequestHeader(h, options.headers[h]);
-					}
+					} catch (ex) { }
 				}
-			} catch (ex) { }
+			}
 		}
 
 		if (options.method === "POST" && !options.params) {
