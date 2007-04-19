@@ -1,7 +1,6 @@
 using System;
 using System.IO;
 using System.Web.UI;
-using System.Web.RegularExpressions;
 using System.Text.RegularExpressions;
 
 namespace JsonFx.UI
@@ -11,10 +10,12 @@ namespace JsonFx.UI
 		#region Fields
 
 		private const string Pattern_Comment = @"(<!DOCTYPE[^>]*>)|(<!--[^->]*-->)";
+		private const string Pattern_Tag = "\\G<(?<tagname>[\\w:\\.]+)(\\s+(?<attrname>\\w[-\\w:]*)(\\s*=\\s*\"(?<attrval>[^\"]*)\"|\\s*=\\s*'(?<attrval>[^']*)'|\\s*=\\s*(?<attrval><%#.*?%>)|\\s*=\\s*(?<attrval>[^\\s=/>]*)|(?<attrval>\\s*?)))*\\s*(?<empty>/)?>";
+		private const string Pattern_EndTag = @"\G</(?<tagname>[\w:\.]+)\s*>";
 
 		private JsonControlBuilder builder;
-		private static readonly Regex Regex_Tag = new TagRegex();
-		private static readonly Regex Regex_EndTag = new EndTagRegex();
+		private static readonly Regex Regex_Tag = new Regex(Pattern_Tag, RegexOptions.Singleline|RegexOptions.Multiline|RegexOptions.Compiled);
+		private static readonly Regex Regex_EndTag = new Regex(Pattern_EndTag, RegexOptions.Singleline|RegexOptions.Multiline|RegexOptions.Compiled);
 		private static readonly Regex Regex_Comment = new Regex(Pattern_Comment, RegexOptions.Singleline|RegexOptions.Multiline|RegexOptions.IgnoreCase);
 
 		#endregion Fields
