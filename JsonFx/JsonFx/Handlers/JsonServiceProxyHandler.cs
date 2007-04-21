@@ -47,7 +47,7 @@ namespace JsonFx.Handlers
 			{
 				// if wasn't generated, generate on the fly with reflection
 				JsonServiceDescription desc = new JsonServiceDescription(this.serviceInfo.ServiceType, this.serviceUrl);
-				JsonServiceProxyGenerator proxy = new JsonServiceProxyGenerator(desc, this.serviceInfo.ServiceType.Namespace);
+				JsonServiceProxyGenerator proxy = new JsonServiceProxyGenerator(desc);
 				proxy.OutputProxy(context.Response.Output, isDebug);
 			}
 			else
