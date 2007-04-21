@@ -201,11 +201,17 @@ namespace JsonFx.Handlers
 
 				this.HandleRequest(context, request, ref response);
 			}
+			catch (JsonServiceException ex)
+			{
+				context.Response.ClearContent();
+				response.Result = null;
+				response.Error = new JsonError((ex.InnerException != null) ? ex.InnerException : ex);
+			}
 			catch (Exception ex)
 			{
 				context.Response.ClearContent();
 				response.Result = null;
-				response.Error = new JsonError(ex is JsonServiceException ? ex.InnerException : ex);
+				response.Error = new JsonError(ex);
 			}
 			finally
 			{

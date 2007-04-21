@@ -36,22 +36,10 @@ namespace JsonFx.Services.Proxy
 		internal JsonServiceProxyGenerator(JsonServiceDescription service)
 		{
 			this.service = service;
-		}
-
-		internal JsonServiceProxyGenerator(JsonServiceDescription service, string proxyNamespace) : this(service)
-		{
-			if (!String.IsNullOrEmpty(proxyNamespace))
-				this.proxyNamespace = proxyNamespace + JsonServiceProxyGenerator.NamespaceDelim;
-		}
-
-		public JsonServiceProxyGenerator(Type serviceType, string serviceUrl)
-			: this(new JsonServiceDescription(serviceType, serviceUrl), serviceType.Namespace)
-		{
-		}
-
-		public JsonServiceProxyGenerator(Type serviceType, string serviceUrl, string proxyNamespace)
-			: this(new JsonServiceDescription(serviceType, serviceUrl), proxyNamespace)
-		{
+			if (!String.IsNullOrEmpty(service.Namespace))
+			{
+				this.proxyNamespace = service.Namespace + JsonServiceProxyGenerator.NamespaceDelim;
+			}
 		}
 
 		#endregion Init
@@ -131,7 +119,7 @@ namespace JsonFx.Services.Proxy
 
 				writer.Write(this.formatter.ClassEnd);
 
-				writer.Write(this.formatter.ProxyBeginFormat, this.ProxyNamespace, this.Service.Name);
+				writer.Write(this.formatter.ProxyInstanceFormat, this.ProxyNamespace, this.Service.Name);
 			}
 		}
 
@@ -252,7 +240,7 @@ namespace JsonFx.Services.Proxy
 
 		internal abstract string ClassEnd { get; }
 
-		internal abstract string ProxyBeginFormat { get; }
+		internal abstract string ProxyInstanceFormat { get; }
 
 		//internal abstract string ProxyEnd { get; }
 
@@ -302,7 +290,7 @@ namespace JsonFx.Services.Proxy
 			get { return "}"; }
 		}
 
-		internal override string ProxyBeginFormat
+		internal override string ProxyInstanceFormat
 		{
 			get { return "{0}{1}.instance=new {0}{1}(\""; }
 		}
@@ -369,7 +357,7 @@ namespace JsonFx.Services.Proxy
 			get { return "}\r\n"; }
 		}
 
-		internal override string ProxyBeginFormat
+		internal override string ProxyInstanceFormat
 		{
 			get { return "/* instance of service */\r\n/*{0}{1}*/ {0}{1}.instance = new {0}{1}(\""; }
 		}

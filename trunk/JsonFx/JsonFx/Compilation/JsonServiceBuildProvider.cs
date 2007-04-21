@@ -112,7 +112,7 @@ namespace JsonFx.Compilation
 			// build proxy from main service type
 			Type serviceType = this.GetTypeToCache(this.serviceTypeName, tempAssembly);
 			JsonServiceDescription desc = new JsonServiceDescription(serviceType, base.VirtualPath);
-			JsonServiceProxyGenerator proxy = new JsonServiceProxyGenerator(desc, serviceType.Namespace);
+			JsonServiceProxyGenerator proxy = new JsonServiceProxyGenerator(desc);
 			string proxyOutput = proxy.OutputProxy(false);
 			string debugProxyOutput = proxy.OutputProxy(true);
 

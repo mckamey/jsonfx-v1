@@ -12,6 +12,7 @@ namespace JsonFx.Services.Discovery
 	{
 		#region Fields
 
+		private string nameSpace = null;
 		private string sdversion = "1.0";
 		private string name = null;
 		private string id = null;
@@ -39,6 +40,10 @@ namespace JsonFx.Services.Discovery
 
 			if (!JsonServiceAttribute.IsJsonService(serviceType))
 				throw new JsonServiceException("Specified type is not marked as a JsonService.");
+
+			this.Namespace = JsonServiceAttribute.GetNamespace(serviceType);
+			if (String.IsNullOrEmpty(this.Namespace))
+				this.name = serviceType.Namespace;
 
 			this.Name = JsonNameAttribute.GetJsonName(serviceType);
 			if (String.IsNullOrEmpty(this.Name))
@@ -76,6 +81,20 @@ namespace JsonFx.Services.Discovery
 		#region Properties
 
 		/// <summary>
+		/// Gets and sets a namespace for the service proxy.
+		/// </summary>
+		/// <remarks>
+		/// Not part of service description, but used when generating
+		/// service proxy from service description.
+		/// </remarks>
+		[JsonIgnore]
+		internal protected string Namespace
+		{
+			get { return this.nameSpace; }
+			set { this.nameSpace = value; }
+		}
+
+		/// <summary>
 		/// Gets and sets the version of service description to which this conforms.
 		/// </summary>
 		/// <remarks>
@@ -90,10 +109,10 @@ namespace JsonFx.Services.Discovery
 		}
 
 		/// <summary>
-		/// Gets and sets a simple name for the method.
+		/// Gets and sets a simple name for the service.
 		/// </summary>
 		/// <remarks>
-		/// REQUIRED. A String value that provides a simple name for the method.
+		/// REQUIRED. A String value that provides a simple name for the service.
 		/// </remarks>
 		[JsonName("name")]
 		public string Name

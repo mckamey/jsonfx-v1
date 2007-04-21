@@ -30,13 +30,16 @@ namespace JsonFx.Services
 		/// <param name="ex"></param>
 		public JsonError(Exception ex) : this()
 		{
-			this.Message = ex.Message;
-			JsonObject innerError = new JsonObject();
-			innerError["Type"] = ex.GetType().Name;
+			if (ex != null)
+			{
+				this.Message = ex.Message;
+				JsonObject innerError = new JsonObject();
+				innerError["Type"] = ex.GetType().Name;
 #if DEBUG
 			innerError["StackTrace"] = ex.StackTrace;
 #endif
-			this.Error = innerError;
+				this.Error = innerError;
+			}
 		}
 
 		#endregion Init
