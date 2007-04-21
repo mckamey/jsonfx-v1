@@ -100,6 +100,8 @@ namespace JsonFx.Services.Proxy
 
 				writer.Write(this.formatter.ClassBeginFormat, this.ProxyNamespace, this.Service.Name);
 
+				this.WriteProperty(writer, "proxyName", proxyNamespace+this.service.Name);
+
 				this.WriteProperty(writer, "name", this.service.Name);
 
 				this.WriteProperty(writer, "id", this.service.ID);
@@ -292,7 +294,7 @@ namespace JsonFx.Services.Proxy
 
 		internal override string ProxyInstanceFormat
 		{
-			get { return "{0}{1}.instance=new {0}{1}(\""; }
+			get { return "{0}{1}=new {0}{1}(\""; }
 		}
 
 		internal override string PropertyFormat
@@ -359,7 +361,7 @@ namespace JsonFx.Services.Proxy
 
 		internal override string ProxyInstanceFormat
 		{
-			get { return "/* instance of service */\r\n/*{0}{1}*/ {0}{1}.instance = new {0}{1}(\""; }
+			get { return "/* create singleton instance destroying the ctor */\r\n/*{0}{1}*/ {0}{1} = new {0}{1}(\""; }
 		}
 
 		internal override string PropertyFormat

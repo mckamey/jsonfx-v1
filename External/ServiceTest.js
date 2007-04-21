@@ -52,7 +52,7 @@ JsonFx.IO.ServiceTest.Context = function(/*string*/ request, /*element*/ target)
 /* creates actual method call */		
 /*function*/ JsonFx.IO.ServiceTest.createServiceCall = function(/*object*/ service, /*object*/ proc, /*element*/ target) {
 	return function() {
-		var call = service.name+"."+proc.name+"(";
+		var call = service.proxyName+"."+proc.name+"(";
 		var args = [];
 		if (proc.params) {
 			for (var i=0; i<proc.params.length; i++) {

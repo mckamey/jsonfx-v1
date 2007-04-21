@@ -58,7 +58,9 @@ namespace JsonFx.Handlers
 			context.Response.Output.Write(this.serviceUrl);
 			context.Response.Output.Write(JsonServiceProxyGenerator.ProxyEnd);
 			if (isDebug)
+			{
 				context.Response.Output.WriteLine();
+			}
 		}
 
 		#endregion IHttpHandler Members
