@@ -103,11 +103,11 @@ JsonFx.IO.ServiceTest.Context = function(/*string*/ request, /*element*/ target)
 	}
 
 	// add placeholder for implicit service description
-	result.procs.unshift({"name":"system.describe"});
+	result.procs.unshift({"name":"system.describe","summary":"Produces a Service Description for this JSON-RPC Service"});
 
 	for (var i=0; i<result.procs.length; i++) {
 		var proc = result.procs[i];
-		var btn = ["input", {"type":"button", "class":"ServiceTest", "value":proc.name}];
+		var btn = ["input", {"type":"button", "class":"ServiceTest", "value":proc.name, "title":proc.summary}];
 		btn = btn.parseJsonML(null);
 
 		var handler = JsonFx.IO.ServiceTest.createServiceCall(context.service, proc, context.target);
