@@ -45,7 +45,7 @@ JsonFx.IO.ServiceTest.Context = function(/*string*/ request, /*element*/ target)
 	}
 
 	var label = error ? "JSON-RPC Error" : "JSON-RPC Result";
-	var data = error ? error+"\n"+result : result;
+	var data = error ? error : result;
 	JsonFx.UI.displayJsonML(["div",JsonFx.UI.dumpData("Call Context", context),["hr"],JsonFx.UI.dumpData(label, data)], target);
 };
 
@@ -81,7 +81,7 @@ JsonFx.IO.ServiceTest.Context = function(/*string*/ request, /*element*/ target)
 			args,
 			{
 				onSuccess : JsonFx.IO.ServiceTest.cb_displayResult,
-				onFailure : JsonFx.IO.ServiceTest.cb_displayError,
+				onFailure : JsonFx.IO.ServiceTest.cb_displayResult,
 				context : cx
 			});
 	};
