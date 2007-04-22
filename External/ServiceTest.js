@@ -25,6 +25,39 @@ JsonFx.IO.ServiceTest.Context = function(/*string*/ request, /*element*/ target)
 	};
 };
 
+/*int*/ JsonFx.IO.ServiceTest.dumpDataID = 0;
+/*JsonML*/ JsonFx.IO.ServiceTest.dumpData = function(/*string*/ name, /*json*/ val) {
+	var c = ["span"];
+	var type = typeof val;
+
+	var a = false;
+	if ("object" === type && val) {
+		a = ["label", {"class":"jsonfx-expando"}];
+		c.push(a);
+	}
+	(a?a:c).push(["span", {"class":"jsonfx-type"}, (val instanceof Array) ? "array" : type]);
+	(a?a:c).push(["span", {"class":"jsonfx-name"}, name, ":"]);
+
+	if ("object" === type && val) {
+		var ul = ["ul", {"id":"JsonFx_UI_Dump_"+(JsonFx.IO.ServiceTest.dumpDataID++),"class":"jsonfx-object"}];
+		for (var pn in val) {
+			if (!val.hasOwnProperty(pn)) {
+				continue;
+			}
+			ul.push(["li", JsonFx.IO.ServiceTest.dumpData(pn, val[pn])]);
+		}
+
+		if (a) {
+			a[1]["for"] = ul[1].id;
+		}
+		c.push(ul);
+	} else {
+		c.push(["span", {"class":"jsonfx-value"}, String(val)]);
+	}
+
+	return c;
+};
+
 /* display result callback */
 /*void*/ JsonFx.IO.ServiceTest.cb_displayResult = function(/*object*/ result, /*JsonFx.IO.ServiceTest.Context*/ context, /*Error*/ error) {
 	var target = null;
@@ -46,7 +79,12 @@ JsonFx.IO.ServiceTest.Context = function(/*string*/ request, /*element*/ target)
 
 	var label = error ? "JSON-RPC Error" : "JSON-RPC Result";
 	var data = error ? error : result;
-	JsonFx.UI.displayJsonML(["div",JsonFx.UI.dumpData("Call Context", context),["hr"],JsonFx.UI.dumpData(label, data)], target);
+	JsonFx.UI.displayJsonML(
+		["div",
+			JsonFx.IO.ServiceTest.dumpData("Call Context", context),
+			["hr"],
+			JsonFx.IO.ServiceTest.dumpData(label, data)],
+			target);
 };
 
 /* creates actual method call */		
