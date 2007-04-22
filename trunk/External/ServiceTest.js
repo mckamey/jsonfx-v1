@@ -87,7 +87,7 @@ JsonFx.IO.ServiceTest.Context = function(/*string*/ request, /*element*/ target)
 	};
 };
 
-/* generates test buttons from the system.decribe result */
+/* generates test buttons from the system.describe result */
 /*void*/ JsonFx.IO.ServiceTest.cb_buildTestUI = function(/*object*/ result, /*object*/ context) {
 	if ("object" !== typeof result && result !== null) {
 		return;

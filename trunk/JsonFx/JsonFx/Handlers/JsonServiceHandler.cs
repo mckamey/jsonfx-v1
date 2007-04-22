@@ -15,7 +15,7 @@ namespace JsonFx.Handlers
 	{
 		#region Constants
 
-		protected const string DescriptionMethodName = "system.describe";
+		protected internal const string DescriptionMethodName = "system.describe";
 		public const string JsonContentType = "application/json";
 		public const string JsonFileExtension = ".json";
 
@@ -69,18 +69,26 @@ namespace JsonFx.Handlers
 		{
 			JsonRequest request = new JsonRequest();
 
-			if (!String.IsNullOrEmpty(context.Request.PathInfo))
-			{
-				request.Method = context.Request.PathInfo.Substring(1);
-			}
-
 			JsonObject parameters = new JsonObject();
 			foreach (string key in context.Request.QueryString.Keys)
 			{
+				if (String.IsNullOrEmpty(key))
+				{
+					continue;
+				}
 				parameters[key] = context.Request.QueryString[key];
 			}
 
 			request.NamedParams = parameters;
+
+			if (!String.IsNullOrEmpty(context.Request.PathInfo))
+			{
+				request.Method = context.Request.PathInfo.Substring(1);
+				if (String.IsNullOrEmpty(request.Method) && request.NamedParams.Properties.Count < 1)
+				{
+					request.Method = JsonServiceHandler.DescriptionMethodName;
+				}
+			}
 
 			return request;
 		}

@@ -288,7 +288,7 @@ JsonFx.IO = {};
 /*string*/ JsonFx.IO.jsonRpcPathEncode = function (/*string*/ rpcMethod, /*object|array*/ rpcParams) {
 	var enc = encodeURIComponent;
 	var rpcUrl = "/";
-	if (rpcMethod) {
+	if (rpcMethod && rpcMethod !== "system.describe") {
 		rpcUrl += enc(rpcMethod);
 	}
 	if ("object" === typeof rpcParams) {
@@ -397,7 +397,10 @@ JsonFx.IO = {};
 			rpcRequest = rpcRequest.toJSONString();
 		} catch (ex) {
 			// if violates JSON, then fail
-			return false;
+			if (onFailure) {
+				onFailure(rpcRequest, cx, ex);
+			}
+			return;
 		}
 
 		options.params = rpcRequest;
