@@ -1,0 +1,28 @@
+<browsers>
+	<browser id="W3C_Validator" parentID="default">
+		<identification>
+			<userAgent match="^W3C_Validator" />
+		</identification>
+
+		<capture>
+			<userAgent match="^W3C_Validator/(?'version'(?'major'\d+)\.(?'minor'\d+)(\.(?'release'\d+))?(\.(?'build'\d+))?)" />
+		</capture>
+
+		<capabilities>
+			<capability name="browser" value="W3C Validator" />
+			<capability name="version" value="${version}" />
+			<capability name="ecmaScriptVersion" value="1.2" />
+			<capability name="htmlTextWriter" value="System.Web.UI.XhtmlTextWriter" />
+			<capability name="javaScript" value="true" />
+			<capability name="preferredRenderingMime" value="application/xhtml+xml" />
+			<capability name="preferredRequestEncoding" value="UTF-8" />
+			<capability name="preferredResponseEncoding" value="UTF-8" />
+			<capability name="supportsCss" value="true" />
+			<capability name="supportsJson" value="false" />
+			<capability name="supportsJsonML" value="false" />
+			<capability name="tables" value="true" />
+			<capability name="tagWriter" value="System.Web.UI.HtmlTextWriter" />
+			<capability name="w3cDomVersion" value="1.0" />
+		</capabilities>
+	</browser>
+</browsers>
