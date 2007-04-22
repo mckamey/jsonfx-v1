@@ -20,6 +20,13 @@ namespace JsonFx.Serialization
 		/// <summary>
 		/// Ctor.
 		/// </summary>
+		public JsonNameAttribute()
+		{
+		}
+
+		/// <summary>
+		/// Ctor.
+		/// </summary>
 		/// <param name="jsonName"></param>
 		public JsonNameAttribute(string jsonName)
 		{
@@ -31,11 +38,12 @@ namespace JsonFx.Serialization
 		#region Properties
 
 		/// <summary>
-		/// 
+		/// Gets and sets the name to be used in JSON
 		/// </summary>
-		public string JsonName
+		public string Name
 		{
 			get { return this.jsonName; }
+			set { this.jsonName = value; }
 		}
 
 		#endregion Properties
@@ -76,7 +84,7 @@ namespace JsonFx.Serialization
 				return null;
 			JsonNameAttribute attribute = (JsonNameAttribute)JsonNameAttribute.GetCustomAttribute(memberInfo, typeof(JsonNameAttribute));
 
-			return attribute.JsonName;
+			return attribute.Name;
 		}
 
 		#endregion Methods

@@ -19,37 +19,8 @@ namespace JsonFx.Services
 		/// <summary>
 		/// Ctor.
 		/// </summary>
-		public JsonServiceAttribute() : base()
+		public JsonServiceAttribute()
 		{
-		}
-
-		/// <summary>
-		/// Ctor.
-		/// </summary>
-		/// <param name="serviceName"></param>
-		public JsonServiceAttribute(string serviceName) : base(serviceName)
-		{
-		}
-
-		/// <summary>
-		/// Ctor.
-		/// </summary>
-		/// <param name="serviceName"></param>
-		/// <param name="serviceNamespace">the namespace to be used when generating the service proxy</param>
-		public JsonServiceAttribute(string serviceName, string serviceNamespace) : base(serviceName)
-		{
-			this.nameSpace = serviceNamespace;
-		}
-
-		/// <summary>
-		/// Ctor.
-		/// </summary>
-		/// <param name="serviceName"></param>
-		/// <param name="serviceNamespace">the namespace to be used when generating the service proxy</param>
-		/// <param name="helpUrl">URL to service docs</param>
-		public JsonServiceAttribute(string serviceName, string serviceNamespace, string helpUrl) : base(serviceName, helpUrl)
-		{
-			this.nameSpace = serviceNamespace;
 		}
 
 		#endregion Init
@@ -57,11 +28,12 @@ namespace JsonFx.Services
 		#region Properties
 
 		/// <summary>
-		/// Gets the namespace to be used when generating the service proxy
+		/// Gets ans sets the namespace to be used when generating the service proxy
 		/// </summary>
 		public string Namespace
 		{
 			get { return this.nameSpace; }
+			set { this.nameSpace = value; }
 		}
 
 		#endregion Properties
