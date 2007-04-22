@@ -18,7 +18,7 @@ namespace JsonFx.Services
 		/// <summary>
 		/// Ctor.
 		/// </summary>
-		public JsonDocsAttribute() : base(null)
+		public JsonDocsAttribute()
 		{
 		}
 
@@ -26,17 +26,8 @@ namespace JsonFx.Services
 		/// Ctor.
 		/// </summary>
 		/// <param name="jsonName"></param>
-		public JsonDocsAttribute(string jsonName) : this(jsonName, null)
+		public JsonDocsAttribute(string jsonName) : base(jsonName)
 		{
-		}
-
-		/// <summary>
-		/// Ctor.
-		/// </summary>
-		/// <param name="jsonName"></param>
-		public JsonDocsAttribute(string jsonName, string helpUrl) : base(jsonName)
-		{
-			this.helpUrl = helpUrl;
 		}
 
 		#endregion Init
@@ -44,11 +35,12 @@ namespace JsonFx.Services
 		#region Properties
 
 		/// <summary>
-		/// 
+		/// Gets and sets the URL which points to help documentation
 		/// </summary>
 		public string HelpUrl
 		{
 			get { return this.helpUrl; }
+			set { this.helpUrl = value; }
 		}
 
 		#endregion Properties

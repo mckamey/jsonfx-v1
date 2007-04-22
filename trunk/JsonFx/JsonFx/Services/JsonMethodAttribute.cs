@@ -31,31 +31,6 @@ namespace JsonFx.Services
 		{
 		}
 
-		/// <summary>
-		/// Ctor.
-		/// </summary>
-		/// <param name="jsonName"></param>
-		public JsonMethodAttribute(string jsonName, string helpUrl) : base(jsonName, helpUrl)
-		{
-		}
-
-		/// <summary>
-		/// Ctor.
-		/// </summary>
-		/// <param name="jsonName"></param>
-		public JsonMethodAttribute(string jsonName, bool idempotent) : this(jsonName, null, idempotent)
-		{
-		}
-
-		/// <summary>
-		/// Ctor.
-		/// </summary>
-		/// <param name="jsonName"></param>
-		public JsonMethodAttribute(string jsonName, string helpUrl, bool idempotent) : base(jsonName, helpUrl)
-		{
-			this.idempotent = idempotent;
-		}
-
 		#endregion Init
 
 		#region Properties
@@ -66,6 +41,7 @@ namespace JsonFx.Services
 		public bool Idempotent
 		{
 			get { return this.idempotent; }
+			set { this.idempotent = value; }
 		}
 
 		#endregion Properties
