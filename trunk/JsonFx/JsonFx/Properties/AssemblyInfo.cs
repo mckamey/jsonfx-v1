@@ -12,7 +12,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
 [assembly: AssemblyProduct("JsonFx")]
-[assembly: AssemblyCopyright("Copyright ©2006-2007")]
+[assembly: AssemblyCopyright("Copyright ©2006-2007 Stephen M. McKamey")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
