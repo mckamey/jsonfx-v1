@@ -2,23 +2,15 @@
 <!DOCTYPE dotfuscator SYSTEM "http://www.preemptive.com/dotfuscator/dtd/dotfuscator_v2.1.dtd">
 <dotfuscator version="2.1">
   <!--This is application generated code. Do not edit manually.-->
-  <global />
+  <global>
+    <option>verbose</option>
+  </global>
   <input>
     <asmlist>
       <inputassembly>
         <option>honoroas</option>
         <option>library</option>
-        <file dir="D:\Dev\SMM-VSS\PseudoCode\Dev\JsonFx\JsonFx\bin\Release" name="CssCompactor.exe" />
-      </inputassembly>
-      <inputassembly>
-        <option>honoroas</option>
-        <option>library</option>
         <file dir="D:\Dev\SMM-VSS\PseudoCode\Dev\JsonFx\JsonFx\bin\Release" name="JsonFx.dll" />
-      </inputassembly>
-      <inputassembly>
-        <option>honoroas</option>
-        <option>library</option>
-        <file dir="D:\Dev\SMM-VSS\PseudoCode\Dev\JsonFx\JsonFx\bin\Release" name="ScriptTools.dll" />
       </inputassembly>
     </asmlist>
   </input>
