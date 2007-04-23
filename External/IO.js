@@ -245,8 +245,8 @@ JsonFx.IO = {};
 	// ensure defaults
 	options = JsonFx.IO.validateOptions(options);
 
-	options.headers["User-Agent"] = JsonFx.userAgent;
-	options.headers.Accept = "application/json";
+	//options.headers["User-Agent"] = JsonFx.userAgent;
+	options.headers.Accept = "application/json, application/jsonml+json";
 
 	var onSuccess = options.onSuccess;
 	options.onSuccess = function(/*XMLHttpRequest*/ xhr, /*object*/ context) {
@@ -321,8 +321,8 @@ JsonFx.IO = {};
 	// ensure defaults
 	options = JsonFx.IO.validateOptions(options);
 
-	options.headers["User-Agent"] = JsonFx.userAgent;
-	options.headers.Accept = "application/json";
+	//options.headers["User-Agent"] = JsonFx.userAgent;
+	options.headers.Accept = "application/json, application/jsonml+json";
 
 	// wrap callbacks with RPC layer
 	var onSuccess = options.onSuccess;
