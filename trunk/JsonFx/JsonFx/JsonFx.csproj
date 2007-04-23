@@ -44,11 +44,13 @@
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.configuration" />
+    <Reference Include="System.Data" />
     <Reference Include="System.Web" />
     <Reference Include="System.XML" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Compilation\CssCompactorBuildProvider.cs" />
+    <Compile Include="Handlers\BrowserModule.cs" />
     <Compile Include="Properties\AssemblyVersion.cs" />
     <Compile Include="Compilation\JsonFxScriptBuildProvider.cs" />
     <Compile Include="Compilation\ScriptCompactorBuildProvider.cs" />
@@ -93,7 +95,7 @@
     <Compile Include="UI\JsonControl.cs" />
     <Compile Include="UI\JsonControlBuilder.cs" />
     <Compile Include="UI\JsonControlCollection.cs" />
-    <Compile Include="UI\JsonXhtmlTextWriter.cs" />
+    <Compile Include="UI\JsonMLTextWriter.cs" />
     <Compile Include="UI\JsonLiteral.cs" />
     <Compile Include="UI\NullTextWriter.cs" />
   </ItemGroup>
@@ -126,6 +128,7 @@
     <EmbeddedResource Include="Scripts\Compacted\Core.js" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="App_Browsers\W3CValidator.browser" />
     <None Include="Build.bat" />
   </ItemGroup>
   <ItemGroup>

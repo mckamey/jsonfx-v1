@@ -5,7 +5,7 @@ using System.Text.RegularExpressions;
 
 namespace JsonFx.UI
 {
-	public class JsonXhtmlTextWriter : System.Web.UI.XhtmlTextWriter
+	public class JsonMLTextWriter : System.Web.UI.XhtmlTextWriter
 	{
 		#region Fields
 
@@ -22,13 +22,13 @@ namespace JsonFx.UI
 
 		#region Init
 
-		public JsonXhtmlTextWriter(TextWriter writer) : base(new NullTextWriter())
+		public JsonMLTextWriter(TextWriter writer) : base(new NullTextWriter())
 		{
 			this.builder = new JsonControlBuilder(writer);
 			this.builder.PreProcess = new PreProcessLiteral(this.ParseLiteral);
 		}
 
-		public JsonXhtmlTextWriter(TextWriter writer, string tabString) : base(new NullTextWriter(), tabString)
+		public JsonMLTextWriter(TextWriter writer, string tabString) : base(new NullTextWriter(), tabString)
 		{
 			this.builder = new JsonControlBuilder(writer);
 		}
