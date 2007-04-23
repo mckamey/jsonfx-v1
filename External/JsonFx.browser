@@ -28,7 +28,7 @@
 			<capability name="supportsJson" value="true" />
 			<capability name="supportsJsonML" value="true" />
 			<capability name="tables" value="true" />
-			<capability name="tagWriter"  value="JsonFx.UI.JsonXhtmlTextWriter, JsonFx" />
+			<capability name="tagWriter"  value="JsonFx.UI.JsonMLTextWriter, JsonFx" />
 			<capability name="w3cDomVersion" value="1.0" />
 		</capabilities>
 	</browser>
@@ -64,7 +64,7 @@
 			<capability name="preferredRenderingMime" value="application/json" />
 			<capability name="supportsJson" value="true" />
 			<capability name="supportsJsonML" value="true" />
-			<capability name="tagWriter"  value="JsonFx.UI.JsonXhtmlTextWriter, JsonFx" />
+			<capability name="tagWriter"  value="JsonFx.UI.JsonMLTextWriter, JsonFx" />
 		</capabilities>
 	</browser>
 
@@ -99,7 +99,7 @@
 			<capability name="preferredRenderingMime" value="application/json" />
 			<capability name="supportsJson" value="true" />
 			<capability name="supportsJsonML" value="true" />
-			<capability name="tagWriter"  value="JsonFx.UI.JsonXhtmlTextWriter, JsonFx" />
+			<capability name="tagWriter"  value="JsonFx.UI.JsonMLTextWriter, JsonFx" />
 		</capabilities>
 	</browser>
 
@@ -155,7 +155,7 @@
 			<capability name="preferredRenderingMime" value="application/json" />
 			<capability name="supportsJson" value="true" />
 			<capability name="supportsJsonML" value="true" />
-			<capability name="tagWriter"  value="JsonFx.UI.JsonXhtmlTextWriter, JsonFx" />
+			<capability name="tagWriter"  value="JsonFx.UI.JsonMLTextWriter, JsonFx" />
 		</capabilities>
 	</browser>
 </browsers>
