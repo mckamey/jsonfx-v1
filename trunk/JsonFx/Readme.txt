@@ -1,5 +1,8 @@
 Release History
 
+v1.0.704.2321:
+- fixed bug in JsonMLTextWriter, where wouldn't write attributes of an empty element
+
 v1.0.704.2320:
 - Removed need for .browser files by adding HttpModule:
 - produces more consistent async request behavior across platforms
