@@ -52,13 +52,11 @@
     <Compile Include="Compilation\CssCompactorBuildProvider.cs" />
     <Compile Include="Handlers\BrowserModule.cs" />
     <Compile Include="Properties\AssemblyVersion.cs" />
-    <Compile Include="Compilation\JsonFxScriptBuildProvider.cs" />
     <Compile Include="Compilation\ScriptCompactorBuildProvider.cs" />
     <Compile Include="Compilation\JsonServiceBuildProvider.cs" />
     <Compile Include="Handlers\EchoHandler.cs" />
     <Compile Include="Handlers\JsonServiceHandlerFactory.cs" />
     <Compile Include="Handlers\JsonServiceProxyHandler.cs" />
-    <Compile Include="Scripts\ClientScript.cs" />
     <Compile Include="Handlers\ClientScriptHandler.cs" />
     <Compile Include="Services\JsonServiceInfo.cs" />
     <Compile Include="Services\IJsonService.cs" />

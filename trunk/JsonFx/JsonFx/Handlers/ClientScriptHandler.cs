@@ -12,6 +12,15 @@ namespace JsonFx.Handlers
 
 		private const int BufferSize = 1024;
 
+		// full source scripts: good for dev and debugging
+		internal const string ScriptPath = "JsonFx.Scripts.";
+
+		// compacted scripts: better for distribution and speed
+		internal const string CompactedScriptPath = "JsonFx.Scripts.Compacted.";
+
+		internal const string JavaScriptContentType = "application/javascript";
+		internal const string JavaScriptExtension = ".js";
+
 		#endregion Constants
 
 		#region IHttpHandler Members
@@ -25,12 +34,13 @@ namespace JsonFx.Handlers
 			context.Response.ClearHeaders();
 			context.Response.BufferOutput = true;
 			context.Response.ContentEncoding = System.Text.Encoding.UTF8;
-			context.Response.ContentType = JsonFx.Scripts.ClientScript.JavaScriptContentType;
+			context.Response.ContentType = ClientScriptHandler.JavaScriptContentType;
 
 			// this is causing issues? Transfer-Encoding: chunked
-			context.Response.AddHeader("Content-Disposition", "inline;filename="+Path.GetFileNameWithoutExtension(context.Request.FilePath)+".js");
+			context.Response.AddHeader("Content-Disposition",
+				"inline;filename="+Path.GetFileNameWithoutExtension(context.Request.FilePath)+ClientScriptHandler.JavaScriptExtension);
 
-			if (context.Request.FilePath.EndsWith(".js", StringComparison.InvariantCultureIgnoreCase))
+			if (context.Request.FilePath.EndsWith(ClientScriptHandler.JavaScriptExtension, StringComparison.InvariantCultureIgnoreCase))
 			{
 				// specifying "DEBUG" in the query string gets the non-compacted form
 				if (!isDebug && this.OutputCompiledFile(context))
@@ -79,10 +89,10 @@ namespace JsonFx.Handlers
 		protected void OutputResourceFile(HttpContext context, bool isDebug)
 		{
 			string virtualPath = context.Request.FilePath;
-			string script = isDebug ? JsonFx.Scripts.ClientScript.ScriptPath : JsonFx.Scripts.ClientScript.CompactedScriptPath;
-			script += Path.GetFileNameWithoutExtension(virtualPath)+".js";
+			string script = isDebug ? ClientScriptHandler.ScriptPath : ClientScriptHandler.CompactedScriptPath;
+			script += Path.GetFileNameWithoutExtension(virtualPath)+ClientScriptHandler.JavaScriptExtension;
 
-			Assembly assembly = Assembly.GetAssembly(typeof(JsonFx.Scripts.ClientScript));
+			Assembly assembly = Assembly.GetAssembly(typeof(ClientScriptHandler));
 			Stream input = assembly.GetManifestResourceStream(script);
 			if (input == null)
 			{
