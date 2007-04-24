@@ -1,6 +1,13 @@
 Release History
 
-2007-04-22-1014_JsonFx.zip:
+v1.0.704.2320:
+- Removed need for .browser files by adding HttpModule:
+- produces more consistent async request behavior across platforms
+- simplifies integration by reducing feature to a single line in web.config
+- Moved ASP.NET .browser "fixes" into single Other.browser file
+- Pruned some obsolete/dormant classes
+
+v1.0.704.2210:
 
 - Cleaned up display of JSON-RPC Service test
 - Added ability to specify the javascript proxy namespace on a JSON-RPC service
@@ -10,7 +17,7 @@ Release History
 - Fixed some minor bugs in edge case service errors
 - Added ~/Download/LatestBuild.ashx so download URL doesn't need to change
 
-2007-04-19-0022_JsonFx.zip:
+v1.0.704.1900:
 
 - A bare bones example, but it shows just about everything
 - Added Example pages ~/Services/Default.aspx and ~/Effects/Default.aspx with some light instructions on them
