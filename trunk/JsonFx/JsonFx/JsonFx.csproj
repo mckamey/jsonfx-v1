@@ -127,7 +127,7 @@
     <EmbeddedResource Include="Scripts\Compacted\Core.js" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="App_Browsers\W3CValidator.browser" />
+    <Content Include="App_Browsers\Other.browser" />
     <None Include="Build.bat" />
   </ItemGroup>
   <ItemGroup>
