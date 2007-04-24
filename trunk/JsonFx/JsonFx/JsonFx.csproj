@@ -54,9 +54,7 @@
     <Compile Include="Properties\AssemblyVersion.cs" />
     <Compile Include="Compilation\JsonFxScriptBuildProvider.cs" />
     <Compile Include="Compilation\ScriptCompactorBuildProvider.cs" />
-    <Compile Include="Compilation\JsonServiceBuildProvider.cs">
-      <SubType>Code</SubType>
-    </Compile>
+    <Compile Include="Compilation\JsonServiceBuildProvider.cs" />
     <Compile Include="Handlers\EchoHandler.cs" />
     <Compile Include="Handlers\JsonServiceHandlerFactory.cs" />
     <Compile Include="Handlers\JsonServiceProxyHandler.cs" />
@@ -95,6 +93,7 @@
     <Compile Include="UI\JsonControl.cs" />
     <Compile Include="UI\JsonControlBuilder.cs" />
     <Compile Include="UI\JsonControlCollection.cs" />
+    <Compile Include="UI\JsonFxBrowserCapabilities.cs" />
     <Compile Include="UI\JsonMLTextWriter.cs" />
     <Compile Include="UI\JsonLiteral.cs" />
     <Compile Include="UI\NullTextWriter.cs" />

@@ -8,6 +8,7 @@ using JsonFx.Serialization;
 using JsonFx.Services;
 using JsonFx.Services.Discovery;
 using JsonFx.Services.Proxy;
+using JsonFx.UI;
 
 namespace JsonFx.Handlers
 {
@@ -16,7 +17,6 @@ namespace JsonFx.Handlers
 		#region Constants
 
 		protected internal const string DescriptionMethodName = "system.describe";
-		public const string JsonContentType = "application/json";
 		public const string JsonFileExtension = ".json";
 
 		#endregion Constants
@@ -102,17 +102,13 @@ namespace JsonFx.Handlers
 		private void HandleRequest(System.Web.HttpContext context, JsonRequest request, ref JsonResponse response)
 		{
 			context.Response.Clear();
-			string browserEtc = context.Request.Browser["etc"];
-			if (browserEtc != null && browserEtc.Contains("opera/8"))
+			if (context.Request.Browser is JsonFxBrowserCapabilities)
 			{
-				// this is a specific fix for Opera 8.x
-				// it can only handle "text/plain" & "text/html"
-				// otherwise the content encoding is whacked
-				context.Response.ContentType = "text/plain";
+				context.Response.ContentType = context.Request.Browser.PreferredRenderingMime;
 			}
 			else
 			{
-				context.Response.ContentType = JsonServiceHandler.JsonContentType;
+				context.Response.ContentType = JsonFxBrowserCapabilities.JsonContentType;
 			}
 			context.Response.ContentEncoding = System.Text.Encoding.UTF8;
 			context.Response.AddHeader("Content-Disposition", "inline;filename=JsonResponse"+JsonServiceHandler.JsonFileExtension);
