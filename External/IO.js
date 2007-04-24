@@ -212,7 +212,7 @@ JsonFx.IO = {};
 		if (options.headers) {
 			for (var h in options.headers) {
 				if (options.headers.hasOwnProperty(h) && options.headers[h]) {
-					try {// Opera 8.0 doesn't have xhr.setRequestHeader
+					try {// Opera 8.0.0 doesn't have xhr.setRequestHeader
 						xhr.setRequestHeader(h, options.headers[h]);
 					} catch (ex) { }
 				}
