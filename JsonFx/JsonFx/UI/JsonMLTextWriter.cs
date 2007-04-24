@@ -567,23 +567,25 @@ namespace JsonFx.UI
 				if (match.Success)
 				{
 					string tagName = match.Groups["tagname"].Value;
+
+					// open tag
+					this.WriteBeginTag(tagName);
+
+					// write out attributes
+					int attribCount = Math.Min(
+						match.Groups["attrname"].Captures.Count,
+						match.Groups["attrval"].Captures.Count);
+					for (int i=0; i<attribCount; i++)
+					{
+						this.WriteAttribute(
+							match.Groups["attrname"].Captures[i].Value,
+							match.Groups["attrval"].Captures[i].Value);
+					}
+
 					if (!String.IsNullOrEmpty(match.Groups["empty"].Value))
 					{
-						// found a full tag
-						this.WriteFullBeginTag(tagName);
-					}
-					else
-					{
-						// found a begin tag
-						this.WriteBeginTag(tagName);
-						int attribCount = match.Groups["attrname"].Captures.Count;
-						attribCount = Math.Min(attribCount, match.Groups["attrval"].Captures.Count);
-						for (int i=0; i<attribCount; i++)
-						{
-							this.WriteAttribute(
-								match.Groups["attrname"].Captures[i].Value,
-								match.Groups["attrval"].Captures[i].Value);
-						}
+						// empty tag so immediately close it
+						this.WriteEndTag(tagName);
 					}
 				}
 				else
