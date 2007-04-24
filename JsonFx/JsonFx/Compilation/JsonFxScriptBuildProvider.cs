@@ -6,6 +6,8 @@ using System.Security.Permissions;
 using System.Text.RegularExpressions;
 using System.IO;
 
+using JsonFx.Handlers;
+
 namespace JsonFx.Compilation
 {
 	[BuildProviderAppliesTo(BuildProviderAppliesTo.Web)]
@@ -24,9 +26,9 @@ namespace JsonFx.Compilation
 
 		protected override TextReader OpenScriptSource()
 		{
-			string script = Path.GetFileNameWithoutExtension(base.VirtualPath)+".js";
-			Assembly assembly = Assembly.GetAssembly(typeof(JsonFx.Scripts.ClientScript));
-			Stream input = assembly.GetManifestResourceStream(JsonFx.Scripts.ClientScript.ScriptPath+script);
+			string script = Path.GetFileNameWithoutExtension(base.VirtualPath)+ClientScriptHandler.JavaScriptExtension;
+			Assembly assembly = Assembly.GetAssembly(typeof(ClientScriptHandler));
+			Stream input = assembly.GetManifestResourceStream(ClientScriptHandler.ScriptPath+script);
 			return new StreamReader(input);
 		}
 
