@@ -154,7 +154,7 @@ namespace BuildTools.CssCompactor
 							if (!this.Read(out ch) || ch != '-' ||
 								!this.Read(out ch) || ch != '-')
 							{
-								throw new SyntaxError("Expected \"<!--\"", this.reader.FilePath, this.reader.Line, this.reader.Col);
+								throw new SyntaxError("Expected \"<!--\"", this.reader.FilePath, this.reader.Line, this.reader.Column);
 							}
 							continue;
 						}
@@ -164,7 +164,7 @@ namespace BuildTools.CssCompactor
 							if (!this.Read(out ch) || ch != '-' ||
 								!this.Read(out ch) || ch != '>')
 							{
-								throw new SyntaxError("Expected \"-->\"", this.reader.FilePath, this.reader.Line, this.reader.Col);
+								throw new SyntaxError("Expected \"-->\"", this.reader.FilePath, this.reader.Line, this.reader.Column);
 							}
 							continue;
 						}
@@ -283,7 +283,7 @@ namespace BuildTools.CssCompactor
 					}
 				}
 			}
-			throw new UnexpectedEndOfFile("Unclosed At-Rule", this.reader.FilePath, this.reader.Line, this.reader.Col);
+			throw new UnexpectedEndOfFile("Unclosed At-Rule", this.reader.FilePath, this.reader.Line, this.reader.Column);
 		}
 
 		#endregion At-Rule
@@ -358,7 +358,7 @@ namespace BuildTools.CssCompactor
 				}
 			}
 
-			throw new UnexpectedEndOfFile("Unclosed block", this.reader.FilePath, this.reader.Line, this.reader.Col);
+			throw new UnexpectedEndOfFile("Unclosed block", this.reader.FilePath, this.reader.Line, this.reader.Column);
 		}
 
 		#endregion Block
@@ -408,7 +408,7 @@ namespace BuildTools.CssCompactor
 							case ';':
 							case '}':
 							{
-								throw new SyntaxError("Error parsing Selectors", this.reader.FilePath, this.reader.Line, this.reader.Col);
+								throw new SyntaxError("Error parsing Selectors", this.reader.FilePath, this.reader.Line, this.reader.Column);
 							}
 						}
 					}
@@ -438,7 +438,7 @@ namespace BuildTools.CssCompactor
 						{
 							case '{':
 							{
-								throw new SyntaxError("Error parsing RuleSet", this.reader.FilePath, this.reader.Line, this.reader.Col);
+								throw new SyntaxError("Error parsing RuleSet", this.reader.FilePath, this.reader.Line, this.reader.Column);
 							}
 							//case ':':// keep going
 							case ';':
@@ -489,7 +489,7 @@ namespace BuildTools.CssCompactor
 				case ';':
 				case '}':
 				{
-					throw new SyntaxError("Invalid chars in Selector", this.reader.FilePath, this.reader.Line, this.reader.Col);
+					throw new SyntaxError("Invalid chars in Selector", this.reader.FilePath, this.reader.Line, this.reader.Column);
 				}
 			}
 
@@ -514,11 +514,11 @@ namespace BuildTools.CssCompactor
 					case ';':
 					case '}':
 					{
-						throw new SyntaxError("Error parsing Selector", this.reader.FilePath, this.reader.Line, this.reader.Col);
+						throw new SyntaxError("Error parsing Selector", this.reader.FilePath, this.reader.Line, this.reader.Column);
 					}
 				}
 			}
-			throw new UnexpectedEndOfFile("Unclosed Selector", this.reader.FilePath, this.reader.Line, this.reader.Col);
+			throw new UnexpectedEndOfFile("Unclosed Selector", this.reader.FilePath, this.reader.Line, this.reader.Column);
 		}
 
 		#endregion Selector
@@ -547,7 +547,7 @@ namespace BuildTools.CssCompactor
 				case ':':
 				//case ';':
 				{
-					throw new SyntaxError("Declaration missing property name", this.reader.FilePath, this.reader.Line, this.reader.Col);
+					throw new SyntaxError("Declaration missing property name", this.reader.FilePath, this.reader.Line, this.reader.Column);
 				}
 				case '}':
 				{
@@ -567,7 +567,7 @@ namespace BuildTools.CssCompactor
 					//case ':':
 					case ';':
 					{
-						throw new SyntaxError("Invalid Property name: "+this.Copy(start), this.reader.FilePath, this.reader.Line, this.reader.Col);
+						throw new SyntaxError("Invalid Property name: "+this.Copy(start), this.reader.FilePath, this.reader.Line, this.reader.Column);
 					}
 					case '}':
 					{
@@ -582,12 +582,14 @@ namespace BuildTools.CssCompactor
 			{
 				while (this.Read(out ch) && (Char.IsWhiteSpace(ch)))
 				{
-					// skip whitespace & delimiter
+					// skip whitespace
 				}
 			}
 
 			if (ch != ':')
 			{
+				// missing the property delim and value
+
 				if (ch == ';' || ch == '}')
 				{
 					// these are good chars for resyncing
@@ -595,7 +597,7 @@ namespace BuildTools.CssCompactor
 					// not create subsequent errors
 					this.PutBack();
 				}
-				throw new SyntaxError("Expected <property> : <value>", this.reader.FilePath, this.reader.Line, this.reader.Col);
+				throw new SyntaxError("Expected <property> : <value>", this.reader.FilePath, this.reader.Line, this.reader.Column);
 			}
 
 			CssValueList value = this.ParseValue();
@@ -633,7 +635,7 @@ namespace BuildTools.CssCompactor
 				case ';':
 				case '}':
 				{
-					throw new SyntaxError("Invalid char in property value: '"+ch+"'", this.reader.FilePath, this.reader.Line, this.reader.Col);
+					throw new SyntaxError("Invalid char in property value: '"+ch+"'", this.reader.FilePath, this.reader.Line, this.reader.Column);
 				}
 			}
 
@@ -648,7 +650,7 @@ namespace BuildTools.CssCompactor
 					case '{':
 					//case ':':// leave in for "filter: progid:DXImageTransform.Microsoft..."
 					{
-						throw new SyntaxError("Invalid property value: "+this.Copy(start), this.reader.FilePath, this.reader.Line, this.reader.Col);
+						throw new SyntaxError("Invalid property value: "+this.Copy(start), this.reader.FilePath, this.reader.Line, this.reader.Column);
 					}
 					case '}':
 					case ';':
@@ -666,7 +668,7 @@ namespace BuildTools.CssCompactor
 					}
 				}
 			}
-			throw new UnexpectedEndOfFile("Unclosed declaration", this.reader.FilePath, this.reader.Line, this.reader.Col);
+			throw new UnexpectedEndOfFile("Unclosed declaration", this.reader.FilePath, this.reader.Line, this.reader.Column);
 		}
 
 		#endregion Value
@@ -693,7 +695,7 @@ namespace BuildTools.CssCompactor
 		{
 			if (this.reader.EndOfFile)
 			{
-				throw new UnexpectedEndOfFile("Reading past end of file", this.reader.FilePath, this.reader.Line, this.reader.Col);
+				throw new UnexpectedEndOfFile("Reading past end of file", this.reader.FilePath, this.reader.Line, this.reader.Column);
 			}
 
 			int c = this.reader.Read();
