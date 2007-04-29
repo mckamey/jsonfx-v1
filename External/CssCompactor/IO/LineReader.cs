@@ -41,7 +41,7 @@ namespace BuildTools.IO
 		#region Fields
 
 		private int line = 1;
-		private int col = 0;
+		private int column = 0;
 		private int position = -1;
 
 		private string filePath;
@@ -128,9 +128,9 @@ namespace BuildTools.IO
 		/// <summary>
 		/// Gets the current col number
 		/// </summary>
-		public int Col
+		public int Column
 		{
-			get { return this.col; }
+			get { return this.column; }
 		}
 
 		/// <summary>
@@ -213,14 +213,23 @@ namespace BuildTools.IO
 			}
 			switch (this.source[this.position])
 			{
-				case '\r':
-				case '\n':
+				case '\r': //CR
+				{
+					// manipulate CR/LF as one char
+					if ((this.position+1 < this.Length) && this.source[this.position+1] == '\n')
+					{
+						this.position--;
+					}
+					break;
+				}
+				case '\n': //LF
+				case '\f': //FF
 				{
 					this.line--;
 					break;
 				}
 			}
-			this.col--;
+			this.column--;
 			this.position--;
 		}
 
@@ -257,7 +266,7 @@ namespace BuildTools.IO
 				int ch = this.CopyRead(ref copyPosition);
 				if (ch == -1)
 				{
-					throw new UnexpectedEndOfFile("Read past end of file", this.FilePath, this.Line, this.Col);
+					throw new UnexpectedEndOfFile("Read past end of file", this.FilePath, this.Line, this.Column);
 				}
 				buffer[count] = (char)ch;
 				count++;
@@ -304,12 +313,12 @@ namespace BuildTools.IO
 
 			// increment counters
 			this.position++;
-			this.col++;
+			this.column++;
 			char ch = this.source[this.position];
 
 			if (Char.IsWhiteSpace(ch))
 			{
-				ch = this.NormalizeSpaces(ch, ref this.position, ref this.line, ref this.col);
+				ch = this.NormalizeSpaces(ch, ref this.position, ref this.line, ref this.column);
 			}
 
 			return filter ? this.Filter(ch) : ch;
@@ -339,6 +348,7 @@ namespace BuildTools.IO
 					{
 						case '\r': //CR
 						{
+							// manipulate CR/LF as one char
 							if ((pos+1 < length) && this.source[pos+1] == '\n')
 							{
 								pos++;
@@ -363,6 +373,7 @@ namespace BuildTools.IO
 				{
 					case '\r': //CR
 					{
+						// manipulate CR/LF as one char
 						if ((pos+1 < length) && this.source[pos+1] == '\n')
 						{
 							pos++;
@@ -433,7 +444,7 @@ namespace BuildTools.IO
 						int ch2 = this.Read(false);
 						if (ch < 0)
 						{
-							throw new UnexpectedEndOfFile("Expected "+endToken, this.FilePath, this.Line, this.Col);
+							throw new UnexpectedEndOfFile("Expected "+endToken, this.FilePath, this.Line, this.Column);
 						}
 						if (ch2 != endToken[i])
 						{
