@@ -15,7 +15,7 @@ if ("undefined" === typeof JsonFx) {
 JsonFx.Trace = {};
 
 /*element*/ JsonFx.Trace.GetTraceElement = function() {
-	var trace = document.getElementById("JsonFx_Trace");
+	var trace = document.getElementById("JsonFx_Trace"), aClear, aSource;
 	if (!trace) {
 		trace = document.createElement("div");
 		trace.id = "JsonFx_Trace";
@@ -28,7 +28,7 @@ JsonFx.Trace = {};
 		trace.style.overflow = "auto";
 		document.body.appendChild(trace);
 
-		var aClear = document.createElement("a");
+		aClear = document.createElement("a");
 		aClear.onclick = function(){JsonFx.Trace.Clear();return false;};
 		aClear.href = "#clear";
 		aClear.innerText = "Clear";
@@ -37,8 +37,8 @@ JsonFx.Trace = {};
 
 		trace.appendChild(document.createTextNode(" "));
 
-		var aSource = document.createElement("a");
-		aSource.onclick = function(){trace.innerHTML="<textarea cols='70' rows='8' onclick='this.select();'>"+document.documentElement.outerHTML+"</textarea>";return false;};
+		aSource = document.createElement("a");
+		aSource.onclick = function(){trace.innerHTML="<textarea cols=\"70\" rows=\"8\" onclick=\"this.select();\">"+document.documentElement.outerHTML+"</textarea>";return false;};
 		aSource.href = "#source";
 		aSource.innerText = "Source";
 		aSource.title = "Shows the dynamically built source for this document.";
@@ -54,9 +54,10 @@ JsonFx.Trace = {};
 		return;
 	}
 
+	var trace, preTraceMsg;
 	try {
-		var trace = JsonFx.Trace.GetTraceElement();
-		var preTraceMsg = document.createElement("pre");
+		trace = JsonFx.Trace.GetTraceElement();
+		preTraceMsg = document.createElement("pre");
 		preTraceMsg.innerText = sMessage;
 		trace.insertBefore(preTraceMsg, trace.firstChild);
 	} catch (ex) {
@@ -65,8 +66,9 @@ JsonFx.Trace = {};
 };
 
 /*void*/ JsonFx.Trace.Clear = function() {
+	var trace;
 	try {
-		var trace = JsonFx.Trace.GetTraceElement();
+		trace = JsonFx.Trace.GetTraceElement();
 		document.body.removeChild(trace);
 	} catch (ex) {
 		alert("JsonFx.Trace: "+ex.message);

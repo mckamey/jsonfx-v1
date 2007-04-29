@@ -38,8 +38,9 @@ JsonFx.IO.ServiceTest.Context = function(/*string*/ request, /*element*/ target)
 	(a?a:c).push(["span", {"class":"jsonfx-type"}, (val instanceof Array) ? "array" : type]);
 	(a?a:c).push(["span", {"class":"jsonfx-name"}, name, ":"]);
 
+	var ul;
 	if ("object" === type && val) {
-		var ul = ["ul", {"id":"JsonFx_UI_Dump_"+(JsonFx.IO.ServiceTest.dumpDataID++),"class":"jsonfx-object"}];
+		ul = ["ul", {id:"JsonFx_UI_Dump_"+(JsonFx.IO.ServiceTest.dumpDataID++),"class":"jsonfx-object"}];
 		for (var pn in val) {
 			if (!val.hasOwnProperty(pn)) {
 				continue;
@@ -91,9 +92,9 @@ JsonFx.IO.ServiceTest.Context = function(/*string*/ request, /*element*/ target)
 /*function*/ JsonFx.IO.ServiceTest.createServiceCall = function(/*object*/ service, /*object*/ proc, /*element*/ target) {
 	return function() {
 		var call = service.proxyName+"."+proc.name+"(";
-		var args = [];
+		var args = [], i;
 		if (proc.params) {
-			for (var i=0; i<proc.params.length; i++) {
+			for (i=0; i<proc.params.length; i++) {
 				if (i > 0) {
 					call += ", ";
 				}
@@ -141,14 +142,15 @@ JsonFx.IO.ServiceTest.Context = function(/*string*/ request, /*element*/ target)
 	}
 
 	// add placeholder for implicit service description
-	result.procs.unshift({"name":"system.describe","summary":"Produces a Service Description for this JSON-RPC Service"});
+	result.procs.unshift({name:"system.describe",summary:"Produces a Service Description for this JSON-RPC Service"});
 
+	var proc, btn, handler;
 	for (var i=0; i<result.procs.length; i++) {
-		var proc = result.procs[i];
-		var btn = ["input", {"type":"button", "class":"ServiceTest", "value":proc.name, "title":proc.summary}];
+		proc = result.procs[i];
+		btn = ["input", {type:"button", "class":"ServiceTest", value:proc.name, title:proc.summary}];
 		btn = btn.parseJsonML(null);
 
-		var handler = JsonFx.IO.ServiceTest.createServiceCall(context.service, proc, context.target);
+		handler = JsonFx.IO.ServiceTest.createServiceCall(context.service, proc, context.target);
 		if (handler) {
 			btn.onclick = handler;
 			context.container.appendChild(btn);
@@ -162,7 +164,7 @@ JsonFx.IO.ServiceTest.Context = function(/*string*/ request, /*element*/ target)
 			{
 				onSuccess : JsonFx.IO.ServiceTest.cb_buildTestUI,
 				onFailure : JsonFx.IO.ServiceTest.cb_displayResult,
-				context : { "service":service, "container":container, "target":target }
+				context : { service:service, container:container, target:target }
 			});
 	}
 };

@@ -119,9 +119,10 @@ if ("undefined" === typeof Array.prototype.shift) {
 
 if ("undefined" === typeof Array.prototype.unshift) {
 	/*void*/ Array.prototype.unshift = function () {
-		var a = arguments;
+		var a = arguments, i, l, al;
 		if (a && a.length) {
-			var i, l = this.length, al = a.length;
+			l = this.length;
+			al = a.length;
 
 			// move this array items onto end of arguments list
 			for (i=0; i<l; i++) {
@@ -203,11 +204,12 @@ if ("undefined" === typeof window.decodeURIComponent) {
 	// wrapping in anonymous function so that the XHR ID list
 	// will be only available as a closure, as this will not
 	// modify the global namespace, and it will be shared
+	var xhrOCXs;
 
 	if ("undefined" === typeof window.XMLHttpRequest) {
 
 		// these IDs are as per MSDN documentation (including case)
-		/*string[]*/ var xhrOCXs = !window.ActiveXObject ? [] :
+		/*string[]*/ xhrOCXs = !window.ActiveXObject ? [] :
 			[
 				"Msxml2.XMLHTTP.6.0",
 				"Msxml2.XMLHttp.5.0",

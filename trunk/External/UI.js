@@ -26,6 +26,7 @@ if ("undefined" === typeof JsonFx.UI) {
 		// W3C DOM equivalent to currentStyle:
 		return document.defaultView.getComputedStyle(elem, null).getPropertyValue(style);
 	}
+	var i;
 	if (elem.currentStyle) {
 		// IE only
 		if (style === "float") {
@@ -34,7 +35,7 @@ if ("undefined" === typeof JsonFx.UI) {
 			// convert property name to camelCase
 			style = style.split('-');
 			style[0] = style[0].toLowerCase();
-			for (var i=1; i<style.length; i++) {
+			for (i=1; i<style.length; i++) {
 				style[i] = style[i].charAt(0).toUpperCase()+style[i].substr(1).toLowerCase();
 			}
 			style = style.join("");
@@ -45,19 +46,19 @@ if ("undefined" === typeof JsonFx.UI) {
 };
 
 /*{left,top}*/ JsonFx.UI.getOffset = function(/*element*/ elem) {
-	var top=0, left=0;
+	var top=0, left=0, pos;
 	while (elem) {
 		top += elem.offsetTop;
 		left += elem.offsetLeft;
 		elem = elem.offsetParent;
 		if (elem) {
-			var pos = JsonFx.UI.getStyle(elem, "position");
+			pos = JsonFx.UI.getStyle(elem, "position");
 			if (pos && pos !== "static") {
 				elem = null;
 			}
 		}
 	}
-	return { "left":left, "top":top };
+	return { left:left, top:top };
 };
 
 /*void*/ JsonFx.UI.clearTextSelection = function() {
@@ -125,28 +126,28 @@ if ("undefined" === typeof JsonFx.UI) {
 			if (hex.length === 7) {
 				// e.g. "#336699"
 				return {
-						"r":Number("0x"+RegExp.$1),
-						"g":Number("0x"+RegExp.$2),
-						"b":Number("0x"+RegExp.$3)
+						r:Number("0x"+RegExp.$1),
+						g:Number("0x"+RegExp.$2),
+						b:Number("0x"+RegExp.$3)
 					};
 			} else if (hex.length === 4) {
 				// e.g. "#369" === "#336699"
 				return {
-						"r":Number("0x"+RegExp.$1+RegExp.$1),
-						"g":Number("0x"+RegExp.$2+RegExp.$2),
-						"b":Number("0x"+RegExp.$3+RegExp.$3)
+						r:Number("0x"+RegExp.$1+RegExp.$1),
+						g:Number("0x"+RegExp.$2+RegExp.$2),
+						b:Number("0x"+RegExp.$3+RegExp.$3)
 					};
 			}
 		}
 		if (hex.match(/rgb[\(](\d+),\s*(\d+),\s*(\d+)[\)]/)) {// Firefox colors
 			return {
-					"r":Number(RegExp.$1),
-					"g":Number(RegExp.$2),
-					"b":Number(RegExp.$3)
+					r:Number(RegExp.$1),
+					g:Number(RegExp.$2),
+					b:Number(RegExp.$3)
 				};
 		}
 	}
-	return {"r":NaN, "g":NaN, "b":NaN};
+	return {r:NaN, g:NaN, b:NaN};
 };
 
 /*float*/ JsonFx.UI.lerp = function (/*float*/ start, /*float*/ end, /*float*/ t) {
@@ -198,17 +199,18 @@ JsonFx.UI.Bindings = function() {
 	};
 
 	/*element*/ var performOne = function(/*element*/ elem, /*actionKey*/ a) {
+		var tag, tagBindings, classes, i, css;
 		if (elem && elem.tagName && elem.className) {
 
 			// only perform on registered tags
-			var tag = elem.tagName.toLowerCase();
+			tag = elem.tagName.toLowerCase();
 			if (bindings[tag]) {
-				var tagBindings = bindings[tag];
-				var classes = elem.className.split(/\s+/);
+				tagBindings = bindings[tag];
+				classes = elem.className.split(/\s+/);
 
 				// for each css class in elem
-				for (var i=0; i<classes.length; i++) {
-					var css = classes[i];
+				for (i=0; i<classes.length; i++) {
+					css = classes[i];
 					if (css && tagBindings[css] && tagBindings[css][a]) {
 
 						// perform action on element							
@@ -222,6 +224,7 @@ JsonFx.UI.Bindings = function() {
 
 	// perform a binding action on child elements
 	/*void*/ var perform = function(/*element*/ root, /*actionKey*/ a) {
+		var elems, i;
 		if (root && root.getElementsByTagName) {
 
 			// for each registered tag
@@ -229,8 +232,8 @@ JsonFx.UI.Bindings = function() {
 				if (bindings.hasOwnProperty(tag)) {
 
 					// for each element in root with tagName
-					var elems = root.getElementsByTagName(tag);
-					for (var i=0; i<elems.length; i++) {
+					elems = root.getElementsByTagName(tag);
+					for (i=0; i<elems.length; i++) {
 						performOne(elems[i], a);
 					}
 				}
@@ -353,10 +356,11 @@ JsonFx.UI.History = {
 			JsonFx.UI.History.h = elem;
 			return;
 		}
+		var h, info;
 		if ("function" === typeof JsonFx.UI.History.onchange) {
-			var h = JsonFx.UI.getIFrameDocument(elem);
+			h = JsonFx.UI.getIFrameDocument(elem);
 			if (h) {
-				var info = h.location.search;
+				info = h.location.search;
 				if (info) {
 					info = info.substring(info.indexOf('?')+1);
 					info = decodeURIComponent(info);
@@ -443,8 +447,9 @@ JsonFx.UI.History = {
 
 	options = JsonFx.IO.validateOptions(options);
 
+	var onCreate;
 	if (options.onCreate) {
-		var onCreate = options.onCreate;
+		onCreate = options.onCreate;
 		options.onCreate = function (/*JSON*/ jml, /*object*/ cx) {
 			// create callback
 			onCreate(cx);
@@ -466,8 +471,9 @@ JsonFx.UI.History = {
 		onSuccess = container = null;
 	};
 
+	var onFailure;
 	if (options.onFailure) {
-		var onFailure = options.onFailure;
+		onFailure = options.onFailure;
 		options.onFailure = function (/*JSON*/ jml, /*object*/ cx, /*Error*/ ex) {
 			ex.$error = jml;
 		
@@ -479,8 +485,9 @@ JsonFx.UI.History = {
 		};
 	}
 
+	var onTimeout;
 	if (options.onTimeout) {
-		var onTimeout = options.onTimeout;
+		onTimeout = options.onTimeout;
 		options.onTimeout = function (/*JSON*/ jml, /*object*/ cx, /*Error*/ ex) {
 			// timeout callback
 			onTimeout(cx, ex);
@@ -490,8 +497,9 @@ JsonFx.UI.History = {
 		};
 	}
 
+	var onComplete;
 	if (options.onComplete) {
-		var onComplete = options.onComplete;
+		onComplete = options.onComplete;
 		options.onComplete = function (/*JSON*/ jml, /*object*/ cx) {
 			// complete callback
 			onComplete(cx);
@@ -559,8 +567,8 @@ JsonFx.UI.Animate.Op = function() {
 	this.z = this.t = this.r = this.b = this.l = 
 	this.cL = this.cR = this.cT = this.cB =
 	this.f = this.bl = NaN;
-	this.c = { "r":NaN, "g":NaN, "b":NaN };
-	this.bc = { "r":NaN, "g":NaN, "b":NaN };
+	this.c = { r:NaN, g:NaN, b:NaN };
+	this.bc = { r:NaN, g:NaN, b:NaN };
 	this.s = 0.05;// 20 steps
 };
 
@@ -792,31 +800,31 @@ JsonFx.UI.Animate.Op = function() {
 };
 
 /*JsonFx.UI.Animate.Op*/ JsonFx.UI.Animate.Op.save = function(/*element*/ elem) {
-	var op = new JsonFx.UI.Animate.Op();
+	var op = new JsonFx.UI.Animate.Op(), es, esPos, top, right, bottom, left, width, height, color, clip;
 
 	if (elem && elem.style) {
-		var es = elem.style;
-		var esPos = JsonFx.UI.getStyle(elem, "position");
+		es = elem.style;
+		esPos = JsonFx.UI.getStyle(elem, "position");
 
-		var top = parseFloat(JsonFx.UI.getStyle(elem, "top"));
+		top = parseFloat(JsonFx.UI.getStyle(elem, "top"));
 		if (isFinite(top)) {
 			op.top(top);
 		} else if (esPos === "static") {
 			op.top(0);
 		}
-		var right = parseFloat(JsonFx.UI.getStyle(elem, "right"));
+		right = parseFloat(JsonFx.UI.getStyle(elem, "right"));
 		if (isFinite(right)) {
 			op.right(right);
 		} else if (esPos === "static") {
 			op.right(0);
 		}
-		var bottom = parseFloat(JsonFx.UI.getStyle(elem, "bottom"));
+		bottom = parseFloat(JsonFx.UI.getStyle(elem, "bottom"));
 		if (isFinite(bottom)) {
 			op.right(bottom);
 		} else if (esPos === "static") {
 			op.bottom(0);
 		}
-		var left = parseFloat(JsonFx.UI.getStyle(elem, "left"));
+		left = parseFloat(JsonFx.UI.getStyle(elem, "left"));
 		if (isFinite(left)) {
 			op.left(left);
 		} else if (esPos === "static") {
@@ -827,7 +835,7 @@ JsonFx.UI.Animate.Op = function() {
 		if (isFinite(elem.offsetWidth)) {
 			op.width(elem.offsetWidth);
 		} else {
-			var width = parseFloat(JsonFx.UI.getStyle(elem, "width"));
+			width = parseFloat(JsonFx.UI.getStyle(elem, "width"));
 			if (isFinite(width)) {
 				op.width(width);
 			}
@@ -836,7 +844,7 @@ JsonFx.UI.Animate.Op = function() {
 		if (isFinite(elem.offsetHeight)) {
 			op.height(elem.offsetHeight);
 		} else {
-			var height = parseFloat(JsonFx.UI.getStyle(elem, "height"));
+			height = parseFloat(JsonFx.UI.getStyle(elem, "height"));
 			if (isFinite(height)) {
 				op.height(height);
 			}
@@ -864,7 +872,7 @@ JsonFx.UI.Animate.Op = function() {
 		}
 
 		// color
-		var color = JsonFx.UI.fromHtmlColor(JsonFx.UI.getStyle(elem, "color"));
+		color = JsonFx.UI.fromHtmlColor(JsonFx.UI.getStyle(elem, "color"));
 		if (isFinite(color.r) && isFinite(color.g) && isFinite(color.b)) {
 			op.color(color.r, color.g, color.b);
 		} else {
@@ -1306,8 +1314,9 @@ JsonFx.UI.Animate.Engine = function(/*element*/ elem) {
 					JsonFx.UI.lerpInt(start.c.b, op.c.b, step)
 				);
 			}
+			var clip;
 			if (op.hasClip()) {
-				var clip = ["auto","auto","auto","auto"];
+				clip = ["auto","auto","auto","auto"];
 				if (op.hasClipT() && start.hasClipT()) {
 					clip[0] = Math.ceil(JsonFx.UI.lerp(start.cT, op.cT, step)*100)+"%";
 				}
@@ -1401,6 +1410,7 @@ JsonFx.UI.Animate.Engine = function(/*element*/ elem) {
 		}
 		elem.expando = expando = new JsonFx.UI.Animate.Engine(target);
 	}
+	var op;
 	if (expando.hasAppliedOp()) {
 		if (elem.value) {// hacky swap out for buttons
 			elem.value = " \u2212 ";
@@ -1409,7 +1419,7 @@ JsonFx.UI.Animate.Engine = function(/*element*/ elem) {
 		expando.apply(null, false);
 		return false;
 	} else {
-		var op = new JsonFx.UI.Animate.Op();
+		op = new JsonFx.UI.Animate.Op();
 		op.fade(0);
 		op.height(0);
 		op.speed(0.65);
