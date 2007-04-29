@@ -42,6 +42,13 @@ namespace BuildTools
 	[Serializable]
 	public abstract class ParseException : ApplicationException
 	{
+		#region Constants
+
+		// this cannot change every char is important or VS2005 will not list as error/warning
+		private const string VS2005ErrorFormat = "{0}({1},{2}): {3} : {4}";
+
+		#endregion Constants
+
 		#region Fields
 
 		private string file;
@@ -108,15 +115,18 @@ namespace BuildTools
 
 		public virtual string GetCompilerMessage(bool isWarning)
 		{
+			string message = String.IsNullOrEmpty(this.ErrorCode) ?
+				this.Message :
+				this.ErrorCode + " - " + this.Message;
+
 			// format as a VS2005 error/warning
 			return String.Format(
-				"{0}({1},{2}): {5} {3}: {4}",
+				ParseException.VS2005ErrorFormat,
 				this.File,
 				this.Line,
 				this.Column,
-				this.ErrorCode,
-				this.Message,
-				isWarning ? "warning" : "error");
+				isWarning ? "warning" : "error",
+				message);
 		}
 
 		#endregion Methods
