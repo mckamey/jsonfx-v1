@@ -588,6 +588,13 @@ namespace BuildTools.CssCompactor
 
 			if (ch != ':')
 			{
+				if (ch == ';' || ch == '}')
+				{
+					// these are good chars for resyncing
+					// so put them back on the stream to
+					// not create subsequent errors
+					this.PutBack();
+				}
 				throw new SyntaxError("Expected <property> : <value>", this.reader.FilePath, this.reader.Line, this.reader.Col);
 			}
 
