@@ -38,10 +38,11 @@ JsonFx.IO = {};
 */
 
 /*RequestOptions*/ JsonFx.IO.onFailure = function(/*XMLHttpRequest|JSON*/ obj, /*object*/ cx, /*error*/ ex) {
+	var name, msg, code;
 	if (ex) {
-		var name = ex.name ? ex.name : "Error";
-		var msg = ex.message ? ex.message : "";
-		var code = isFinite(ex.code) ? Number(ex.code) : Number(ex.number);
+		name = ex.name ? ex.name : "Error";
+		msg = ex.message ? ex.message : "";
+		code = isFinite(ex.code) ? Number(ex.code) : Number(ex.number);
 
 		if (isFinite(code)) {
 			name += " ("+code+")";
@@ -162,13 +163,14 @@ JsonFx.IO = {};
 
 			try { document.body.appendChild(document.createTextNode((xhr?readyStates[xhr.readyState]:"null")+";")); } catch (ex) {}
 		*/
+		var status, ex;
 		if (xhr && xhr.readyState === 4 /*complete*/) {
 
 			// stop the timeout
 			window.clearTimeout(cancel);
 
 			// check the status
-			var status = 0;
+			status = 0;
 			try {
 				status = Number(xhr.status);
 			} catch (ex) {
@@ -192,7 +194,7 @@ JsonFx.IO = {};
 
 			} else if (options.onFailure) { // status not 200-299
 				// failure
-				var ex = new Error(xhr.statusText);
+				ex = new Error(xhr.statusText);
 				ex.code = status;
 				options.onFailure(xhr, options.context, ex);
 			}
@@ -269,8 +271,9 @@ JsonFx.IO = {};
 		}
 	};
 
+	var onFailure = null;
 	if (options.onFailure) {
-		var onFailure = options.onFailure;
+		onFailure = options.onFailure;
 		options.onFailure = function (/*XMLHttpRequest*/ xhr, /*object*/ context, /*Error*/ ex) {
 
 			onFailure((xhr&&xhr.responseText), context, ex);
@@ -286,15 +289,14 @@ JsonFx.IO = {};
 /* JSON-RPC ----------------------------------------------------*/
 
 /*string*/ JsonFx.IO.jsonRpcPathEncode = function (/*string*/ rpcMethod, /*object|array*/ rpcParams) {
-	var enc = encodeURIComponent;
-	var rpcUrl = "/";
+	var i, enc = encodeURIComponent, rpcUrl = "/";
 	if (rpcMethod && rpcMethod !== "system.describe") {
 		rpcUrl += enc(rpcMethod);
 	}
 	if ("object" === typeof rpcParams) {
 		rpcUrl += "?";
 		if (rpcParams instanceof Array) {
-			for (var i=0; i<rpcParams.length; i++) {
+			for (i=0; i<rpcParams.length; i++) {
 				if (i > 0) {
 					rpcUrl += "&";
 				}
@@ -380,16 +382,17 @@ JsonFx.IO = {};
 		rpcParams = [ rpcParams ];
 	}
 
+	var rpcRequest;
 	if (options.method === "GET") {
 		// GET RPC is encoded as part the URL
 		rpcUrl += JsonFx.IO.jsonRpcPathEncode(rpcMethod, rpcParams);
 
 	} else {
 		// POST RPC is encoded as a JSON body
-		var rpcRequest = {
-				"version" : "1.1",
-				"method" : rpcMethod,
-				"params" : rpcParams
+		rpcRequest = {
+				version : "1.1",
+				method : rpcMethod,
+				params : rpcParams
 			};
 
 		try {
@@ -398,7 +401,7 @@ JsonFx.IO = {};
 		} catch (ex) {
 			// if violates JSON, then fail
 			if (onFailure) {
-				onFailure(rpcRequest, cx, ex);
+				onFailure(rpcRequest, options.context, ex);
 			}
 			return;
 		}
@@ -430,11 +433,10 @@ if ("undefined" === typeof JsonFx.IO.JsonRpcService) {
 		// ensure defaults
 		options = JsonFx.IO.validateOptions(options);
 
+		var self = this, onComplete = null;
 		if ("function" === typeof this.onEndRequest) {
-			var self = this;
-
 			// intercept onComplete to call onEndRequest
-			var onComplete = options.onComplete;
+			onComplete = options.onComplete;
 			options.onComplete = function(/*JSON*/ json, /*object*/ cx) {
 				self.onEndRequest(cx);
 

@@ -90,9 +90,10 @@ if ("undefined" === typeof JsonFx.UI) {
 
 	// calculate styles immediately, loop until can apply them
 	/*string*/ var uaDetails = parse();
+	var i;
 	if (uaDetails.length && JsonFx.userAgent) {
 		JsonFx.userAgent += " (";
-		for (var i=0; i<uaDetails.length;i ++) {
+		for (i=0; i<uaDetails.length;i ++) {
 			if (i>0) {
 				JsonFx.userAgent += "; ";
 			}
@@ -125,7 +126,7 @@ if ("undefined" === typeof JsonFx.UI) {
 
 		// using JavaScript closures to access the parsed UA
 		/*void*/ function appendCss(/*{b,v}[]*/ d) {
-			var uaCss = "";
+			var uaCss = "", ua;
 
 			while (d.length) {
 				ua = d.pop();

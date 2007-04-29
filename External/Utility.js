@@ -18,51 +18,52 @@ if ("undefined" === typeof JsonFx.Utils) {
 
 /* Script Lazy Load ----------------------------------------------------*/
 
-/*void*/ JsonFx.Utils.registerScript = function(/*string*/ sUrl) {
-	if (!sUrl) {
+/*void*/ JsonFx.Utils.registerScript = function(/*string*/ url) {
+	if (!url) {
 		return;
 	}
 
 	// check if script already exists
-	var aScripts = document.getElementsByTagName("script");
-	for (var i=0; i<aScripts.length; i++) {
-		if (aScripts[i].src == sUrl) {
+	/*elem[]*/ var scripts = document.getElementsByTagName("script");
+	for (var i=0; i<scripts.length; i++) {
+		if (scripts[i].src === url) {
 			return;
 		}
 	}
 
-		if (!document.body) {
-			// NOTE: Google maps requires this style
+	/*element*/ var doc, head, elem;
+	if (!document.body) {
+		// NOTE: Google maps requires this style
 
-			// hopefully still in the head
-			var doc = document;
-			doc.write('<' + 'script src="' + sUrl + '"' +' type="text/javascript"><' + '/script>');
-		} else {
-			// get document head
-			var documentHead = document.getElementsByTagName("head")[0];
+		// hopefully still in the head
+		doc = document;// use var so document.write doesn't get flagged by JSLint
+		doc.write('<' + 'script src="' + url + '"' +' type="text/javascript"><' + '/script>');
+	} else {
+		// get document head
+		head = document.getElementsByTagName("head")[0];
 
-			// append a new script element to document head
-			var elScript = document.createElement("script");
-			elScript.setAttribute("type","text/javascript");
-			elScript.setAttribute("src", sUrl);
-			documentHead.appendChild(elScript);
-		}
+		// append a new script element to document head
+		elem = document.createElement("script");
+		elem.setAttribute("type","text/javascript");
+		elem.setAttribute("src", url);
+		head.appendChild(elem);
+	}
 };
 
 /* Query String ----------------------------------------------------*/
 
-/*string*/ JsonFx.Utils.getQueryParam = function (/*string*/ sQuery, /*string*/ sKey) {
-	if (!sQuery || !sKey) {
+/*string*/ JsonFx.Utils.getQueryParam = function (/*string*/ query, /*string*/ key) {
+	if (!query || !key) {
 		return null;
 	}
 	// trim off before the query
-	sQuery = sQuery.substring(sQuery.lastIndexOf('?')+1);
+	query = query.substring(query.lastIndexOf('?')+1);
 
-	var aParams = sQuery.split('&');
-	for (var i=0; i<aParams.length; i++) {
-		var aParts = aParams[i].split('=');
-		if (aParts.length >= 2 && aParts[0] == sKey) {
-			return aParts[1];
+	/*string[]*/ var params = query.split('&'), parts;
+	for (var i=0; i<params.length; i++) {
+		parts = params[i].split('=');
+		if (parts.length >= 2 && parts[0] === key) {
+			return parts[1];
 		}
 	}
 	
@@ -81,7 +82,7 @@ if ("undefined" === typeof JsonFx.Utils) {
 		if (expires instanceof Date) {
 			expires = expires.toGMTString();
 		}
-		if (typeof(expires) == "string") {
+		if (typeof expires === "string") {
 			cookie += "; expires=" + expires;
 		}
 	}
