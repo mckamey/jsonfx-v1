@@ -45,7 +45,7 @@ namespace BuildTools
 		#region Constants
 
 		// this cannot change every char is important or VS2005 will not list as error/warning
-		private const string VS2005ErrorFormat = "{0}({1},{2}): {3} : {4}";
+		private const string VS2005ErrorFormat = "{0}({1},{2}): {3} {4}: {5}";
 
 		#endregion Constants
 
@@ -54,6 +54,7 @@ namespace BuildTools
 		private string file;
 		private int line;
 		private int column;
+		private int code = 0;
 
 		#endregion Fields
 
@@ -84,9 +85,23 @@ namespace BuildTools
 			get;
 		}
 
-		public virtual string ErrorCode
+		public virtual int Code
 		{
-			get { return null; }
+			get { return this.code; }
+		}
+
+		public string ErrorCode
+		{
+			get
+			{
+				string ext = System.IO.Path.GetExtension(file);
+				if (ext == null || ext.Length < 2)
+				{
+					return null;
+				}
+
+				return ext.Substring(1).ToUpperInvariant()+this.Code.ToString("$$$$0000");
+			}
 		}
 
 		public string File
@@ -115,10 +130,6 @@ namespace BuildTools
 
 		public virtual string GetCompilerMessage(bool isWarning)
 		{
-			string message = String.IsNullOrEmpty(this.ErrorCode) ?
-				this.Message :
-				this.ErrorCode + ": " + this.Message;
-
 			// format exception as a VS2005 error/warning
 			return String.Format(
 				ParseException.VS2005ErrorFormat,
@@ -126,7 +137,8 @@ namespace BuildTools
 				(this.Line > 0) ? this.Line : 1,
 				(this.Column > 0) ? this.Column : 1,
 				isWarning ? "warning" : "error",
-				message);
+				this.ErrorCode,
+				this.Message);
 		}
 
 		#endregion Methods
@@ -202,15 +214,6 @@ namespace BuildTools
 		}
 
 		#endregion Init
-
-		#region Properties
-
-		public override string ErrorCode
-		{
-			get { return "Unexpected End of File"; }
-		}
-
-		#endregion Properties
 	}
 
 	[Serializable]
@@ -229,15 +232,6 @@ namespace BuildTools
 		}
 
 		#endregion Init
-
-		#region Properties
-
-		public override string ErrorCode
-		{
-			get { return "File Error"; }
-		}
-
-		#endregion Properties
 	}
 
 	[Serializable]
@@ -256,14 +250,5 @@ namespace BuildTools
 		}
 
 		#endregion Init
-
-		#region Properties
-
-		public override string ErrorCode
-		{
-			get { return "Syntax error"; }
-		}
-
-		#endregion Properties
 	}
 }
