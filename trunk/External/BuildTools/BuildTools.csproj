@@ -13,6 +13,8 @@
     <SccLocalPath>SAK</SccLocalPath>
     <SccAuxPath>SAK</SccAuxPath>
     <SccProvider>SAK</SccProvider>
+    <SignAssembly>true</SignAssembly>
+    <AssemblyOriginatorKeyFile>BuildTools.pfx</AssemblyOriginatorKeyFile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -36,7 +38,20 @@
     <Reference Include="System" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Collections\TrieNode.cs" />
+    <Compile Include="CssCompactor\CssCompactor.cs" />
+    <Compile Include="CssCompactor\CssParser.cs" />
+    <Compile Include="CssCompactor\CssSyntax.cs" />
+    <Compile Include="IO\ArgsTrie.cs" />
+    <Compile Include="IO\FileUtility.cs" />
+    <Compile Include="IO\FilterTrie.cs" />
+    <Compile Include="IO\LineReader.cs" />
+    <Compile Include="ParseExceptions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Properties\AssemblyVersion.cs" />
+    <Compile Include="ScriptCompactor\JSLint.cs" />
+    <Compile Include="ScriptCompactor\JSMin.cs" />
+    <Compile Include="ScriptCompactor\ScriptCompactor.cs" />
   </ItemGroup>
   <ItemGroup>
     <COMReference Include="MSScriptControl">
@@ -47,6 +62,13 @@
       <WrapperTool>tlbimp</WrapperTool>
       <Isolated>False</Isolated>
     </COMReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="License.txt" />
+    <EmbeddedResource Include="ScriptCompactor\jslint.js" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="BuildTools.pfx" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
