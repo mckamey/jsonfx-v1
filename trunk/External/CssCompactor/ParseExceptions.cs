@@ -117,14 +117,14 @@ namespace BuildTools
 		{
 			string message = String.IsNullOrEmpty(this.ErrorCode) ?
 				this.Message :
-				this.ErrorCode + " - " + this.Message;
+				this.ErrorCode + ": " + this.Message;
 
-			// format as a VS2005 error/warning
+			// format exception as a VS2005 error/warning
 			return String.Format(
 				ParseException.VS2005ErrorFormat,
 				this.File,
-				this.Line,
-				this.Column,
+				(this.Line > 0) ? this.Line : 1,
+				(this.Column > 0) ? this.Column : 1,
 				isWarning ? "warning" : "error",
 				message);
 		}
