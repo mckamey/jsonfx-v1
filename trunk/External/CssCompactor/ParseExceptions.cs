@@ -108,17 +108,14 @@ namespace BuildTools
 
 		public virtual string GetCompilerMessage(bool isWarning)
 		{
-			string message = String.IsNullOrEmpty(this.ErrorCode) ?
-				this.Message :
-				String.Format("{0}: {1}", this.ErrorCode, this.Message);
-
 			// format as a VS2005 error/warning
 			return String.Format(
-				"{0}({1},{2}): {4} {3}",
+				"{0}({1},{2}): {5} {3}: {4}",
 				this.File,
 				this.Line,
 				this.Column,
-				message,
+				this.ErrorCode,
+				this.Message,
 				isWarning ? "warning" : "error");
 		}
 
