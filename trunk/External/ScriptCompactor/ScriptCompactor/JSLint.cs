@@ -78,6 +78,12 @@ namespace BuildTools.ScriptCompactor
 		public class Options
 		{
 			/// <summary>
+			/// true if use of some browser features should be restricted
+			/// </summary>
+			[Description("IsAdSafe")]
+			public bool adsafe = false;
+
+			/// <summary>
 			/// true if bitwise operators should not be allowed
 			/// </summary>
 			[Description("DisallowBitwise")]
@@ -114,10 +120,16 @@ namespace BuildTools.ScriptCompactor
 			public bool evil = false;
 
 			/// <summary>
+			/// true if HTML fragments should be allowed
+			/// </summary>
+			[Description("AllowHtmlFragments")]
+			public bool fragment = false;
+
+			/// <summary>
 			/// true if line breaks should not be checked
 			/// </summary>
-			[Description("AllowLaxLineEnding")]
-			public bool laxLineEnd = false;
+			[Description("AllowLaxNewLines")]
+			public bool laxbreak = false;
 
 			/// <summary>
 			/// true if names should be checked
@@ -136,12 +148,6 @@ namespace BuildTools.ScriptCompactor
 			/// </summary>
 			[Description("NoIncDec")]
 			public bool plusplus = false;
-
-			/// <summary>
-			/// true if var redefinition should be allowed
-			/// </summary>
-			[Description("AllowVarRedef")]
-			public bool redef = false;
 
 			/// <summary>
 			/// true if the Rhino environment globals should be predefined
@@ -202,6 +208,15 @@ namespace BuildTools.ScriptCompactor
 		}
 
 		/// <summary>
+		/// true if use of some browser features should be restricted
+		/// </summary>
+		public bool IsAdSafe
+		{
+			get { return this.options.adsafe; }
+			set { this.options.adsafe = value; }
+		}
+
+		/// <summary>
 		/// true if bitwise operators should not be allowed
 		/// </summary>
 		public bool DisallowBitwise
@@ -256,12 +271,21 @@ namespace BuildTools.ScriptCompactor
 		}
 
 		/// <summary>
+		/// true if HTML fragments should be allowed
+		/// </summary>
+		public bool AllowHtmlFragments
+		{
+			get { return this.options.fragment; }
+			set { this.options.fragment = value; }
+		}
+
+		/// <summary>
 		/// true if line breaks should not be checked
 		/// </summary>
-		public bool AllowLaxLineEnding
+		public bool AllowLaxNewLines
 		{
-			get { return this.options.laxLineEnd; }
-			set { this.options.laxLineEnd = value; }
+			get { return this.options.laxbreak; }
+			set { this.options.laxbreak = value; }
 		}
 
 		/// <summary>
@@ -289,15 +313,6 @@ namespace BuildTools.ScriptCompactor
 		{
 			get { return this.options.plusplus; }
 			set { this.options.plusplus = value; }
-		}
-
-		/// <summary>
-		/// true if var redefinition should be allowed
-		/// </summary>
-		public bool AllowVarRedef
-		{
-			get { return this.options.redef; }
-			set { this.options.redef = value; }
 		}
 
 		/// <summary>
@@ -408,8 +423,8 @@ namespace BuildTools.ScriptCompactor
 					{
 						try
 						{
-							int line = (int)sc.Eval("JSLINT.errors["+i+"].line");
-							int col = (int)sc.Eval("JSLINT.errors["+i+"].character");
+							int line = 1+(int)sc.Eval("JSLINT.errors["+i+"].line");
+							int col = 1+(int)sc.Eval("JSLINT.errors["+i+"].character");
 							string reason = sc.Eval("JSLINT.errors["+i+"].reason") as string;
 							//string evidence = sc.Eval("JSLINT.errors["+i+"].evidence") as string;
 
