@@ -1,5 +1,6 @@
 using System;
 using System.Reflection;
+using System.Web;
 using System.Web.Compilation;
 using System.CodeDom.Compiler;
 using System.Security.Permissions;
@@ -13,7 +14,7 @@ using BuildTools.CssCompactor;
 namespace JsonFx.Compilation
 {
 	[BuildProviderAppliesTo(BuildProviderAppliesTo.Web)]
-	[PermissionSet(SecurityAction.Demand, Unrestricted = true)]
+	[PermissionSet(SecurityAction.Demand, Unrestricted=true)]
 	public class CssCompactorBuildProvider : System.Web.Compilation.BuildProvider
 	{
 		#region Init
@@ -26,30 +27,33 @@ namespace JsonFx.Compilation
 
 		#region BuildProvider Methods
 
-		public override string GetCustomString(CompilerResults results)
+		public override void GenerateCode(AssemblyBuilder assemblyBuilder)
 		{
-			string source = null;
-			try
+			string sourceText;
+			using (TextReader reader = this.OpenCssSource())
 			{
-				using (TextReader reader = this.OpenCssSource())
-				{
-					source = reader.ReadToEnd();
-				}
-				StringWriter writer = new StringWriter(new StringBuilder(source.Length));
-				List<ParseException> errors = CssCompactor.Compact(base.VirtualPath, source, writer, null, null, CssOptions.None);
-
-				foreach (ParseException ex in errors)
-				{
-					throw new System.Web.HttpParseException(ex.Message, ex, base.VirtualPath, source, ex.Line);
-					//results.Errors.Add(new CompilerError(base.VirtualPath, ex.Line, ex.Column, ex.ErrorCode, ex.Message));
-				}
-
-				return writer.ToString();
+				sourceText = reader.ReadToEnd();
 			}
-			catch (BuildTools.ParseException ex)
+
+			using (Stream stream = assemblyBuilder.CreateEmbeddedResource(this, this.GetValidEmbeddedResourceName(base.VirtualPath)))
 			{
-				throw new System.Web.HttpParseException(ex.Message, ex, base.VirtualPath, source, ex.Line);
+				using (StreamWriter writer = new StreamWriter(stream))
+				{
+					writer.Write(sourceText);
+				}
 			}
+
+			CssCodeProvider provider = assemblyBuilder.CodeDomProvider as CssCodeProvider;
+			if (provider != null)
+			{
+				provider.SetVirtualPath(base.VirtualPath);
+				provider.SetCss(sourceText);
+			}
+		}
+
+		public override CompilerType CodeCompilerType
+		{
+			get { return base.GetDefaultCompilerTypeForLanguage("CSS"); }
 		}
 
 		#endregion BuildProvider Methods
@@ -61,6 +65,107 @@ namespace JsonFx.Compilation
 			return base.OpenReader();
 		}
 
+		protected virtual string GetValidEmbeddedResourceName(string value)
+		{
+			if (String.IsNullOrEmpty(value))
+			{
+				return value;
+			}
+
+			StringBuilder builder = new StringBuilder(value);
+			builder.Replace('/', '.');
+			builder.Replace('\\', '.');
+			builder.Replace('?', '.');
+			builder.Replace('*', '.');
+			builder.Replace(':', '.');
+			return builder.ToString().TrimStart('.');
+		}
+
 		#endregion CssCompactorBuildProvider Methods
+	}
+
+	public class CssCodeProvider : Microsoft.CSharp.CSharpCodeProvider
+	{
+		#region Fields
+
+		string virtualPath = null;
+		string sourceText = null;
+
+		#endregion Fields
+
+		#region Methods
+
+		protected internal void SetVirtualPath(string path)
+		{
+			this.virtualPath = path;
+		}
+
+		protected internal void SetCss(string source)
+		{
+			this.sourceText = source;
+		}
+
+		protected string GetCompactedResourceName(string resource)
+		{
+			return Path.Combine(Path.GetDirectoryName(resource),
+				Path.GetFileNameWithoutExtension(resource)+"_Compacted"+Path.GetExtension(resource));
+		}
+
+		#endregion Methods
+
+		#region CodeDomProvider Members
+
+		public override CompilerResults CompileAssemblyFromFile(CompilerParameters options, params string[] fileNames)
+		{
+			List<ParseException> errors;
+			string compactedText;
+
+			using (StringWriter writer = new StringWriter(new StringBuilder(this.sourceText.Length)))
+			{
+				errors = CssCompactor.Compact(this.virtualPath, this.sourceText, writer, null, null, CssCompactor.Options.None);
+				writer.Flush();
+				compactedText = writer.ToString();
+			}
+
+			string compactedPath = this.GetCompactedResourceName(options.EmbeddedResources[0]);
+			using (StreamWriter writer = File.CreateText(compactedPath))
+			{
+				writer.Write(compactedText);
+				writer.Flush();
+				options.EmbeddedResources.Add(compactedPath);
+			}
+
+			CompilerResults results = base.CompileAssemblyFromFile(options, fileNames);
+
+			foreach (ParseException error in errors)
+			{
+				results.Errors.Add(new CompilerError(error.File, error.Line, error.Column, error.ErrorCode, error.Message));
+			}
+
+			return results;
+		}
+
+		#endregion CodeDomProvider Members
+
+		#region Compaction Methods
+
+		protected virtual void Compact(string virtualPath, string sourceText)
+		{
+			List<ParseException> errors;
+			try
+			{
+				StringWriter writer = new StringWriter(new StringBuilder(sourceText.Length));
+				errors = CssCompactor.Compact(virtualPath, sourceText, writer, null, null, CssCompactor.Options.None);
+
+				string compactedText = writer.ToString();
+			}
+			catch (ParseException ex)
+			{
+				errors = new List<ParseException>();
+				errors.Add(ex);
+			}
+		}
+
+		#endregion Compaction Methods
 	}
 }

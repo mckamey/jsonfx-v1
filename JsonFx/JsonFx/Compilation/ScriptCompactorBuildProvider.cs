@@ -6,6 +6,9 @@ using System.Security.Permissions;
 using System.Text.RegularExpressions;
 using System.IO;
 
+using BuildTools;
+using BuildTools.ScriptCompactor;
+
 namespace JsonFx.Compilation
 {
 	[BuildProviderAppliesTo(BuildProviderAppliesTo.Web)]
@@ -26,18 +29,18 @@ namespace JsonFx.Compilation
 		{
 			try
 			{
-				ScriptTools.JSLint jsLint = new ScriptTools.JSLint();
+				JSLint jsLint = new JSLint();
 				using (TextReader reader = this.OpenScriptSource())
 				{
 					jsLint.Run(reader, base.VirtualPath);
 				}
 			}
-			catch (ScriptTools.ParseException ex)
+			catch (ParseException ex)
 			{
 				Console.Error.WriteLine(ex.GetCompilerMessage(this.ForceCompaction));
 				if (!this.ForceCompaction)
 				{
-					throw new System.Web.HttpParseException(ex.Message, null/*ex*/, ex.FilePath, ex.SourceCode, ex.Line);
+					throw new System.Web.HttpParseException(ex.Message, null/*ex*/, ex.File, ex.Source, ex.Line);
 				}
 				//if (results == null)
 				//{
@@ -62,12 +65,12 @@ namespace JsonFx.Compilation
 
 			try
 			{
-				ScriptTools.JSMinifier jsMin = new ScriptTools.JSMinifier();
+				JSMin jsMin = new JSMin();
 				using (TextReader reader = this.OpenScriptSource())
 				{
 					using (StringWriter writer = new StringWriter())
 					{
-						jsMin.Minify(reader, writer, null, null, ScriptTools.JSMinOptions.None);
+						jsMin.Run(reader, writer);
 						writer.Flush();
 						return writer.ToString();
 					}
