@@ -10,6 +10,7 @@ using System.Collections.Generic;
 
 using BuildTools;
 using BuildTools.CssCompactor;
+using JsonFx.Handlers;
 
 namespace JsonFx.Compilation
 {
@@ -35,7 +36,7 @@ namespace JsonFx.Compilation
 				sourceText = reader.ReadToEnd();
 			}
 
-			using (Stream stream = assemblyBuilder.CreateEmbeddedResource(this, this.GetValidEmbeddedResourceName(base.VirtualPath)))
+			using (Stream stream = assemblyBuilder.CreateEmbeddedResource(this, CssHandler.GetEmbeddedResourceName(base.VirtualPath)))
 			{
 				using (StreamWriter writer = new StreamWriter(stream))
 				{
@@ -65,22 +66,6 @@ namespace JsonFx.Compilation
 			return base.OpenReader();
 		}
 
-		protected virtual string GetValidEmbeddedResourceName(string value)
-		{
-			if (String.IsNullOrEmpty(value))
-			{
-				return value;
-			}
-
-			StringBuilder builder = new StringBuilder(value);
-			builder.Replace('/', '.');
-			builder.Replace('\\', '.');
-			builder.Replace('?', '.');
-			builder.Replace('*', '.');
-			builder.Replace(':', '.');
-			return builder.ToString().TrimStart('.');
-		}
-
 		#endregion CssCompactorBuildProvider Methods
 	}
 
@@ -108,7 +93,7 @@ namespace JsonFx.Compilation
 		protected string GetCompactedResourceName(string resource)
 		{
 			return Path.Combine(Path.GetDirectoryName(resource),
-				Path.GetFileNameWithoutExtension(resource)+"_Compacted"+Path.GetExtension(resource));
+				CssHandler.CompactedCssPath+Path.GetFileName(resource));
 		}
 
 		#endregion Methods

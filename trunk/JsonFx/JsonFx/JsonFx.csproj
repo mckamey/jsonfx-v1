@@ -52,6 +52,7 @@
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="Handlers\BrowserModule.cs" />
+    <Compile Include="Handlers\CssHandler.cs" />
     <Compile Include="Properties\AssemblyVersion.cs" />
     <Compile Include="Compilation\ScriptCompactorBuildProvider.cs" />
     <Compile Include="Compilation\JsonServiceBuildProvider.cs" />
