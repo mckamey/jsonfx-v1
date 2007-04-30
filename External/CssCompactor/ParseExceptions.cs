@@ -100,7 +100,7 @@ namespace BuildTools
 					return null;
 				}
 
-				return ext.Substring(1).ToUpperInvariant()+this.Code.ToString("$$$$0000");
+				return ext.Substring(1).ToUpperInvariant()+this.Code.ToString("####0000");
 			}
 		}
 
