@@ -13,6 +13,8 @@
     <SccLocalPath>SAK</SccLocalPath>
     <SccAuxPath>SAK</SccAuxPath>
     <SccProvider>SAK</SccProvider>
+    <SignAssembly>true</SignAssembly>
+    <AssemblyOriginatorKeyFile>JsonFx.pfx</AssemblyOriginatorKeyFile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -32,24 +34,23 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="CssCompactor, Version=1.0.703.2700, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\SolnItems\CssCompactor\CssCompactor.exe</HintPath>
+    <Reference Include="BuildTools, Version=1.0.704.2912, Culture=neutral, PublicKeyToken=e190355fca396765, processorArchitecture=x86">
       <SpecificVersion>False</SpecificVersion>
-      <ExecutableExtension>.exe</ExecutableExtension>
-      <Private>True</Private>
+      <HintPath>..\SolnItems\BuildTools\BuildTools.dll</HintPath>
     </Reference>
-    <Reference Include="ScriptTools, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+    <Reference Include="Interop.MSScriptControl, Version=1.0.0.0, Culture=neutral, PublicKeyToken=e190355fca396765, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\SolnItems\ScriptCompactor\ScriptTools.dll</HintPath>
+      <HintPath>..\SolnItems\BuildTools\Interop.MSScriptControl.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.configuration" />
-    <Reference Include="System.Data" />
     <Reference Include="System.Web" />
     <Reference Include="System.XML" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Compilation\CssCompactorBuildProvider.cs" />
+    <Compile Include="Compilation\CssCompactorBuildProvider.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Include="Handlers\BrowserModule.cs" />
     <Compile Include="Properties\AssemblyVersion.cs" />
     <Compile Include="Compilation\ScriptCompactorBuildProvider.cs" />
@@ -127,6 +128,7 @@
   <ItemGroup>
     <Content Include="App_Browsers\Other.browser" />
     <None Include="Build.bat" />
+    <None Include="JsonFx.pfx" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Scripts\Compacted\JsonFx.js" />
