@@ -14,7 +14,7 @@ namespace JsonFx.Handlers
 		private const int BufferSize = 1024;
 
 		internal const string CompactedCssPath = "Compacted_";
-		internal const string CssContentType = "test/css";
+		internal const string CssContentType = "text/css";
 		internal const string CssExtension = ".css";
 
 		#endregion Constants
@@ -106,6 +106,9 @@ namespace JsonFx.Handlers
 			{
 				return virtualPath;
 			}
+
+#warning Need to normalize AppPath
+			virtualPath = Path.GetFileName(virtualPath);
 
 			StringBuilder builder = new StringBuilder(virtualPath);
 			builder.Replace('/', '.');
