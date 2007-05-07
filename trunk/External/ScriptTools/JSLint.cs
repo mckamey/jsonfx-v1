@@ -398,8 +398,33 @@ namespace BuildTools.ScriptCompactor
 					jsLintSource = reader.ReadToEnd();
 				}
 			}
-
-			MSScriptControl.ScriptControlClass sc = new MSScriptControl.ScriptControlClass();
+			//http://www.devarticles.com/c/a/C-Sharp/Using-Late-Bound-COM-Objects/2/
+			MSScriptControl.ScriptControlClass sc;
+			//object sc;
+			//Type scType;
+			//try
+			//{
+				sc = new MSScriptControl.ScriptControlClass();
+				//Assembly asm = Assembly.LoadFrom(@"D:\Dev\SMM-VSS\PseudoCode\Dev\JsonFx\SolnItems\BuildTools\Interop.MSScriptControl.dll");
+				//scType = /*asm.GetType("MSScriptControl.ScriptControlClass");*/Type.GetTypeFromCLSID(new Guid("0E59F1D3-1FBE-11D0-8FF2-00A0D10038BC"), true);
+				//sc = Activator.CreateInstance(scType);
+			//}
+			//catch (/*BadImageFormat*/Exception ex)
+			//{
+			//    try
+			//    {
+			//        // could just add to errors collection here since this
+			//        // takes a performance hit to throw, but throwing sets stack dump too
+			//        throw new ParseWarning("MSScriptControl cannot be loaded. Must run in x86 (or WOW64) and COM component must be installed: http://www.microsoft.com/downloads/details.aspx?FamilyId=D7E31492-2595-49E6-8C02-1426FEC693AC", filename, -1, -1, ex);
+			//    }
+			//    catch (ParseException ex2)
+			//    {
+			//        this.errors.Add(ex2);
+			//    }
+			//    return;
+			//}
+			//scType.InvokeMember("Language", BindingFlags.SetProperty, null, sc, new object[] { "JScript" });
+			//scType.InvokeMember("AddCode", BindingFlags.InvokeMethod, null, sc, new object[] { jsLintSource });
 			sc.Language = "JScript";
 			sc.AddCode(jsLintSource);
 
