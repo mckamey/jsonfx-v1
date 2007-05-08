@@ -48,6 +48,9 @@
     <Reference Include="System.XML" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Compilation\CompactorBuildProvider.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Include="Compilation\CssCompactorBuildProvider.cs">
       <SubType>Component</SubType>
     </Compile>
