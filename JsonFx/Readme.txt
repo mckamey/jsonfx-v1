@@ -1,12 +1,19 @@
 Release History
 
+v1.0.705.700:
+- Now supports full error reporting and compaction of CSS & JavaScript
+- Cleaned up scripts based upon latest JSLint restrictions
+- Fixed error formatting in BuildTools
+- Trapping x64 exceptions in BuildTools (MSScriptControl requires x86)
+- Made JsonFx strongly signed
+
 v1.0.704.2321:
-- fixed bug in JsonMLTextWriter, where wouldn't write attributes of an empty element
+- Fixed bug in JsonMLTextWriter, where wouldn't write attributes of an empty element
 
 v1.0.704.2320:
 - Removed need for .browser files by adding HttpModule:
-- produces more consistent async request behavior across platforms
-- simplifies integration by reducing feature to a single line in web.config
+- Produces more consistent async request behavior across platforms
+- Simplifies integration by reducing feature to a single line in web.config
 - Moved ASP.NET .browser "fixes" into single Other.browser file
 - Pruned some obsolete/dormant classes
 
