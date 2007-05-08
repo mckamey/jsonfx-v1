@@ -51,7 +51,7 @@
     <Compile Include="Compilation\CompactorBuildProvider.cs">
       <SubType>Component</SubType>
     </Compile>
-    <Compile Include="Compilation\CssCompactorBuildProvider.cs">
+    <Compile Include="Compilation\CssCompactorCodeProvider.cs">
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="Handlers\BrowserModule.cs" />
@@ -59,7 +59,7 @@
     <Compile Include="Handlers\ResourceHandlerInfo.cs" />
     <Compile Include="Handlers\ResourceHandler.cs" />
     <Compile Include="Properties\AssemblyVersion.cs" />
-    <Compile Include="Compilation\ScriptCompactorBuildProvider.cs">
+    <Compile Include="Compilation\ScriptCompactorCodeProvider.cs">
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="Compilation\JsonServiceBuildProvider.cs" />
