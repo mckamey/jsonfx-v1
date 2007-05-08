@@ -21,7 +21,7 @@ namespace JsonFx.Compilation
 	{
 		#region Constants
 
-		protected const string GeneratedNamespace = "JsonFx.Generated";
+		protected internal const string GeneratedNamespace = "JsonFx._Generated";
 
 		protected const string DefaultDirectiveName = "JsonService";
 		protected const string ErrorMissingDirective = "The page must have a <%@ {0} class=\"MyNamespace.MyClass\" ... %> directive.";

@@ -7,13 +7,57 @@ using System.Web.Compilation;
 
 namespace JsonFx.Handlers
 {
+	public abstract class CssHandlerInfo
+	{
+		#region Constants
+
+		private const string CompactedCssPath = "Compacted_";
+
+		#endregion Constants
+
+		#region Properties
+
+		public abstract string ResourceName { get; }
+
+		public string CompactResourceName
+		{
+			get { return CssHandlerInfo.GetCompactedResourceName(this.ResourceName); }
+		}
+
+		#endregion Properties
+
+		#region Methods
+
+		internal static string GetEmbeddedResourceName(string virtualPath)
+		{
+			if (String.IsNullOrEmpty(virtualPath))
+			{
+				return virtualPath;
+			}
+
+			StringBuilder builder = new StringBuilder(virtualPath);
+			builder.Replace('/', '.');
+			builder.Replace('\\', '.');
+			builder.Replace('?', '.');
+			builder.Replace('*', '.');
+			builder.Replace(':', '.');
+			return builder.ToString().TrimStart('.');
+		}
+
+		internal static string GetCompactedResourceName(string resourceName)
+		{
+			return CssHandlerInfo.CompactedCssPath+Path.GetFileName(resourceName);
+		}
+
+		#endregion Methods
+	}
+
 	public class CssHandler : IHttpHandler
 	{
 		#region Constants
 
 		private const int BufferSize = 1024;
 
-		internal const string CompactedCssPath = "Compacted_";
 		internal const string CssContentType = "text/css";
 		internal const string CssExtension = ".css";
 
@@ -55,8 +99,14 @@ namespace JsonFx.Handlers
 		protected void OutputResourceFile(HttpContext context, bool isDebug)
 		{
 			string virtualPath = context.Request.FilePath;
-			string resourcePath = isDebug ? String.Empty : CssHandler.CompactedCssPath;
-			resourcePath += CssHandler.GetEmbeddedResourceName(virtualPath);
+			CssHandlerInfo info = CssHandler.GetEmbeddedResourceInfo(virtualPath);
+			if (info == null)
+			{
+				//throw new HttpException((int)System.Net.HttpStatusCode.NotFound, "Invalid StyleSheet path");
+				this.OutputTargetFile(context);
+				return;
+			}
+			string resourcePath = isDebug ? info.ResourceName : info.CompactResourceName;
 
 			Assembly assembly = BuildManager.GetCompiledAssembly(virtualPath);
 			Stream input = assembly.GetManifestResourceStream(resourcePath);
@@ -100,23 +150,9 @@ namespace JsonFx.Handlers
 			}
 		}
 
-		internal static string GetEmbeddedResourceName(string virtualPath)
+		protected static CssHandlerInfo GetEmbeddedResourceInfo(string virtualPath)
 		{
-			if (String.IsNullOrEmpty(virtualPath))
-			{
-				return virtualPath;
-			}
-
-#warning Need to normalize AppPath
-			virtualPath = Path.GetFileName(virtualPath);
-
-			StringBuilder builder = new StringBuilder(virtualPath);
-			builder.Replace('/', '.');
-			builder.Replace('\\', '.');
-			builder.Replace('?', '.');
-			builder.Replace('*', '.');
-			builder.Replace(':', '.');
-			return builder.ToString().TrimStart('.');
+			return (CssHandlerInfo)BuildManager.CreateInstanceFromVirtualPath(virtualPath, typeof(CssHandlerInfo));
 		}
 
 		#endregion CssHandler Members
