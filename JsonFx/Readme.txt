@@ -1,6 +1,6 @@
 Release History
 
-v1.0.705.700:
+v1.0.705.800:
 - Added basic History example
 - Now supports full error reporting and compaction of CSS & JavaScript
 - Cleaned up scripts based upon latest JSLint restrictions
