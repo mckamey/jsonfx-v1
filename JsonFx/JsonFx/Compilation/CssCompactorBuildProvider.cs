@@ -48,7 +48,7 @@ namespace JsonFx.Compilation
 				sourceText = reader.ReadToEnd();
 			}
 
-			string resourceName = CssHandlerInfo.GetEmbeddedResourceName(base.VirtualPath);
+			string resourceName = ResourceHandlerInfo.GetEmbeddedResourceName(base.VirtualPath);
 			using (Stream stream = assemblyBuilder.CreateEmbeddedResource(this, resourceName))
 			{
 				using (StreamWriter writer = new StreamWriter(stream))
@@ -66,13 +66,13 @@ namespace JsonFx.Compilation
 
 			// generate a static class
 			CodeCompileUnit generatedUnit = new CodeCompileUnit();
-			CodeNamespace ns = new CodeNamespace(JsonServiceBuildProvider.GeneratedNamespace);
+			CodeNamespace ns = new CodeNamespace(ResourceHandlerInfo.GeneratedNamespace);
 			generatedUnit.Namespaces.Add(ns);
 			CodeTypeDeclaration descriptorType = new CodeTypeDeclaration();
 			descriptorType.IsClass = true;
 			descriptorType.Name = "_"+Guid.NewGuid().ToString("N");
 			descriptorType.Attributes = MemberAttributes.Public|MemberAttributes.Final;
-			descriptorType.BaseTypes.Add(typeof(CssHandlerInfo));
+			descriptorType.BaseTypes.Add(typeof(ResourceHandlerInfo));
 			ns.Types.Add(descriptorType);
 
 			#region CssHandlerInfo.ResourceName
@@ -91,12 +91,12 @@ namespace JsonFx.Compilation
 
 			assemblyBuilder.AddCodeCompileUnit(this, generatedUnit);
 
-			this.descriptorTypeName = JsonServiceBuildProvider.GeneratedNamespace+"."+descriptorType.Name;
+			this.descriptorTypeName = ResourceHandlerInfo.GeneratedNamespace+"."+descriptorType.Name;
 		}
 
 		public override CompilerType CodeCompilerType
 		{
-			get { return base.GetDefaultCompilerTypeForLanguage("CSS"); }
+			get { return base.GetDefaultCompilerTypeForLanguage("StyleSheet"); }
 		}
 
 		#endregion BuildProvider Methods
@@ -148,7 +148,7 @@ namespace JsonFx.Compilation
 				compactedText = writer.ToString();
 			}
 
-			string compactedPath = CssHandlerInfo.GetCompactedResourceName(options.EmbeddedResources[0]);
+			string compactedPath = ResourceHandlerInfo.GetCompactedResourceName(options.EmbeddedResources[0]);
 			using (StreamWriter writer = File.CreateText(compactedPath))
 			{
 				writer.Write(compactedText);
