@@ -1,11 +1,12 @@
 Release History
 
 v1.0.705.700:
+- Added basic History example
 - Now supports full error reporting and compaction of CSS & JavaScript
 - Cleaned up scripts based upon latest JSLint restrictions
 - Fixed error formatting in BuildTools
 - Trapping x64 exceptions in BuildTools (MSScriptControl requires x86)
-- Made JsonFx strongly signed
+- Made JsonFx strongly signed enabling placement in the GAC
 
 v1.0.704.2321:
 - Fixed bug in JsonMLTextWriter, where wouldn't write attributes of an empty element
@@ -18,7 +19,6 @@ v1.0.704.2320:
 - Pruned some obsolete/dormant classes
 
 v1.0.704.2210:
-
 - Cleaned up display of JSON-RPC Service test
 - Added ability to specify the javascript proxy namespace on a JSON-RPC service
 - Made service proxy a true singleton, rather than an instance in a static field
@@ -28,7 +28,6 @@ v1.0.704.2210:
 - Added ~/Download/LatestBuild.ashx so download URL doesn't need to change
 
 v1.0.704.1900:
-
 - A bare bones example, but it shows just about everything
 - Added Example pages ~/Services/Default.aspx and ~/Effects/Default.aspx with some light instructions on them
 - IIS Configuration (http://jsonfx.net/Download/JsonFx_Config.gif)
