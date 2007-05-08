@@ -2,6 +2,7 @@ using System;
 using System.Reflection;
 using System.Web;
 using System.Web.Compilation;
+using System.CodeDom;
 using System.CodeDom.Compiler;
 using System.Security.Permissions;
 using System.Text;
@@ -18,6 +19,12 @@ namespace JsonFx.Compilation
 	[PermissionSet(SecurityAction.Demand, Unrestricted=true)]
 	public class CssCompactorBuildProvider : System.Web.Compilation.BuildProvider
 	{
+		#region Fields
+
+		private string descriptorTypeName = null;
+
+		#endregion Fields
+
 		#region Init
 
 		public CssCompactorBuildProvider()
@@ -28,6 +35,11 @@ namespace JsonFx.Compilation
 
 		#region BuildProvider Methods
 
+		public override Type GetGeneratedType(CompilerResults results)
+		{
+			return results.CompiledAssembly.GetType(this.descriptorTypeName);
+		}
+
 		public override void GenerateCode(AssemblyBuilder assemblyBuilder)
 		{
 			string sourceText;
@@ -36,7 +48,8 @@ namespace JsonFx.Compilation
 				sourceText = reader.ReadToEnd();
 			}
 
-			using (Stream stream = assemblyBuilder.CreateEmbeddedResource(this, CssHandler.GetEmbeddedResourceName(base.VirtualPath)))
+			string resourceName = CssHandlerInfo.GetEmbeddedResourceName(base.VirtualPath);
+			using (Stream stream = assemblyBuilder.CreateEmbeddedResource(this, resourceName))
 			{
 				using (StreamWriter writer = new StreamWriter(stream))
 				{
@@ -50,6 +63,35 @@ namespace JsonFx.Compilation
 				provider.SetVirtualPath(base.VirtualPath);
 				provider.SetCss(sourceText);
 			}
+
+			// generate a static class
+			CodeCompileUnit generatedUnit = new CodeCompileUnit();
+			CodeNamespace ns = new CodeNamespace(JsonServiceBuildProvider.GeneratedNamespace);
+			generatedUnit.Namespaces.Add(ns);
+			CodeTypeDeclaration descriptorType = new CodeTypeDeclaration();
+			descriptorType.IsClass = true;
+			descriptorType.Name = "_"+Guid.NewGuid().ToString("N");
+			descriptorType.Attributes = MemberAttributes.Public|MemberAttributes.Final;
+			descriptorType.BaseTypes.Add(typeof(CssHandlerInfo));
+			ns.Types.Add(descriptorType);
+
+			#region CssHandlerInfo.ResourceName
+
+			// add a readonly property with the resource name
+			CodeMemberProperty resourceProp = new CodeMemberProperty();
+			resourceProp.Name = "ResourceName";
+			resourceProp.Type = new CodeTypeReference(typeof(String));
+			resourceProp.Attributes = MemberAttributes.Public|MemberAttributes.Override;
+			resourceProp.HasGet = true;
+			// get { return resourceName; }
+			resourceProp.GetStatements.Add(new CodeMethodReturnStatement(new CodePrimitiveExpression(resourceName)));
+			descriptorType.Members.Add(resourceProp);
+
+			#endregion CssHandlerInfo.ResourceName
+
+			assemblyBuilder.AddCodeCompileUnit(this, generatedUnit);
+
+			this.descriptorTypeName = JsonServiceBuildProvider.GeneratedNamespace+"."+descriptorType.Name;
 		}
 
 		public override CompilerType CodeCompilerType
@@ -90,12 +132,6 @@ namespace JsonFx.Compilation
 			this.sourceText = source;
 		}
 
-		protected string GetCompactedResourceName(string resource)
-		{
-			return Path.Combine(Path.GetDirectoryName(resource),
-				CssHandler.CompactedCssPath+Path.GetFileName(resource));
-		}
-
 		#endregion Methods
 
 		#region CodeDomProvider Members
@@ -112,7 +148,7 @@ namespace JsonFx.Compilation
 				compactedText = writer.ToString();
 			}
 
-			string compactedPath = this.GetCompactedResourceName(options.EmbeddedResources[0]);
+			string compactedPath = CssHandlerInfo.GetCompactedResourceName(options.EmbeddedResources[0]);
 			using (StreamWriter writer = File.CreateText(compactedPath))
 			{
 				writer.Write(compactedText);
