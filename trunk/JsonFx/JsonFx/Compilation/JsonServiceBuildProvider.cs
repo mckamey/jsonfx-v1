@@ -12,6 +12,7 @@ using System.IO;
 using JsonFx.Services;
 using JsonFx.Services.Discovery;
 using JsonFx.Services.Proxy;
+using JsonFx.Handlers;
 
 namespace JsonFx.Compilation
 {
@@ -20,8 +21,6 @@ namespace JsonFx.Compilation
 	public class JsonServiceBuildProvider : System.Web.Compilation.BuildProvider
 	{
 		#region Constants
-
-		protected internal const string GeneratedNamespace = "JsonFx._Generated";
 
 		protected const string DefaultDirectiveName = "JsonService";
 		protected const string ErrorMissingDirective = "The page must have a <%@ {0} class=\"MyNamespace.MyClass\" ... %> directive.";
@@ -118,7 +117,7 @@ namespace JsonFx.Compilation
 
 			// generate a service factory
 			CodeCompileUnit generatedUnit = new CodeCompileUnit();
-			CodeNamespace ns = new CodeNamespace(JsonServiceBuildProvider.GeneratedNamespace);
+			CodeNamespace ns = new CodeNamespace(ResourceHandlerInfo.GeneratedNamespace);
 			generatedUnit.Namespaces.Add(ns);
 			CodeTypeDeclaration descriptorType = new CodeTypeDeclaration();
 			descriptorType.IsClass = true;
@@ -270,7 +269,7 @@ namespace JsonFx.Compilation
 
 			assemblyBuilder.AddCodeCompileUnit(this, generatedUnit);
 
-			this.descriptorTypeName = JsonServiceBuildProvider.GeneratedNamespace+"."+descriptorType.Name;
+			this.descriptorTypeName = ResourceHandlerInfo.GeneratedNamespace+"."+descriptorType.Name;
 		}
 
 		public override CompilerType CodeCompilerType
