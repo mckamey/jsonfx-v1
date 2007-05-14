@@ -36,6 +36,8 @@ namespace JsonFx.Compilation
 
 		public override Type GetGeneratedType(CompilerResults results)
 		{
+			System.Diagnostics.Debug.Assert(!String.IsNullOrEmpty(this.descriptorTypeName));
+
 			return results.CompiledAssembly.GetType(this.descriptorTypeName);
 		}
 
@@ -91,6 +93,8 @@ namespace JsonFx.Compilation
 			assemblyBuilder.AddCodeCompileUnit(this, generatedUnit);
 
 			this.descriptorTypeName = ResourceHandlerInfo.GeneratedNamespace+"."+descriptorType.Name;
+
+			assemblyBuilder.GenerateTypeFactory(this.descriptorTypeName);
 		}
 
 		public override CompilerType CodeCompilerType

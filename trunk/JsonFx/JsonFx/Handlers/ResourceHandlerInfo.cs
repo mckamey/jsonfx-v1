@@ -51,7 +51,15 @@ namespace JsonFx.Handlers
 
 		internal static ResourceHandlerInfo GetHandlerInfo(string virtualPath)
 		{
-			return (ResourceHandlerInfo)BuildManager.CreateInstanceFromVirtualPath(virtualPath, typeof(ResourceHandlerInfo));
+			try
+			{
+				return BuildManager.CreateInstanceFromVirtualPath(virtualPath, typeof(ResourceHandlerInfo)) as ResourceHandlerInfo;
+			}
+			catch
+			{
+#warning Need to figure out why this fails sometimes
+				return null;
+			}
 		}
 
 		#endregion Methods
