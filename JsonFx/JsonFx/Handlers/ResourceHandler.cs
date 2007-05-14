@@ -69,7 +69,7 @@ namespace JsonFx.Handlers
 
 		protected virtual Stream GetResourceStream(HttpContext context, bool isDebug)
 		{
-			string virtualPath = context.Request.FilePath;
+			string virtualPath = context.Request.AppRelativeCurrentExecutionFilePath;
 			ResourceHandlerInfo info = ResourceHandlerInfo.GetHandlerInfo(virtualPath);
 			if (info == null)
 			{
