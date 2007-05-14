@@ -9,7 +9,7 @@ namespace JsonFx.UI
 	{
 		#region Fields
 
-		private const string Pattern_Comment = @"(<!DOCTYPE[^>]*>)|(<!--[^->]*-->)";
+		private const string Pattern_Comment = @"(<!DOCTYPE[^>]*>)|(<!--(.)*?-->)";
 		private const string Pattern_Tag = "\\G<(?<tagname>[\\w:\\.]+)(\\s+(?<attrname>\\w[-\\w:]*)(\\s*=\\s*\"(?<attrval>[^\"]*)\"|\\s*=\\s*'(?<attrval>[^']*)'|\\s*=\\s*(?<attrval><%#.*?%>)|\\s*=\\s*(?<attrval>[^\\s=/>]*)|(?<attrval>\\s*?)))*\\s*(?<empty>/)?>";
 		private const string Pattern_EndTag = @"\G</(?<tagname>[\w:\.]+)\s*>";
 
@@ -542,6 +542,9 @@ namespace JsonFx.UI
 			// <%=this.ResolveUrl("~/FAQ/") %>
 			// ">FAQ</a></li>
 
+			// filter comments and DOCTYPEs
+			value = Regex_Comment.Replace(value, "");
+
 			int start = 0;
 			int end = value.IndexOf('<');
 			while (end >= 0)
@@ -598,16 +601,8 @@ namespace JsonFx.UI
 					}
 					else
 					{
-						match = Regex_Comment.Match(value, end, start-end);
-						if (match.Success)
-						{
-							// was a comment or DOCTYPE, just exclude
-						}
-						else
-						{
-							// wasn't part of a valid tag, but output as text
-							this.builder.AddLiteral(value.Substring(end, start-end));
-						}
+						// wasn't part of a valid tag, but output as text
+						this.builder.AddLiteral(value.Substring(end, start-end));
 					}
 				}
 
