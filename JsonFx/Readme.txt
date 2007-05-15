@@ -1,6 +1,10 @@
 Release History
 
-v1.0.705.801:
+v1.0.705.1501:
+- Fixed bug in JsonMLTextWriter, where was outputting HTML comments
+- Fixed bug where BuildManager fails when resources aren't prebuilt
+
+v1.0.705.0801:
 - Added basic History example
 - Now supports full error reporting and compaction of CSS & JavaScript
 - Cleaned up scripts based upon latest JSLint restrictions
