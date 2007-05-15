@@ -58,6 +58,7 @@
     <Compile Include="Handlers\CssHandler.cs" />
     <Compile Include="Handlers\ResourceHandlerInfo.cs" />
     <Compile Include="Handlers\ResourceHandler.cs" />
+    <Compile Include="About.cs" />
     <Compile Include="Properties\AssemblyVersion.cs" />
     <Compile Include="Compilation\ScriptCompactorCodeProvider.cs">
       <SubType>Component</SubType>
