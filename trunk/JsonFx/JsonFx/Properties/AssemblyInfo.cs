@@ -7,14 +7,16 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("JsonFx")]
-[assembly: AssemblyDescription("JSON-Savvy Ajax Framework")]
-[assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("")]
+[assembly: AssemblyTitle("JsonFx.NET")]
+[assembly: AssemblyDescription("The JSON-Savvy Ajax Framework")]
 [assembly: AssemblyProduct("JsonFx")]
 [assembly: AssemblyCopyright("Copyright ©2006-2007 Stephen M. McKamey")]
-[assembly: AssemblyTrademark("")]
-[assembly: AssemblyCulture("")]
+[assembly: AssemblyCompany("http://jsonfx.net")]
+#if DEBUG
+[assembly: AssemblyConfiguration("Debug")]
+#else
+[assembly: AssemblyConfiguration("Release")]
+#endif
 
 // Setting ComVisible to false makes the types in this assembly not visible 
 // to COM components.  If you need to access a type in this assembly from 
