@@ -1126,10 +1126,10 @@ JsonFx.UI.Animate.Engine = function(/*element*/ elem) {
 	}
 
 	/*void*/ function showElem() {
-		if (!!JsonFx.UI.getStyle(elem, "display")) {
+		if (JsonFx.UI.getStyle(elem, "display") === "none") {
 			es.display = "block";
 		}
-		if (!!JsonFx.UI.getStyle(elem, "visibility")) {
+		if (JsonFx.UI.getStyle(elem, "visibility") === "hidden") {
 			es.visibility = "visible";
 		}
 	}
