@@ -1,8 +1,12 @@
 Release History
 
+v1.0.705.1608:
+- Fixed bug where BuildManager fails when resources aren't prebuilt
+- Added "X-JsonFx-Version" response header
+
 v1.0.705.1501:
 - Fixed bug in JsonMLTextWriter, where was outputting HTML comments
-- Fixed bug where BuildManager fails when resources aren't prebuilt
+- Suppressed error where BuildManager fails when resources aren't prebuilt
 
 v1.0.705.0801:
 - Added basic History example
