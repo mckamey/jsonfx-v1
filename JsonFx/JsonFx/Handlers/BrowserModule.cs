@@ -20,6 +20,7 @@ namespace JsonFx.Handlers
 		void IHttpModule.Init(HttpApplication application)
 		{
 			application.BeginRequest += new EventHandler(application_BeginRequest);
+			application.PostRequestHandlerExecute += new EventHandler(application_PostRequestHandlerExecute);
 		}
 
 		#endregion IHttpModule Members
@@ -38,6 +39,17 @@ namespace JsonFx.Handlers
 			{
 				application.Request.Browser = new JsonFxBrowserCapabilities(application.Request.Browser);
 			}
+		}
+
+		private void application_PostRequestHandlerExecute(object sender, EventArgs e)
+		{
+			HttpApplication application = sender as HttpApplication;
+			if (application == null || application.Request == null)
+			{
+				return;
+			}
+
+			application.Response.AddHeader("X-JsonFx-Version", JsonFx.About.Version.ToString());
 		}
 
 		#endregion Application Events
