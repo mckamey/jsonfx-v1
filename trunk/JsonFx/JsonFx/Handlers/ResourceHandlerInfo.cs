@@ -46,20 +46,20 @@ namespace JsonFx.Handlers
 
 		internal static string GetCompactedResourceName(string resourceName)
 		{
-			return ResourceHandlerInfo.CompactedPath+Path.GetFileName(resourceName);
+			string dir = Path.GetDirectoryName(resourceName);
+			if (!String.IsNullOrEmpty(dir))
+			{
+				dir += Path.DirectorySeparatorChar;
+			}
+
+			return dir +
+				ResourceHandlerInfo.CompactedPath +
+				Path.GetFileName(resourceName);
 		}
 
 		internal static ResourceHandlerInfo GetHandlerInfo(string virtualPath)
 		{
-			try
-			{
-				return BuildManager.CreateInstanceFromVirtualPath(virtualPath, typeof(ResourceHandlerInfo)) as ResourceHandlerInfo;
-			}
-			catch
-			{
-#warning Need to figure out why this fails sometimes
-				return null;
-			}
+			return BuildManager.CreateInstanceFromVirtualPath(virtualPath, typeof(ResourceHandlerInfo)) as ResourceHandlerInfo;
 		}
 
 		#endregion Methods
