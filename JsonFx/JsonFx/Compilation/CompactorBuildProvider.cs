@@ -151,6 +151,10 @@ namespace JsonFx.Compilation
 			}
 
 			string compactedPath = ResourceHandlerInfo.GetCompactedResourceName(options.EmbeddedResources[0]);
+			if (String.IsNullOrEmpty(Path.GetDirectoryName(compactedPath)))
+			{
+				compactedPath = Path.GetTempPath()+compactedPath;
+			}
 			using (StreamWriter writer = File.CreateText(compactedPath))
 			{
 				writer.Write(compactedText);
@@ -160,9 +164,11 @@ namespace JsonFx.Compilation
 
 			CompilerResults results = base.CompileAssemblyFromFile(options, fileNames);
 
-			foreach (ParseException error in errors)
+			foreach (ParseException ex in errors)
 			{
-				results.Errors.Add(new CompilerError(error.File, error.Line, error.Column, error.ErrorCode, error.Message));
+				CompilerError error = new CompilerError(ex.File, ex.Line, ex.Column, ex.ErrorCode, ex.Message);
+				error.IsWarning = (ex is ParseWarning);
+				results.Errors.Add(error);
 			}
 
 			return results;
