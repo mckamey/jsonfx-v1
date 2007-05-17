@@ -417,8 +417,6 @@ namespace JsonFx.Compilation
 		{
 			try
 			{
-				// TODO: add source dependency on virtual path?
-
 				using (System.IO.TextReader reader = base.OpenReader())
 				{
 					this.sourceText = reader.ReadToEnd();
@@ -451,9 +449,12 @@ namespace JsonFx.Compilation
 
 						// determine source language
 						string language = GetAndRemove(attribs, "Language");
-						this.compilerType = (language != null) ?
-							base.GetDefaultCompilerTypeForLanguage(language) :
-							base.GetDefaultCompilerType();
+						if (String.IsNullOrEmpty(language))
+						{
+							// otherwise defaults to VB which attaches extra References
+							language = "C#";
+						}
+						this.compilerType = base.GetDefaultCompilerTypeForLanguage(language);
 
 						// determine backing class
 						this.serviceTypeName = GetAndRemove(attribs, "Class");
