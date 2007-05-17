@@ -50,10 +50,14 @@ namespace BuildTools.IO
 				attributes &= ~FileAttributes.ReadOnly;
 				File.SetAttributes(filename, attributes);
 			}
-			else if (!Directory.Exists(Path.GetDirectoryName(filename)))
+			else
 			{
-				// make sure directories exist
-				Directory.CreateDirectory(Path.GetDirectoryName(filename));
+				string dir = Path.GetDirectoryName(filename);
+				if (!String.IsNullOrEmpty(dir) && !Directory.Exists(dir))
+				{
+					// make sure path exists
+					Directory.CreateDirectory(dir);
+				}
 			}
 		}
 
