@@ -135,7 +135,7 @@
     <EmbeddedResource Include="Scripts\Compacted\Core.js" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="App_Browsers\Other.browser" />
+    <None Include="App_Browsers\Fixes.browser" />
     <None Include="Build.bat" />
     <None Include="JsonFx.pfx" />
   </ItemGroup>
