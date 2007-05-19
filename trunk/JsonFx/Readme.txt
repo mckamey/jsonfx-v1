@@ -1,5 +1,8 @@
 Release History
 
+v1.0.705.1917:
+- Fixed bug where CompactorCodeProvider was being reused and resources were experiencing collisions
+
 v1.0.705.1608:
 - Fixed bug where BuildManager fails when resources aren't prebuilt
 - Added "X-JsonFx-Version" response header
