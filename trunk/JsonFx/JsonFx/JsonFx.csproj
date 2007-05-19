@@ -160,6 +160,8 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Dotfuscator_Proj.xml" />
+    <Content Include="Scripts\Compact.txt" />
+    <Content Include="Scripts\Concat.txt" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
@@ -170,7 +172,7 @@
   </Target>
   -->
   <PropertyGroup>
-    <PreBuildEvent>$(ProjectDir)Build.bat $(SolutionDir)SolnItems\ $(ProjectDir)</PreBuildEvent>
+    <PreBuildEvent>$(ProjectDir)Build.bat</PreBuildEvent>
     <PostBuildEvent>
     </PostBuildEvent>
   </PropertyGroup>
