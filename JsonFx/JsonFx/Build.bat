@@ -1,33 +1,74 @@
-rem @ECHO OFF
-If "%1" == "" GOTO HANDLE_ERROR
-If "%2" == "" GOTO HANDLE_ERROR
+@ECHO OFF
+ECHO.
+ECHO BEGIN %0
 
-%1AutoVersioning\AutoVersioning.exe "%2Properties\AssemblyVersion.cs"
+:: Check for parameters
+REM IF [%1]==[] (
+REM 	GOTO HANDLE_ERROR
+REM )
 
-set copyright="Copyright (c) 2006-2007 Stephen M. McKamey, http://JsonFx.net"
-set timestamp="'Version 1.0.'yyMM'.'ddHH"
+:: -------------------------------------------------------------------
+:: Change directory to same as batch file
+SETLOCAL
+PUSHD "%~d0%~p0"
 
-%1ScriptCompactor\ScriptCompactor.exe /IN:"%2Scripts\JSON.js" /OUT:"%2Scripts\Compacted\JSON.js"
-%1ScriptCompactor\ScriptCompactor.exe /IN:"%2Scripts\JsonML.js" /OUT:"%2Scripts\Compacted\JsonML.js"
-%1ScriptCompactor\ScriptCompactor.exe /IN:"%2Scripts\Core.js" /OUT:"%2Scripts\Compacted\Core.js" /INFO:%copyright% /TIME:%timestamp%
-%1ScriptCompactor\ScriptCompactor.exe /IN:"%2Scripts\IO.js" /OUT:"%2Scripts\Compacted\IO.js" /INFO:%copyright% /TIME:%timestamp%
-%1ScriptCompactor\ScriptCompactor.exe /IN:"%2Scripts\UI.js" /OUT:"%2Scripts\Compacted\UI.js" /INFO:%copyright% /TIME:%timestamp%
-%1ScriptCompactor\ScriptCompactor.exe /IN:"%2Scripts\UA.js" /OUT:"%2Scripts\Compacted\UA.js" /INFO:%copyright% /TIME:%timestamp%
-%1ScriptCompactor\ScriptCompactor.exe /IN:"%2Scripts\Utility.js" /OUT:"%2Scripts\Compacted\Utility.js" /INFO:%copyright% /TIME:%timestamp%
-%1ScriptCompactor\ScriptCompactor.exe /IN:"%2Scripts\ServiceTest.js" /OUT:"%2Scripts\Compacted\ServiceTest.js" /INFO:%copyright% /TIME:%timestamp%
-%1ScriptCompactor\ScriptCompactor.exe /IN:"%2Scripts\Trace.js" /OUT:"%2Scripts\Compacted\Trace.js" /INFO:%copyright% /TIME:%timestamp%
+:: -------------------------------------------------------------------
+ECHO.
+"..\SolnItems\AutoVersioning\AutoVersioning.exe" "Properties\AssemblyVersion.cs"
 
-xcopy "%2Scripts\JsonML.js" "%2..\JsonML\JsonML.js" /Y /R
-xcopy "%2Scripts\Compacted\JsonML.js" "%2..\JsonML\JsonML_min.js" /Y /R
+:: -------------------------------------------------------------------
+:: Compact each individual file
+ECHO.
+PUSHD "Scripts\"
 
-%1FileConcat\FileConcat.exe "%2Scripts\JsonFx.js" "%2Scripts\Core.js" "%2Scripts\JSON.js" "%2Scripts\JsonML.js" "%2Scripts\UA.js" "%2Scripts\IO.js" "%2Scripts\UI.js"
-%1ScriptCompactor\ScriptCompactor.exe /IN:"%2Scripts\JsonFx.js" /OUT:"%2Scripts\Compacted\JsonFx.js" /INFO:%copyright% /TIME:%timestamp%
+SET INFO="Copyright (c) 2006-2007 Stephen M. McKamey, http://JsonFx.net"
+SET TIME="'Version 1.0.'yyMM'.'ddHH"
+SET JSONML=..\..\JsonML
+SET OUTDIR=Compacted
+SET CONCAT="..\..\SolnItems\FileConcat\FileConcat.exe"
+SET COMPACTLITE="..\..\SolnItems\ScriptCompactor\ScriptCompactor.exe"
+SET COMPACT=%COMPACTLITE% /INFO:%INFO% /TIME:%TIME%
+
+%COMPACTLITE% /IN:"JSON.js" /OUT:"%OUTDIR%\JSON.js"
+%COMPACTLITE% /IN:"JsonML.js" /OUT:"%OUTDIR%\JsonML.js"
+FOR /F %%F IN (Compact.txt) DO (
+	%COMPACT% /IN:"%%F" /OUT:"%OUTDIR%\%%F"
+)
+
+:: -------------------------------------------------------------------
+:: Concat and compact the entire set of files
+ECHO.
+SET CONCATLIST="JsonFx.js"
+FOR /F %%F IN (Concat.txt) DO (
+	CALL :APPEND_LIST %%F
+)
+
+%CONCAT% %CONCATLIST%
+%COMPACT% /IN:"JsonFx.js" /OUT:"Compacted\JsonFx.js" /WARNING
+
+:: -------------------------------------------------------------------
+:: Copy JsonML scripts over to JsonML project
+ECHO.
+XCOPY "JsonML.js" "%JSONML%\JsonML.js" /Y /R
+XCOPY "Compacted\JsonML.js" "%JSONML%\JsonML_min.js" /Y /R
+
+POPD
+POPD
+ENDLOCAL
 
 GOTO DONE
 
-:HANDLE_ERROR
-echo Usage: Build.bat ScriptCompactorPath ProjectDir
-echo e.g. $(ProjectDir)Build.bat $(SolutionDir)SolnItems\ScriptCompactor\ScriptCompactor.exe $(ProjectDir)
-echo
+:: -------------------------------------------------------------------
+:: SubRoutine which appends param to the file list
+:APPEND_LIST
+SET CONCATLIST=%CONCATLIST% "%1"
+GOTO :EOF
 
+:: -------------------------------------------------------------------
+:HANDLE_ERROR
+ECHO Placeholder error message...
+ECHO.
+
+:: -------------------------------------------------------------------
 :DONE
+ECHO END %0
