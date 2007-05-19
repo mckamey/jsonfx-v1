@@ -1,13 +1,13 @@
 using System;
+using System.IO;
+using System.Collections.Generic;
+using System.Text;
 using System.Reflection;
 using System.Web;
 using System.Web.Compilation;
 using System.CodeDom;
 using System.CodeDom.Compiler;
 using System.Security.Permissions;
-using System.Text;
-using System.IO;
-using System.Collections.Generic;
 
 using BuildTools;
 using JsonFx.Handlers;
@@ -61,8 +61,7 @@ namespace JsonFx.Compilation
 			CompactorCodeProvider provider = assemblyBuilder.CodeDomProvider as CompactorCodeProvider;
 			if (provider != null)
 			{
-				provider.SetVirtualPath(base.VirtualPath);
-				provider.SetSource(sourceText);
+				provider.AddCompactorTarget(base.VirtualPath, resourceName);
 			}
 
 			// generate a static class
@@ -92,6 +91,7 @@ namespace JsonFx.Compilation
 
 			assemblyBuilder.AddCodeCompileUnit(this, generatedUnit);
 
+			System.Diagnostics.Debug.Assert(String.IsNullOrEmpty(this.descriptorTypeName));
 			this.descriptorTypeName = ResourceHandlerInfo.GeneratedNamespace+"."+descriptorType.Name;
 
 			assemblyBuilder.GenerateTypeFactory(this.descriptorTypeName);
@@ -106,7 +106,9 @@ namespace JsonFx.Compilation
 				{
 					return base.CodeCompilerType;
 				}
-				return base.GetDefaultCompilerTypeForLanguage(extension.Substring(1));
+				CompilerType compilerType = base.GetDefaultCompilerTypeForLanguage(extension.Substring(1));
+				// set compilerType.CompilerParameters options here
+				return compilerType;
 			}
 		}
 
@@ -117,21 +119,15 @@ namespace JsonFx.Compilation
 	{
 		#region Fields
 
-		private string virtualPath = null;
-		private string sourceText = null;
+		private Dictionary<string, string> sources = new Dictionary<string, string>();
 
 		#endregion Fields
 
 		#region Methods
 
-		protected internal void SetVirtualPath(string path)
+		protected internal void AddCompactorTarget(string virtualPath, string resourceName)
 		{
-			this.virtualPath = path;
-		}
-
-		protected internal void SetSource(string source)
-		{
-			this.sourceText = source;
+			this.sources[resourceName] = virtualPath;
 		}
 
 		#endregion Methods
@@ -140,25 +136,26 @@ namespace JsonFx.Compilation
 
 		public override CompilerResults CompileAssemblyFromFile(CompilerParameters options, params string[] fileNames)
 		{
-			List<ParseException> errors;
+			List<ParseException> errors = new List<ParseException>();
 			string compactedText;
 
-			using (StringWriter writer = new StringWriter(new StringBuilder(this.sourceText.Length)))
+			foreach (KeyValuePair<string, string> item in this.sources)
 			{
-				errors = this.Compact(this.virtualPath, this.sourceText, writer);
-				writer.Flush();
-				compactedText = writer.ToString();
-			}
+				string resourceName = Path.Combine(options.TempFiles.TempDir, item.Key);
+				string virtualPath = item.Value;
 
-			string compactedPath = ResourceHandlerInfo.GetCompactedResourceName(options.EmbeddedResources[0]);
-			if (String.IsNullOrEmpty(Path.GetDirectoryName(compactedPath)))
-			{
-				compactedPath = Path.GetTempPath()+compactedPath;
-			}
-			using (StreamWriter writer = File.CreateText(compactedPath))
-			{
-				writer.Write(compactedText);
-				writer.Flush();
+				System.Diagnostics.Debug.Assert(File.Exists(resourceName));
+
+				string sourceText = File.ReadAllText(resourceName);
+				using (StringWriter writer = new StringWriter(new StringBuilder(sourceText.Length)))
+				{
+					errors.AddRange(this.Compact(virtualPath, sourceText, writer));
+					writer.Flush();
+					compactedText = writer.ToString();
+				}
+
+				string compactedPath = ResourceHandlerInfo.GetCompactedResourceName(resourceName);
+				File.WriteAllText(compactedPath, compactedText);
 				options.EmbeddedResources.Add(compactedPath);
 			}
 
