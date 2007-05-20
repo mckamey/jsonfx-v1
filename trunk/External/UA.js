@@ -57,16 +57,16 @@ if ("undefined" === typeof JsonFx.UI) {
 			// iCab doesn't allow setting User-Agent on XHR
 			JsonFx.userAgent = null;
 		} else if (R_MSIE.exec(ua)) {
-			name = "msie";
+			name = "ie";
 			ver = RegExp.$2;
 		} else if (R_MSPIE.exec(ua)) {
 			name = "mspie";
 			ver = RegExp.$2;
 		} else if (R_AppleWebKit.exec(ua)) {
-			name = "applewebkit";
+			name = "webkit";
 			ver = RegExp.$1;
 
-			// also add AppleWebKit-brand version
+			// also add WebKit-brand version
 			details.push( { b : RegExp.$2, v : RegExp.$3 } );
 		} else if (R_Gecko.exec(ua)) {
 			name = "gecko";
@@ -121,7 +121,7 @@ if ("undefined" === typeof JsonFx.UI) {
 			if (!isFinite(vi)) {
 				return PREFIX+b;
 			}
-			return PREFIX+b+PREFIX+b+vi+PREFIX+b+vf;
+			return PREFIX+b+PREFIX+b+'-'+vi+PREFIX+b+'-'+vf;
 		}
 
 		// using JavaScript closures to access the parsed UA
