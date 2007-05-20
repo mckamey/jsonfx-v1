@@ -1,6 +1,6 @@
 Release History
 
-v1.0.705.1917:
+v1.0.705.1916:
 - Fixed bug where CompactorCodeProvider was being reused and resources were experiencing collisions
 
 v1.0.705.1608:
