@@ -1,5 +1,8 @@
 Release History
 
+v1.0.705.xxxx:
+- Fixed bugs where if new compacted resource was shorter would leave old content behind
+
 v1.0.705.1916:
 - Fixed bug where CompactorCodeProvider was being reused and resources were experiencing collisions
 
