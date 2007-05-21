@@ -52,6 +52,9 @@ namespace JsonFx.Compilation
 			string resourceName = ResourceHandlerInfo.GetEmbeddedResourceName(base.VirtualPath);
 			using (Stream stream = assemblyBuilder.CreateEmbeddedResource(this, resourceName))
 			{
+				// truncate any previous contents
+				stream.SetLength(0);
+
 				using (StreamWriter writer = new StreamWriter(stream))
 				{
 					writer.Write(sourceText);
