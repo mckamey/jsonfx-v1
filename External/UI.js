@@ -45,7 +45,7 @@ if ("undefined" === typeof JsonFx.UI) {
 	return null;
 };
 
-/*{left,top}*/ JsonFx.UI.getOffset = function(/*element*/ elem) {
+/*{x,y}*/ JsonFx.UI.getOffset = function(/*element*/ elem) {
 	var top=0, left=0, pos;
 	while (elem) {
 		top += elem.offsetTop;
@@ -58,7 +58,39 @@ if ("undefined" === typeof JsonFx.UI) {
 			}
 		}
 	}
-	return { left:left, top:top };
+	return { left:left, top:top, x:left, y:top };
+};
+
+/*{x,y}*/ JsonFx.UI.getMidPoint = function(/*element*/ elem) {
+	if (!elem) {
+		return null;
+	}
+	var pt = JsonFx.UI.getOffset(elem);
+	pt.x += Math.floor(0.5+elem.offsetWidth/2);
+	pt.y += Math.floor(0.5+elem.offsetHeight/2);
+	return pt;
+};
+
+/*{x,y}*/ JsonFx.UI.getEventPoint = function(/*Event*/ evt) {
+	evt = evt || window.event;
+	if (!evt) {
+		return null;
+	}
+	return { x:evt.clientX, y:evt.clientY };
+};
+
+/*{x,y}*/ JsonFx.UI.getSubtractPoint = function(/*{x,y}*/ a, /*{x,y}*/ b) {
+	if (!a || !b) {
+		return null;
+	}
+	return { x:(a.x-b.x), y:(a.y-b.y) };
+};
+
+/*{x,y}*/ JsonFx.UI.getAddPoint = function(/*{x,y}*/ a, /*{x,y}*/ b) {
+	if (!a || !b) {
+		return null;
+	}
+	return { x:(a.x+b.x), y:(a.y+b.y) };
 };
 
 /*void*/ JsonFx.UI.clearTextSelection = function() {
@@ -150,12 +182,30 @@ if ("undefined" === typeof JsonFx.UI) {
 	return {r:NaN, g:NaN, b:NaN};
 };
 
-/*float*/ JsonFx.UI.lerp = function (/*float*/ start, /*float*/ end, /*float*/ t) {
-	return (start * (1-t)) + (end * t);
+/* Linear Interpolate */
+/*float*/ JsonFx.UI.lerp = function (/*float*/ start, /*float*/ end, /*float*/ t, /*bool*/ bounded) {
+	var val = (start * (1-t)) + (end * t);
+	if (bounded) {
+		// don't allow val to exceed bounds
+		if (start < end) {
+			val = Math.min(val, end);
+			val = Math.max(val, start);
+		} else {
+			val = Math.min(val, start);
+			val = Math.max(val, end);
+		}
+	}
+	return val;
 };
 
-/*int*/ JsonFx.UI.lerpInt = function (/*int*/ start, /*int*/ end, /*float*/ t) {
-	return Math.floor( JsonFx.UI.lerp(start, end, t) + 0.5 );
+/* Integer Linear Interpolate */
+/*int*/ JsonFx.UI.lerpInt = function (/*int*/ start, /*int*/ end, /*float*/ t, /*bool*/ bounded) {
+	return Math.floor( 0.5 + JsonFx.UI.lerp(start, end, t, bounded) );
+};
+
+/* Reverse Linear Interpolate */
+/*float*/ JsonFx.UI.revLerp = function (/*float*/ start, /*float*/ end, /*float*/ t) {
+	return (end-t)/(end-start);
 };
 
 /*-------------------*\
