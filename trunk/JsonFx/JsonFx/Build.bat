@@ -19,32 +19,32 @@ ECHO.
 :: -------------------------------------------------------------------
 :: Compact each individual file
 ECHO.
-PUSHD "Scripts\"
 
 SET INFO="Copyright (c) 2006-2007 Stephen M. McKamey, http://JsonFx.net"
 SET TIME="'Version 1.0.'yyMM'.'ddHH"
-SET JSONML=..\..\JsonML
-SET OUTDIR=Compacted
-SET CONCAT="..\..\SolnItems\FileConcat\FileConcat.exe"
-SET COMPACTLITE="..\..\SolnItems\ScriptCompactor\ScriptCompactor.exe"
+SET JSONML=..\JsonML
+SET ROOT=Scripts
+SET OUTDIR=%ROOT%\Compacted
+SET CONCAT="..\SolnItems\FileConcat\FileConcat.exe"
+SET COMPACTLITE="..\SolnItems\ScriptCompactor\ScriptCompactor.exe"
 SET COMPACT=%COMPACTLITE% /INFO:%INFO% /TIME:%TIME%
 
-%COMPACTLITE% /IN:"JSON.js" /OUT:"%OUTDIR%\JSON.js"
-%COMPACTLITE% /IN:"JsonML.js" /OUT:"%OUTDIR%\JsonML.js"
-FOR /F %%F IN (Compact.txt) DO (
-	%COMPACT% /IN:"%%F" /OUT:"%OUTDIR%\%%F"
+%COMPACTLITE% /IN:"%ROOT%\JSON.js" /OUT:"%OUTDIR%\JSON.js"
+%COMPACTLITE% /IN:"%ROOT%\JsonML.js" /OUT:"%OUTDIR%\JsonML.js"
+FOR /F %%F IN (%ROOT%\Compact.txt) DO (
+	%COMPACT% /IN:"%ROOT%\%%F" /OUT:"%OUTDIR%\%%F"
 )
 
 :: -------------------------------------------------------------------
 :: Concat and compact the entire set of files
 ECHO.
-SET CONCATLIST="JsonFx.js"
-FOR /F %%F IN (Concat.txt) DO (
-	CALL :APPEND_LIST %%F
+SET CONCATLIST="%ROOT%\JsonFx.js"
+FOR /F %%F IN (%ROOT%\Concat.txt) DO (
+	CALL :APPEND_LIST %ROOT%\%%F
 )
 
 %CONCAT% %CONCATLIST%
-%COMPACT% /IN:"JsonFx.js" /OUT:"Compacted\JsonFx.js" /WARNING
+%COMPACT% /IN:"%ROOT%\JsonFx.js" /OUT:"%OUTDIR%\JsonFx.js" /WARNING
 
 :: -------------------------------------------------------------------
 :: Copy JsonML scripts over to JsonML project
@@ -52,7 +52,6 @@ ECHO.
 XCOPY "JsonML.js" "%JSONML%\JsonML.js" /Y /R
 XCOPY "Compacted\JsonML.js" "%JSONML%\JsonML_min.js" /Y /R
 
-POPD
 POPD
 ENDLOCAL
 
