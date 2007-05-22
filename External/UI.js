@@ -18,7 +18,7 @@ if ("undefined" === typeof JsonFx.UI) {
 
 /* Utilities ----------------------------------------------------*/
 
-/*string*/ JsonFx.UI.getStyle = function(/*element*/ elem, /*string*/ style) {
+/*string*/ JsonFx.UI.getStyle = function(/*DOM*/ elem, /*string*/ style) {
 	if ("string" === typeof elem) {
 		elem = document.getElementById(elem);
 	}
@@ -45,52 +45,151 @@ if ("undefined" === typeof JsonFx.UI) {
 	return null;
 };
 
-/*{x,y}*/ JsonFx.UI.getOffset = function(/*element*/ elem) {
-	var top=0, left=0, pos;
+/*void*/ JsonFx.UI.debugPoint = function (/*int*/ x, /*int*/ y, /*{delay,color}*/ options) {
+	if (isNaN(x) || isNaN(y)) {
+		return;
+	}
+	options = options || {};
+	options.delay = options.delay || 1500;
+	options.color = options.color || "magenta";
+
+	var test = document.createElement("div");
+	test.style.position = "absolute";
+	test.style.backgroundColor = options.color;
+	test.style.left = x+"px";
+	test.style.top = y+"px";
+	test.style.height = test.style.width = "4px";
+	document.body.appendChild(test);
+
+	window.setTimeout(
+		function() {
+			test.parentNode.removeChild(test);
+		},
+		options.delay);
+};
+
+/*{x,y}*/ JsonFx.UI.getScroll = function(/*element*/ elem) {
+	if ("string" === typeof elem) {
+		elem = document.getElementById(elem);
+	}
+	var pt = {x:0, y:0};
+	elem = elem && elem.parentNode;
 	while (elem) {
-		top += elem.offsetTop;
-		left += elem.offsetLeft;
+		if (!isNaN(elem.scrollTop)) {
+			pt.y += elem.scrollTop;
+		}
+		if (!isNaN(elem.scrollLeft)) {
+			pt.x += elem.scrollLeft;
+		}
+		elem = elem.parentNode;
+	}
+	return pt;
+};
+
+/*{x,y}*/ JsonFx.UI.getOffset = function(/*element*/ elem, /*bool*/ skipScroll) {
+	if ("string" === typeof elem) {
+		elem = document.getElementById(elem);
+	}
+	var pos,
+		pt = skipScroll ? {x:0,y:0} : JsonFx.UI.getScroll(elem);
+	while (elem) {
+		pt.y += elem.offsetTop;
+		pt.x += elem.offsetLeft;
 		elem = elem.offsetParent;
 		if (elem) {
 			pos = JsonFx.UI.getStyle(elem, "position");
-			if (pos && pos !== "static") {
+			if (pos !== "static") {
 				elem = null;
 			}
 		}
 	}
-	return { left:left, top:top, x:left, y:top };
+	return pt;
 };
 
 /*{x,y}*/ JsonFx.UI.getMidPoint = function(/*element*/ elem) {
 	if (!elem) {
 		return null;
 	}
-	var pt = JsonFx.UI.getOffset(elem);
+	var pt = JsonFx.UI.getOffset(elem, true);
 	pt.x += Math.floor(0.5+elem.offsetWidth/2);
 	pt.y += Math.floor(0.5+elem.offsetHeight/2);
 	return pt;
 };
 
-/*{x,y}*/ JsonFx.UI.getEventPoint = function(/*Event*/ evt) {
-	evt = evt || window.event;
-	if (!evt) {
-		return null;
+/*{x,y}*/ JsonFx.UI.pointAdd = function(/*{x,y}*/ a, /*{x,y}*/ b) {
+	if (!b) {
+		return a;
 	}
-	return { x:evt.clientX, y:evt.clientY };
+	if (!a) {
+		return b;
+	}
+	return { x:(a.x+b.x), y:(a.y+b.y) };
 };
 
-/*{x,y}*/ JsonFx.UI.getSubtractPoint = function(/*{x,y}*/ a, /*{x,y}*/ b) {
-	if (!a || !b) {
-		return null;
+/*{x,y}*/ JsonFx.UI.pointSubtract = function(/*{x,y}*/ a, /*{x,y}*/ b) {
+	if (!b) {
+		return a;
+	}
+	if (!a) {
+		return b;
 	}
 	return { x:(a.x-b.x), y:(a.y-b.y) };
 };
 
-/*{x,y}*/ JsonFx.UI.getAddPoint = function(/*{x,y}*/ a, /*{x,y}*/ b) {
-	if (!a || !b) {
-		return null;
+/*element*/ JsonFx.UI.getEventTarget = function(/*Event*/ evt) {
+	evt = evt || window.event;
+	return evt.currentTarget ? evt.currentTarget : evt.srcElement;
+};
+
+/*{x,y}*/ JsonFx.UI.getEventPoint = function(/*Event*/ evt) {
+	evt = evt || window.event;
+	if (typeof evt.pageX !== "undefined") {
+		return { x:evt.pageX, y:evt.pageY };
 	}
-	return { x:(a.x+b.x), y:(a.y+b.y) };
+	var pt = JsonFx.UI.getScroll(JsonFx.UI.getEventTarget(evt));
+	return JsonFx.UI.pointAdd(pt, { x:evt.clientX, y:evt.clientY });
+};
+
+/*{left,middle,right}*/ JsonFx.UI.getMouseButton = function(/*Event*/ evt) {
+	evt = evt || window.event;
+	var b, btn = {left:false,middle:false,right:false};
+
+	if (evt) {
+		if (isNaN(evt.which)) {
+			// IE (can be multiple)
+			b = evt.button;
+			if ((b&1)!==0) {
+				btn.left = true;
+			}
+			if ((b&2)!==0) {
+				btn.right = true;
+			}
+			if ((b&4)!==0) {
+				btn.middle = true;
+			}
+		} else {
+			// Firefox, Opera, Safari
+			switch (evt.which){
+				case 1:
+					btn.left = true;
+					break;
+				case 2:
+					btn.middle = true;
+					break;
+				case 3:
+					btn.right = true;
+					break;
+			}
+		}
+	}
+	return btn;
+};
+
+/*void*/ JsonFx.UI.cancelEvent = function(/*Event*/ evt) {
+	evt = evt || window.event;
+	if (evt) {
+		evt.cancelBubble = true;
+	}
 };
 
 /*void*/ JsonFx.UI.clearTextSelection = function() {
@@ -103,15 +202,29 @@ if ("undefined" === typeof JsonFx.UI) {
 	}
 };
 
-/*function*/ JsonFx.UI.combineHandlers = function (/*function*/ handlerA, /*function*/ handlerB) {
-	if ("function" === typeof handlerA) {
-		if ("function" === typeof handlerB) {
-			return function(/*Event*/ evt) { handlerA(evt); return handlerB(evt); };
+/*function*/ JsonFx.UI.combineHandlers = function (/*function*/ a, /*function*/ b) {
+	if ("function" === typeof a) {
+		if ("function" === typeof b) {
+			return function(/*Event*/ evt) { a(evt); return b(evt); };
 		} else {
-			return handlerA;
+			return a;
 		}
 	} else {
-		return handlerB;
+		return b;
+	}
+};
+
+/*void*/ JsonFx.UI.attachHandler = function (/*DOM*/ obj, /*string*/ evtName, /*function*/ handler) {
+	if (obj.addEventListener) {
+		//DOM method for binding an event
+		obj.addEventListener(evtName, handler, false);
+	} else if (obj.attachEvent) {
+		//IE exclusive method for binding an event
+		obj.attachEvent("on"+evtName, handler);
+	} else if ("function" === typeof obj["on"+evtName]) {
+		obj["on"+evtName] = JsonFx.UI.combineHandlers(handler, obj["on"+evtName]);
+	} else {
+		obj["on"+evtName] = handler;
 	}
 };
 
@@ -182,30 +295,38 @@ if ("undefined" === typeof JsonFx.UI) {
 	return {r:NaN, g:NaN, b:NaN};
 };
 
-/* Linear Interpolate */
-/*float*/ JsonFx.UI.lerp = function (/*float*/ start, /*float*/ end, /*float*/ t, /*bool*/ bounded) {
-	var val = (start * (1-t)) + (end * t);
-	if (bounded) {
-		// don't allow val to exceed bounds
-		if (start < end) {
-			val = Math.min(val, end);
-			val = Math.max(val, start);
-		} else {
-			val = Math.min(val, start);
-			val = Math.max(val, end);
-		}
+/*float*/ JsonFx.UI.bound = function (/*float*/ start, /*float*/ end, /*float*/ val) {
+	// don't allow val to exceed bounds
+	if (start < end) {
+		val = Math.min(val, end);
+		val = Math.max(val, start);
+	} else {
+		val = Math.min(val, start);
+		val = Math.max(val, end);
 	}
 	return val;
 };
 
-/* Integer Linear Interpolate */
-/*int*/ JsonFx.UI.lerpInt = function (/*int*/ start, /*int*/ end, /*float*/ t, /*bool*/ bounded) {
-	return Math.floor( 0.5 + JsonFx.UI.lerp(start, end, t, bounded) );
+/* Linear Interpolate */
+/*float*/ JsonFx.UI.lerp = function (/*float*/ a, /*float*/ b, /*float*/ t, /*bool*/ bounded) {
+	var val = (a * (1-t)) + (b * t);
+	return bounded ? JsonFx.UI.bound(a, b, val) : val;
+};
+
+/* Integer Linear Interpolation */
+/*int*/ JsonFx.UI.lerpInt = function (/*int*/ a, /*int*/ b, /*float*/ t, /*bool*/ bounded) {
+	return Math.floor( 0.5 + JsonFx.UI.lerp(a, b, t, bounded) );
 };
 
 /* Reverse Linear Interpolate */
-/*float*/ JsonFx.UI.revLerp = function (/*float*/ start, /*float*/ end, /*float*/ t) {
-	return (end-t)/(end-start);
+/*float*/ JsonFx.UI.revLerp = function (/*float*/ a, /*float*/ b, /*float*/ t, /*bool*/ bounded) {
+	var val = (t-a)/(b-a);
+	return bounded ? JsonFx.UI.bound(0, 1, val) : val;
+};
+
+/* Cubic Bezier Curve */
+/*float*/ JsonFx.UI.bezier = function (/*float*/ a, /*float*/ b, /*float*/ c, /*float*/ d, /*float*/ t) {
+	return a*Math.pow(1-t,3) + b*3*t*Math.pow(1-t,2) + c*3*Math.pow(t,2)*(1-t) + d*Math.pow(t,3);
 };
 
 /*-------------------*\

@@ -238,6 +238,20 @@ if ("undefined" === typeof window.decodeURIComponent) {
 
 /* ----------------------------------------------------*/
 
+if ("undefined" === typeof String.format) {
+	/*string*/ String.format = function() {
+		var i, pattern, re,
+			num = arguments.length,
+			str = arguments[0];
+		for (i=1; i<num; i++) {
+			pattern = "\\{" + (i-1) + "\\}";
+			re = new RegExp(pattern, "g");
+			str = str.replace(re, arguments[i]);
+		}
+		return str;
+	};
+}
+
 if ("undefined" === typeof String.prototype.trim) {
 	/*string*/ String.prototype.trim = function () {
 		return this.replace(/^\s*|\s*$/g, "");
