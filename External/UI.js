@@ -45,27 +45,49 @@ if ("undefined" === typeof JsonFx.UI) {
 	return null;
 };
 
-/*void*/ JsonFx.UI.debugPoint = function (/*int*/ x, /*int*/ y, /*{delay,color}*/ options) {
-	if (isNaN(x) || isNaN(y)) {
-		return;
+/*bool*/ JsonFx.UI.hasClassName = function(/*DOM*/ elem, /*string*/ cssClass) {
+	return cssClass && elem && elem.className &&
+		elem.className.match("\\b"+cssClass+"\\b");
+};
+
+/*DOM*/ JsonFx.UI.debugPoint = function (/*int*/ x, /*int*/ y, /*{delay,color,size,className}*/ options) {
+	if (isNaN(x)) {
+		x = 0;
+	}
+	if (isNaN(y)) {
+		y = 0;
 	}
 	options = options || {};
 	options.delay = options.delay || 1500;
-	options.color = options.color || "magenta";
+	if (!options.className) {
+		options.size = options.size || "4px";
+		options.color = options.color || "magenta";
+	}
 
-	var test = document.createElement("div");
-	test.style.position = "absolute";
-	test.style.backgroundColor = options.color;
-	test.style.left = x+"px";
-	test.style.top = y+"px";
-	test.style.height = test.style.width = "4px";
-	document.body.appendChild(test);
+	var pt = document.createElement("div");
+	pt.style.position = "absolute";
+	pt.style.left = (x-pt.offsetWidth)+"px";
+	pt.style.top = (y-pt.offsetHeight)+"px";
+	pt.title = "("+x+","+y+")";
+	pt.className = options.className;
+	if (options.size) {
+		pt.style.height = pt.style.width = options.size;
+		pt.style.overflow = "hidden";
+	}
+	document.body.appendChild(pt);
 
-	window.setTimeout(
-		function() {
-			test.parentNode.removeChild(test);
-		},
-		options.delay);
+	if (options.delay > 0) {
+		window.setTimeout(
+			function() {
+				if (pt) {
+					pt.parentNode.removeChild(pt);
+					pt = null;
+				}
+			},
+			options.delay);
+	}
+	options = null;
+	return pt;
 };
 
 /*{x,y}*/ JsonFx.UI.getScroll = function(/*element*/ elem) {
@@ -329,6 +351,11 @@ if ("undefined" === typeof JsonFx.UI) {
 	return a*Math.pow(1-t,3) + b*3*t*Math.pow(1-t,2) + c*3*Math.pow(t,2)*(1-t) + d*Math.pow(t,3);
 };
 
+/* Cubic Bezier Curve */
+/*{x,y}*/ JsonFx.UI.bezierPoint = function (/*{x,y}*/ p0, /*{x,y}*/ p1, /*{x,y}*/ p2, /*{x,y}*/ p3, /*float*/ t) {
+	return {x:JsonFx.UI.bezier(p0.x, p1.x, p2.x, p3.x, t), y:JsonFx.UI.bezier(p0.y, p1.y, p2.y, p3.y, t)};
+};
+
 /*-------------------*\
 	Binding Methods
 \*-------------------*/
@@ -341,7 +368,7 @@ JsonFx.UI.Bindings = function() {
 
 	/*hashtable[tag] of object*/ var bindings = {};
 
-	/*void*/ b.register = function(/*string*/ tag, /*string*/ css, /*function(elem)*/ bind, /*function(elem)*/ unbind) {
+	/*void*/ b.register = function(/*string*/ tag, /*string*/ css, /*function(elem)*/ bind, /*function(elem)*/ unbind, /*bool*/ overwrite) {
 		if (typeof css !== "string") {
 			throw new Error("Binding CSS is not a string.");
 		}
@@ -359,8 +386,8 @@ JsonFx.UI.Bindings = function() {
 			tag = tag.toLowerCase();
 			if ("undefined" === typeof bindings[tag]) {
 				/*object*/ bindings[tag] = {};
-			} else if (bindings[tag][css]) {
-				throw new Error("Binding for tag=\""+tag+"\" css=\""+css+"\" has already been registered.");
+			} else if (!overwrite && bindings[tag][css]) {
+				throw new Error("Binding for "+tag+"."+css+" has already been registered.");
 			}
 
 			/*object*/ bindings[tag][css] = {};
@@ -370,7 +397,7 @@ JsonFx.UI.Bindings = function() {
 	};
 
 	/*element*/ var performOne = function(/*element*/ elem, /*actionKey*/ a) {
-		var tag, tagBindings, classes, i, css;
+		var tag, tagBindings, classes, i, css, replace;
 		if (elem && elem.tagName && elem.className) {
 
 			// only perform on registered tags
@@ -383,9 +410,9 @@ JsonFx.UI.Bindings = function() {
 				for (i=0; i<classes.length; i++) {
 					css = classes[i];
 					if (css && tagBindings[css] && tagBindings[css][a]) {
-
-						// perform action on element							
-						tagBindings[css][a](elem);
+						// perform action on element and
+						// allow binding to replace element
+						elem = tagBindings[css][a](elem) || elem;
 					}
 				}
 			}
@@ -395,7 +422,7 @@ JsonFx.UI.Bindings = function() {
 
 	// perform a binding action on child elements
 	/*void*/ var perform = function(/*element*/ root, /*actionKey*/ a) {
-		var elems, i;
+		var elems, i, replace;
 		if (root && root.getElementsByTagName) {
 
 			// for each registered tag
@@ -405,7 +432,12 @@ JsonFx.UI.Bindings = function() {
 					// for each element in root with tagName
 					elems = root.getElementsByTagName(tag);
 					for (i=0; i<elems.length; i++) {
-						performOne(elems[i], a);
+						// perform action on element and
+						// allow binding to replace element
+						replace = performOne(elems[i], a);
+						if (replace && elems[i].parentNode) {
+							elems[i].parentNode.replaceChild(replace, elems[i]);
+						}
 					}
 				}
 			}
