@@ -112,18 +112,20 @@ if ("undefined" === typeof JsonFx.UI) {
 	if ("string" === typeof elem) {
 		elem = document.getElementById(elem);
 	}
+
 	var pos,
 		pt = skipScroll ? {x:0,y:0} : JsonFx.UI.getScroll(elem);
+
 	while (elem) {
 		pt.y += elem.offsetTop;
 		pt.x += elem.offsetLeft;
 		elem = elem.offsetParent;
-		if (elem) {
-			pos = JsonFx.UI.getStyle(elem, "position");
-			if (pos !== "static") {
-				elem = null;
-			}
-		}
+//		if (elem) {
+//			pos = JsonFx.UI.getStyle(elem, "position");
+//			if (pos !== "static") {
+//				elem = null;
+//			}
+//		}
 	}
 	return pt;
 };
@@ -397,7 +399,7 @@ JsonFx.UI.Bindings = function() {
 	};
 
 	/*element*/ var performOne = function(/*element*/ elem, /*actionKey*/ a) {
-		var tag, tagBindings, classes, i, css, replace;
+		var tag, tagBindings, classes, i, css, options, replace;
 		if (elem && elem.tagName && elem.className) {
 
 			// only perform on registered tags
@@ -410,9 +412,19 @@ JsonFx.UI.Bindings = function() {
 				for (i=0; i<classes.length; i++) {
 					css = classes[i];
 					if (css && tagBindings[css] && tagBindings[css][a]) {
+
+						// allow element to provide parameters for bindings
+						options = elem.getAttribute("jsonfx:options");
+						try {
+							if (options && options.parseJSON) {
+								// treat string as JSON
+								options = options.parseJSON();
+							}
+						} catch (ex) { }
+
 						// perform action on element and
 						// allow binding to replace element
-						elem = tagBindings[css][a](elem) || elem;
+						elem = tagBindings[css][a](elem, options) || elem;
 					}
 				}
 			}
@@ -592,6 +604,15 @@ JsonFx.UI.History = {
 	}
 };
 
+/*	creates DOM elements from JsonML and binds them accordingly */
+/*element*/ JsonFx.UI.bindJsonML = function(/*JsonML*/ jml) {
+	if (jml && ("function" === typeof jml.parseJsonML)) {
+		return jml.parseJsonML(JsonFx.UI.Bindings.bindOne);
+	} else {
+		return null;
+	}
+};
+
 /*	if container is null then uses ID(s) to replace page elements
 	returns the container element if one was specified */
 /*element*/ JsonFx.UI.displayJsonML = function(/*JsonML*/ jml, /*element|string*/ container) {
@@ -600,44 +621,42 @@ JsonFx.UI.History = {
 	container = ("string" === typeof container) ?
 		document.getElementById(container) : container;
 
-	if (jml && ("function" === typeof jml.parseJsonML)) {
-		jml = jml.parseJsonML(JsonFx.UI.Bindings.bindOne);
-		if (jml) {
-			if (container) {
-				JsonFx.UI.clear(container);
-				container.appendChild(jml);
-			} else if (jml.id) {
-				container = document.getElementById(jml.id);
+	jml = JsonFx.UI.bindJsonML(jml);
+	if (jml) {
+		if (container) {
+			JsonFx.UI.clear(container);
+			container.appendChild(jml);
+		} else if (jml.id) {
+			container = document.getElementById(jml.id);
+			if (container && container.parentNode) {
+				// unbind to prevent memory leaks
+				JsonFx.UI.Bindings.unbind(container);
+				container.parentNode.replaceChild(jml, container);
+			} else {
+				// can't add to document, so unbind
+				JsonFx.UI.Bindings.unbind(jml);
+				jml = null;
+			}
+		} else if (jml.childNodes) {
+			while (jml.firstChild) {
+				if (!jml.firstChild.id) {
+					// unbind to prevent memory leaks
+					JsonFx.UI.Bindings.unbind(jml.firstChild);
+					jml.removeChild(jml.firstChild);
+					continue;
+				}
+				container = document.getElementById(jml.firstChild.id);
 				if (container && container.parentNode) {
 					// unbind to prevent memory leaks
 					JsonFx.UI.Bindings.unbind(container);
-					container.parentNode.replaceChild(jml, container);
+					container.parentNode.replaceChild(jml.firstChild, container);
 				} else {
-					// can't add to document, so unbind
-					JsonFx.UI.Bindings.unbind(jml);
-					jml = null;
+					// unbind to prevent memory leaks
+					JsonFx.UI.Bindings.unbind(jml.firstChild);
+					jml.removeChild(jml.firstChild);
 				}
-			} else if (jml.childNodes) {
-				while (jml.firstChild) {
-					if (!jml.firstChild.id) {
-						// unbind to prevent memory leaks
-						JsonFx.UI.Bindings.unbind(jml.firstChild);
-						jml.removeChild(jml.firstChild);
-						continue;
-					}
-					container = document.getElementById(jml.firstChild.id);
-					if (container && container.parentNode) {
-						// unbind to prevent memory leaks
-						JsonFx.UI.Bindings.unbind(container);
-						container.parentNode.replaceChild(jml.firstChild, container);
-					} else {
-						// unbind to prevent memory leaks
-						JsonFx.UI.Bindings.unbind(jml.firstChild);
-						jml.removeChild(jml.firstChild);
-					}
-				}
-				container = null;
 			}
+			container = null;
 		}
 	}
 	return container;
