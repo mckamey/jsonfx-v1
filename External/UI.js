@@ -252,6 +252,20 @@ if ("undefined" === typeof JsonFx.UI) {
 	}
 };
 
+/*void*/ JsonFx.UI.detachHandler = function (/*DOM*/ obj, /*string*/ evtName, /*function*/ handler) {
+	if (obj.removeEventListener) {
+		//DOM method for unbinding an event
+		obj.removeEventListener(evtName, handler, false);
+	} else if (obj.detachEvent) {
+		//IE exclusive method for binding an event
+		obj.detachEvent("on"+evtName, handler);
+	} else if (handler === obj["on"+evtName]) {
+		obj["on"+evtName] = null;
+	} else {
+		// not sure how to remove this kind...
+	}
+};
+
 /*element*/ JsonFx.UI.getIFrameDocument = function(/*element*/ elem) {
 	if (!elem) {
 		return null;
