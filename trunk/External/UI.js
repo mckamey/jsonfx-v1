@@ -227,15 +227,15 @@ if ("undefined" === typeof JsonFx.UI) {
 };
 
 /*function*/ JsonFx.UI.combineHandlers = function (/*function*/ a, /*function*/ b) {
-	if ("function" === typeof a) {
-		if ("function" === typeof b) {
-			return function(/*Event*/ evt) { a(evt); return b(evt); };
-		} else {
-			return a;
-		}
-	} else {
+	if ("function" !== typeof b) {
+		return a;
+	}
+
+	if ("function" !== typeof a) {
 		return b;
 	}
+
+	return function(/*Event*/ evt) { a(evt); return b(evt); };
 };
 
 /*void*/ JsonFx.UI.attachHandler = function (/*DOM*/ obj, /*string*/ evtName, /*function*/ handler) {
@@ -384,7 +384,10 @@ JsonFx.UI.Bindings = function() {
 
 	/*hashtable[tag] of object*/ var bindings = {};
 
-	/*void*/ b.register = function(/*string*/ tag, /*string*/ css, /*function(elem)*/ bind, /*function(elem)*/ unbind, /*bool*/ overwrite) {
+	/*void*/ b.register = function(/*string*/ tag, /*string*/ css, /*function(elem,options)*/ bind, /*function(elem,options)*/ unbind, /*bool*/ overwrite) {
+
+//		alert(tag+"."+css+":\n"+bind+"\n"+unbind);
+
 		if (typeof css !== "string") {
 			throw new Error("Binding CSS is not a string.");
 		}
@@ -407,8 +410,8 @@ JsonFx.UI.Bindings = function() {
 			}
 
 			/*object*/ bindings[tag][css] = {};
-			bindings[tag][css][BIND] = bind ? bind : null;
-			bindings[tag][css][UNBIND] = unbind ? unbind : null;
+			bindings[tag][css][BIND] = bind || null;
+			bindings[tag][css][UNBIND] = unbind || null;
 		}
 	};
 
@@ -436,9 +439,13 @@ JsonFx.UI.Bindings = function() {
 							}
 						} catch (ex) { }
 
-						// perform action on element and
-						// allow binding to replace element
-						elem = tagBindings[css][a](elem, options) || elem;
+						try {
+							// perform action on element and
+							// allow binding to replace element
+							elem = tagBindings[css][a](elem, options) || elem;
+						} catch (ex) {
+							window.alert("Error binding "+tag+"."+css+":\n\n\""+ex.message+"\"");
+						}
 					}
 				}
 			}
@@ -461,7 +468,7 @@ JsonFx.UI.Bindings = function() {
 						// perform action on element and
 						// allow binding to replace element
 						replace = performOne(elems[i], a);
-						if (replace && elems[i].parentNode) {
+						if (replace !== elems[i] && elems[i].parentNode) {
 							elems[i].parentNode.replaceChild(replace, elems[i]);
 						}
 					}
@@ -473,6 +480,16 @@ JsonFx.UI.Bindings = function() {
 	// used as JsonML filter
 	/*element*/ b.bindOne = function(/*element*/ elem) {
 		return performOne(elem, BIND);
+	};
+
+	// bind
+	/*void*/ b.bind = function(/*element*/ root) {
+		perform(root, BIND);
+	};
+
+	// unbind
+	/*void*/ b.unbind = function(/*element*/ root) {
+		perform(root, UNBIND);
 	};
 
 	// bind
@@ -489,12 +506,12 @@ JsonFx.UI.Bindings = function() {
 		}
 
 		try {
-			perform(document, BIND);
+			b.bind(document);
 		} finally {
 			if (document.body && document.body.style) {
 				// restore previous values
-				document.body.title = ttl ? ttl : "";
-				document.body.style.cursor = crsr ? crsr : "";
+				document.body.title = ttl || "";
+				document.body.style.cursor = crsr || "";
 			}
 		}
 	};
@@ -513,39 +530,21 @@ JsonFx.UI.Bindings = function() {
 		}
 
 		try {
-			perform(document, UNBIND);
+			b.unbind(document);
 		} finally {
 			if (document.body && document.body.style) {
 				// restore previous values
-				document.body.title = ttl ? ttl : "";
-				document.body.style.cursor = crsr ? crsr : "";
+				document.body.title = ttl || "";
+				document.body.style.cursor = crsr || "";
 			}
 		}
 	};
 
-	// bind
-	/*void*/ b.bind = function(/*element*/ root) {
-		perform(root, BIND);
-	};
-
-	// unbind
-	/*void*/ b.unbind = function(/*element*/ root) {
-		perform(root, UNBIND);
-	};
-
 	// wire up binding
-	if ("function" === typeof window.onload) {
-		window.onload = JsonFx.UI.combineHandlers(b.bindAll, window.onload);
-	} else {
-		window.onload = b.bindAll;
-	}
+	window.onload = JsonFx.UI.attachHandler(window, "load", b.bindAll);
 
 	// wire up unbinding
-	if ("function" === typeof window.onunload) {
-		window.onunload = JsonFx.UI.combineHandlers(b.unbindAll, window.onload);
-	} else {
-		window.onunload = b.unbindAll;
-	}
+	window.onunload = JsonFx.UI.attachHandler(window, "unload", b.unbindAll);
 };
 
 // instantiate only one, destroying the constructor
