@@ -541,10 +541,10 @@ JsonFx.UI.Bindings = function() {
 	};
 
 	// wire up binding
-	window.onload = JsonFx.UI.attachHandler(window, "load", b.bindAll);
+	JsonFx.UI.attachHandler(window, "load", b.bindAll);
 
 	// wire up unbinding
-	window.onunload = JsonFx.UI.attachHandler(window, "unload", b.unbindAll);
+	JsonFx.UI.attachHandler(window, "unload", b.unbindAll);
 };
 
 // instantiate only one, destroying the constructor
