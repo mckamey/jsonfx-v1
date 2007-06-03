@@ -161,12 +161,12 @@ if ("undefined" === typeof JsonFx.UI) {
 };
 
 /*element*/ JsonFx.UI.getEventTarget = function(/*Event*/ evt) {
-	evt = evt || window.event;
-	return evt.currentTarget ? evt.currentTarget : evt.srcElement;
+	evt = evt || window.event || {};
+	return (evt.currentTarget || evt.srcElement || null);
 };
 
 /*{x,y}*/ JsonFx.UI.getEventPoint = function(/*Event*/ evt) {
-	evt = evt || window.event;
+	evt = evt || window.event || { clientX:-Infinity, clientY:-Infinity };
 	if (typeof evt.pageX !== "undefined") {
 		return { x:evt.pageX, y:evt.pageY };
 	}
@@ -210,7 +210,7 @@ if ("undefined" === typeof JsonFx.UI) {
 };
 
 /*void*/ JsonFx.UI.cancelEvent = function(/*Event*/ evt) {
-	evt = evt || window.event;
+	evt = evt || window.event || {};
 	if (evt) {
 		evt.cancelBubble = true;
 	}
