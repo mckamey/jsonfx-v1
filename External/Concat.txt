@@ -4,3 +4,4 @@ JsonML.js
 UA.js
 IO.js
 UI.js
+Controls.js
