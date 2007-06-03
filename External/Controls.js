@@ -52,6 +52,7 @@ if ("undefined" === typeof JsonFx.UI) {
 		return true;
 	}
 };
+
 /*void*/ JsonFx.UI.expando_bind = function(/*element*/ elem) {
 	// call after elements have been added to document
 	var target = null;
@@ -104,54 +105,65 @@ if ("undefined" === typeof JsonFx.UI) {
 \*---------------*/
 
 /*void*/ JsonFx.UI.alphaImg_bind = function(/*DOM*/ elem, /*object*/ options) {
-	window.setTimeout(
-		function() {
+	
+//	try {
+//		// IE7 doesn't like this with async loads
+//		if (!elem.filters) {
+//			return;
+//		}
+//	} catch (ex) {
+//		alert(ex.message);
+//		return;
+//	}
 
-		var filter = null;
-		if (!!elem.filters &&
-			(JsonFx.UI.hasClassName(document.body, "ua-ie-6") ||
-			JsonFx.UI.hasClassName(document.body, "ua-ie-5"))) {
+	var filter, src;
+	// only IE 5.x-6.0	
+	if (JsonFx.UI.hasClassName(document.body, "ua-ie-6") || JsonFx.UI.hasClassName(document.body, "ua-ie-5")) {
 
-			options = options || { };
-			options.src = options.src || "";
+		options = options || {};
+		options.src = options.src || "about:blank";
 
-			// add AlphaImageLoader filter
-			elem.style.filter = "progid:DXImageTransform.Microsoft.AlphaImageLoader(sizingMethod='scale')";
-			filter = elem.filters.item("DXImageTransform.Microsoft.AlphaImageLoader");
-			filter.src = elem.src;
+		// add AlphaImageLoader filter
+		elem.style.filter = "progid:DXImageTransform.Microsoft.AlphaImageLoader(sizingMethod='scale')";
+		src = elem.src;
 
-			// set to blank img
-			elem.src = options.src;
-			// copy back so can compare later
-			options.src = elem.src;
+		// set to blank img
+		elem.src = options.src;
+		// copy back so can compare later
+		options.src = elem.src;
 
-			// set it back
-			elem.src = filter.src;
+		// set it back
+		elem.src = src;
 
-			// add dispose method
-			elem.dispose = function() {
-				elem.onpropertychange = null;
-				elem.src = filter && filter.src;
-				elem.style.filter = "";
-				elem = filter = options = null;
-			};
+		// add dispose method
+		elem.dispose = function() {
+			elem.onpropertychange = null;
+			elem.src = filter && filter.src;
+			elem.style.filter = "";
+			elem = filter = options = null;
+		};
 
-			// monitor changes to elem so can update filter
-			elem.onpropertychange = function(/*Event*/ evt) {
-				evt = evt||window.event;
+		// monitor changes to elem so can update filter
+		elem.onpropertychange = function(/*Event*/ evt) {
+			evt = evt||window.event;
 
-				if (evt.propertyName === "src" &&
-					elem.src !== options.src) {
+			if (evt.propertyName === "src" &&
+				elem.src !== options.src) {
 
-					filter.src = elem.src;
-					elem.src = options.src;
-				}
-			};
+				// can't populate until after added to document
+				filter = filter || elem.filters.item("DXImageTransform.Microsoft.AlphaImageLoader");
 
-			// trigger filter call when done loading
-			elem.src = elem.src;
-		}
-	} ,0);
+				filter.src = elem.src;
+				elem.src = options.src;
+			}
+		};
+
+		// trigger filter call when done loading
+		window.setTimeout(
+			function() {
+				elem.src = elem.src;
+			}, 0);
+	}
 };
 
 /*void*/ JsonFx.UI.alphaImg_unbind = function(/*DOM*/ elem, /*object*/ options) {
