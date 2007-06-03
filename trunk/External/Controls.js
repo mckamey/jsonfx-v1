@@ -52,7 +52,7 @@ if ("undefined" === typeof JsonFx.UI) {
 		return true;
 	}
 };
-/*void*/ JsonFx.UI.expandoBind = function(/*element*/ elem) {
+/*void*/ JsonFx.UI.expando_bind = function(/*element*/ elem) {
 	// call after elements have been added to document
 	var target = null;
 	try {
@@ -91,7 +91,7 @@ if ("undefined" === typeof JsonFx.UI) {
 	};
 };
 
-/*void*/ JsonFx.UI.expandoUnbind = function(/*element*/ elem) {
+/*void*/ JsonFx.UI.expando_unbind = function(/*element*/ elem) {
 	if ("undefined" !== typeof elem.expando) {
 		elem.expando = null;
 	}
@@ -99,3 +99,63 @@ if ("undefined" === typeof JsonFx.UI) {
 	elem.ondblclick = null;
 };
 
+/*---------------*\
+	Alpha Image
+\*---------------*/
+
+/*void*/ JsonFx.UI.alphaImg_bind = function(/*DOM*/ elem, /*object*/ options) {
+	window.setTimeout(
+		function() {
+
+		var filter = null;
+		if (!!elem.filters &&
+			(JsonFx.UI.hasClassName(document.body, "ua-ie-6") ||
+			JsonFx.UI.hasClassName(document.body, "ua-ie-5"))) {
+
+			options = options || { };
+			options.src = options.src || "";
+
+			// add AlphaImageLoader filter
+			elem.style.filter = "progid:DXImageTransform.Microsoft.AlphaImageLoader(sizingMethod='scale')";
+			filter = elem.filters.item("DXImageTransform.Microsoft.AlphaImageLoader");
+			filter.src = elem.src;
+
+			// set to blank img
+			elem.src = options.src;
+			// copy back so can compare later
+			options.src = elem.src;
+
+			// set it back
+			elem.src = filter.src;
+
+			// add dispose method
+			elem.dispose = function() {
+				elem.onpropertychange = null;
+				elem.src = filter && filter.src;
+				elem.style.filter = "";
+				elem = filter = options = null;
+			};
+
+			// monitor changes to elem so can update filter
+			elem.onpropertychange = function(/*Event*/ evt) {
+				evt = evt||window.event;
+
+				if (evt.propertyName === "src" &&
+					elem.src !== options.src) {
+
+					filter.src = elem.src;
+					elem.src = options.src;
+				}
+			};
+
+			// trigger filter call when done loading
+			elem.src = elem.src;
+		}
+	} ,0);
+};
+
+/*void*/ JsonFx.UI.alphaImg_unbind = function(/*DOM*/ elem, /*object*/ options) {
+	if (elem.dispose) {
+		elem.dispose();
+	}
+};

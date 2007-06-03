@@ -3,7 +3,7 @@
 	JsonFx UI
 	Copyright (c)2006-2007 Stephen M. McKamey
 	Created: 2006-11-11-1759
-	Modified: 2007-06-03-1028
+	Modified: 2007-06-03-1433
 \*---------------------------------------------------------*/
 
 /* namespace JsonFx */
@@ -46,8 +46,10 @@ if ("undefined" === typeof JsonFx.UI) {
 };
 
 /*bool*/ JsonFx.UI.hasClassName = function(/*DOM*/ elem, /*string*/ cssClass) {
-	return cssClass && elem && elem.className &&
-		elem.className.match("\\b"+cssClass+"\\b");
+	return !!cssClass &&
+		!!elem &&
+		!!elem.className &&
+		!!elem.className.match("\\b"+cssClass+"\\b");
 };
 
 /*DOM*/ JsonFx.UI.debugPoint = function (/*int*/ x, /*int*/ y, /*{delay,color,size,className}*/ options) {
