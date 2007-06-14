@@ -29,7 +29,7 @@ if ("undefined" === typeof JsonFx.UI) {
 		// Regex tested against (2006-06-11 @ 1600): http://en.wikipedia.org/wiki/User_agent
 		var R_MSIE = /(\bmsie|microsoft internet explorer)[\s\/]*([0-9]+[\.]?[0-9]*)/;
 		var R_Gecko = /rv[:]([0-9]+[\.]?[0-9]*).*?gecko[\/][0-9]+(\s+(\S+)[\/]([0-9]+[\.]?[0-9]*))?/;
-		var R_AppleWebKit = /\bapplewebkit[\/]([0-9]+[\.]?[0-9]*).*?(\S+)[\/][v]?([0-9]+[\.]?[0-9]*)/;
+		var R_AppleWebKit = /\bapplewebkit[\/]([0-9]+[\.]?[0-9]*).*\s+(\S+)[\/][v]?([0-9]+[\.]?[0-9]*)/;
 		var R_Opera = /\bopera[\s\/]*([0-9]+[\.]?[0-9]*)/;
 		var R_MSPIE = /\b(mspie|microsoft pocket internet explorer)[\s\/]*([0-9]+[\.]?[0-9]*)/;
 		var R_iCab = /\bicab[\s\/]*([0-9]+[\.]?[0-9]*)/;
