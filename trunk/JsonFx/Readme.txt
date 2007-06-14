@@ -1,7 +1,8 @@
 Release History
 
-v1.0.705.xxxx:
+v1.0.706.xxxx:
 - Fixed bugs where if new compacted resource was shorter would leave old content behind
+- Improved CssUserAgent for Safari 3 betas
 
 v1.0.705.1916:
 - Fixed bug where CompactorCodeProvider was being reused and resources were experiencing collisions
