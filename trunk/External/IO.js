@@ -247,7 +247,6 @@ JsonFx.IO = {};
 	// ensure defaults
 	options = JsonFx.IO.validateOptions(options);
 
-	//options.headers["User-Agent"] = JsonFx.userAgent;
 	options.headers.Accept = "application/json, application/jsonml+json";
 
 	var onSuccess = options.onSuccess;
@@ -323,7 +322,6 @@ JsonFx.IO = {};
 	// ensure defaults
 	options = JsonFx.IO.validateOptions(options);
 
-	//options.headers["User-Agent"] = JsonFx.userAgent;
 	options.headers.Accept = "application/json, application/jsonml+json";
 
 	// wrap callbacks with RPC layer
