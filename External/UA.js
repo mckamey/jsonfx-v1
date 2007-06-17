@@ -4,7 +4,7 @@
 
 	Copyright (c)2006-2007 Stephen M. McKamey
 	Created: 2006-06-10-1635
-	Modified: 2007-04-16-2125
+	Modified: 2007-06-17-1302
 \*---------------------------------------------------------------------------*/
 
 /* namespace JsonFx */
@@ -17,140 +17,116 @@ if ("undefined" === typeof JsonFx.UI) {
 	JsonFx.UI = {};
 }
 
-/*string*/ JsonFx.userAgent = "JsonFx/1.0";
+/*Hastable*/ JsonFx.userAgent = {
+		jsonfx : "1.0"
+	};
+
+/*Hastable*/ JsonFx.parseUserAgent = function(/*string*/ ua) {
+	/*Hastable*/ var fxua = {};
+
+	if (!ua) {
+		return fxua;
+	}
+	ua = ua.toLowerCase();
+
+	// RegExp tested against (2007-06-17 @ 1235):
+	// http://www.useragentstring.com/pages/useragentstring.php
+	// http://www.user-agents.org
+	// http://en.wikipedia.org/wiki/User_agent
+	var R_All = /\S+[\/]\d+(\.\d+)*/g;
+	var R_AOL = /\b(america online browser|aol)[\s\/]*(\d+(\.\d+)*)/;
+	var R_MSIE = /(\bmsie|microsoft internet explorer)[\s\/]*(\d+(\.\d+)*)/;
+	var R_Gecko = /rv[:](\d+(\.\d+)*).*?gecko[\/]\d+/;
+	var R_Opera = /\bopera[\s\/]*(\d+(\.\d+)*)/;
+	var R_MSPIE = /\b(mspie|microsoft pocket internet explorer)[\s\/]*(\d+(\.\d+)*)/;
+	var R_iCab = /\bicab[\s\/]*(\d+(\.\d+)*)/;
+
+	// do this first for all (covers most browser types)
+	var i, s, b, raw = ua.match(R_All);
+	if (raw) {
+		for (i=0; i<raw.length; i++) {
+			s = raw[i].indexOf('/');
+			b = raw[i].substring(0, s);
+			if (b && b !== "mozilla") {
+				// shorten this common browser
+				if (b === "applewebkit") {
+					b = "webkit";
+				}
+				fxua[b] = raw[i].substr(s+1);
+			}
+		}
+	}
+
+	// aol uses multiple engines so continue checking
+	if (R_AOL.exec(ua)) {
+		fxua.aol = RegExp.$2;
+	}
+
+	// order is important as user-agents spoof each other	
+	if (R_Opera.exec(ua)) {
+		fxua.opera = RegExp.$1;
+	} else if (R_iCab.exec(ua)) {
+		fxua.icab = RegExp.$1;
+	} else if (R_MSIE.exec(ua)) {
+		fxua.ie = RegExp.$2;
+	} else if (R_MSPIE.exec(ua)) {
+		fxua.mspie = RegExp.$2;
+	} else if (R_Gecko.exec(ua)) {
+		fxua.gecko = RegExp.$1;
+	}
+	return fxua;
+};
 
 (function() {
 	// anonymous function doesn't affect global namespace and can't be called externally
 	// variables and helper functions only available via JavaScript closures
 
-	/*string*/ function parse() {
-		/*{b,v}[]*/ var details = [];
-
-		// Regex tested against (2006-06-11 @ 1600): http://en.wikipedia.org/wiki/User_agent
-		var R_MSIE = /(\bmsie|microsoft internet explorer)[\s\/]*([0-9]+[\.]?[0-9]*)/;
-		var R_Gecko = /rv[:]([0-9]+[\.]?[0-9]*).*?gecko[\/][0-9]+(\s+(\S+)[\/]([0-9]+[\.]?[0-9]*))?/;
-		var R_AppleWebKit = /\bapplewebkit[\/]([0-9]+[\.]?[0-9]*).*\s+(\S+)[\/][v]?([0-9]+[\.]?[0-9]*)/;
-		var R_Opera = /\bopera[\s\/]*([0-9]+[\.]?[0-9]*)/;
-		var R_MSPIE = /\b(mspie|microsoft pocket internet explorer)[\s\/]*([0-9]+[\.]?[0-9]*)/;
-		var R_iCab = /\bicab[\s\/]*([0-9]+[\.]?[0-9]*)/;
-		var R_MozCompat = /[(].*?(\S+)[\/]([0-9]+[\.]?[0-9]*).*?[)]/;
-		var R_Other = /^([^\/]+)[\/]([0-9]+[\.]?[0-9]*)/;
-		var R_AOL = /\b(america online browser|aol)[\s\/]*([0-9]+[\.]?[0-9]*)/;
-
-		var ua = navigator.userAgent.toLowerCase();
-		var name = null;// browser name
-		var ver = null;// browser version
-
-		// aol uses multiple browsers so don't stop
-		if (R_AOL.exec(ua)) {
-			details.push( { b : "aol", v : RegExp.$2 } );
-		}
-
-		// order is important as user-agents spoof each other	
-		if (R_Opera.exec(ua)) {
-			name = "opera";
-			ver = RegExp.$1;
-		} else if (R_iCab.exec(ua)) {
-			name = "icab";
-			ver = RegExp.$1;
-
-			// iCab doesn't allow setting User-Agent on XHR
-			JsonFx.userAgent = null;
-		} else if (R_MSIE.exec(ua)) {
-			name = "ie";
-			ver = RegExp.$2;
-		} else if (R_MSPIE.exec(ua)) {
-			name = "mspie";
-			ver = RegExp.$2;
-		} else if (R_AppleWebKit.exec(ua)) {
-			name = "webkit";
-			ver = RegExp.$1;
-
-			// also add WebKit-brand version
-			details.push( { b : RegExp.$2, v : RegExp.$3 } );
-		} else if (R_Gecko.exec(ua)) {
-			name = "gecko";
-			ver = RegExp.$1;
-
-			// also add Gecko-brand version
-			details.push( { b : RegExp.$3, v : RegExp.$4 } );
-		} else if (R_MozCompat.exec(ua)) {
-			name = RegExp.$1;
-			ver = RegExp.$2;
-		} else if (R_Other.exec(ua)) {
-			name = RegExp.$1;
-			ver = RegExp.$2;
-		}
-
-		// name = browser, ver = parsed version string
-		details.push( { b : name, v : ver } );
-		
-		return details;
-	}
-
-	// calculate styles immediately, loop until can apply them
-	/*string*/ var uaDetails = parse();
-	var i;
-	if (uaDetails.length && JsonFx.userAgent) {
-		JsonFx.userAgent += " (";
-		for (i=0; i<uaDetails.length;i ++) {
-			if (i>0) {
-				JsonFx.userAgent += "; ";
-			}
-			JsonFx.userAgent += uaDetails[i].b+"/"+uaDetails[i].v;
-		}
-		JsonFx.userAgent += ")";
-	}
+	// calculate userAgent immediately, poll until can apply them
+	var fxua = JsonFx.parseUserAgent(navigator.userAgent);
 
 	/*	Dynamically appends CSS classes to document.body based upon user-agent.*/
 	/*void*/ JsonFx.UI.setCssUserAgent = function() {
 
 		/*string*/ function formatCss(/*string*/ b, /*string*/ v) {
-			/*const string*/ var PREFIX = " ua-";
+			/*const string*/ var PREFIX = " ua-", i;
 
-			if (!b) {
-				return "";
+			/*string*/ var css = PREFIX+b;
+			if (v) {
+				v = v.replace(/\./g, '-');
+				i = v.indexOf('-');
+				while (i > 0) {
+					// loop through chopping last '-' to end off
+					// concat result onto return string
+					css += PREFIX+b+'-'+v.substring(0, i);
+					i = v.indexOf('-', i+1);
+				}
+				css += PREFIX+b+'-'+v;
 			}
-
-			b = b.replace(/\s+/g, '-');
-			var vi = parseInt(v, 10);
-			var vf = parseFloat(v);
-			vf = (vf === vi && vf.toFixed) ?
-				vf.toFixed(1) : vf.toString();
-			vf = vf.replace(/\./g, '-');
-			if (!isFinite(vi)) {
-				return PREFIX+b;
-			}
-			return PREFIX+b+PREFIX+b+'-'+vi+PREFIX+b+'-'+vf;
+			return css;
 		}
 
 		// using JavaScript closures to access the parsed UA
-		/*void*/ function appendCss(/*{b,v}[]*/ d) {
-			var uaCss = "", ua;
+		/*void*/ function appendCss() {
+			var uaCss = document.body.className;
 
-			while (d.length) {
-				ua = d.pop();
-				uaCss += formatCss(ua.b, ua.v);
+			for (var b in fxua) {
+				if (b && fxua.hasOwnProperty(b)) {
+					JsonFx.userAgent[b] = fxua[b];
+					uaCss += formatCss(b, fxua[b]);
+				}
 			}
 
 			// assign user-agent classes
-			if (document.body.className) {
-				document.body.className += uaCss;
-			} else {
-				document.body.className += uaCss.substring(1);
-			}
-
-			// DEBUG
-			//alert("\""+document.body.className+"\"");
+			document.body.className = uaCss;
 		}
 
 		// using setTimeout to poll until body exists
 		/*void*/ function appendCssPoll() {
 
 			if (!document.body) {
-				setTimeout(appendCssPoll, 100);
+				setTimeout(appendCssPoll, 10);
 			} else {
-				appendCss(uaDetails);
+				appendCss();
 			}
 		}
 
