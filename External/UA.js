@@ -33,7 +33,7 @@ if ("undefined" === typeof JsonFx.UI) {
 	// http://www.useragentstring.com/pages/useragentstring.php
 	// http://www.user-agents.org
 	// http://en.wikipedia.org/wiki/User_agent
-	var R_All = /\S+[\/]\d+(\.\d+)*/g;
+	var R_All = /\S+[\/][v]?\d+(\.\d+)*/g;
 	var R_AOL = /\b(america online browser|aol)[\s\/]*(\d+(\.\d+)*)/;
 	var R_MSIE = /(\bmsie|microsoft internet explorer)[\s\/]*(\d+(\.\d+)*)/;
 	var R_Gecko = /rv[:](\d+(\.\d+)*).*?gecko[\/]\d+/;
@@ -77,56 +77,56 @@ if ("undefined" === typeof JsonFx.UI) {
 	return fxua;
 };
 
+/*void*/ JsonFx.formatCssUserAgent = function (/*Hastable*/ fxua) {
+	/*string*/ function format(/*string*/ b, /*string*/ v) {
+		/*const string*/ var PREFIX = " ua-", i;
+
+		/*string*/ var css = PREFIX+b;
+		if (v) {
+			v = v.replace(/\./g, '-');
+			i = v.indexOf('-');
+			while (i > 0) {
+				// loop through chopping last '-' to end off
+				// concat result onto return string
+				css += PREFIX+b+'-'+v.substring(0, i);
+				i = v.indexOf('-', i+1);
+			}
+			css += PREFIX+b+'-'+v;
+		}
+		return css;
+	}
+
+	var uaCss = "";
+
+	for (var b in fxua) {
+		if (b && fxua.hasOwnProperty(b)) {
+			JsonFx.userAgent[b] = fxua[b];
+			uaCss += format(b, fxua[b]);
+		}
+	}
+
+	// assign user-agent classes
+	return uaCss;
+};
+
 (function() {
 	// anonymous function doesn't affect global namespace and can't be called externally
 	// variables and helper functions only available via JavaScript closures
 
 	// calculate userAgent immediately, poll until can apply them
-	var fxua = JsonFx.parseUserAgent(navigator.userAgent);
+	/*Hastable*/ var fxua = JsonFx.parseUserAgent(navigator.userAgent);
 
 	/*	Dynamically appends CSS classes to document.body based upon user-agent.*/
 	/*void*/ JsonFx.UI.setCssUserAgent = function() {
 
-		/*string*/ function formatCss(/*string*/ b, /*string*/ v) {
-			/*const string*/ var PREFIX = " ua-", i;
-
-			/*string*/ var css = PREFIX+b;
-			if (v) {
-				v = v.replace(/\./g, '-');
-				i = v.indexOf('-');
-				while (i > 0) {
-					// loop through chopping last '-' to end off
-					// concat result onto return string
-					css += PREFIX+b+'-'+v.substring(0, i);
-					i = v.indexOf('-', i+1);
-				}
-				css += PREFIX+b+'-'+v;
-			}
-			return css;
-		}
-
 		// using JavaScript closures to access the parsed UA
-		/*void*/ function appendCss() {
-			var uaCss = document.body.className;
-
-			for (var b in fxua) {
-				if (b && fxua.hasOwnProperty(b)) {
-					JsonFx.userAgent[b] = fxua[b];
-					uaCss += formatCss(b, fxua[b]);
-				}
-			}
-
-			// assign user-agent classes
-			document.body.className = uaCss;
-		}
-
 		// using setTimeout to poll until body exists
 		/*void*/ function appendCssPoll() {
 
 			if (!document.body) {
 				setTimeout(appendCssPoll, 10);
 			} else {
-				appendCss();
+				document.body.className += JsonFx.formatCssUserAgent(fxua);
 			}
 		}
 
