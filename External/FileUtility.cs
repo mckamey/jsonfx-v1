@@ -33,7 +33,7 @@ using System.IO;
 
 namespace BuildTools.IO
 {
-	internal class FileUtility
+	public class FileUtility
 	{
 		#region Methods
 
