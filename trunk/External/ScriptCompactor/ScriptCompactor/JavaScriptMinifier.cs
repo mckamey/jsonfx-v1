@@ -44,10 +44,11 @@ namespace JavaScriptSupport
 		int theB;
 		int theLookahead = EOF;
 
+		bool isSafe = false;
 		int lastWritten = EOF;
 		bool suppress(int c)
 		{
-			if (c == '\n')
+			if (isSafe && c == '\n')
 			{
 				switch (lastWritten)
 				{
@@ -95,8 +96,9 @@ namespace JavaScriptSupport
 		//    new JavaScriptMinifier().Minify(args[0], args[1]);
 		//}
 
-		public void Minify(TextReader src, TextWriter dst)
+		public void Minify(TextReader src, TextWriter dst, bool isLinted)
 		{
+			isSafe = isLinted;
 			using (sr = src)
 			{
 				using (sw = dst)
