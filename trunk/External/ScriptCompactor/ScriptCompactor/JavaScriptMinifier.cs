@@ -38,28 +38,28 @@ namespace JavaScriptSupport
 	{
 		const int EOF = -1;
 
-		StreamReader sr;
-		StreamWriter sw;
+		TextReader sr;
+		TextWriter sw;
 		int theA;
 		int theB;
 		int theLookahead = EOF;
 
 
-		static void Main(string[] args)
-		{
-			if (args.Length != 2)
-			{
-				Console.WriteLine("invalid arguments, 2 required, 1 in, 1 out");
-				return;
-			}
-			new JavaScriptMinifier().Minify(args[0], args[1]);
-		}
+		//static void Main(string[] args)
+		//{
+		//    if (args.Length != 2)
+		//    {
+		//        Console.WriteLine("invalid arguments, 2 required, 1 in, 1 out");
+		//        return;
+		//    }
+		//    new JavaScriptMinifier().Minify(args[0], args[1]);
+		//}
 
-		public void Minify(string src, string dst)
+		public void Minify(TextReader src, TextWriter dst)
 		{
-			using (sr = new StreamReader(src))
+			using (sr = src)
 			{
-				using (sw = new StreamWriter(dst))
+				using (sw = dst)
 				{
 					jsmin();
 				}
