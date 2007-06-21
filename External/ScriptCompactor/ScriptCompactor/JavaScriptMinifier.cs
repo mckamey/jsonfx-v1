@@ -44,6 +44,46 @@ namespace JavaScriptSupport
 		int theB;
 		int theLookahead = EOF;
 
+		int lastWritten = EOF;
+		bool suppress(int c)
+		{
+			if (c == '\n')
+			{
+				switch (lastWritten)
+				{
+					case EOF:
+					case ',':
+					case '.':
+					case ';':
+					case ':':
+					case '{':
+					case '}':
+					case '(':
+					case '[':
+					case '=':
+					case '<':
+					case '>':
+					case '?':
+					case '!':
+					case '+':
+					case '-':
+					case '*':
+					case '/':
+					case '%':
+					case '~':
+					case '^':
+					case '|':
+					case '&':
+					{
+						// suppress unnecessary line endings
+						// (as per http://jslint.com/lint.html)
+						return true;
+					}
+				}
+			}
+			lastWritten = c;
+			return false;
+		}
 
 		//static void Main(string[] args)
 		//{
@@ -333,8 +373,19 @@ namespace JavaScriptSupport
 		}
 		void put(int c)
 		{
-			sw.Write((char)c);
+			if (!suppress(c))
+			{
+				if (c == '\n')
+				{
+					sw.WriteLine();
+				}
+				else
+				{
+					sw.Write((char)c);
+				}
+			}
 		}
+
 		/* isAlphanum -- return true if the character is a letter, digit, underscore,
 				dollar sign, or non-ASCII character.
 		*/
