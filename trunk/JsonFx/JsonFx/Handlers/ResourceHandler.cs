@@ -49,7 +49,7 @@ namespace JsonFx.Handlers
 				//throw new HttpException((int)System.Net.HttpStatusCode.NotFound, "Invalid path");
 				this.OutputTargetFile(context);
 			}
-			else
+			else if (input != Stream.Null)
 			{
 				this.BufferedWrite(context, input);
 			}
@@ -67,6 +67,12 @@ namespace JsonFx.Handlers
 
 		#region ResourceHandler Members
 
+		/// <summary>
+		/// Determines the appropriate source stream for the incomming request
+		/// </summary>
+		/// <param name="context"></param>
+		/// <param name="isDebug"></param>
+		/// <returns></returns>
 		protected virtual Stream GetResourceStream(HttpContext context, bool isDebug)
 		{
 			string virtualPath = context.Request.AppRelativeCurrentExecutionFilePath;
@@ -78,17 +84,32 @@ namespace JsonFx.Handlers
 			string resourcePath = isDebug ? info.ResourceName : info.CompactResourceName;
 
 			Assembly assembly = BuildManager.GetCompiledAssembly(virtualPath);
+
+			// check if client has cached copy
+			EmbeddedResourceETag eTag = new EmbeddedResourceETag(assembly, resourcePath);
+			if (eTag.HandleETag(context))
+			{
+				return Stream.Null;
+			}
+
 			return assembly.GetManifestResourceStream(resourcePath);
 		}
 
-		protected virtual void OutputTargetFile(HttpContext context)
+		protected void OutputTargetFile(HttpContext context)
 		{
-			context.Response.TransmitFile(context.Request.PhysicalPath);
+			string fileName = context.Request.PhysicalPath;
 
-			//using (StreamReader reader = File.OpenText(context.Request.PhysicalPath))
-			//{
-			//    this.BufferedWrite(context, reader);
-			//}
+			// check if client has cached copy
+			FileETag eTag = new FileETag(fileName);
+			if (!eTag.HandleETag(context))
+			{
+				context.Response.TransmitFile(fileName);
+
+				//using (StreamReader reader = File.OpenText(fileName))
+				//{
+				//    this.BufferedWrite(context, reader);
+				//}
+			}
 		}
 
 		protected void BufferedWrite(HttpContext context, Stream input)

@@ -30,7 +30,10 @@ namespace JsonFx.Handlers
 		}
 
 		#endregion Properties
+	}
 
+	public class JsonFxScriptHandler : ClientScriptHandler
+	{
 		#region Handler Members
 
 		protected override Stream GetResourceStream(HttpContext context, bool isDebug)
@@ -41,17 +44,25 @@ namespace JsonFx.Handlers
 			}
 
 			string virtualPath = context.Request.FilePath;
-			string script = isDebug ? ClientScriptHandler.ScriptPath : ClientScriptHandler.CompactedScriptPath;
-			script += Path.GetFileNameWithoutExtension(virtualPath)+this.ResourceExtension;
+			string resourcePath = isDebug ? ClientScriptHandler.ScriptPath : ClientScriptHandler.CompactedScriptPath;
+			resourcePath += Path.GetFileNameWithoutExtension(virtualPath)+this.ResourceExtension;
 
 			Assembly assembly = Assembly.GetAssembly(typeof(ClientScriptHandler));
-			Stream input = assembly.GetManifestResourceStream(script);
-			if (input == null)
+			ManifestResourceInfo info = assembly.GetManifestResourceInfo(resourcePath);
+			if (info == null)
 			{
-				return base.GetResourceStream(context, isDebug);
+				// file does not exist in Assembly
+				throw new FileNotFoundException("Invalid file path");
 			}
 
-			return input;
+			// check if client has cached copy
+			EmbeddedResourceETag eTag = new EmbeddedResourceETag(assembly, resourcePath);
+			if (eTag.HandleETag(context))
+			{
+				return Stream.Null;
+			}
+
+			return assembly.GetManifestResourceStream(resourcePath);
 		}
 
 		#endregion Handler Members
