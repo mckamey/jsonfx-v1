@@ -84,34 +84,26 @@ namespace JsonFx.Handlers
 
 		protected override void Render(HtmlTextWriter writer)
 		{
-			try
+			if (this.userControl != null)
 			{
-				if (this.userControl != null)
+				if (this.userControl.Controls.Count > 1)
 				{
-					if (this.userControl.Controls.Count > 1)
-					{
-						writer.RenderBeginTag(HtmlTextWriterTag.Div);
+					writer.RenderBeginTag(HtmlTextWriterTag.Div);
 
-						this.userControl.RenderControl(writer);
+					this.userControl.RenderControl(writer);
 
-						writer.RenderEndTag();//Div
-					}
-					else
-					{
-						this.userControl.RenderControl(writer);
-					}
+					writer.RenderEndTag();//Div
 				}
-			}
-			finally
-			{
-				writer.Close();
+				else
+				{
+					this.userControl.RenderControl(writer);
+				}
 			}
 		}
 
 		public override void VerifyRenderingInServerForm(Control control)
 		{
 			// suppress this check since we aren't actually rendering the form
-			//base.VerifyRenderingInServerForm(control);
 		}
 
 		#endregion Page Events
