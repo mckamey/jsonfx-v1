@@ -2,7 +2,9 @@ using System;
 using System.IO;
 using System.Text;
 using System.Net;
+using System.Reflection;
 using System.Security.Cryptography;
+using System.Security.Policy;
 
 namespace JsonFx.Handlers
 {
@@ -17,44 +19,31 @@ namespace JsonFx.Handlers
 		#region Constants
 
 		public const HttpResponseHeader HttpHeader = HttpResponseHeader.ETag;
+		private static readonly MD5 MD5HashProvider = MD5.Create();
 
 		#endregion Constants
 
 		#region Fields
 
-		private readonly string value;
+		private string value = null;
 
 		#endregion Fields
 
-		#region Init
-
-		/// <summary>
-		/// Ctor
-		/// </summary>
-		/// <param name="entity"></param>
-		public ETag(object entity)
-		{
-			this.value = this.Generator.GetETag(entity);
-		}
-
-		#endregion Init
-
 		#region Properties
-
-		/// <summary>
-		/// Gets the algorithm to use for generating the ETag
-		/// </summary>
-		protected abstract IETagAlgorithm Generator
-		{
-			get;
-		}
 
 		/// <summary>
 		/// Gets the ETag value for the associated entity
 		/// </summary>
 		public string Value
 		{
-			get { return this.value; }
+			get
+			{
+				if (this.value == null)
+				{
+					this.value = this.CalculateETag();
+				}
+				return this.value;
+			}
 		}
 
 		#endregion Properties
@@ -62,16 +51,103 @@ namespace JsonFx.Handlers
 		#region Methods
 
 		/// <summary>
-		/// Allows ETag implementors to pre-process entity into metadata
+		/// Provides an algorithm for generating an HTTP/1.1 Cache header Entity Tag (ETag)
 		/// </summary>
-		/// <param name="entity"></param>
-		/// <returns>entity metadata</returns>
-		protected virtual object GetMetaData(object entity)
+		/// <returns>the value used to generate the ETag</returns>
+		/// <remarks>
+		/// GetMetaData must return String, Byte[], or Stream
+		/// </remarks>
+		protected abstract object GetMetaData();
+
+		/// <summary>
+		/// Sets ETag.Value
+		/// </summary>
+		/// <param name="Entity"></param>
+		private string CalculateETag()
 		{
-			return entity;
+			object metaData = this.GetMetaData();
+
+			string etag;
+			if (metaData is string)
+			{
+				etag = ETag.MD5Hash((string)metaData);
+			}
+			else if (metaData is byte[])
+			{
+				etag = ETag.MD5Hash((byte[])metaData);
+			}
+			else if (metaData is Stream)
+			{
+				etag = ETag.MD5Hash((Stream)metaData);
+			}
+			else
+			{
+				throw new NotSupportedException("GetMetaData must return String, Byte[], or Stream");
+			}
+
+			return etag;
 		}
 
 		#endregion Methods
+
+		#region Utility Methods
+
+		/// <summary>
+		/// Generates a unique MD5 hash from string
+		/// </summary>
+		/// <param name="value"></param>
+		/// <returns></returns>
+		protected static string MD5Hash(string value)
+		{
+			// get String as a Byte[]
+			byte[] buffer = Encoding.Unicode.GetBytes(value);
+
+			return ETag.MD5Hash(buffer);
+		}
+
+		/// <summary>
+		/// Generates a unique MD5 hash from Stream
+		/// </summary>
+		/// <param name="value"></param>
+		/// <returns></returns>
+		protected static string MD5Hash(Stream value)
+		{
+			// generate MD5 hash
+			byte[] hash = MD5HashProvider.ComputeHash(value);
+
+			// convert hash to Base64 string
+			return ETag.Base64Encode(hash);
+		}
+
+		/// <summary>
+		/// Generates a unique MD5 hash from byte[]
+		/// </summary>
+		/// <param name="buffer"></param>
+		/// <returns></returns>
+		protected static string MD5Hash(byte[] value)
+		{
+			// generate MD5 hash
+			byte[] hash = MD5HashProvider.ComputeHash(value);
+
+			// convert hash to Base64 string
+			return ETag.Base64Encode(hash);
+		}
+
+		/// <summary>
+		/// Converts Byte[] to trimed Base64 String
+		/// </summary>
+		/// <param name="hash"></param>
+		/// <returns></returns>
+		protected static string Base64Encode(byte[] hash)
+		{
+			// convert hash to Base64 string
+			string base64 = Convert.ToBase64String(hash, Base64FormattingOptions.None);
+
+			// trim value-less padding chars
+			return base64.Trim('=');
+		}
+
+		#endregion Utility Methods
 	}
 
 	/// <summary>
@@ -84,7 +160,7 @@ namespace JsonFx.Handlers
 	{
 		#region Fields
 
-		private static MD5ETagAlgorithm MD5Hash = new MD5ETagAlgorithm();
+		private readonly string fileName;
 
 		#endregion Fields
 
@@ -95,8 +171,8 @@ namespace JsonFx.Handlers
 		/// </summary>
 		/// <param name="fileName"></param>
 		public FileETag(string fileName)
-			: base(fileName)
 		{
+			this.fileName = fileName;
 		}
 
 		#endregion Init
@@ -104,27 +180,18 @@ namespace JsonFx.Handlers
 		#region ETag Members
 
 		/// <summary>
-		/// Gets the algorithm to use for generating the ETag
-		/// </summary>
-		protected override IETagAlgorithm Generator
-		{
-			get { return FileETag.MD5Hash; }
-		}
-
-		/// <summary>
 		/// Generates a unique ETag which changes when the file changes
 		/// </summary>
 		/// <param name="entity"></param>
 		/// <returns></returns>
-		protected override object GetMetaData(object entity)
+		protected override object GetMetaData()
 		{
-			string fileName = entity as string;
-			if (String.IsNullOrEmpty(fileName) || !File.Exists(fileName))
+			if (String.IsNullOrEmpty(this.fileName) || !File.Exists(this.fileName))
 			{
-				return entity;
+				throw new FileNotFoundException("ETag cannot be created for missing file", this.fileName);
 			}
 
-			FileInfo info = new FileInfo(fileName);
+			FileInfo info = new FileInfo(this.fileName);
 			string value = info.FullName.ToLowerInvariant();
 			value += ";"+info.Length.ToString();
 			value += ";"+info.CreationTimeUtc.Ticks.ToString();
@@ -135,131 +202,64 @@ namespace JsonFx.Handlers
 
 		#endregion ETag Members
 	}
-	
-	#region ETag Algorithms
 
 	/// <summary>
-	/// Provides an algorithm for generating an HTTP/1.1 Cache header Entity Tag (ETag)
+	/// Represents an ETag for a file on disk
 	/// </summary>
-	public interface IETagAlgorithm
-	{
-		/// <summary>
-		/// The algorithm behind generating an ETag
-		/// </summary>
-		/// <param name="entity">the entity which the ETag represents</param>
-		/// <returns>the value for the ETag</returns>
-		string GetETag(object metaData);
-	}
-
-	/// <summary>
-	/// Creates a Base64-encoded MD5-hash as the ETag
-	/// </summary>
-	public class MD5ETagAlgorithm : IETagAlgorithm
+	/// <remarks>
+	/// Generates a unique ETag which changes when the file changes
+	/// </remarks>
+	public class EmbeddedResourceETag : ETag
 	{
 		#region Fields
 
-		private static readonly MD5 MD5Hash;
+		private readonly Assembly Assembly;
+		private readonly string ResourceName;
 
 		#endregion Fields
 
 		#region Init
 
 		/// <summary>
-		/// CCtor
+		/// Ctor
 		/// </summary>
-		static MD5ETagAlgorithm()
+		/// <param name="fileName"></param>
+		public EmbeddedResourceETag(Assembly assembly, string resourceName)
 		{
-			MD5ETagAlgorithm.MD5Hash = MD5.Create();
+			this.Assembly = assembly;
+			this.ResourceName = resourceName;
 		}
 
 		#endregion Init
 
-		#region IETagGenerator Members
+		#region ETag Members
 
 		/// <summary>
-		/// Generates a unique ETag as MD5 hash from string
+		/// Generates a unique ETag which changes when the assembly changes
 		/// </summary>
-		/// <param name="value"></param>
+		/// <param name="entity"></param>
 		/// <returns></returns>
-		public string GetETag(string metaData)
+		protected override object GetMetaData()
 		{
-			// get String as a Byte[]
-			byte[] buffer = Encoding.Unicode.GetBytes(metaData);
-
-			return this.GetETag(buffer);
-		}
-
-		/// <summary>
-		/// Generates a unique ETag as MD5 hash from Stream
-		/// </summary>
-		/// <param name="value"></param>
-		/// <returns></returns>
-		public string GetETag(Stream metaData)
-		{
-			// generate MD5 hash
-			byte[] hash = MD5ETagAlgorithm.MD5Hash.ComputeHash(metaData);
-
-			// convert hash to Base64 string
-			return this.Base64Encode(hash);
-		}
-
-		/// <summary>
-		/// Generates a unique ETag as MD5 hash from byte[]
-		/// </summary>
-		/// <param name="buffer"></param>
-		/// <returns></returns>
-		public string GetETag(byte[] metaData)
-		{
-			// generate MD5 hash
-			byte[] hash = MD5ETagAlgorithm.MD5Hash.ComputeHash(metaData);
-
-			// convert hash to Base64 string
-			return this.Base64Encode(hash);
-		}
-
-		/// <summary>
-		/// Generates a unique ETag as MD5 hash
-		/// </summary>
-		/// <param name="buffer"></param>
-		/// <returns></returns>
-		public string GetETag(object metaData)
-		{
-			if (metaData is String)
+			if (this.Assembly == null)
 			{
-				return this.GetETag((String)metaData);
-			}
-			if (metaData is byte[])
-			{
-				return this.GetETag((byte[])metaData);
-			}
-			if (metaData is Stream)
-			{
-				return this.GetETag((Stream)metaData);
+				throw new NullReferenceException("ETag cannot be created for null Assembly");
 			}
 
-			throw new NotSupportedException(this.GetType().Name+" expects type of entity to be String, Byte[], or Stream");
+			if (String.IsNullOrEmpty(this.ResourceName))
+			{
+				throw new NullReferenceException("ETag cannot be created for empty ResourceName");
+			}
+
+			Hash hash = new Hash(this.Assembly);
+			Byte[] hashcode = hash.MD5;
+
+			string value = ETag.Base64Encode(hashcode);
+			value += ";"+this.ResourceName;
+
+			return value;
 		}
 
-		#endregion IETagAlgorithm Members
-
-		#region Methods
-
-		/// <summary>
-		/// Converts Byte[] to String
-		/// </summary>
-		/// <param name="hash"></param>
-		/// <returns></returns>
-		private string Base64Encode(byte[] hash)
-		{
-			// convert hash to Base64 string
-			string base64 = Convert.ToBase64String(hash, Base64FormattingOptions.None);
-
-			// trim padding chars
-			return base64.Trim('=');
-		}
-
-		#endregion Methods
+		#endregion ETag Members
 	}
-
-	#endregion ETag Algorithms
 }
