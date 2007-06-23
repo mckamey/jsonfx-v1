@@ -28,20 +28,17 @@ namespace JsonFx.Handlers
 		{
 			bool isDebug = "debug".Equals(context.Request.QueryString[null], StringComparison.InvariantCultureIgnoreCase);
 
-			context.Response.Clear();
-			context.Response.ClearContent();
 			context.Response.ClearHeaders();
 			context.Response.BufferOutput = true;
 			context.Response.ContentEncoding = System.Text.Encoding.UTF8;
 			context.Response.ContentType = this.ResourceContentType;
 
-			// this is causing issues? Transfer-Encoding: chunked
-			context.Response.AddHeader("Content-Disposition",
+			context.Response.AppendHeader(
+				"Content-Disposition",
 				"inline;filename="+Path.GetFileNameWithoutExtension(context.Request.FilePath)+this.ResourceExtension);
 
 			if (isDebug)
 			{
-				// is this causing issues? Transfer-Encoding: chunked
 				context.Response.Cache.SetCacheability(HttpCacheability.NoCache);
 			}
 
@@ -56,6 +53,9 @@ namespace JsonFx.Handlers
 			{
 				this.BufferedWrite(context, input);
 			}
+
+			// this safely ends request without causing "Transfer-Encoding: Chunked" which chokes IE6
+			context.ApplicationInstance.CompleteRequest();
 		}
 
 		bool IHttpHandler.IsReusable
@@ -99,19 +99,17 @@ namespace JsonFx.Handlers
 			}
 			using (TextReader reader = new StreamReader(input, System.Text.Encoding.UTF8))
 			{
-				using (TextWriter writer = context.Response.Output)
+				TextWriter writer = context.Response.Output;
+				// buffered write to response
+				char[] buffer = new char[ResourceHandler.BufferSize];
+				int count;
+				do
 				{
-					// buffered write to response
-					char[] buffer = new char[ResourceHandler.BufferSize];
-					int count;
-					do
-					{
-						count = reader.ReadBlock(buffer, 0, ResourceHandler.BufferSize);
-						writer.Write(buffer, 0, count);
-					} while (count > 0);
-					writer.Flush();
-					writer.Close();
-				}
+					count = reader.ReadBlock(buffer, 0, ResourceHandler.BufferSize);
+					writer.Write(buffer, 0, count);
+				} while (count > 0);
+
+				// flushing/closing the output causes "Transfer-Encoding: Chunked" which chokes IE6
 			}
 		}
 
