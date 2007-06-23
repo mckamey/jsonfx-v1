@@ -5,6 +5,7 @@ using System.Net;
 using System.Reflection;
 using System.Security.Cryptography;
 using System.Security.Policy;
+using System.Web;
 
 namespace JsonFx.Handlers
 {
@@ -12,13 +13,17 @@ namespace JsonFx.Handlers
 	/// Generates an HTTP/1.1 Cache header Entity Tag (ETag)
 	/// </summary>
 	/// <remarks>
-	/// HTTP RFC: http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.19
+	/// HTTP/1.1 RFC:
+	/// http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.19
+	/// http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.26
 	/// </remarks>
 	public abstract class ETag
 	{
 		#region Constants
 
-		public const HttpResponseHeader HttpHeader = HttpResponseHeader.ETag;
+		private static readonly string RequestHeader = "If-None-Match";
+		private static readonly string ResponseHeader = "ETag";
+		private static readonly int NotModified = (int)HttpStatusCode.NotModified;
 		private static readonly MD5 MD5HashProvider = MD5.Create();
 
 		#endregion Constants
@@ -47,6 +52,70 @@ namespace JsonFx.Handlers
 		}
 
 		#endregion Properties
+
+		#region Public Methods
+
+		/// <summary>
+		/// Verifies if the client has a cached copy of the resource.
+		/// Sets up HttpResponse appropriately.
+		/// Returns true if cached.
+		/// </summary>
+		/// <param name="eTag"></param>
+		/// <returns>true if is cached</returns>
+		public bool HandleETag(HttpContext context)
+		{
+			if (context == null)
+			{
+				throw new ArgumentNullException("request");
+			}
+
+			HttpRequest request = context.Request;
+			if (request == null)
+			{
+				throw new ArgumentNullException("context.Request");
+			}
+
+			// check request ETag
+			bool isCached = false;
+			string header = request.Headers[ETag.RequestHeader];
+			if (!String.IsNullOrEmpty(header))
+			{
+				string[] eTags = header.Split(',');
+				foreach (string eTag in eTags)
+				{
+					// Value is case-sensitive
+					if (!String.IsNullOrEmpty(eTag) &&
+						this.Value == eTag.Trim('"', ' ', '\t', '\r', '\n'))
+					{
+						isCached = true;
+						break;
+					}
+				}
+			}
+
+			// setup response ETag
+			HttpResponse response = context.Response;
+			if (response == null)
+			{
+				throw new ArgumentNullException("context.Response");
+			}
+
+			// specify ETag
+			response.AppendHeader(ETag.ResponseHeader, this.Value);
+
+			if (isCached)
+			{
+				response.ClearContent();
+				response.StatusCode = ETag.NotModified;
+
+				// this safely ends request without causing "Transfer-Encoding: Chunked" which chokes IE6
+				context.ApplicationInstance.CompleteRequest();
+			}
+
+			return isCached;
+		}
+
+		#endregion Public Methods
 
 		#region Methods
 
@@ -148,6 +217,42 @@ namespace JsonFx.Handlers
 		}
 
 		#endregion Utility Methods
+	}
+
+	public class StringETag : ETag
+	{
+		#region Fields
+
+		private readonly string Content;
+
+		#endregion Fields
+
+		#region Init
+
+		/// <summary>
+		/// Ctor
+		/// </summary>
+		/// <param name="Content"></param>
+		public StringETag(string content)
+		{
+			this.Content = content;
+		}
+
+		#endregion Init
+
+		#region ETag Members
+
+		/// <summary>
+		/// Generates a unique ETag which changes when the Content changes
+		/// </summary>
+		/// <param name="entity"></param>
+		/// <returns></returns>
+		protected override object GetMetaData()
+		{
+			return this.Content;
+		}
+
+		#endregion ETag Members
 	}
 
 	/// <summary>
