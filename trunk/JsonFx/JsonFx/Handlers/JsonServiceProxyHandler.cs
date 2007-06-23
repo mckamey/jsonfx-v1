@@ -36,9 +36,13 @@ namespace JsonFx.Handlers
 		void IHttpHandler.ProcessRequest(HttpContext context)
 		{
 			context.Response.ClearHeaders();
-			context.Response.ContentType = "application/javascript";
+			context.Response.BufferOutput = true;
 			context.Response.ContentEncoding = System.Text.Encoding.UTF8;
-			context.Response.AddHeader("Content-Disposition", String.Format("inline;filename={0}.js", this.serviceInfo.ServiceType.FullName));
+			context.Response.ContentType = "application/javascript";
+
+			context.Response.AppendHeader(
+				"Content-Disposition",
+				String.Format("inline;filename={0}.js", this.serviceInfo.ServiceType.FullName));
 
 			bool isDebug = "debug".Equals(context.Request.QueryString[null], StringComparison.InvariantCultureIgnoreCase);
 
@@ -61,6 +65,9 @@ namespace JsonFx.Handlers
 			{
 				context.Response.Output.WriteLine();
 			}
+
+			// this safely ends request without causing "Transfer-Encoding: Chunked" which chokes IE6
+			context.ApplicationInstance.CompleteRequest();
 		}
 
 		#endregion IHttpHandler Members

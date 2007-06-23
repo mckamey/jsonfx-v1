@@ -249,6 +249,9 @@ namespace JsonFx.Handlers
 					}
 				}
 			}
+
+			// this safely ends request without causing "Transfer-Encoding: Chunked" which chokes IE6
+			context.ApplicationInstance.CompleteRequest();
 		}
 
 		bool System.Web.IHttpHandler.IsReusable
