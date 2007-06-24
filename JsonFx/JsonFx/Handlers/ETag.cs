@@ -60,9 +60,22 @@ namespace JsonFx.Handlers
 		/// Sets up HttpResponse appropriately.
 		/// Returns true if cached.
 		/// </summary>
-		/// <param name="eTag"></param>
+		/// <param name="context"></param>
 		/// <returns>true if is cached</returns>
 		public bool HandleETag(HttpContext context)
+		{
+			return this.HandleETag(context, false);
+		}
+
+		/// <summary>
+		/// Verifies if the client has a cached copy of the resource.
+		/// Sets up HttpResponse appropriately.
+		/// Returns true if cached.
+		/// </summary>
+		/// <param name="context"></param>
+		/// <param name="forceRefresh"></param>
+		/// <returns>true if is cached</returns>
+		public bool HandleETag(HttpContext context, bool forceRefresh)
 		{
 			if (context == null)
 			{
@@ -78,14 +91,14 @@ namespace JsonFx.Handlers
 			// check request ETag
 			bool isCached = false;
 			string header = request.Headers[ETag.RequestHeader];
-			if (!String.IsNullOrEmpty(header))
+			if (!forceRefresh && !String.IsNullOrEmpty(header))
 			{
 				string[] eTags = header.Split(',');
 				foreach (string eTag in eTags)
 				{
 					// Value is case-sensitive
 					if (!String.IsNullOrEmpty(eTag) &&
-						this.Value == eTag.Trim('"', ' ', '\t', '\r', '\n'))
+						this.Value == eTag.Trim())
 					{
 						isCached = true;
 						break;
@@ -219,6 +232,9 @@ namespace JsonFx.Handlers
 		#endregion Utility Methods
 	}
 
+	/// <summary>
+	/// Generates an ETag for an arbitrary string.
+	/// </summary>
 	public class StringETag : ETag
 	{
 		#region Fields

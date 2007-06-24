@@ -30,28 +30,32 @@ namespace JsonFx.Handlers
 
 			context.Response.ClearHeaders();
 			context.Response.BufferOutput = true;
-			context.Response.ContentEncoding = System.Text.Encoding.UTF8;
-			context.Response.ContentType = this.ResourceContentType;
-
-			context.Response.AppendHeader(
-				"Content-Disposition",
-				"inline;filename="+Path.GetFileNameWithoutExtension(context.Request.FilePath)+this.ResourceExtension);
-
-			if (isDebug)
-			{
-				context.Response.Cache.SetCacheability(HttpCacheability.NoCache);
-			}
 
 			// specifying "DEBUG" in the query string gets the non-compacted form
 			Stream input = this.GetResourceStream(context, isDebug);
-			if (input == null)
+			if (input != Stream.Null)
 			{
-				//throw new HttpException((int)System.Net.HttpStatusCode.NotFound, "Invalid path");
-				this.OutputTargetFile(context);
-			}
-			else if (input != Stream.Null)
-			{
-				this.BufferedWrite(context, input);
+				context.Response.ContentEncoding = System.Text.Encoding.UTF8;
+				context.Response.ContentType = this.ResourceContentType;
+
+				context.Response.AppendHeader(
+					"Content-Disposition",
+					"inline;filename="+Path.GetFileNameWithoutExtension(context.Request.FilePath)+this.ResourceExtension);
+
+				if (isDebug)
+				{
+					context.Response.Cache.SetCacheability(HttpCacheability.NoCache);
+				}
+
+				if (input == null)
+				{
+					//throw new HttpException((int)System.Net.HttpStatusCode.NotFound, "Invalid path");
+					this.OutputTargetFile(context, isDebug);
+				}
+				else
+				{
+					this.BufferedWrite(context, input);
+				}
 			}
 
 			// this safely ends request without causing "Transfer-Encoding: Chunked" which chokes IE6
@@ -86,8 +90,8 @@ namespace JsonFx.Handlers
 			Assembly assembly = BuildManager.GetCompiledAssembly(virtualPath);
 
 			// check if client has cached copy
-			EmbeddedResourceETag eTag = new EmbeddedResourceETag(assembly, resourcePath);
-			if (eTag.HandleETag(context))
+			ETag eTag = new EmbeddedResourceETag(assembly, resourcePath);
+			if (eTag.HandleETag(context, isDebug))
 			{
 				return Stream.Null;
 			}
@@ -95,13 +99,13 @@ namespace JsonFx.Handlers
 			return assembly.GetManifestResourceStream(resourcePath);
 		}
 
-		protected void OutputTargetFile(HttpContext context)
+		protected void OutputTargetFile(HttpContext context, bool isDebug)
 		{
 			string fileName = context.Request.PhysicalPath;
 
 			// check if client has cached copy
-			FileETag eTag = new FileETag(fileName);
-			if (!eTag.HandleETag(context))
+			ETag eTag = new FileETag(fileName);
+			if (!eTag.HandleETag(context, isDebug))
 			{
 				context.Response.TransmitFile(fileName);
 

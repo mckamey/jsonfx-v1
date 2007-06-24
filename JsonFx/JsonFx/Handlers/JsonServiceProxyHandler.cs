@@ -35,35 +35,43 @@ namespace JsonFx.Handlers
 
 		void IHttpHandler.ProcessRequest(HttpContext context)
 		{
-			context.Response.ClearHeaders();
-			context.Response.BufferOutput = true;
-			context.Response.ContentEncoding = System.Text.Encoding.UTF8;
-			context.Response.ContentType = "application/javascript";
-
-			context.Response.AppendHeader(
-				"Content-Disposition",
-				String.Format("inline;filename={0}.js", this.serviceInfo.ServiceType.FullName));
-
 			bool isDebug = "debug".Equals(context.Request.QueryString[null], StringComparison.InvariantCultureIgnoreCase);
 
-			string proxyScript = isDebug ? this.serviceInfo.DebugProxy :  this.serviceInfo.Proxy;
-			if (String.IsNullOrEmpty(proxyScript))
+			context.Response.Clear();
+			context.Response.BufferOutput = true;
+
+			// check if client has cached copy
+			ETag eTag = new EmbeddedResourceETag(// should this be StringETag?
+				this.serviceInfo.ServiceType.Assembly,
+				this.serviceInfo.ServiceType.FullName);
+			if (!eTag.HandleETag(context, isDebug))
 			{
-				// if wasn't generated, generate on the fly with reflection
-				JsonServiceDescription desc = new JsonServiceDescription(this.serviceInfo.ServiceType, this.serviceUrl);
-				JsonServiceProxyGenerator proxy = new JsonServiceProxyGenerator(desc);
-				proxy.OutputProxy(context.Response.Output, isDebug);
-			}
-			else
-			{
-				// use generated code
-				context.Response.Output.Write(proxyScript);
-			}
-			context.Response.Output.Write(this.serviceUrl);
-			context.Response.Output.Write(JsonServiceProxyGenerator.ProxyEnd);
-			if (isDebug)
-			{
-				context.Response.Output.WriteLine();
+				context.Response.ContentEncoding = System.Text.Encoding.UTF8;
+				context.Response.ContentType = "application/javascript";
+
+				context.Response.AppendHeader(
+					"Content-Disposition",
+					String.Format("inline;filename={0}.js", this.serviceInfo.ServiceType.FullName));
+
+				string proxyScript = isDebug ? this.serviceInfo.DebugProxy :  this.serviceInfo.Proxy;
+				if (String.IsNullOrEmpty(proxyScript))
+				{
+					// if wasn't generated, generate on the fly with reflection
+					JsonServiceDescription desc = new JsonServiceDescription(this.serviceInfo.ServiceType, this.serviceUrl);
+					JsonServiceProxyGenerator proxy = new JsonServiceProxyGenerator(desc);
+					proxy.OutputProxy(context.Response.Output, isDebug);
+				}
+				else
+				{
+					// use generated code
+					context.Response.Output.Write(proxyScript);
+				}
+				context.Response.Output.Write(this.serviceUrl);
+				context.Response.Output.Write(JsonServiceProxyGenerator.ProxyEnd);
+				if (isDebug)
+				{
+					context.Response.Output.WriteLine();
+				}
 			}
 
 			// this safely ends request without causing "Transfer-Encoding: Chunked" which chokes IE6
