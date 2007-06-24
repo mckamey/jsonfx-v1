@@ -56,8 +56,8 @@ namespace JsonFx.Handlers
 			}
 
 			// check if client has cached copy
-			EmbeddedResourceETag eTag = new EmbeddedResourceETag(assembly, resourcePath);
-			if (eTag.HandleETag(context))
+			ETag eTag = new EmbeddedResourceETag(assembly, resourcePath);
+			if (eTag.HandleETag(context, isDebug))
 			{
 				return Stream.Null;
 			}
