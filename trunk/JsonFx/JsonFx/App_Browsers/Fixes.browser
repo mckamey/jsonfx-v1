@@ -61,6 +61,18 @@
 		</capabilities>
 	</browser>
 
+	<!--Gecko --> 
+	<browser refID="Gecko"> 
+		<capture> 
+			<userAgent match="\brv\:(?'rv'\d+(\.\d+)+)" /> 
+			<header match="^(?'accept'.*)$" name="Accept" /> 
+		</capture> 
+		<capabilities> 
+			<capability name="accept" value="${accept}" /> 
+			<capability name="renderengine" value="gecko/${rv}" /> 
+		</capabilities> 
+	</browser>
+
 	<!-- Safari -->
 	<browser refID="Safari">
 		<capture>
