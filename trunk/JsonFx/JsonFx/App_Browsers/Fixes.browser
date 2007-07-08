@@ -42,7 +42,7 @@
 		</identification>
 
 		<capture>
-			<userAgent match="^W3C_Validator/(?'version'(?'major'\d+)\.(?'minor'\d+)(\.(?'release'\d+))?(\.(?'build'\d+))?)" />
+			<userAgent match="^W3C_Validator/(?'version'\d+(\.\d+)*)" />
 		</capture>
 
 		<capabilities>
@@ -64,19 +64,19 @@
 	<!--Gecko --> 
 	<browser refID="Gecko"> 
 		<capture> 
-			<userAgent match="\brv\:(?'rv'\d+(\.\d+)+)" /> 
+			<userAgent match="\brv\:(?'rv'\d+(\.\d+)*)" /> 
 			<header match="^(?'accept'.*)$" name="Accept" /> 
 		</capture> 
 		<capabilities> 
 			<capability name="accept" value="${accept}" /> 
-			<capability name="renderengine" value="gecko/${rv}" /> 
+			<capability name="renderEngine" value="gecko/${rv}" /> 
 		</capabilities> 
 	</browser>
 
 	<!-- Safari -->
 	<browser refID="Safari">
 		<capture>
-			<userAgent match="Safari/(?'version'(?'major'\d+)(\.(?'minor'\d+))?)" />
+			<userAgent match="Safari/(?'version'(?'major'\d+)(\.\d+)*)" />
 			<header match="^(?'accept'.*)$" name="Accept" />
 		</capture>
 
