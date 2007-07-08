@@ -17,8 +17,8 @@ namespace JsonFx.Handlers
 			context.Response.Clear();
 
 			// check if client has cached copy
-			ETag eTag = new StringETag(response);
-			if (!eTag.HandleETag(context))
+			ETag etag = new StringETag(response);
+			if (!etag.HandleETag(context))
 			{
 				context.Response.ContentType = "text/plain";
 				context.Response.AddHeader("Content-Disposition", "inline;filename=Echo.txt");
@@ -32,9 +32,6 @@ namespace JsonFx.Handlers
 					context.Response.Write("\0");
 				}
 			}
-
-			// this safely ends request without causing "Transfer-Encoding: Chunked" which chokes IE6
-			context.ApplicationInstance.CompleteRequest();
 		}
 
 		bool IHttpHandler.IsReusable

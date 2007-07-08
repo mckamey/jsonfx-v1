@@ -57,9 +57,6 @@ namespace JsonFx.Handlers
 					this.BufferedWrite(context, input);
 				}
 			}
-
-			// this safely ends request without causing "Transfer-Encoding: Chunked" which chokes IE6
-			context.ApplicationInstance.CompleteRequest();
 		}
 
 		bool IHttpHandler.IsReusable
@@ -90,8 +87,8 @@ namespace JsonFx.Handlers
 			Assembly assembly = BuildManager.GetCompiledAssembly(virtualPath);
 
 			// check if client has cached copy
-			ETag eTag = new EmbeddedResourceETag(assembly, resourcePath);
-			if (eTag.HandleETag(context, isDebug))
+			ETag etag = new EmbeddedResourceETag(assembly, resourcePath);
+			if (etag.HandleETag(context, isDebug))
 			{
 				return Stream.Null;
 			}
@@ -104,8 +101,8 @@ namespace JsonFx.Handlers
 			string fileName = context.Request.PhysicalPath;
 
 			// check if client has cached copy
-			ETag eTag = new FileETag(fileName);
-			if (!eTag.HandleETag(context, isDebug))
+			ETag etag = new FileETag(fileName);
+			if (!etag.HandleETag(context, isDebug))
 			{
 				context.Response.TransmitFile(fileName);
 

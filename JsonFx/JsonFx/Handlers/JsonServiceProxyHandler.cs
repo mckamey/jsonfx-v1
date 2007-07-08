@@ -41,10 +41,10 @@ namespace JsonFx.Handlers
 			context.Response.BufferOutput = true;
 
 			// check if client has cached copy
-			ETag eTag = new EmbeddedResourceETag(// should this be StringETag?
+			ETag etag = new EmbeddedResourceETag(// should this be StringETag?
 				this.serviceInfo.ServiceType.Assembly,
 				this.serviceInfo.ServiceType.FullName);
-			if (!eTag.HandleETag(context, isDebug))
+			if (!etag.HandleETag(context, isDebug))
 			{
 				context.Response.ContentEncoding = System.Text.Encoding.UTF8;
 				context.Response.ContentType = "application/javascript";
@@ -73,9 +73,6 @@ namespace JsonFx.Handlers
 					context.Response.Output.WriteLine();
 				}
 			}
-
-			// this safely ends request without causing "Transfer-Encoding: Chunked" which chokes IE6
-			context.ApplicationInstance.CompleteRequest();
 		}
 
 		#endregion IHttpHandler Members

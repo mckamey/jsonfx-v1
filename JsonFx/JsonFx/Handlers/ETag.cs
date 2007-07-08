@@ -93,12 +93,11 @@ namespace JsonFx.Handlers
 			string header = request.Headers[ETag.RequestHeader];
 			if (!forceRefresh && !String.IsNullOrEmpty(header))
 			{
-				string[] eTags = header.Split(',');
-				foreach (string eTag in eTags)
+				string[] etags = header.Split(',');
+				foreach (string etag in etags)
 				{
 					// Value is case-sensitive
-					if (!String.IsNullOrEmpty(eTag) &&
-						this.Value == eTag.Trim())
+					if (this.ETagsEqual(this.Value, etag))
 					{
 						isCached = true;
 						break;
@@ -115,6 +114,7 @@ namespace JsonFx.Handlers
 
 			// specify ETag
 			response.AppendHeader(ETag.ResponseHeader, this.Value);
+			//response.Cache.SetETag(this.Value);
 
 			if (isCached)
 			{
@@ -173,6 +173,33 @@ namespace JsonFx.Handlers
 		#endregion Methods
 
 		#region Utility Methods
+
+		/// <summary>
+		/// see System.Web.StaticFileHandler
+		/// </summary>
+		/// <param name="etag1"></param>
+		/// <param name="etag2"></param>
+		/// <returns></returns>
+		private bool ETagsEqual(string etag1, string etag2)
+		{
+			if (String.IsNullOrEmpty(etag1) || String.IsNullOrEmpty(etag2))
+			{
+				return false;
+			}
+			etag1 = etag1.Trim();
+			etag2 = etag2.Trim();
+
+			if (etag1.Equals("*") || etag2.Equals("*"))
+				return true;
+
+			if (etag1.StartsWith("W/"))
+				etag1 = etag1.Substring(2);
+
+			if (etag2.StartsWith("W/"))
+				etag2 = etag2.Substring(2);
+
+			return etag2.Equals(etag1);
+		}
 
 		/// <summary>
 		/// Generates a unique MD5 hash from string
