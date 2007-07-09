@@ -6,6 +6,7 @@ using System.Reflection;
 using System.Security.Cryptography;
 using System.Security.Policy;
 using System.Web;
+using System.Globalization;
 
 namespace JsonFx.Handlers
 {
@@ -16,13 +17,17 @@ namespace JsonFx.Handlers
 	/// HTTP/1.1 RFC:
 	/// http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.19
 	/// http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.26
+	/// http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.25
+	/// http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.29
 	/// </remarks>
 	public abstract class ETag
 	{
 		#region Constants
 
-		private static readonly string RequestHeader = "If-None-Match";
-		private static readonly string ResponseHeader = "ETag";
+		private static readonly string RequestETagHeader = "If-None-Match";
+		private static readonly string ResponseETagHeader = "ETag";
+		private static readonly string RequestDateHeader = "If-Modified-Since";
+		private static readonly string ResponseDateHeader = "Last-Modified";
 		private static readonly int NotModified = (int)HttpStatusCode.NotModified;
 		private static readonly MD5 MD5HashProvider = MD5.Create();
 
@@ -31,6 +36,7 @@ namespace JsonFx.Handlers
 		#region Fields
 
 		private string value = null;
+		private DateTime? lastModified = null;
 
 		#endregion Fields
 
@@ -51,6 +57,31 @@ namespace JsonFx.Handlers
 			}
 		}
 
+		/// <summary>
+		/// Gets the UTC Last-Modified date for the resource. Returns DateTime.MinValue if does not apply.
+		/// </summary>
+		protected DateTime LastModifiedUtc
+		{
+			get
+			{
+				if (!this.lastModified.HasValue)
+				{
+					DateTime time = this.GetLastModified();
+					if (time > DateTime.MinValue)
+					{
+						time = time.ToUniversalTime();
+						if (time > DateTime.UtcNow)
+						{
+							time = DateTime.UtcNow;
+						}
+						time = new DateTime(time.Year, time.Month, time.Day, time.Hour, time.Minute, time.Second, DateTimeKind.Utc);
+					}
+					this.lastModified = time;
+				}
+				return this.lastModified.Value;
+			}
+		}
+
 		#endregion Properties
 
 		#region Public Methods
@@ -64,7 +95,7 @@ namespace JsonFx.Handlers
 		/// <returns>true if is cached</returns>
 		public bool HandleETag(HttpContext context)
 		{
-			return this.HandleETag(context, false);
+			return this.HandleETag(context, HttpCacheability.ServerAndPrivate, false);
 		}
 
 		/// <summary>
@@ -73,27 +104,45 @@ namespace JsonFx.Handlers
 		/// Returns true if cached.
 		/// </summary>
 		/// <param name="context"></param>
+		/// <param name="cacheability"></param>
+		/// <returns>true if is cached</returns>
+		public bool HandleETag(HttpContext context, HttpCacheability cacheability)
+		{
+			return this.HandleETag(context, cacheability, false);
+		}
+
+		/// <summary>
+		/// Verifies if the client has a cached copy of the resource.
+		/// Sets up HttpResponse appropriately.
+		/// Returns true if cached.
+		/// </summary>
+		/// <param name="context"></param>
+		/// <param name="cacheability"></param>
 		/// <param name="forceRefresh"></param>
 		/// <returns>true if is cached</returns>
-		public bool HandleETag(HttpContext context, bool forceRefresh)
+		public bool HandleETag(HttpContext context, HttpCacheability cacheability, bool forceRefresh)
 		{
 			if (context == null)
 			{
 				throw new ArgumentNullException("request");
 			}
-
 			HttpRequest request = context.Request;
 			if (request == null)
 			{
 				throw new ArgumentNullException("context.Request");
 			}
+			HttpResponse response = context.Response;
+			if (response == null)
+			{
+				throw new ArgumentNullException("context.Response");
+			}
 
 			// check request ETag
 			bool isCached = false;
-			string header = request.Headers[ETag.RequestHeader];
-			if (!forceRefresh && !String.IsNullOrEmpty(header))
+			string requestETag = request.Headers[ETag.RequestETagHeader];
+			if (!forceRefresh && !String.IsNullOrEmpty(requestETag))
 			{
-				string[] etags = header.Split(',');
+				string[] etags = requestETag.Split(',');
 				foreach (string etag in etags)
 				{
 					// Value is case-sensitive
@@ -105,17 +154,34 @@ namespace JsonFx.Handlers
 				}
 			}
 
-			// setup response ETag
-			HttpResponse response = context.Response;
-			if (response == null)
+			// check request last-modified date
+			DateTime lastModified = this.LastModifiedUtc;
+			string entityDate = this.FormatTimeHeader(lastModified);
+			if (!forceRefresh && !isCached && !String.IsNullOrEmpty(entityDate))
 			{
-				throw new ArgumentNullException("context.Response");
+				// do exact string comparison first
+				string clientDate = request.Headers[ETag.RequestDateHeader];
+				if (entityDate.Equals(clientDate))
+				{
+					isCached = true;
+				}
+				else
+				{
+					// compare as DateTimes
+					DateTime clientDateTime;
+					if (DateTime.TryParse(clientDate, CultureInfo.InvariantCulture,
+						DateTimeStyles.AdjustToUniversal, out clientDateTime))
+					{
+						isCached = (lastModified <= clientDateTime);
+					}
+				}
 			}
 
-			// specify ETag
-			response.AppendHeader(ETag.ResponseHeader, this.Value);
-			//response.Cache.SetETag(this.Value);
+			// specify ETag header
+			response.Cache.SetETag(this.Value);
+			response.AppendHeader(ETag.ResponseETagHeader, this.Value);
 
+			// setup response
 			if (isCached)
 			{
 				response.ClearContent();
@@ -124,6 +190,18 @@ namespace JsonFx.Handlers
 				// this safely ends request without causing "Transfer-Encoding: Chunked" which chokes IE6
 				context.ApplicationInstance.CompleteRequest();
 			}
+			else
+			{
+				if (!String.IsNullOrEmpty(entityDate))
+				{
+					// specify Last-Modified header
+					response.Cache.SetLastModified(lastModified);
+					response.AddHeader(ETag.ResponseDateHeader, entityDate);
+				}
+			}
+
+			// this is needed otherwise other headers aren't set
+			context.Response.Cache.SetCacheability(cacheability);
 
 			return isCached;
 		}
@@ -140,6 +218,15 @@ namespace JsonFx.Handlers
 		/// GetMetaData must return String, Byte[], or Stream
 		/// </remarks>
 		protected abstract object GetMetaData();
+
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <returns>DateTime.MinValue if does not apply</returns>
+		protected virtual DateTime GetLastModified()
+		{
+			return DateTime.MinValue;
+		}
 
 		/// <summary>
 		/// Sets ETag.Value
@@ -167,12 +254,25 @@ namespace JsonFx.Handlers
 				throw new NotSupportedException("GetMetaData must return String, Byte[], or Stream");
 			}
 
-			return etag;
+			return "\""+etag+"\"";
 		}
 
 		#endregion Methods
 
 		#region Utility Methods
+
+		/// <summary>
+		/// Converts a DateTime to a valid header string
+		/// </summary>
+		/// <returns>null if DateTime.MinValue</returns>
+		private string FormatTimeHeader(DateTime time)
+		{
+			if (DateTime.MinValue.Equals(time))
+			{
+				return null;
+			}
+			return time.ToString("R");
+		}
 
 		/// <summary>
 		/// see System.Web.StaticFileHandler
@@ -308,7 +408,7 @@ namespace JsonFx.Handlers
 	{
 		#region Fields
 
-		private readonly string fileName;
+		private readonly FileInfo info;
 
 		#endregion Fields
 
@@ -320,7 +420,12 @@ namespace JsonFx.Handlers
 		/// <param name="fileName"></param>
 		public FileETag(string fileName)
 		{
-			this.fileName = fileName;
+			if (String.IsNullOrEmpty(fileName) || !File.Exists(fileName))
+			{
+				throw new FileNotFoundException("ETag cannot be created for missing file", fileName);
+			}
+
+			this.info = new FileInfo(fileName);
 		}
 
 		#endregion Init
@@ -334,18 +439,20 @@ namespace JsonFx.Handlers
 		/// <returns></returns>
 		protected override object GetMetaData()
 		{
-			if (String.IsNullOrEmpty(this.fileName) || !File.Exists(this.fileName))
-			{
-				throw new FileNotFoundException("ETag cannot be created for missing file", this.fileName);
-			}
-
-			FileInfo info = new FileInfo(this.fileName);
-			string value = info.FullName.ToLowerInvariant();
-			value += ";"+info.Length.ToString();
-			value += ";"+info.CreationTimeUtc.Ticks.ToString();
-			value += ";"+info.LastWriteTimeUtc.Ticks.ToString();
+			string value = this.info.FullName.ToLowerInvariant();
+			value += ";"+this.info.Length.ToString();
+			value += ";"+this.info.CreationTimeUtc.Ticks.ToString();
+			value += ";"+this.info.LastWriteTimeUtc.Ticks.ToString();
 
 			return value;
+		}
+
+		/// <summary>
+		/// Gets the LastWriteTimeUtc time associated with the file
+		/// </summary>
+		protected override DateTime GetLastModified()
+		{
+			return this.info.LastWriteTimeUtc;
 		}
 
 		#endregion ETag Members

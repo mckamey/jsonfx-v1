@@ -44,7 +44,7 @@ namespace JsonFx.Handlers
 			ETag etag = new EmbeddedResourceETag(// should this be StringETag?
 				this.serviceInfo.ServiceType.Assembly,
 				this.serviceInfo.ServiceType.FullName);
-			if (!etag.HandleETag(context, isDebug))
+			if (!etag.HandleETag(context, HttpCacheability.ServerAndPrivate, isDebug))
 			{
 				context.Response.ContentEncoding = System.Text.Encoding.UTF8;
 				context.Response.ContentType = "application/javascript";
