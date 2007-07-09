@@ -542,11 +542,20 @@ JsonFx.UI.Bindings = function() {
 		}
 	};
 
+/* NOTE: using JsonFx.UI.attachHandler makes it hard to control handler order */
 	// wire up binding
-	JsonFx.UI.attachHandler(window, "load", b.bindAll);
+	if ("function" === typeof window.onload) {
+		window.onload = JsonFx.UI.combineHandlers(b.bindAll, window.onload);
+	} else {
+		window.onload = b.bindAll;
+	}
 
 	// wire up unbinding
-	JsonFx.UI.attachHandler(window, "unload", b.unbindAll);
+	if ("function" === typeof window.onunload) {
+		window.onunload = JsonFx.UI.combineHandlers(b.unbindAll, window.onunload);
+	} else {
+		window.onunload = b.unbindAll;
+	}
 };
 
 // instantiate only one, destroying the constructor
