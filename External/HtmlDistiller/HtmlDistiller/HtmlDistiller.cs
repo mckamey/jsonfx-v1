@@ -33,6 +33,8 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Text;
 
+using BuildTools.HtmlDistiller.Filters;
+
 namespace BuildTools.HtmlDistiller
 {
 	/// <summary>

@@ -32,6 +32,8 @@ using System;
 using System.Text;
 using System.Collections.Generic;
 
+using BuildTools.HtmlDistiller.Filters;
+
 namespace BuildTools.HtmlDistiller
 {
 	#region HtmlTagType
