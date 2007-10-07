@@ -44,7 +44,7 @@ namespace BuildTools.HtmlDistiller.Filters
 		/// </summary>
 		/// <param name="tag">tag name</param>
 		/// <returns></returns>
-		bool FilterTag(string tag);
+		bool FilterTag(HtmlTag tag);
 
 		/// <summary>
 		/// Filters attributes
@@ -79,7 +79,7 @@ namespace BuildTools.HtmlDistiller.Filters
 		/// </summary>
 		/// <param name="tag"></param>
 		/// <returns></returns>
-		public virtual bool FilterTag(string tag)
+		public virtual bool FilterTag(HtmlTag tag)
 		{
 			return false;
 		}
@@ -123,44 +123,28 @@ namespace BuildTools.HtmlDistiller.Filters
 		/// </summary>
 		/// <param name="tag"></param>
 		/// <returns></returns>
-		public virtual bool FilterTag(string tag)
+		public virtual bool FilterTag(HtmlTag tag)
 		{
-			tag = tag.ToLowerInvariant();
-			return
-				(tag == "a") ||
-				(tag == "b") ||
-				(tag == "blink") ||
-				(tag == "blockquote") ||
-                (tag == "br") ||
-                (tag == "center") ||
-                (tag == "dd") ||
-                (tag == "dl") ||
-                (tag == "dt") ||
-                (tag == "em") ||
-                (tag == "font") ||
-                (tag == "h1") ||
-                (tag == "h2") ||
-                (tag == "h3") ||
-                (tag == "h4") ||
-                (tag == "h5") ||
-                (tag == "h6") ||
-                (tag == "hr") ||
-                (tag == "i") ||
-                (tag == "img") ||
-                (tag == "ol") ||
-                (tag == "li") ||
-                (tag == "p") ||
-                (tag == "span") ||
-                (tag == "strong") ||
-                (tag == "table") ||
-                (tag == "tbody") ||
-                (tag == "td") ||
-                (tag == "thead") ||
-                (tag == "th") ||
-                (tag == "tr") ||
-                (tag == "tt") ||
-				(tag == "u") ||
-                (tag == "ul");
+			// whitelist of safe tags
+			switch (tag.TagName)
+			{
+				case "a":
+				case "b":
+				case "blockquote":
+				case "br":
+				case "em":
+				case "i":
+				case "img":
+				case "li":
+				case "ol":
+				case "strong":
+				case "u":
+				case "ul":
+				{
+					return true;
+				}
+			}
+			return false;
 		}
 
 		/// <summary>
@@ -173,30 +157,37 @@ namespace BuildTools.HtmlDistiller.Filters
 		public virtual bool FilterAttribute(string tag, string attribute, ref string value)
 		{
 			attribute = attribute.ToLowerInvariant();
-			tag = tag.ToLowerInvariant();
 
-			switch (tag)
+			// whitelist of safe attributes
+			switch (tag.ToLowerInvariant())
 			{
 				case "a":
 				{
-					return
-						(attribute == "href") ||
-						(attribute == "target");
+					switch (attribute)
+					{
+						case "href":
+						case "target":
+						{
+							return true;
+						}
+					}
+					return false;
 				}
 				case "img":
 				{
-					return
-						(attribute == "alt") ||
-						(attribute == "height") ||
-						(attribute == "src") ||
-						(attribute == "title") ||
-						(attribute == "width");
-				}
-				default:
-				{
+					switch (attribute)
+					{
+						case "alt":
+						case "src":
+						case "title":
+						{
+							return true;
+						}
+					}
 					return false;
 				}
 			}
+			return false;
 		}
 
 		/// <summary>
@@ -229,12 +220,12 @@ namespace BuildTools.HtmlDistiller.Filters
 		/// <remarks>
 		/// http://www.w3.org/TR/html401/index/elements.html
 		/// </remarks>
-		public virtual bool FilterTag(string tag)
+		public virtual bool FilterTag(HtmlTag tag)
 		{
 			// whitelist of safe tags
-			switch (tag.ToLowerInvariant())
+			switch (tag.TagName)
 			{
-				case HtmlTag.CommentTagName:
+				//case "!--":
 				case "a":
 				case "b":
 				case "blink":
@@ -429,7 +420,7 @@ namespace BuildTools.HtmlDistiller.Filters
 		/// </summary>
 		/// <param name="tag"></param>
 		/// <returns></returns>
-		public bool FilterTag(string tag)
+		public bool FilterTag(HtmlTag tag)
 		{
 			return true;
 		}
