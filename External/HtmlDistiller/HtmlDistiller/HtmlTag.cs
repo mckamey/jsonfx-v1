@@ -216,7 +216,7 @@ namespace BuildTools.HtmlDistiller
 			{
 				return;
 			}
-			if (!this.HtmlFilter.FilterTag(this.TagName))
+			if (!this.HtmlFilter.FilterTag(this))
 			{
 				return;
 			}
@@ -227,7 +227,7 @@ namespace BuildTools.HtmlDistiller
 				output.Append('/');
 			}
 
-			output.Append(this.TagName);
+			output.Append(this.rawName);
 
 			this.WriteAttributes(output);
 			this.WriteStyles(output);

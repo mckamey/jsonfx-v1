@@ -41,7 +41,7 @@ namespace BuildTools.HtmlDistiller
 	/// Parses HTML, repairing and scrubbing against various whitelist filters.
 	/// </summary>
 	/// <remarks>
-	/// Note: this is thread-safe as long as all external changes lock first.
+	/// Note: this class is thread-safe (all external changes are locked first)
 	/// </remarks>
 	public class HtmlDistiller
 	{
@@ -192,30 +192,6 @@ namespace BuildTools.HtmlDistiller
 		public static string Parse(string text, int maxLength)
 		{
 			HtmlDistiller parser = new HtmlDistiller(text, new SafeHtmlFilter());
-			parser.MaxLength = maxLength;
-			return parser.Parse();
-		}
-
-		/// <summary>
-		/// Allows limited set of simple tags.
-		/// </summary>
-		/// <param name="text"></param>
-		/// <returns></returns>
-		public static string ParseSimple(string text)
-		{
-			return HtmlDistiller.ParseSimple(text, 0);
-		}
-
-		/// <summary>
-		/// Allows limited set of simple tags.
-		/// </summary>
-		/// <param name="text"></param>
-		/// <param name="maxLength"></param>
-		/// <param name="maxImageSize"></param>
-		/// <returns></returns>
-		public static string ParseSimple(string text, int maxLength)
-		{
-			HtmlDistiller parser = new HtmlDistiller(text, new StripHtmlFilter());
 			parser.MaxLength = maxLength;
 			return parser.Parse();
 		}
@@ -531,7 +507,7 @@ namespace BuildTools.HtmlDistiller
 			}
 
 			char ch = Char.ToLowerInvariant(this.Peek(1));
-			if ((ch < 'a' || ch > 'z') && (ch != '/'))
+			if ((ch < 'a' || ch > 'z') && (ch != '/') && (ch != '!'))
 			{
 				// not a tag, treat as LessThan char
 				return null;
@@ -595,7 +571,7 @@ namespace BuildTools.HtmlDistiller
 		/// <returns>null if no comment found</returns>
 		/// <remarks>
 		/// This only supports standard comments &lt;!--...--%gt;
-		/// not Doctype declarations or CDATA sections.
+		/// i.e. not DocType declarations or CDATA sections.
 		/// </remarks>
 		private HtmlTag ParseComment()
 		{
