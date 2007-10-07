@@ -65,7 +65,9 @@
     </COMReference>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="License.txt" />
+    <Content Include="License.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <EmbeddedResource Include="ScriptCompactor\jslint.js" />
   </ItemGroup>
   <ItemGroup>
