@@ -286,39 +286,60 @@ namespace BuildTools.HtmlDistiller
 
 									#region repair mismatched tags
 
-									// try to repair mismatch
-									Stack<HtmlTag> mismatched = new Stack<HtmlTag>(this.openTags.Count);
-
-									do
+									bool repairable = false;
+									foreach (HtmlTag possibleTag in this.openTags)
 									{
-										// close mismatched tags
-										this.RenderTag(openTag.CreateMatchingTag());
-
-										// store for re-opening
-										mismatched.Push(openTag);
-										if (this.openTags.Count == 0)
+										// hopefully right near top, but if isn't in stack
+										// then it doesn't help to attempt to repair
+										if (tag.TagName == possibleTag.TagName)
 										{
-											// no match found
-											openTag = null;
+											repairable = true;
 											break;
 										}
-
-										// get next
-										openTag = this.openTags.Pop();
-									} while (tag.TagName != openTag.TagName);
-
-									if (openTag != null)
-									{
-										// found matching tag
-										this.RenderTag(tag);
 									}
 
-									// reopen mismatched tags
-									while (mismatched.Count > 0)
+									if (!repairable)
 									{
-										openTag = mismatched.Pop();
+										// put the tag back on
 										this.openTags.Push(openTag);
-										this.RenderTag(openTag);
+										break;
+									}
+									else
+									{
+										// try to repair mismatch
+										Stack<HtmlTag> mismatched = new Stack<HtmlTag>(this.openTags.Count);
+
+										do
+										{
+											// close mismatched tags
+											this.RenderTag(openTag.CreateMatchingTag());
+
+											// store for re-opening
+											mismatched.Push(openTag);
+											if (this.openTags.Count == 0)
+											{
+												// no match found
+												openTag = null;
+												break;
+											}
+
+											// get next
+											openTag = this.openTags.Pop();
+										} while (tag.TagName != openTag.TagName);
+
+										if (openTag != null)
+										{
+											// found matching tag
+											this.RenderTag(tag);
+										}
+
+										// reopen mismatched tags
+										while (mismatched.Count > 0)
+										{
+											openTag = mismatched.Pop();
+											this.openTags.Push(openTag);
+											this.RenderTag(openTag);
+										}
 									}
 									break;
 
@@ -538,12 +559,12 @@ namespace BuildTools.HtmlDistiller
 			tag = new HtmlTag(buffer, this.htmlFilter);
 
 			// for now just include raw attributes
-			while (!this.IsEOF && this.Current != '>')
+			while (!this.IsEOF && this.Current != '>' && this.Current != '<')
 			{
 				string name = this.ParseAttributeName();
 				string value = String.Empty;
 
-				if (this.Current != '>')
+				if (this.Current != '>' && this.Current != '<')
 				{
 					// Get the value(if any)
 					value = this.ParseAttributeValue();
@@ -562,7 +583,7 @@ namespace BuildTools.HtmlDistiller
 				}
 			}
 
-			if (!this.IsEOF)
+			if (!this.IsEOF && this.Current != '<')
 			{
 				// remove GreaterThan char from source
 				this.FlushBuffer(1);
@@ -634,13 +655,17 @@ namespace BuildTools.HtmlDistiller
 				char ch = this.Current;
 				if (Char.IsWhiteSpace(ch) ||
 					ch == '=' ||
-					ch == '>')
+					ch == '>' ||
+					ch == '<')
 				{
 					break;
 				}
 
 				// add to attribute name
-				this.Advance();
+				if (ch != '<')
+				{
+					this.Advance();
+				}
 			}
 
 			return this.FlushBuffer();
@@ -666,7 +691,7 @@ namespace BuildTools.HtmlDistiller
 				while (!this.IsEOF)
 				{
 					ch = this.Current;
-					if (ch == quot)
+					if (ch == quot || ch == '>' || ch == '<')
 					{
 						break;
 					}
@@ -680,7 +705,7 @@ namespace BuildTools.HtmlDistiller
 				while (!this.IsEOF)
 				{
 					ch = this.Current;
-					if (ch == '>' || Char.IsWhiteSpace(ch))
+					if (ch == '>' || ch == '<' || Char.IsWhiteSpace(ch))
 					{
 						break;
 					}
