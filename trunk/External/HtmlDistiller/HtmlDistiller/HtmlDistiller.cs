@@ -68,6 +68,14 @@ namespace BuildTools.HtmlDistiller
 		/// <summary>
 		/// Ctor.
 		/// </summary>
+		public HtmlDistiller()
+			: this(null, null)
+		{
+		}
+
+		/// <summary>
+		/// Ctor.
+		/// </summary>
 		/// <param name="text">the text to parse</param>
 		public HtmlDistiller(string text)
 			: this (text, null)
