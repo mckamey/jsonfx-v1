@@ -225,7 +225,7 @@ namespace BuildTools.HtmlDistiller.Filters
 			// whitelist of safe tags
 			switch (tag.TagName)
 			{
-				//case "!--":
+				//case "!--":// comments can hold IE conditional logic
 				case "a":
 				case "b":
 				case "blink":
@@ -233,6 +233,7 @@ namespace BuildTools.HtmlDistiller.Filters
 				case "br":
 				case "center":
 				case "dd":
+				case "div":
 				case "dl":
 				case "dt":
 				case "em":

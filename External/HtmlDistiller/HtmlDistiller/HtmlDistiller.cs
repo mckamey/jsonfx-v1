@@ -37,6 +37,34 @@ using BuildTools.HtmlDistiller.Filters;
 
 namespace BuildTools.HtmlDistiller
 {
+	#region TagBoxType
+
+	/// <summary>
+	/// Defines a general idea of the level of tag complexity
+	/// </summary>
+	/// <remarks>
+	/// http://www.w3.org/TR/html401/sgml/dtd.html#inline
+	/// </remarks>
+	public enum TagBoxType
+	{
+		/// <summary>
+		/// Not defined
+		/// </summary>
+		None = 0x0,
+
+		/// <summary>
+		/// character level elements and text strings
+		/// </summary>
+		Inline = 0x1,
+
+		/// <summary>
+		/// block-like elements (e.g. paragraphs and lists)
+		/// </summary>
+		Block = 0x2
+	}
+
+	#endregion TagBoxType
+
 	/// <summary>
 	/// Parses HTML, repairing and scrubbing against various whitelist filters.
 	/// </summary>
@@ -59,6 +87,7 @@ namespace BuildTools.HtmlDistiller
 		private int start;
 		private int textSize;
 		private Stack<HtmlTag> openTags;
+		private TagBoxType maxBoxType;
 
 		#endregion Fields
 
@@ -104,7 +133,7 @@ namespace BuildTools.HtmlDistiller
 		}
 
 		/// <summary>
-		/// Gets and sets the maximum number of text chars (tags don't count).
+		/// Gets and sets the maximum number of text chars (tags don't count)
 		/// </summary>
 		public int MaxLength
 		{
@@ -119,7 +148,7 @@ namespace BuildTools.HtmlDistiller
 		}
 
 		/// <summary>
-		/// Gets and sets if whitespace should be normalized.
+		/// Gets and sets if whitespace should be normalized
 		/// </summary>
 		public bool NormalizeWhitespace
 		{
@@ -134,7 +163,7 @@ namespace BuildTools.HtmlDistiller
 		}
 
 		/// <summary>
-		/// Gets and sets the source text.
+		/// Gets and sets the source text
 		/// </summary>
 		public string Source
 		{
@@ -150,7 +179,7 @@ namespace BuildTools.HtmlDistiller
 		}
 
 		/// <summary>
-		/// Gets the output text.
+		/// Gets the output text
 		/// </summary>
 		public string Output
 		{
@@ -161,6 +190,21 @@ namespace BuildTools.HtmlDistiller
 					this.Parse();
 				}
 				return this.output.ToString();
+			}
+		}
+
+		/// <summary>
+		/// Gets a value indicating the complexity of tags rendered
+		/// </summary>
+		public TagBoxType MaxBoxType
+		{
+			get
+			{
+				if (this.output == null)
+				{
+					this.Parse();
+				}
+				return this.maxBoxType;
 			}
 		}
 
@@ -283,14 +327,14 @@ namespace BuildTools.HtmlDistiller
 								case HtmlTagType.Comment:
 								case HtmlTagType.FullTag:
 								{
-									tag.WriteTag(this.output);
+									this.RenderTag(tag);
 									break;
 								}
 								case HtmlTagType.BeginTag:
 								{
 									// keep copy for pairing
 									this.openTags.Push(tag);
-									tag.WriteTag(this.output);
+									this.RenderTag(tag);
 									break;
 								}
 								case HtmlTagType.EndTag:
@@ -306,7 +350,7 @@ namespace BuildTools.HtmlDistiller
 									if (tag.TagName == openTag.TagName)
 									{
 										// found match
-										tag.WriteTag(this.output);
+										this.RenderTag(tag);
 										break;
 									}
 
@@ -318,7 +362,7 @@ namespace BuildTools.HtmlDistiller
 									do
 									{
 										// close mismatched tags
-										openTag.CreateMatchingTag().WriteTag(this.output);
+										this.RenderTag(openTag.CreateMatchingTag());
 
 										// store for re-opening
 										mismatched.Push(openTag);
@@ -336,7 +380,7 @@ namespace BuildTools.HtmlDistiller
 									if (openTag != null)
 									{
 										// found matching tag
-										tag.WriteTag(this.output);
+										this.RenderTag(tag);
 									}
 
 									// reopen mismatched tags
@@ -344,7 +388,7 @@ namespace BuildTools.HtmlDistiller
 									{
 										openTag = mismatched.Pop();
 										this.openTags.Push(openTag);
-										openTag.WriteTag(this.output);
+										this.RenderTag(openTag);
 									}
 									break;
 
@@ -510,7 +554,7 @@ namespace BuildTools.HtmlDistiller
 					tag = tag.CreateMatchingTag();
 					if (tag != null)
 					{
-						tag.WriteTag(this.output);
+						this.RenderTag(tag);
 					}
 				}
 
@@ -779,6 +823,16 @@ namespace BuildTools.HtmlDistiller
 			}
 		}
 
+		private void RenderTag(HtmlTag tag)
+		{
+			// false if any tags render
+			if (tag.WriteTag(this.output) &&
+				(this.MaxBoxType < tag.BoxType))
+			{
+				this.maxBoxType = tag.BoxType;
+			}
+		}
+
 		#endregion Parse Methods
 
 		#region Methods
@@ -880,6 +934,7 @@ namespace BuildTools.HtmlDistiller
 			this.index = this.start = this.textSize = 0;
 			this.output = new StringBuilder(this.source.Length);
 			this.openTags = new Stack<HtmlTag>(10);
+			this.maxBoxType = TagBoxType.None;
 		}
 
 		private string EncodeHtmlEntity(char ch)
