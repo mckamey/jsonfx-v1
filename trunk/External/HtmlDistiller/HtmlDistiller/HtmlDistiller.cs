@@ -49,12 +49,11 @@ namespace BuildTools.HtmlDistiller
 
 		private readonly object SyncLock = new object();
 
-		private readonly string source;
-
+		private string source;
+		private IHtmlFilter htmlFilter;
 		private int maxLength = 0;
 		private bool normalizeWhitespace = true;
 
-		private IHtmlFilter htmlFilter;
 		private StringBuilder output;
 		private int index;
 		private int start;
@@ -69,6 +68,16 @@ namespace BuildTools.HtmlDistiller
 		/// Ctor.
 		/// </summary>
 		/// <param name="text">the text to parse</param>
+		public HtmlDistiller(string text)
+			: this (text, null)
+		{
+		}
+
+		/// <summary>
+		/// Ctor.
+		/// </summary>
+		/// <param name="text">the text to parse</param>
+		/// <param name="filter"></param>
 		public HtmlDistiller(string text, IHtmlFilter filter)
 		{
 			this.source = (text == null) ? String.Empty : text;
@@ -80,7 +89,7 @@ namespace BuildTools.HtmlDistiller
 		#region Properties
 
 		/// <summary>
-		/// Gets and sets the IHtmlFilter to use in parsing
+		/// Gets and sets the IHtmlFilter used in parsing
 		/// </summary>
 		public IHtmlFilter HtmlFilter
 		{
@@ -125,11 +134,19 @@ namespace BuildTools.HtmlDistiller
 		}
 
 		/// <summary>
-		/// Gets the source text.
+		/// Gets and sets the source text.
 		/// </summary>
 		public string Source
 		{
 			get { return this.source; }
+			set
+			{
+				lock (this.SyncLock)
+				{
+					this.source = (value == null) ? String.Empty : value;
+					this.output = null;
+				}
+			}
 		}
 
 		/// <summary>
