@@ -69,7 +69,7 @@ namespace BuildTools.HtmlDistiller
 		/// Ctor.
 		/// </summary>
 		public HtmlDistiller()
-			: this(null, null)
+			: this(null, 0, null)
 		{
 		}
 
@@ -77,8 +77,8 @@ namespace BuildTools.HtmlDistiller
 		/// Ctor.
 		/// </summary>
 		/// <param name="text">the text to parse</param>
-		public HtmlDistiller(string text)
-			: this (text, null)
+		public HtmlDistiller(string text, int maxLength)
+			: this(text, maxLength, null)
 		{
 		}
 
@@ -87,9 +87,10 @@ namespace BuildTools.HtmlDistiller
 		/// </summary>
 		/// <param name="text">the text to parse</param>
 		/// <param name="filter"></param>
-		public HtmlDistiller(string text, IHtmlFilter filter)
+		public HtmlDistiller(string text, int maxLength, IHtmlFilter filter)
 		{
 			this.source = (text == null) ? String.Empty : text;
+			this.maxLength = maxLength;
 			this.htmlFilter = filter;
 		}
 
@@ -226,64 +227,13 @@ namespace BuildTools.HtmlDistiller
 
 		#endregion Parse Properties
 
-		#region Static Methods
-
-		/// <summary>
-		/// Allows default set of safe tags.
-		/// </summary>
-		/// <param name="text"></param>
-		/// <returns></returns>
-		public static string Parse(string text)
-		{
-			return HtmlDistiller.Parse(text, 0);
-		}
-
-		/// <summary>
-		/// Allows default set of safe tags.
-		/// </summary>
-		/// <param name="text"></param>
-		/// <param name="maxLength"></param>
-		/// <param name="maxImageSize"></param>
-		/// <returns></returns>
-		public static string Parse(string text, int maxLength)
-		{
-			HtmlDistiller parser = new HtmlDistiller(text, new SafeHtmlFilter());
-			parser.MaxLength = maxLength;
-			return parser.Parse();
-		}
-
-		/// <summary>
-		/// Strips all tags.
-		/// </summary>
-		/// <param name="text"></param>
-		/// <returns></returns>
-		public static string Strip(string text)
-		{
-			return HtmlDistiller.Strip(text, 0);
-		}
-
-		/// <summary>
-		/// Strips all tags.
-		/// </summary>
-		/// <param name="text"></param>
-		/// <param name="maxLength">limit of number</param>
-		/// <returns></returns>
-		public static string Strip(string text, int maxLength)
-		{
-			HtmlDistiller parser = new HtmlDistiller(text, new StripHtmlFilter());
-			parser.MaxLength = maxLength;
-			return parser.Parse();
-		}
-
-		#endregion Static Methods
-
 		#region Parse Methods
 
 		/// <summary>
 		/// Parses the source using the current settings.
 		/// </summary>
 		/// <returns>the output text</returns>
-		public string Parse()
+		private string Parse()
 		{
 			lock (this.SyncLock)
 			{
