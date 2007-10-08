@@ -70,6 +70,7 @@ namespace BuildTools.HtmlDistiller
 		#region Fields
 
 		private readonly HtmlTagType tagType = HtmlTagType.Unknown;
+		private readonly TagBoxType boxType = TagBoxType.None;
 		private readonly IHtmlFilter HtmlFilter;
 		private readonly string rawName;
 		private string tagName;
@@ -112,6 +113,8 @@ namespace BuildTools.HtmlDistiller
 			{
 				this.tagType = HtmlTagType.BeginTag;
 			}
+
+			this.boxType = HtmlTag.GetBoxType(this.TagName);
 		}
 
 		#endregion Init
@@ -124,6 +127,14 @@ namespace BuildTools.HtmlDistiller
 		public HtmlTagType TagType
 		{
 			get { return this.tagType; }
+		}
+
+		/// <summary>
+		/// Gets the box type of the tag
+		/// </summary>
+		public TagBoxType BoxType
+		{
+			get { return this.boxType; }
 		}
 
 		/// <summary>
@@ -210,15 +221,16 @@ namespace BuildTools.HtmlDistiller
 		/// Renders the tag to the output
 		/// </summary>
 		/// <param name="output"></param>
-		public void WriteTag(StringBuilder output)
+		/// <returns>true if rendered, false if not</returns>
+		public bool WriteTag(StringBuilder output)
 		{
 			if (this.TagType == HtmlTagType.Unknown)
 			{
-				return;
+				return false;
 			}
 			if (!this.HtmlFilter.FilterTag(this))
 			{
-				return;
+				return false;
 			}
 
 			output.Append('<');
@@ -241,6 +253,8 @@ namespace BuildTools.HtmlDistiller
 				output.Append(" /");
 			}
 			output.Append('>');
+
+			return true;
 		}
 
 		/// <summary>
@@ -362,11 +376,69 @@ namespace BuildTools.HtmlDistiller
 				{
 					return true;
 				}
-				default:
+			}
+			return false;
+		}
+
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="tag">lowercase tag name</param>
+		/// <returns>the box type for a particular element</returns>
+		protected static TagBoxType GetBoxType(string tag)
+		{
+			// http://www.w3.org/TR/html401/sgml/dtd.html#inline
+			// Inline elements are all of the elements in:
+			// inline, fontstyle, phrase, special, formctrl
+
+			switch (tag)
+			{
+				case "address":
+				case "a":
+				case "abbr":
+				case "acronym":
+				case "b":
+				case "bdo":
+				case "big":
+				case "br":
+				case "button":
+				case "caption":
+				case "cite":
+				case "code":
+				case "dfn":
+				case "dt":
+				case "em":
+				case "h1":
+				case "h2":
+				case "h3":
+				case "h4":
+				case "h5":
+				case "h6":
+				case "i":
+				case "img":
+				case "input":
+				case "kbd":
+				case "label":
+				case "legend":
+				case "map":
+				case "p":
+				case "pre":
+				case "q":
+				case "samp":
+				case "select":
+				case "small":
+				case "span":
+				case "strong":
+				case "sub":
+				case "sup":
+				case "textarea":
+				case "tt":
+				case "var":
 				{
-					return false;
+					return TagBoxType.Inline;
 				}
 			}
+			return TagBoxType.Block;
 		}
 
 		/// <summary>
