@@ -36,18 +36,64 @@ using BuildTools.HtmlDistiller.Filters;
 
 namespace BuildTools.HtmlDistiller
 {
-	#region HtmlTagType
+	#region Enums
 
+	/// <summary>
+	/// Defines the type of tag
+	/// </summary>
 	public enum HtmlTagType
 	{
+		/// <summary>
+		/// Not defined
+		/// </summary>
 		Unknown,
+
+		/// <summary>
+		/// Comment tag
+		/// </summary>
 		Comment,
+
+		/// <summary>
+		/// Opening tag
+		/// </summary>
 		BeginTag,
+
+		/// <summary>
+		/// Closing tag
+		/// </summary>
 		EndTag,
+
+		/// <summary>
+		/// Empty tag
+		/// </summary>
 		FullTag
 	}
 
-	#endregion HtmlTagType
+	/// <summary>
+	/// Defines a general idea of the level of tag complexity
+	/// </summary>
+	/// <remarks>
+	/// http://www.w3.org/TR/html401/sgml/dtd.html#inline
+	/// </remarks>
+	public enum HtmlTagBoxType
+	{
+		/// <summary>
+		/// Not defined
+		/// </summary>
+		None = 0x0,
+
+		/// <summary>
+		/// character level elements and text strings
+		/// </summary>
+		Inline = 0x1,
+
+		/// <summary>
+		/// block-like elements (e.g. paragraphs and lists)
+		/// </summary>
+		Block = 0x2
+	}
+
+	#endregion Enums
 
 	/// <summary>
 	/// Represents an HTML/XHMTL tag
@@ -70,7 +116,7 @@ namespace BuildTools.HtmlDistiller
 		#region Fields
 
 		private readonly HtmlTagType tagType = HtmlTagType.Unknown;
-		private readonly TagBoxType boxType = TagBoxType.None;
+		private readonly HtmlTagBoxType boxType = HtmlTagBoxType.None;
 		private readonly IHtmlFilter HtmlFilter;
 		private readonly string rawName;
 		private string tagName;
@@ -132,7 +178,7 @@ namespace BuildTools.HtmlDistiller
 		/// <summary>
 		/// Gets the box type of the tag
 		/// </summary>
-		public TagBoxType BoxType
+		public HtmlTagBoxType BoxType
 		{
 			get { return this.boxType; }
 		}
@@ -385,7 +431,7 @@ namespace BuildTools.HtmlDistiller
 		/// </summary>
 		/// <param name="tag">lowercase tag name</param>
 		/// <returns>the box type for a particular element</returns>
-		protected static TagBoxType GetBoxType(string tag)
+		protected static HtmlTagBoxType GetBoxType(string tag)
 		{
 			// http://www.w3.org/TR/html401/sgml/dtd.html#inline
 			// Inline elements are all of the elements in:
@@ -435,10 +481,10 @@ namespace BuildTools.HtmlDistiller
 				case "tt":
 				case "var":
 				{
-					return TagBoxType.Inline;
+					return HtmlTagBoxType.Inline;
 				}
 			}
-			return TagBoxType.Block;
+			return HtmlTagBoxType.Block;
 		}
 
 		/// <summary>
