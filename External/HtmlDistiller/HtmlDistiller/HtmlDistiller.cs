@@ -37,34 +37,6 @@ using BuildTools.HtmlDistiller.Filters;
 
 namespace BuildTools.HtmlDistiller
 {
-	#region TagBoxType
-
-	/// <summary>
-	/// Defines a general idea of the level of tag complexity
-	/// </summary>
-	/// <remarks>
-	/// http://www.w3.org/TR/html401/sgml/dtd.html#inline
-	/// </remarks>
-	public enum TagBoxType
-	{
-		/// <summary>
-		/// Not defined
-		/// </summary>
-		None = 0x0,
-
-		/// <summary>
-		/// character level elements and text strings
-		/// </summary>
-		Inline = 0x1,
-
-		/// <summary>
-		/// block-like elements (e.g. paragraphs and lists)
-		/// </summary>
-		Block = 0x2
-	}
-
-	#endregion TagBoxType
-
 	/// <summary>
 	/// Parses HTML, repairing and scrubbing against various whitelist filters.
 	/// </summary>
@@ -87,7 +59,7 @@ namespace BuildTools.HtmlDistiller
 		private int start;
 		private int textSize;
 		private Stack<HtmlTag> openTags;
-		private TagBoxType maxBoxType;
+		private HtmlTagBoxType maxBoxType;
 
 		#endregion Fields
 
@@ -196,7 +168,7 @@ namespace BuildTools.HtmlDistiller
 		/// <summary>
 		/// Gets a value indicating the complexity of tags rendered
 		/// </summary>
-		public TagBoxType MaxBoxType
+		public HtmlTagBoxType MaxBoxType
 		{
 			get
 			{
@@ -934,7 +906,7 @@ namespace BuildTools.HtmlDistiller
 			this.index = this.start = this.textSize = 0;
 			this.output = new StringBuilder(this.source.Length);
 			this.openTags = new Stack<HtmlTag>(10);
-			this.maxBoxType = TagBoxType.None;
+			this.maxBoxType = HtmlTagBoxType.None;
 		}
 
 		private string EncodeHtmlEntity(char ch)
