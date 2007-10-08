@@ -50,11 +50,11 @@ namespace BuildTools.HtmlDistiller
 		private readonly object SyncLock = new object();
 
 		private readonly string source;
-		private readonly IHtmlFilter HtmlFilter;
 
 		private int maxLength = 0;
 		private bool normalizeWhitespace = true;
 
+		private IHtmlFilter htmlFilter;
 		private StringBuilder output;
 		private int index;
 		private int start;
@@ -72,12 +72,27 @@ namespace BuildTools.HtmlDistiller
 		public HtmlDistiller(string text, IHtmlFilter filter)
 		{
 			this.source = (text == null) ? String.Empty : text;
-			this.HtmlFilter = filter;
+			this.htmlFilter = filter;
 		}
 
 		#endregion Init
 
 		#region Properties
+
+		/// <summary>
+		/// Gets and sets the IHtmlFilter to use in parsing
+		/// </summary>
+		public IHtmlFilter HtmlFilter
+		{
+			get { return this.htmlFilter; }
+			set
+			{
+				lock (this.SyncLock)
+				{
+					this.htmlFilter = value;
+				}
+			}
+		}
 
 		/// <summary>
 		/// Gets and sets the maximum number of text chars (tags don't count).
@@ -529,7 +544,7 @@ namespace BuildTools.HtmlDistiller
 			}
 
 			string buffer = this.FlushBuffer();
-			tag = new HtmlTag(buffer, this.HtmlFilter);
+			tag = new HtmlTag(buffer, this.htmlFilter);
 
 			// for now just include raw attributes
 			while (!this.IsEOF && this.Current != '>')
@@ -604,7 +619,7 @@ namespace BuildTools.HtmlDistiller
 				this.FlushBuffer(3);
 			}
 
-			HtmlTag comment = new HtmlTag(HtmlTag.CommentTagName, this.HtmlFilter);
+			HtmlTag comment = new HtmlTag(HtmlTag.CommentTagName, this.htmlFilter);
 			if (!String.IsNullOrEmpty(contents))
 			{
 				comment.Attributes[HtmlTag.CommentAttributeName] = contents;
@@ -841,6 +856,10 @@ namespace BuildTools.HtmlDistiller
 		/// </summary>
 		private void Reset()
 		{
+			if (this.htmlFilter == null)
+			{
+				this.htmlFilter = new SafeHtmlFilter();
+			}
 			this.index = this.start = this.textSize = 0;
 			this.output = new StringBuilder(this.source.Length);
 			this.openTags = new Stack<HtmlTag>(10);
