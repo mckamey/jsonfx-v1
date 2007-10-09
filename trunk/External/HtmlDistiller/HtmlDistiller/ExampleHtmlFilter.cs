@@ -35,6 +35,10 @@ namespace BuildTools.HtmlDistiller.Filters
 	/// <summary>
 	/// Example HtmlFilter which limits size of images in the output
 	/// </summary>
+	/// <remarks>
+	/// IHtmlFilter easily lends itself to a decorator pattern
+	/// http://en.wikipedia.org/wiki/Decorator_pattern
+	/// </remarks>
 	public class ExampleHtmlFilter : IHtmlFilter
 	{
 		#region Fields
