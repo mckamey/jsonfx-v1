@@ -368,26 +368,17 @@ namespace BuildTools.HtmlDistiller
 		}
 
 		/// <summary>
-		/// Generates a tag which matches this tag
+		/// Generates a closing tag which matches this tag
 		/// </summary>
 		/// <returns></returns>
-		public HtmlTag CreateMatchingTag()
+		public HtmlTag CreateCloseTag()
 		{
-			switch (this.TagType)
+			if (this.TagType != HtmlTagType.BeginTag)
 			{
-				case HtmlTagType.BeginTag:
-				{
-					return new HtmlTag('/'+this.rawName, this.HtmlFilter);
-				}
-				case HtmlTagType.EndTag:
-				{
-					return new HtmlTag(this.rawName, this.HtmlFilter);
-				}
-				default:
-				{
-					return null;
-				}
+				return null;
 			}
+
+			return new HtmlTag('/'+this.rawName, this.HtmlFilter);
 		}
 
 		#endregion Methods
