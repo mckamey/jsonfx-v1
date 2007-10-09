@@ -153,8 +153,8 @@ namespace BuildTools.HtmlDistiller
 			{
 				lock (this.SyncLock)
 				{
-					this.source = (value == null) ? String.Empty : value;
 					this.output = null;
+					this.source = (value == null) ? String.Empty : value;
 				}
 			}
 		}
