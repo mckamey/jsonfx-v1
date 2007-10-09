@@ -312,7 +312,7 @@ namespace BuildTools.HtmlDistiller
 										do
 										{
 											// close mismatched tags
-											this.RenderTag(openTag.CreateMatchingTag());
+											this.RenderCloseTag(openTag);
 
 											// store for re-opening
 											mismatched.Push(openTag);
@@ -502,11 +502,7 @@ namespace BuildTools.HtmlDistiller
 				{
 					// write out any unclosed tags
 					HtmlTag tag = this.openTags.Pop();
-					tag = tag.CreateMatchingTag();
-					if (tag != null)
-					{
-						this.RenderTag(tag);
-					}
+					this.RenderCloseTag(tag);
 				}
 
 				#endregion close any open tags
@@ -780,11 +776,20 @@ namespace BuildTools.HtmlDistiller
 
 		private void RenderTag(HtmlTag tag)
 		{
-			// false if any tags render
 			if (tag.WriteTag(this.output) &&
 				(this.MaxBoxType < tag.BoxType))
 			{
 				this.maxBoxType = tag.BoxType;
+			}
+		}
+
+		private void RenderCloseTag(HtmlTag tag)
+		{
+			tag = tag.CreateCloseTag();
+
+			if (tag != null)
+			{
+				this.RenderTag(tag);
 			}
 		}
 
