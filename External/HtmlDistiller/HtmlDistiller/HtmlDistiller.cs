@@ -523,14 +523,29 @@ namespace BuildTools.HtmlDistiller
 		/// <returns>null if no tag was found (e.g. just LessThan char)</returns>
 		private HtmlTag ParseTag()
 		{
-			HtmlTag tag = this.ParseComment();
+			HtmlTag tag = this.ParseComment("<!--", "-->");
+			if (tag != null)
+			{
+				return tag;
+			}
+			tag = this.ParseComment("<![CDATA[", "]]>");
+			if (tag != null)
+			{
+				return tag;
+			}
+			tag = this.ParseComment("<!", ">");
+			if (tag != null)
+			{
+				return tag;
+			}
+			tag = this.ParseComment("<?", "?>");
 			if (tag != null)
 			{
 				return tag;
 			}
 
 			char ch = Char.ToLowerInvariant(this.Peek(1));
-			if ((ch < 'a' || ch > 'z') && (ch != '/') && (ch != '!'))
+			if ((ch < 'a' || ch > 'z') && (ch != '/'))
 			{
 				// not a tag, treat as LessThan char
 				return null;
@@ -588,102 +603,66 @@ namespace BuildTools.HtmlDistiller
 			return tag;
 		}
 
-		enum CommentType
-		{
-			HtmlComment,
-			CDATA,
-			Declaration
-		}
-
 		/// <summary>
 		/// 
 		/// </summary>
 		/// <returns>null if no comment found</returns>
+		/// <param name="startDelim"></param>
+		/// <param name="endDelim"></param>
 		/// <remarks>
-		/// This only supports standard comments &lt;!--...--%gt;
-		/// i.e. not DocType declarations or CDATA sections.
+		/// This supports standard comments, DocType declarations, and CDATA sections.
 		/// </remarks>
-		private HtmlTag ParseComment()
+		private HtmlTag ParseComment(string startDelim, string endDelim)
 		{
-			if (this.Peek(1) != '!')
+			int i=0;
+			for (i=0; i<startDelim.Length; i++)
 			{
-				return null;
+				if (this.Peek(i) != startDelim[i])
+				{
+					return null;
+				}
 			}
 
-			CommentType type = CommentType.Declaration;
+			// flush LessThan
+			this.FlushBuffer(1);
 
-			if ((this.Peek(2) == '-') &&
-				(this.Peek(3) == '-'))
-			{
-				type = CommentType.HtmlComment;
-				this.FlushBuffer(4);
-			}
-			else if (
-				(this.Peek(2) == '[') &&
-				(this.Peek(3) == 'C') &&
-				(this.Peek(4) == 'D') &&
-				(this.Peek(5) == 'A') &&
-				(this.Peek(6) == 'T') &&
-				(this.Peek(7) == 'A') &&
-				(this.Peek(8) == '['))
-			{
-				type = CommentType.CDATA;
-				this.FlushBuffer(9);
-			}
-			else
-			{
-				type = CommentType.Declaration;
-				this.FlushBuffer(2);
-			}
+			string commentName = this.FlushBuffer(startDelim.Length-1);
 
 			bool isClosed = false;
+
+			i = 0;
 			while (!this.IsEOF)
 			{
-				if (type == CommentType.HtmlComment &&
-					(this.Current == '-') &&
-					(this.Peek(1) == '-') &&
-					(this.Peek(2) == '>'))
+				if (this.Peek(i) == endDelim[i])
 				{
-					isClosed = true;
-					break;
+					i++;
+					if (i == endDelim.Length)
+					{
+						isClosed = true;
+						break;
+					}
 				}
-				else if (type == CommentType.CDATA &&
-					(this.Current == '-') &&
-					(this.Peek(1) == '-') &&
-					(this.Peek(2) == '>'))
+				else
 				{
-					isClosed = true;
-					break;
-				}
-				else if (type == CommentType.Declaration &&
-					(this.Current == '>'))
-				{
-					isClosed = true;
-					break;
-				}
+					i = 0;
 
-				// add to comment contents
-				this.Advance();
+					// add to comment contents
+					this.Advance();
+				}
 			}
 
 			string contents = this.FlushBuffer();
 			if (isClosed)
 			{
-				if (type == CommentType.Declaration)
-				{
-					this.FlushBuffer(1);
-				}
-				else
-				{
-					this.FlushBuffer(3);
-				}
+				this.FlushBuffer(endDelim.Length);
 			}
 
-			HtmlTag comment = new HtmlTag(HtmlTag.CommentTagName, this.htmlFilter);
+			HtmlTag comment = new HtmlTag(commentName, this.htmlFilter);
 			if (!String.IsNullOrEmpty(contents))
 			{
-				comment.Attributes[HtmlTag.CommentAttributeName] = contents;
+				comment.Attributes[HtmlTag.Key_Contents] = contents;
 			}
+			comment.Attributes[HtmlTag.Key_EndDelim] = endDelim.Substring(0, endDelim.Length-1);
 
 			return comment;
 		}

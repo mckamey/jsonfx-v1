@@ -188,8 +188,8 @@ namespace BuildTools.HtmlDistiller
 
 		private const int DefaultAttributeCapacity = 3;
 		private const int DefaultStyleCapacity = 3;
-		public const string CommentTagName = "!--";
-		public const string CommentAttributeName = "";
+		public const string Key_Contents = "";
+		public const string Key_EndDelim = ">";
 
 		#endregion Constants
 
@@ -227,7 +227,7 @@ namespace BuildTools.HtmlDistiller
 				this.tagType = HtmlTagType.EndTag;
 				this.rawName = this.rawName.Substring(1);
 			}
-			else if (this.rawName == HtmlTag.CommentTagName)
+			else if (this.rawName.StartsWith("!") || this.rawName.StartsWith("?"))
 			{
 				this.tagType = HtmlTagType.Comment;
 			}
@@ -377,7 +377,7 @@ namespace BuildTools.HtmlDistiller
 
 			if (this.TagType == HtmlTagType.Comment)
 			{
-				output.Append("--");
+				output.Append(this.Attributes[HtmlTag.Key_EndDelim]);
 			}
 			else if (this.TagType == HtmlTagType.FullTag)
 			{
@@ -398,7 +398,7 @@ namespace BuildTools.HtmlDistiller
 			{
 				if (this.TagType == HtmlTagType.Comment)
 				{
-					output.Append(this.Attributes[HtmlTag.CommentAttributeName]);
+					output.Append(this.Attributes[HtmlTag.Key_Contents]);
 					return;
 				}
 
