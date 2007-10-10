@@ -393,6 +393,13 @@ namespace BuildTools.HtmlDistiller.Filters
 		/// </remarks>
 		public virtual bool FilterStyle(string tag, string style, ref string value)
 		{
+			if (value != null &&
+				value.IndexOf("expression", StringComparison.InvariantCultureIgnoreCase) >= 0)
+			{
+				// IE CSS expressions are JavaScript
+				return false;
+			}
+
 			// blacklist of unsafe styles
 			switch (style.ToLowerInvariant())
 			{
