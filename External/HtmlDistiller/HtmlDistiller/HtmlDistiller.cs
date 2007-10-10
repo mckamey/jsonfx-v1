@@ -59,7 +59,7 @@ namespace BuildTools.HtmlDistiller
 		private int start;
 		private int textSize;
 		private Stack<HtmlTag> openTags;
-		private HtmlTagBoxType maxBoxType;
+		private HtmlModuleType moduleTypes;
 
 		#endregion Fields
 
@@ -177,7 +177,7 @@ namespace BuildTools.HtmlDistiller
 		/// <summary>
 		/// Gets a value indicating the complexity of tags rendered
 		/// </summary>
-		public HtmlTagBoxType MaxBoxType
+		public HtmlModuleType ModuleTypes
 		{
 			get
 			{
@@ -185,7 +185,7 @@ namespace BuildTools.HtmlDistiller
 				{
 					this.Parse();
 				}
-				return this.maxBoxType;
+				return this.moduleTypes;
 			}
 		}
 
@@ -776,10 +776,9 @@ namespace BuildTools.HtmlDistiller
 
 		private void RenderTag(HtmlTag tag)
 		{
-			if (tag.WriteTag(this.output) &&
-				(this.MaxBoxType < tag.BoxType))
+			if (tag.WriteTag(this.output))
 			{
-				this.maxBoxType = tag.BoxType;
+				this.moduleTypes |= tag.ModuleTypes;
 			}
 		}
 
@@ -894,7 +893,7 @@ namespace BuildTools.HtmlDistiller
 			this.index = this.start = this.textSize = 0;
 			this.output = new StringBuilder(this.source.Length);
 			this.openTags = new Stack<HtmlTag>(10);
-			this.maxBoxType = HtmlTagBoxType.None;
+			this.moduleTypes = HtmlModuleType.None;
 		}
 
 		private string EncodeHtmlEntity(char ch)

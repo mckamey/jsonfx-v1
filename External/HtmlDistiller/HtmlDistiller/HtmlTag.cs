@@ -70,27 +70,107 @@ namespace BuildTools.HtmlDistiller
 	}
 
 	/// <summary>
-	/// Defines a general idea of the level of tag complexity
+	/// Defines a general taxonomy of tags
 	/// </summary>
 	/// <remarks>
-	/// http://www.w3.org/TR/html401/sgml/dtd.html#inline
+	/// http://www.w3.org/TR/xhtml-modularization/abstract_modules.html#sec_5.2.
 	/// </remarks>
-	public enum HtmlTagBoxType
+	[Flags]
+	public enum HtmlModuleType
 	{
 		/// <summary>
-		/// Not defined
+		/// Plain text, no tag
 		/// </summary>
-		None = 0x0,
+		None = 0x0000,
+
+		/// <summary>
+		/// HTML comments
+		/// </summary>
+		Comment = 0x0001,
+
+		/// <summary>
+		/// textual elements
+		/// </summary>
+		/// <remarks>
+		/// http://www.w3.org/TR/html401/struct/text.html
+		/// </remarks>
+		Text = 0x0002,
 
 		/// <summary>
 		/// character level elements and text strings
 		/// </summary>
-		Inline = 0x1,
+		/// <remarks>
+		/// http://www.w3.org/TR/html401/struct/text.html
+		/// </remarks>
+		Inline = 0x0004,
 
 		/// <summary>
-		/// block-like elements (e.g. paragraphs and lists)
+		/// block-like elements
 		/// </summary>
-		Block = 0x2
+		/// <remarks>
+		/// http://www.w3.org/TR/html401/struct/text.html
+		/// </remarks>
+		Block = 0x0008,
+
+		/// <summary>
+		/// list elements
+		/// </summary>
+		/// <remarks>
+		/// http://www.w3.org/TR/html401/struct/lists.html
+		/// </remarks>
+		List = 0x0010,
+
+		/// <summary>
+		/// tabular elements
+		/// </summary>
+		/// <remarks>
+		/// http://www.w3.org/TR/html401/struct/tables.html
+		/// </remarks>
+		Table = 0x0020,
+
+		/// <summary>
+		/// style elements
+		/// </summary>
+		/// <remarks>
+		/// http://www.w3.org/TR/html401/present/styles.html
+		/// http://www.w3.org/TR/html401/present/graphics.html
+		/// http://www.w3.org/TR/xhtml-modularization/abstract_modules.html#s_presentationmodule
+		/// </remarks>
+		Style = 0x0040,
+
+		/// <summary>
+		/// form elements
+		/// </summary>
+		/// <remarks>
+		/// http://www.w3.org/TR/xhtml-modularization/abstract_modules.html#s_forms
+		/// </remarks>
+		Form = 0x0080,
+
+		/// <summary>
+		/// script elements
+		/// </summary>
+		Script = 0x0100,
+
+		/// <summary>
+		/// embedded elements
+		/// </summary>
+		/// <remarks>
+		/// http://www.w3.org/TR/html401/struct/objects.html
+		/// </remarks>
+		Embeded = 0x0200,
+
+		/// <summary>
+		/// document elements
+		/// </summary>
+		/// <remarks>
+		/// http://www.w3.org/TR/html401/struct/global.html
+		/// </remarks>
+		Document = 0x0400,
+
+		/// <summary>
+		/// unknown elements
+		/// </summary>
+		Unknown = 0x8000
 	}
 
 	#endregion Enums
@@ -116,7 +196,7 @@ namespace BuildTools.HtmlDistiller
 		#region Fields
 
 		private readonly HtmlTagType tagType = HtmlTagType.Unknown;
-		private readonly HtmlTagBoxType boxType = HtmlTagBoxType.None;
+		private readonly HtmlModuleType moduleTypes = HtmlModuleType.None;
 		private readonly IHtmlFilter HtmlFilter;
 		private readonly string rawName;
 		private string tagName;
@@ -160,7 +240,7 @@ namespace BuildTools.HtmlDistiller
 				this.tagType = HtmlTagType.BeginTag;
 			}
 
-			this.boxType = HtmlTag.GetBoxType(this.TagName);
+			this.moduleTypes = HtmlTag.GetModuleType(this.TagName);
 		}
 
 		#endregion Init
@@ -176,11 +256,11 @@ namespace BuildTools.HtmlDistiller
 		}
 
 		/// <summary>
-		/// Gets the box type of the tag
+		/// Gets the HTML module types for the tag
 		/// </summary>
-		public HtmlTagBoxType BoxType
+		public HtmlModuleType ModuleTypes
 		{
-			get { return this.boxType; }
+			get { return this.moduleTypes; }
 		}
 
 		/// <summary>
@@ -373,7 +453,8 @@ namespace BuildTools.HtmlDistiller
 		/// <returns></returns>
 		public HtmlTag CreateCloseTag()
 		{
-			if (this.TagType != HtmlTagType.BeginTag)
+			if (this.TagType != HtmlTagType.BeginTag &&
+				HtmlTag.CloseTagRequired(this.TagName))
 			{
 				return null;
 			}
@@ -386,12 +467,13 @@ namespace BuildTools.HtmlDistiller
 		#region Static Methods
 
 		/// <summary>
-		/// 
+		/// Determines if is full (i.e. empty) tag
 		/// </summary>
-		/// <param name="tag"></param>
+		/// <param name="tag">lowercase tag name</param>
 		/// <returns>if is a full tag</returns>
 		/// <remarks>
 		/// http://www.w3.org/TR/html401/index/elements.html
+		/// http://www.w3.org/TR/xhtml-modularization/abstract_modules.html#sec_5.2.
 		/// </remarks>
 		protected static bool IsFullTag(string tag)
 		{
@@ -418,87 +500,188 @@ namespace BuildTools.HtmlDistiller
 		}
 
 		/// <summary>
-		/// 
+		/// Determines if the tag is required to be closed (in HTML 4.01)
+		/// </summary>
+		/// <param name="tag">lowercase tag name</param>
+		/// <returns></returns>
+		/// <remarks>
+		/// http://www.w3.org/TR/html401/index/elements.html
+		/// </remarks>
+		protected static bool CloseTagRequired(string tag)
+		{
+			switch (tag)
+			{
+				//case "body":
+				case "dd":
+				case "dt":
+				//case "head":
+				//case "html":
+				case "li":
+				case "option":
+				case "p":
+				//case "tbody":
+				case "td":
+				//case "tfoot":
+				//case "thead":
+				case "th":
+				case "tr":
+				{
+					return false;
+				}
+			}
+			return true;
+		}
+
+		/// <summary>
+		///
 		/// </summary>
 		/// <param name="tag">lowercase tag name</param>
 		/// <returns>the box type for a particular element</returns>
-		protected static HtmlTagBoxType GetBoxType(string tag)
+		protected static HtmlModuleType GetModuleType(string tag)
 		{
-			// http://www.w3.org/TR/html401/sgml/dtd.html#inline
-			// Inline elements are all of the elements in:
-			// inline, fontstyle, phrase, special, formctrl
-
+			// http://www.w3.org/TR/html401/
+			// http://www.w3.org/TR/xhtml-modularization/abstract_modules.html
 			switch (tag)
 			{
-				case "address":
+				case "!--":
+				{
+					return HtmlModuleType.Comment;
+				}
+
 				case "a":
 				case "abbr":
 				case "acronym":
-				case "b":
+				case "address":
+				case "area":
 				case "bdo":
-				case "big":
-				case "br":
-				case "button":
-				case "caption":
 				case "cite":
 				case "code":
 				case "dfn":
-				case "dt":
 				case "em":
+				case "img":
+				case "isindex":
+				case "kbd":
+				case "label":
+				case "legend":
+				case "map":
+				case "q":
+				case "samp":
+				case "span":
+				case "strong":
+				case "var":
+				{
+					return HtmlModuleType.Text|HtmlModuleType.Inline;
+				}
+
+				case "b":
+				case "big":
+				case "font":
+				case "i":
+				case "s":
+				case "small":
+				case "strike":
+				case "sub":
+				case "sup":
+				case "tt":
+				case "u":
+				{
+					return HtmlModuleType.Text|HtmlModuleType.Style|HtmlModuleType.Inline;
+				}
+
+				case "blockquote":
+				case "br":
+				case "center":
+				case "del":
+				case "div":
+				case "fieldset":
 				case "h1":
 				case "h2":
 				case "h3":
 				case "h4":
 				case "h5":
 				case "h6":
-				case "i":
-				case "img":
-				case "input":
-				case "kbd":
-				case "label":
-				case "legend":
-				case "map":
+				case "hr":
+				case "ins":
 				case "p":
 				case "pre":
-				case "q":
-				case "samp":
-				case "select":
-				case "small":
-				case "span":
-				case "strong":
-				case "sub":
-				case "sup":
-				case "textarea":
-				case "tt":
-				case "var":
 				{
-					return HtmlTagBoxType.Inline;
+					return HtmlModuleType.Text|HtmlModuleType.Block;
 				}
-			}
-			return HtmlTagBoxType.Block;
-		}
 
-		/// <summary>
-		/// 
-		/// </summary>
-		/// <param name="tag"></param>
-		/// <returns></returns>
-		/// <remarks>
-		/// http://www.w3.org/TR/html401/index/elements.html
-		/// </remarks>
-		protected static bool OptionalClose(string tag)
-		{
-			switch (tag)
-			{
+				case "dl":
+				case "dd":
+				case "dir":
+				case "dt":
 				case "li":
+				case "menu":
+				case "ol":
+				case "ul":
 				{
-					return true;
+					return HtmlModuleType.List;
 				}
-				default:
+
+				case "table":
+				case "tbody":
+				case "td":
+				case "th":
+				case "thead":
+				case "tfoot":
+				case "tr":
+				case "caption":
+				case "col":
+				case "colgroup":
 				{
-					return false;
+					return HtmlModuleType.Table;
+				}
+
+				case "button":
+				case "form":
+				case "input":
+				case "optgroup":
+				case "option":
+				case "select":
+				case "textarea":
+				{
+					return HtmlModuleType.Form;
+				}
+
+				case "applet":
+				case "embed":
+				case "object":
+				case "param":
+				{
+					return HtmlModuleType.Embeded;
+				}
+
+				case "basefont":
+				case "style":
+				{
+					return HtmlModuleType.Style|HtmlModuleType.Document;
+				}
+
+				case "noscript":
+				case "script":
+				{
+					return HtmlModuleType.Script|HtmlModuleType.Document;
+				}
+
+				case "!doctype":
+				case "base":
+				case "body":
+				case "head":
+				case "html":
+				case "frameset":
+				case "frame":
+				case "iframe":
+				case "link":
+				case "meta":
+				case "noframes":
+				case "title":
+				{
+					return HtmlModuleType.Document;
 				}
 			}
+			return HtmlModuleType.Unknown;
 		}
 
 		#endregion Static Methods
