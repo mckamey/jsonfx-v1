@@ -343,18 +343,23 @@ namespace BuildTools.HtmlDistiller
 
 		#region Methods
 
+		public bool WriteTag(StringBuilder output)
+		{
+			return this.WriteTag(output, true);
+		}
+
 		/// <summary>
 		/// Renders the tag to the output
 		/// </summary>
 		/// <param name="output"></param>
 		/// <returns>true if rendered, false if not</returns>
-		public bool WriteTag(StringBuilder output)
+		protected bool WriteTag(StringBuilder output, bool filter)
 		{
 			if (this.TagType == HtmlTagType.Unknown)
 			{
 				return false;
 			}
-			if (!this.HtmlFilter.FilterTag(this))
+			if (filter && !this.HtmlFilter.FilterTag(this))
 			{
 				return false;
 			}
@@ -463,6 +468,21 @@ namespace BuildTools.HtmlDistiller
 		}
 
 		#endregion Methods
+
+		#region Object Overrides
+
+		/// <summary>
+		/// Renders the tag.  Used mainly for Debugging.
+		/// </summary>
+		/// <returns></returns>
+		public override string ToString()
+		{
+			StringBuilder builder = new StringBuilder();
+			this.WriteTag(builder, false);
+			return builder.ToString();
+		}
+
+		#endregion Object Overrides
 
 		#region Static Methods
 
