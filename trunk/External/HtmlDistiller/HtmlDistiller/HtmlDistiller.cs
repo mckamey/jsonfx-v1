@@ -628,8 +628,6 @@ namespace BuildTools.HtmlDistiller
 
 			string commentName = this.FlushBuffer(startDelim.Length-1);
 
-			bool isClosed = false;
-
 			i = 0;
 			while (!this.IsEOF)
 			{
@@ -638,7 +636,6 @@ namespace BuildTools.HtmlDistiller
 					i++;
 					if (i == endDelim.Length)
 					{
-						isClosed = true;
 						break;
 					}
 				}
@@ -652,7 +649,7 @@ namespace BuildTools.HtmlDistiller
 			}
 
 			string contents = this.FlushBuffer();
-			if (isClosed)
+			if (!this.IsEOF)
 			{
 				this.FlushBuffer(endDelim.Length);
 			}
