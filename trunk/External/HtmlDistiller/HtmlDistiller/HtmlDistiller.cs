@@ -588,6 +588,13 @@ namespace BuildTools.HtmlDistiller
 			return tag;
 		}
 
+		enum CommentType
+		{
+			HtmlComment,
+			CDATA,
+			Declaration
+		}
+
 		/// <summary>
 		/// 
 		/// </summary>
@@ -598,20 +605,58 @@ namespace BuildTools.HtmlDistiller
 		/// </remarks>
 		private HtmlTag ParseComment()
 		{
-			if (this.Peek(1) != '!' ||
-				this.Peek(2) != '-' ||
-				this.Peek(3) != '-')
+			if (this.Peek(1) != '!')
 			{
 				return null;
 			}
-			this.FlushBuffer(4);
+
+			CommentType type = CommentType.Declaration;
+
+			if ((this.Peek(2) == '-') &&
+				(this.Peek(3) == '-'))
+			{
+				type = CommentType.HtmlComment;
+				this.FlushBuffer(4);
+			}
+			else if (
+				(this.Peek(2) == '[') &&
+				(this.Peek(3) == 'C') &&
+				(this.Peek(4) == 'D') &&
+				(this.Peek(5) == 'A') &&
+				(this.Peek(6) == 'T') &&
+				(this.Peek(7) == 'A') &&
+				(this.Peek(8) == '['))
+			{
+				type = CommentType.CDATA;
+				this.FlushBuffer(9);
+			}
+			else
+			{
+				type = CommentType.Declaration;
+				this.FlushBuffer(2);
+			}
 
 			bool isClosed = false;
 			while (!this.IsEOF)
 			{
-				if (this.Current == '-' &&
-					this.Peek(1) == '-' &&
-					this.Peek(2) == '>')
+				if (type == CommentType.HtmlComment &&
+					(this.Current == '-') &&
+					(this.Peek(1) == '-') &&
+					(this.Peek(2) == '>'))
+				{
+					isClosed = true;
+					break;
+				}
+				else if (type == CommentType.CDATA &&
+					(this.Current == '-') &&
+					(this.Peek(1) == '-') &&
+					(this.Peek(2) == '>'))
+				{
+					isClosed = true;
+					break;
+				}
+				else if (type == CommentType.Declaration &&
+					(this.Current == '>'))
 				{
 					isClosed = true;
 					break;
@@ -624,7 +669,14 @@ namespace BuildTools.HtmlDistiller
 			string contents = this.FlushBuffer();
 			if (isClosed)
 			{
-				this.FlushBuffer(3);
+				if (type == CommentType.Declaration)
+				{
+					this.FlushBuffer(1);
+				}
+				else
+				{
+					this.FlushBuffer(3);
+				}
 			}
 
 			HtmlTag comment = new HtmlTag(HtmlTag.CommentTagName, this.htmlFilter);
