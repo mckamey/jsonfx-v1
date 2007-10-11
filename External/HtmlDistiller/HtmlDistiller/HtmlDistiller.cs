@@ -759,36 +759,42 @@ namespace BuildTools.HtmlDistiller
 
 			while (i<style.Length)
 			{
+				name = value = null;
+
 				// skip whitespace
-				while (i<style.Length && Char.IsWhiteSpace(style, i))
+				while (i < style.Length && Char.IsWhiteSpace(style, i))
 				{
 					start = ++i;
 				}
 
 				// style name
-				while (i<style.Length && style[i] != ':')
+				while (i < style.Length && style[i] != ':')
 				{
 					i++;
 				}
 
 				// copy style name
-				name = style.Substring(start, i-start);
+				if (start < style.Length)
+				{
+					name = style.Substring(start, i-start);
+				}
 
 				start = ++i;
 
 				// skip whitespace
-				while (i<style.Length && Char.IsWhiteSpace(style, i))
+				while (i < style.Length && Char.IsWhiteSpace(style, i))
 				{
 					start = ++i;
 				}
 
 				// style value
-				while (i<style.Length && style[i] != ';')
+				while (i < style.Length && style[i] != ';')
 				{
+					// TODO: handle HTML entities (e.g. "&quot;")
 					i++;
 				}
 
-				if (!String.IsNullOrEmpty(name))
+				if (!String.IsNullOrEmpty(name) && start < style.Length)
 				{
 					// copy style value
 					value = style.Substring(start, i-start);
@@ -796,7 +802,6 @@ namespace BuildTools.HtmlDistiller
 					// apply style to tag
 					tag.Styles[name.ToLowerInvariant()] = value;
 				}
-				name = value = null;
 
 				start = ++i;
 			}
