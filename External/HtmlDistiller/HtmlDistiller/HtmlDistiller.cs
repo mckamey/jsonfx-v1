@@ -233,7 +233,7 @@ namespace BuildTools.HtmlDistiller
 		/// Parses the source using the current settings.
 		/// </summary>
 		/// <returns>the output text</returns>
-		private string Parse()
+		public string Parse()
 		{
 			lock (this.SyncLock)
 			{
