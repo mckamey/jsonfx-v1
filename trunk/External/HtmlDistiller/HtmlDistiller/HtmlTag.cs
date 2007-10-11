@@ -76,7 +76,7 @@ namespace BuildTools.HtmlDistiller
 	/// http://www.w3.org/TR/xhtml-modularization/abstract_modules.html#sec_5.2.
 	/// </remarks>
 	[Flags]
-	public enum HtmlModuleType
+	public enum HtmlTaxonomy
 	{
 		/// <summary>
 		/// Plain text, no tag
@@ -196,7 +196,7 @@ namespace BuildTools.HtmlDistiller
 		#region Fields
 
 		private readonly HtmlTagType tagType = HtmlTagType.Unknown;
-		private readonly HtmlModuleType moduleTypes = HtmlModuleType.None;
+		private readonly HtmlTaxonomy taxonomy = HtmlTaxonomy.None;
 		private readonly IHtmlFilter HtmlFilter;
 		private readonly string rawName;
 		private string tagName;
@@ -240,7 +240,7 @@ namespace BuildTools.HtmlDistiller
 				this.tagType = HtmlTagType.BeginTag;
 			}
 
-			this.moduleTypes = HtmlTag.GetModuleType(this.TagName);
+			this.taxonomy = HtmlTag.GetTaxonomyType(this.TagName);
 		}
 
 		#endregion Init
@@ -256,11 +256,11 @@ namespace BuildTools.HtmlDistiller
 		}
 
 		/// <summary>
-		/// Gets the HTML module types for the tag
+		/// Gets the HTML taxonomy for the tag
 		/// </summary>
-		public HtmlModuleType ModuleTypes
+		public HtmlTaxonomy Taxonomy
 		{
-			get { return this.moduleTypes; }
+			get { return this.taxonomy; }
 		}
 
 		/// <summary>
@@ -557,7 +557,7 @@ namespace BuildTools.HtmlDistiller
 		/// </summary>
 		/// <param name="tag">lowercase tag name</param>
 		/// <returns>the box type for a particular element</returns>
-		protected static HtmlModuleType GetModuleType(string tag)
+		protected static HtmlTaxonomy GetTaxonomyType(string tag)
 		{
 			// http://www.w3.org/TR/html401/
 			// http://www.w3.org/TR/xhtml-modularization/abstract_modules.html
@@ -565,7 +565,7 @@ namespace BuildTools.HtmlDistiller
 			{
 				case "!--":
 				{
-					return HtmlModuleType.Comment;
+					return HtmlTaxonomy.Comment;
 				}
 
 				case "a":
@@ -590,7 +590,7 @@ namespace BuildTools.HtmlDistiller
 				case "strong":
 				case "var":
 				{
-					return HtmlModuleType.Text|HtmlModuleType.Inline;
+					return HtmlTaxonomy.Text|HtmlTaxonomy.Inline;
 				}
 
 				case "b":
@@ -605,7 +605,7 @@ namespace BuildTools.HtmlDistiller
 				case "tt":
 				case "u":
 				{
-					return HtmlModuleType.Text|HtmlModuleType.Style|HtmlModuleType.Inline;
+					return HtmlTaxonomy.Text|HtmlTaxonomy.Style|HtmlTaxonomy.Inline;
 				}
 
 				case "blockquote":
@@ -625,7 +625,7 @@ namespace BuildTools.HtmlDistiller
 				case "p":
 				case "pre":
 				{
-					return HtmlModuleType.Text|HtmlModuleType.Block;
+					return HtmlTaxonomy.Text|HtmlTaxonomy.Block;
 				}
 
 				case "dl":
@@ -637,7 +637,7 @@ namespace BuildTools.HtmlDistiller
 				case "ol":
 				case "ul":
 				{
-					return HtmlModuleType.List;
+					return HtmlTaxonomy.List;
 				}
 
 				case "table":
@@ -651,7 +651,7 @@ namespace BuildTools.HtmlDistiller
 				case "col":
 				case "colgroup":
 				{
-					return HtmlModuleType.Table;
+					return HtmlTaxonomy.Table;
 				}
 
 				case "button":
@@ -662,7 +662,7 @@ namespace BuildTools.HtmlDistiller
 				case "select":
 				case "textarea":
 				{
-					return HtmlModuleType.Form;
+					return HtmlTaxonomy.Form;
 				}
 
 				case "applet":
@@ -670,19 +670,19 @@ namespace BuildTools.HtmlDistiller
 				case "object":
 				case "param":
 				{
-					return HtmlModuleType.Embeded;
+					return HtmlTaxonomy.Embeded;
 				}
 
 				case "basefont":
 				case "style":
 				{
-					return HtmlModuleType.Style|HtmlModuleType.Document;
+					return HtmlTaxonomy.Style|HtmlTaxonomy.Document;
 				}
 
 				case "noscript":
 				case "script":
 				{
-					return HtmlModuleType.Script|HtmlModuleType.Document;
+					return HtmlTaxonomy.Script|HtmlTaxonomy.Document;
 				}
 
 				case "!doctype":
@@ -698,10 +698,10 @@ namespace BuildTools.HtmlDistiller
 				case "noframes":
 				case "title":
 				{
-					return HtmlModuleType.Document;
+					return HtmlTaxonomy.Document;
 				}
 			}
-			return HtmlModuleType.Unknown;
+			return HtmlTaxonomy.Unknown;
 		}
 
 		#endregion Static Methods

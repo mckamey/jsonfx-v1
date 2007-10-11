@@ -59,7 +59,7 @@ namespace BuildTools.HtmlDistiller
 		private int start;
 		private int textSize;
 		private Stack<HtmlTag> openTags;
-		private HtmlModuleType moduleTypes;
+		private HtmlTaxonomy taxonomy;
 
 		#endregion Fields
 
@@ -175,9 +175,9 @@ namespace BuildTools.HtmlDistiller
 		}
 
 		/// <summary>
-		/// Gets a value indicating the complexity of tags rendered
+		/// Gets a value indicating the taxonomy of tags rendered
 		/// </summary>
-		public HtmlModuleType ModuleTypes
+		public HtmlTaxonomy Taxonomy
 		{
 			get
 			{
@@ -185,7 +185,7 @@ namespace BuildTools.HtmlDistiller
 				{
 					this.Parse();
 				}
-				return this.moduleTypes;
+				return this.taxonomy;
 			}
 		}
 
@@ -806,7 +806,7 @@ namespace BuildTools.HtmlDistiller
 		{
 			if (tag.WriteTag(this.output))
 			{
-				this.moduleTypes |= tag.ModuleTypes;
+				this.taxonomy |= tag.Taxonomy;
 			}
 		}
 
@@ -921,7 +921,7 @@ namespace BuildTools.HtmlDistiller
 			this.index = this.start = this.textSize = 0;
 			this.output = new StringBuilder(this.source.Length);
 			this.openTags = new Stack<HtmlTag>(10);
-			this.moduleTypes = HtmlModuleType.None;
+			this.taxonomy = HtmlTaxonomy.None;
 		}
 
 		private string EncodeHtmlEntity(char ch)
