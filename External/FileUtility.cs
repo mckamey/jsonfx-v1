@@ -53,7 +53,7 @@ namespace BuildTools.IO
 			else
 			{
 				string dir = Path.GetDirectoryName(filename);
-				if (!String.IsNullOrEmpty(dir) && !Directory.Exists(dir) && dir.IndexOfAny(Path.GetInvalidPathChars) < 0)
+				if (!String.IsNullOrEmpty(dir) && !Directory.Exists(dir) && dir.IndexOfAny(Path.GetInvalidPathChars()) < 0)
 				{
 					// make sure path exists
 					Directory.CreateDirectory(dir);
