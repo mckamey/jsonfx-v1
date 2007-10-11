@@ -176,7 +176,7 @@ namespace BuildTools.HtmlDistiller
 	#endregion Enums
 
 	/// <summary>
-	/// Represents an HTML/XHMTL tag
+	/// Represents an HTML/XHTML tag
 	/// </summary>
 	/// <remarks>
 	/// http://www.w3.org/TR/html401/
@@ -188,6 +188,9 @@ namespace BuildTools.HtmlDistiller
 
 		private const int DefaultAttributeCapacity = 3;
 		private const int DefaultStyleCapacity = 3;
+
+		// these key names are arbitrary
+		// just need to be unique for storing values in attributes table
 		public const string Key_Contents = "";
 		public const string Key_EndDelim = ">";
 
