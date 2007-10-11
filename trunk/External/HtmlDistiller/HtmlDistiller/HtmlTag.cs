@@ -597,6 +597,7 @@ namespace BuildTools.HtmlDistiller
 				case "span":
 				case "strong":
 				case "var":
+				case "wbr":
 				{
 					return HtmlTaxonomy.Text|HtmlTaxonomy.Inline;
 				}
@@ -630,6 +631,7 @@ namespace BuildTools.HtmlDistiller
 				case "h6":
 				case "hr":
 				case "ins":
+				case "nobr":
 				case "p":
 				case "pre":
 				{
@@ -693,7 +695,9 @@ namespace BuildTools.HtmlDistiller
 					return HtmlTaxonomy.Script|HtmlTaxonomy.Document;
 				}
 
-				case "!doctype":
+				case "!":
+				case "?":
+				case "![cdata[":
 				case "base":
 				case "body":
 				case "head":
