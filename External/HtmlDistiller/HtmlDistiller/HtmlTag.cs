@@ -196,7 +196,7 @@ namespace BuildTools.HtmlDistiller
 		#region Fields
 
 		private readonly HtmlTagType tagType = HtmlTagType.Unknown;
-		private readonly HtmlTaxonomy taxonomy = HtmlTaxonomy.None;
+		private HtmlTaxonomy taxonomy = HtmlTaxonomy.None;
 		private readonly IHtmlFilter HtmlFilter;
 		private readonly string rawName;
 		private string tagName;
@@ -239,8 +239,6 @@ namespace BuildTools.HtmlDistiller
 			{
 				this.tagType = HtmlTagType.BeginTag;
 			}
-
-			this.taxonomy = HtmlTag.GetTaxonomyType(this.TagName);
 		}
 
 		#endregion Init
@@ -260,7 +258,14 @@ namespace BuildTools.HtmlDistiller
 		/// </summary>
 		public HtmlTaxonomy Taxonomy
 		{
-			get { return this.taxonomy; }
+			get
+			{
+				if (this.taxonomy == HtmlTaxonomy.None)
+				{
+					this.taxonomy = HtmlTag.GetTaxonomy(this.TagName);
+				}
+				return this.taxonomy;
+			}
 		}
 
 		/// <summary>
@@ -557,7 +562,7 @@ namespace BuildTools.HtmlDistiller
 		/// </summary>
 		/// <param name="tag">lowercase tag name</param>
 		/// <returns>the box type for a particular element</returns>
-		protected static HtmlTaxonomy GetTaxonomyType(string tag)
+		protected static HtmlTaxonomy GetTaxonomy(string tag)
 		{
 			// http://www.w3.org/TR/html401/
 			// http://www.w3.org/TR/xhtml-modularization/abstract_modules.html
