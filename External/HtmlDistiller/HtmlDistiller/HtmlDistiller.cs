@@ -671,7 +671,7 @@ namespace BuildTools.HtmlDistiller
 			if (this.Current == '/')
 			{
 				this.FlushBuffer(1);
-				return null;
+				return String.Empty;
 			}
 
 			while (!this.IsEOF)
@@ -701,7 +701,7 @@ namespace BuildTools.HtmlDistiller
 
 			if (this.Current != '=')
 			{
-				return null;
+				return String.Empty;
 			}
 
 			this.FlushBuffer(1);
@@ -740,7 +740,7 @@ namespace BuildTools.HtmlDistiller
 			}
 
 			string value = this.FlushBuffer();
-			if (isQuoted)
+			if (isQuoted && !this.IsEOF)
 			{
 				this.FlushBuffer(1);
 			}
@@ -759,7 +759,7 @@ namespace BuildTools.HtmlDistiller
 
 			while (i<style.Length)
 			{
-				name = value = null;
+				name = value = String.Empty;
 
 				// skip whitespace
 				while (i < style.Length && Char.IsWhiteSpace(style, i))
