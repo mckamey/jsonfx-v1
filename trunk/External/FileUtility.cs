@@ -88,7 +88,7 @@ namespace BuildTools.IO
 					Directory.CreateDirectory(dir);
 				}
 				string file = Path.GetFileName(filename);
-				if (!String.IsNullOrEmpty(dir) && dir.IndexOfAny(Path.GetInvalidFileNameChars()) >= 0)
+				if (!String.IsNullOrEmpty(file) && file.IndexOfAny(Path.GetInvalidFileNameChars()) >= 0)
 				{
 					return false;
 				}
