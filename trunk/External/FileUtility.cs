@@ -29,19 +29,44 @@
 #endregion BuildTools License
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 
 namespace BuildTools.IO
 {
 	public class FileUtility
 	{
+		#region Constants
+
+		private static readonly char[] IllegalChars;
+
+		#endregion Constants
+
+		#region Init
+
+		static FileUtility()
+		{
+			List<char> chars = new List<char>(Path.GetInvalidPathChars());
+			foreach (char ch in Path.GetInvalidFileNameChars())
+			{
+				if (!chars.Contains(ch) && ch != Path.DirectorySeparatorChar)
+				{
+					chars.Add(ch);
+				}
+			}
+			FileUtility.IllegalChars = chars.ToArray();
+		}
+
+		#endregion Init
+
 		#region Methods
 
 		/// <summary>
 		/// Makes sure directory exists and if file exists is not readonly.
 		/// </summary>
 		/// <param name="filename"></param>
-		public static void PrepSavePath(string filename)
+		/// <returns>if valid path</returns>
+		public static bool PrepSavePath(string filename)
 		{
 			if (File.Exists(filename))
 			{
@@ -53,12 +78,22 @@ namespace BuildTools.IO
 			else
 			{
 				string dir = Path.GetDirectoryName(filename);
-				if (!String.IsNullOrEmpty(dir) && !Directory.Exists(dir) && dir.IndexOfAny(Path.GetInvalidPathChars()) < 0)
+				if (!String.IsNullOrEmpty(dir) && dir.IndexOfAny(FileUtility.IllegalChars) >= 0)
+				{
+					return false;
+				}
+				if (!Directory.Exists(dir))
 				{
 					// make sure path exists
 					Directory.CreateDirectory(dir);
 				}
+				string file = Path.GetFileName(filename);
+				if (!String.IsNullOrEmpty(dir) && dir.IndexOfAny(Path.GetInvalidFileNameChars()) >= 0)
+				{
+					return false;
+				}
 			}
+			return true;
 		}
 
 		#endregion Methods
