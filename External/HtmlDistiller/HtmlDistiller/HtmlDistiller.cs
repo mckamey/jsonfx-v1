@@ -286,22 +286,15 @@ namespace BuildTools.HtmlDistiller
 
 									#region repair mismatched tags
 
-									bool repairable = false;
-									foreach (HtmlTag possibleTag in this.openTags)
-									{
-										// hopefully right near top, but if isn't in stack
-										// then it doesn't help to attempt to repair
-										if (tag.TagName == possibleTag.TagName)
-										{
-											repairable = true;
-											break;
-										}
-									}
+									// if isn't in stack then it doesn't help to attempt to repair
+									bool repairable = this.openTags.Contains(tag.CreateOpenTag());
 
 									if (!repairable)
 									{
 										// put the tag back on
 										this.openTags.Push(openTag);
+
+										// ignore end tag
 										break;
 									}
 									else
@@ -526,21 +519,25 @@ namespace BuildTools.HtmlDistiller
 			HtmlTag tag = this.ParseComment("<!--", "-->");
 			if (tag != null)
 			{
+				// standard HTML/XML/SGML comment found
 				return tag;
 			}
 			tag = this.ParseComment("<![CDATA[", "]]>");
 			if (tag != null)
 			{
+				// CDATA section found
 				return tag;
 			}
 			tag = this.ParseComment("<!", ">");
 			if (tag != null)
 			{
+				// SGML processing instruction (usually DOCTYPE)
 				return tag;
 			}
 			tag = this.ParseComment("<?", "?>");
 			if (tag != null)
 			{
+				// XML/SGML processing instruction (usually XML declaration)
 				return tag;
 			}
 

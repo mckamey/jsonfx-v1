@@ -475,6 +475,21 @@ namespace BuildTools.HtmlDistiller
 			return new HtmlTag('/'+this.rawName, this.HtmlFilter);
 		}
 
+		/// <summary>
+		/// Generates an open tag which matches this tag
+		/// </summary>
+		/// <returns></returns>
+		public HtmlTag CreateOpenTag()
+		{
+			if (this.TagType != HtmlTagType.EndTag &&
+				HtmlTag.CloseTagRequired(this.TagName))
+			{
+				return null;
+			}
+
+			return new HtmlTag(this.rawName, this.HtmlFilter);
+		}
+
 		#endregion Methods
 
 		#region Object Overrides
@@ -490,6 +505,33 @@ namespace BuildTools.HtmlDistiller
 			return builder.ToString();
 		}
 
+		public override bool Equals(object obj)
+		{
+			HtmlTag that = obj as HtmlTag;
+			if (that == null)
+			{
+				return base.Equals(obj);
+			}
+			return this.rawName.Equals(that.rawName) && this.tagType.Equals(that.tagType);
+		}
+
+		public override int GetHashCode()
+		{
+			int hashcode = this.rawName.GetHashCode();
+
+			if (this.HasAttributes)
+			{
+				hashcode ^= this.attributes.GetHashCode();
+			}
+
+			if (this.HasStyles)
+			{
+				hashcode ^= this.styles.GetHashCode();
+			}
+
+			return hashcode;
+		}
+
 		#endregion Object Overrides
 
 		#region Static Methods
@@ -502,6 +544,7 @@ namespace BuildTools.HtmlDistiller
 		/// <remarks>
 		/// http://www.w3.org/TR/html401/index/elements.html
 		/// http://www.w3.org/TR/xhtml-modularization/abstract_modules.html#sec_5.2.
+		/// http://www.w3.org/TR/WD-html40-970917/index/elements.html
 		/// </remarks>
 		protected static bool IsFullTag(string tag)
 		{
@@ -512,6 +555,7 @@ namespace BuildTools.HtmlDistiller
 				case "basefont":
 				case "br":
 				case "col":
+				case "embed":
 				case "frame":
 				case "hr":
 				case "img":
@@ -534,24 +578,26 @@ namespace BuildTools.HtmlDistiller
 		/// <returns></returns>
 		/// <remarks>
 		/// http://www.w3.org/TR/html401/index/elements.html
+		/// http://www.w3.org/TR/WD-html40-970917/index/elements.html
 		/// </remarks>
 		protected static bool CloseTagRequired(string tag)
 		{
 			switch (tag)
 			{
-				//case "body":
+				case "body":
+				case "colgroup":
 				case "dd":
 				case "dt":
-				//case "head":
-				//case "html":
+				case "head":
+				case "html":
 				case "li":
 				case "option":
 				case "p":
-				//case "tbody":
+				case "tbody":
 				case "td":
-				//case "tfoot":
-				//case "thead":
+				case "tfoot":
 				case "th":
+				case "thead":
 				case "tr":
 				{
 					return false;
@@ -569,6 +615,7 @@ namespace BuildTools.HtmlDistiller
 		{
 			// http://www.w3.org/TR/html401/
 			// http://www.w3.org/TR/xhtml-modularization/abstract_modules.html
+			// http://www.w3.org/html/wg/html5/#elements0
 			switch (tag)
 			{
 				case "!--":
@@ -677,6 +724,7 @@ namespace BuildTools.HtmlDistiller
 
 				case "applet":
 				case "embed":
+				case "noembed":
 				case "object":
 				case "param":
 				{
