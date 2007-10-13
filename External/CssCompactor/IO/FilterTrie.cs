@@ -95,12 +95,10 @@ namespace BuildTools.IO
 				{
 					if (!node.Contains(ch))
 					{
-						node[ch] = node = new TrieNode<char, string>(DefaultTrieWidth);
+						node[ch] = new TrieNode<char, string>(DefaultTrieWidth);
 					}
-					else
-					{
-						node = (TrieNode<char, string>)node[ch];
-					}
+
+					node = (TrieNode<char, string>)node[ch];
 				}
 
 				// at the end of StartToken path is the EndToken
