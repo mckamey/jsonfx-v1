@@ -426,7 +426,7 @@ namespace BuildTools.IO
 		private int Filter(char ch)
 		{
 			int lookAhead = 0;
-			TrieNode<char, string> node = this.trie[ch];
+			ITrieNode<char, string> node = this.trie[ch];
 
 			while (node != null)
 			{
