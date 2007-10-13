@@ -95,11 +95,11 @@ namespace BuildTools.IO
 				{
 					if (!node.Contains(ch))
 					{
-						node = node[ch] = new TrieNode<char, string>(DefaultTrieWidth);
+						node[ch] = node = new TrieNode<char, string>(DefaultTrieWidth);
 					}
 					else
 					{
-						node = node[ch];
+						node = (TrieNode<char, string>)node[ch];
 					}
 				}
 
