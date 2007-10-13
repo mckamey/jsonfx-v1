@@ -874,9 +874,20 @@ namespace BuildTools.HtmlDistiller
 
 		private void WriteBuffer()
 		{
+			// do not callback on empty strings
 			if (this.start < this.index)
 			{
-				this.output.Append(this.source, this.start, this.index-this.start);
+				string replacement;
+				if (this.htmlFilter.FilterLiteral(this.source, this.start, this.index, out replacement))
+				{
+					// filter has altered the literal
+					this.output.Append(replacement);
+				}
+				else
+				{
+					// use the original
+					this.output.Append(this.source, this.start, this.index-this.start);
+				}
 			}
 			this.start = this.index;
 		}
@@ -889,7 +900,7 @@ namespace BuildTools.HtmlDistiller
 		private string FlushBuffer(int skipCount)
 		{
 			this.index += skipCount;
-			string buffer = (this.index > this.start) ?
+			string buffer = (this.start < this.index) ?
 				this.source.Substring(this.start, this.index-this.start):
 				String.Empty;
 			this.start = this.index;

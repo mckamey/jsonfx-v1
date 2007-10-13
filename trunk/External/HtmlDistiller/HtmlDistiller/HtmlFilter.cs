@@ -40,29 +40,45 @@ namespace BuildTools.HtmlDistiller.Filters
 		#region Methods
 
 		/// <summary>
-		/// Filters tags
+		/// Filters tags, optionally allowing altering of tag
 		/// </summary>
 		/// <param name="tag">tag name</param>
-		/// <returns></returns>
+		/// <returns>if tag should be rendered</returns>
 		bool FilterTag(HtmlTag tag);
 
 		/// <summary>
-		/// Filters attributes
+		/// Filters attributes, optionally allowing altering of attribute value
 		/// </summary>
 		/// <param name="tag">tag name</param>
 		/// <param name="attribute">attribute name</param>
 		/// <param name="value">attribute value</param>
-		/// <returns></returns>
+		/// <returns>if attribute should be rendered</returns>
 		bool FilterAttribute(string tag, string attribute, ref string value);
 
 		/// <summary>
-		/// Filters styles
+		/// Filters styles, optionally allowing altering of style value
 		/// </summary>
 		/// <param name="tag">tag name</param>
 		/// <param name="attribute">style name</param>
 		/// <param name="value">style value</param>
-		/// <returns></returns>
+		/// <returns>if style should be rendered</returns>
 		bool FilterStyle(string tag, string style, ref string value);
+
+		/// <summary>
+		/// Filters literals, optionally allowing replacement of literal value
+		/// </summary>
+		/// <param name="source">original string</param>
+		/// <param name="start">starting index inclusive</param>
+		/// <param name="end">ending index exclusive</param>
+		/// <param name="replacement">a replacement string</param>
+		/// <returns>true if <paramref name="replace"/> should be used to replace literal</returns>
+		/// <remarks>
+		/// This uses the original source string, start and end rather than passing a substring
+		/// in order to not generate a strings for every literal.  The internals of HtmlDistiller
+		/// do not produce extra strings for literals so for efficiency sake, care should be taken
+		/// so that filters do not produce excessive extra strings either.
+		/// </remarks>
+		bool FilterLiteral(string source, int start, int end, out string replacement);
 
 		#endregion Methods
 	}
@@ -105,6 +121,20 @@ namespace BuildTools.HtmlDistiller.Filters
 		/// <returns></returns>
 		public virtual bool FilterStyle(string tag, string style, ref string value)
 		{
+			return false;
+		}
+
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="source"></param>
+		/// <param name="start"></param>
+		/// <param name="end"></param>
+		/// <param name="replacement"></param>
+		/// <returns></returns>
+		public virtual bool FilterLiteral(string source, int start, int end, out string replacement)
+		{
+			replacement = null;
 			return false;
 		}
 
@@ -202,6 +232,20 @@ namespace BuildTools.HtmlDistiller.Filters
 			return false;
 		}
 
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="source"></param>
+		/// <param name="start"></param>
+		/// <param name="end"></param>
+		/// <param name="replacement"></param>
+		/// <returns></returns>
+		public virtual bool FilterLiteral(string source, int start, int end, out string replacement)
+		{
+			replacement = null;
+			return false;
+		}
+
 		#endregion IHtmlFilter Members
 	}
 
@@ -210,6 +254,33 @@ namespace BuildTools.HtmlDistiller.Filters
 	/// </summary>
 	public class SafeHtmlFilter : IHtmlFilter
 	{
+		#region Constants
+
+		private const string WordBreak = "<wbr />&shy;";
+		private readonly int MaxWordLength;
+
+		#endregion Constants
+
+		#region Init
+
+		/// <summary>
+		/// Ctor.
+		/// </summary>
+		public SafeHtmlFilter() : this(0)
+		{
+		}
+
+		/// <summary>
+		/// Ctor.
+		/// </summary>
+		/// <param name="maxWordLength"></param>
+		public SafeHtmlFilter(int maxWordLength)
+		{
+			this.MaxWordLength = maxWordLength;
+		}
+
+		#endregion Init
+
 		#region IHtmlFilter Members
 
 		/// <summary>
@@ -261,6 +332,7 @@ namespace BuildTools.HtmlDistiller.Filters
 				case "tt":
 				case "u":
 				case "ul":
+				case "wbr":
 				{
 					return true;
 				}
@@ -413,6 +485,57 @@ namespace BuildTools.HtmlDistiller.Filters
 			return true;
 		}
 
+		/// <summary>
+		/// Optionally allows breaking of long words
+		/// </summary>
+		/// <param name="source"></param>
+		/// <param name="start"></param>
+		/// <param name="end"></param>
+		/// <param name="replacement"></param>
+		/// <returns></returns>
+		public virtual bool FilterLiteral(string source, int start, int end, out string replacement)
+		{
+			replacement = null;
+
+			if (this.MaxWordLength <= 0)
+			{
+				return false;
+			}
+
+			int lastOutput = start,
+				lastSpace = start;
+
+			for (int i=start; i<end; i++)
+			{
+				if (Char.IsWhiteSpace(source[i]))
+				{
+					lastSpace = i;
+				}
+				if (i-lastSpace > this.MaxWordLength)
+				{
+					// append all before break
+					replacement += source.Substring(lastOutput, i-lastOutput);
+					replacement += SafeHtmlFilter.WordBreak;
+					lastSpace = lastOutput = i;
+				}
+			}
+
+			if (replacement != null)
+			{
+				if (lastOutput < end)
+				{
+					// append remaining string
+					replacement += source.Substring(lastOutput, end-lastOutput);
+				}
+
+				// a replacement was generated
+				return true;
+			}
+
+			// don't replace since didn't need to
+			return false;
+		}
+
 		#endregion IHtmlFilter Members
 	}
 
@@ -428,7 +551,7 @@ namespace BuildTools.HtmlDistiller.Filters
 		/// </summary>
 		/// <param name="tag"></param>
 		/// <returns></returns>
-		public bool FilterTag(HtmlTag tag)
+		public virtual bool FilterTag(HtmlTag tag)
 		{
 			return true;
 		}
@@ -440,7 +563,7 @@ namespace BuildTools.HtmlDistiller.Filters
 		/// <param name="name"></param>
 		/// <param name="value"></param>
 		/// <returns></returns>
-		public bool FilterAttribute(string tag, string attribute, ref string value)
+		public virtual bool FilterAttribute(string tag, string attribute, ref string value)
 		{
 			return true;
 		}
@@ -452,9 +575,23 @@ namespace BuildTools.HtmlDistiller.Filters
 		/// <param name="name"></param>
 		/// <param name="value"></param>
 		/// <returns></returns>
-		public bool FilterStyle(string tag, string style, ref string value)
+		public virtual bool FilterStyle(string tag, string style, ref string value)
 		{
 			return true;
+		}
+
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="source"></param>
+		/// <param name="start"></param>
+		/// <param name="end"></param>
+		/// <param name="replacement"></param>
+		/// <returns></returns>
+		public virtual bool FilterLiteral(string source, int start, int end, out string replacement)
+		{
+			replacement = null;
+			return false;
 		}
 
 		#endregion IHtmlFilter Members

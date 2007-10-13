@@ -121,6 +121,20 @@ namespace BuildTools.HtmlDistiller.Filters
 			return this.HtmlFilter.FilterStyle(tag, style, ref value);
 		}
 
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="source"></param>
+		/// <param name="start"></param>
+		/// <param name="end"></param>
+		/// <param name="replacement"></param>
+		/// <returns></returns>
+		public virtual bool FilterLiteral(string source, int start, int end, out string replacement)
+		{
+			replacement = null;
+			return false;
+		}
+
 		#endregion IHtmlFilter Members
 
 		#region Methods
