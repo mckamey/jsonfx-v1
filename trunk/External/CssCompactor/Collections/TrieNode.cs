@@ -60,7 +60,7 @@ namespace BuildTools.Collections
 		}
 
 		/// <summary>
-		/// 
+		/// Ctor.
 		/// </summary>
 		/// <param name="capacity"></param>
 		public TrieNode(int capacity)
