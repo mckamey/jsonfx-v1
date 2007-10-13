@@ -41,12 +41,12 @@ namespace BuildTools.Collections
 	/// <remarks>
 	/// http://en.wikipedia.org/wiki/Trie
 	/// </remarks>
-	public class TrieNode<TKey, TValue>
+	public class TrieNode<TKey, TValue> : ITrieNode<TKey, TValue>
 	{
 		#region Fields
 
+		private readonly IDictionary<TKey, ITrieNode<TKey, TValue>> Children;
 		private TValue value = default(TValue);
-		private readonly IDictionary<TKey, TrieNode<TKey, TValue>> children;
 
 		#endregion Fields
 
@@ -67,11 +67,11 @@ namespace BuildTools.Collections
 		{
 			if (capacity < 1)
 			{
-				this.children = new Dictionary<TKey, TrieNode<TKey, TValue>>();
+				this.Children = new Dictionary<TKey, ITrieNode<TKey, TValue>>();
 			}
 			else
 			{
-				this.children = new Dictionary<TKey, TrieNode<TKey, TValue>>(capacity);
+				this.Children = new Dictionary<TKey, ITrieNode<TKey, TValue>>(capacity);
 			}
 		}
 
@@ -79,17 +79,17 @@ namespace BuildTools.Collections
 
 		#region Properties
 
-		public TrieNode<TKey, TValue> this[TKey key]
+		public ITrieNode<TKey, TValue> this[TKey key]
 		{
 			get
 			{
-				if (!this.children.ContainsKey(key))
+				if (!this.Children.ContainsKey(key))
 				{
 					return null;
 				}
-				return this.children[key];
+				return this.Children[key];
 			}
-			protected set { this.children[key] = value; }
+			protected set { this.Children[key] = value; }
 		}
 
 		public TValue Value
@@ -117,10 +117,43 @@ namespace BuildTools.Collections
 
 		#region Methods
 
+		/// <summary>
+		/// Determines if child exists
+		/// </summary>
+		/// <param name="key"></param>
+		/// <returns></returns>
 		public bool Contains(TKey key)
 		{
-			return this.children.ContainsKey(key);
+			return this.Children.ContainsKey(key);
 		}
+
+		#endregion Methods
+	}
+
+	public interface ITrieNode<TKey, TValue>
+	{
+		#region Properties
+
+		ITrieNode<TKey, TValue> this[TKey key]
+		{
+			get;
+		}
+
+		TValue Value
+		{
+			get;
+		}
+
+		bool HasValue
+		{
+			get;
+		}
+
+		#endregion Methods
+
+		#region Methods
+
+		bool Contains(TKey key);
 
 		#endregion Methods
 	}
