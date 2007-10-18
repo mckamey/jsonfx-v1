@@ -437,6 +437,7 @@ namespace BuildTools.HtmlDistiller.Filters
 				{
 					switch (attribute)
 					{
+						case "align":
 						case "colspan":
 						case "rowspan":
 						case "bgcolor":
