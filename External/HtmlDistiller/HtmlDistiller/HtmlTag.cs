@@ -651,6 +651,7 @@ namespace BuildTools.HtmlDistiller
 
 				case "b":
 				case "big":
+				case "blink":
 				case "font":
 				case "i":
 				case "s":
