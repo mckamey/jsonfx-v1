@@ -304,6 +304,7 @@ namespace BuildTools.HtmlDistiller.Filters
 				case "area":
 				case "b":
 				case "bdo":
+				case "bgsound":
 				case "big":
 				case "blink":
 				case "blockquote":
@@ -341,7 +342,9 @@ namespace BuildTools.HtmlDistiller.Filters
 				case "legend":
 				case "li":
 				case "map":
+				case "marquee":
 				case "menu":
+				//case "meta": // use for redirects, is this safe?
 				case "nobr":
 				case "ol":
 				case "p":
@@ -350,6 +353,7 @@ namespace BuildTools.HtmlDistiller.Filters
 				case "s":
 				case "samp":
 				case "small":
+				case "sound":
 				case "span":
 				case "strike":
 				case "strong":
@@ -387,6 +391,11 @@ namespace BuildTools.HtmlDistiller.Filters
 		public virtual bool FilterAttribute(string tag, string attribute, ref string value)
 		{
 			attribute = attribute.ToLowerInvariant();
+			if (attribute == "id" || attribute.StartsWith("on"))
+			{
+				// deny for all tags
+				return false;
+			}
 			if (attribute == "class")
 			{
 				// allow for all tags
@@ -402,6 +411,32 @@ namespace BuildTools.HtmlDistiller.Filters
 					{
 						case "href":
 						case "target":
+						{
+							return true;
+						}
+					}
+					return false;
+				}
+				case "bgsound":
+				case "sound":
+				{
+					switch (attribute)
+					{
+						case "balance":
+						case "src":
+						case "loop":
+						case "volume":
+						{
+							return true;
+						}
+					}
+					return false;
+				}
+				case "div":
+				{
+					switch (attribute)
+					{
+						case "align":
 						{
 							return true;
 						}
@@ -425,9 +460,11 @@ namespace BuildTools.HtmlDistiller.Filters
 				{
 					switch (attribute)
 					{
+						case "align":
 						case "color":
 						case "noshade":
 						case "size":
+						case "width":
 						{
 							return true;
 						}
@@ -439,10 +476,35 @@ namespace BuildTools.HtmlDistiller.Filters
 					switch (attribute)
 					{
 						case "alt":
+						case "border":
 						case "height":
+						case "lowsrc":
 						case "src":
 						case "title":
 						case "width":
+						{
+							return true;
+						}
+					}
+					return false;
+				}
+				case "p":
+				{
+					switch (attribute)
+					{
+						case "align":
+						{
+							return true;
+						}
+					}
+					return false;
+				}
+				case "ol":
+				case "ul":
+				{
+					switch (attribute)
+					{
+						case "type":
 						{
 							return true;
 						}

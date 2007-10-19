@@ -616,6 +616,7 @@ namespace BuildTools.HtmlDistiller
 			// http://www.w3.org/TR/html401/
 			// http://www.w3.org/TR/xhtml-modularization/abstract_modules.html
 			// http://www.w3.org/html/wg/html5/#elements0
+			// non-standard: http://www.mountaindragon.com/html/text.htm
 			switch (tag)
 			{
 				case "!--":
@@ -654,6 +655,7 @@ namespace BuildTools.HtmlDistiller
 				case "blink":
 				case "font":
 				case "i":
+				case "marquee":
 				case "s":
 				case "small":
 				case "strike":
@@ -666,6 +668,7 @@ namespace BuildTools.HtmlDistiller
 				}
 
 				case "blockquote":
+				case "bq":
 				case "br":
 				case "center":
 				case "del":
@@ -690,6 +693,7 @@ namespace BuildTools.HtmlDistiller
 				case "dd":
 				case "dir":
 				case "dt":
+				case "lh":
 				case "li":
 				case "menu":
 				case "ol":
@@ -724,10 +728,12 @@ namespace BuildTools.HtmlDistiller
 				}
 
 				case "applet":
+				case "bgsound":
 				case "embed":
 				case "noembed":
 				case "object":
 				case "param":
+				case "sound":
 				{
 					return HtmlTaxonomy.Embeded;
 				}
