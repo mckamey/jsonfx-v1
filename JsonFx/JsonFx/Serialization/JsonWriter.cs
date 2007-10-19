@@ -333,6 +333,7 @@ namespace JsonFx.Serialization
 							this.writer.Write("\\t");
 							continue;
 						}
+						case '<':
 						default:
 						{
 							this.writer.Write("\\u{0:X4}", Char.ConvertToUtf32(value, i));
