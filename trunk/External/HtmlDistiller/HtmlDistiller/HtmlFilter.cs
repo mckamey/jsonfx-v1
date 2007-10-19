@@ -298,16 +298,31 @@ namespace BuildTools.HtmlDistiller.Filters
 			{
 				//case "!--":// comments can hold IE conditional logic
 				case "a":
+				case "abbr":
+				case "acronym":
+				case "address":
+				case "area":
 				case "b":
+				case "bdo":
+				case "big":
 				case "blink":
 				case "blockquote":
 				case "br":
+				case "caption":
 				case "center":
+				case "cite":
+				case "code":
+				case "col":
+				case "colgroup":
 				case "dd":
+				case "del":
+				case "dfn":
+				case "dir":
 				case "div":
 				case "dl":
 				case "dt":
 				case "em":
+				case "fieldset":
 				case "font":
 				case "h1":
 				case "h2":
@@ -317,21 +332,40 @@ namespace BuildTools.HtmlDistiller.Filters
 				case "h6":
 				case "hr":
 				case "i":
+				case "iframe":
 				case "img":
-				case "ol":
+				case "ins":
+				case "isindex":
+				case "kbd":
+				case "label":
+				case "legend":
 				case "li":
+				case "map":
+				case "menu":
+				case "nobr":
+				case "ol":
 				case "p":
+				case "pre":
+				case "q":
+				case "s":
+				case "samp":
+				case "small":
 				case "span":
+				case "strike":
 				case "strong":
+				case "sub":
+				case "sup":
 				case "table":
 				case "tbody":
 				case "td":
-				case "thead":
+				case "tfoot":
 				case "th":
+				case "thead":
 				case "tr":
 				case "tt":
 				case "u":
 				case "ul":
+				case "var":
 				case "wbr":
 				{
 					return true;
