@@ -292,7 +292,9 @@ namespace JsonFx.Serialization
 
 			for (int i = start; i < length; i++)
 			{
-				if (value[i] <= '\u001F' || value[i] >= '\u007F' ||
+				if (value[i] <= '\u001F' ||
+					value[i] >= '\u007F' ||
+					value[i] == '<' ||
 					value[i] == JsonReader.OperatorStringDelim ||
 					value[i] == JsonReader.OperatorCharEscape)
 				{
@@ -333,7 +335,6 @@ namespace JsonFx.Serialization
 							this.writer.Write("\\t");
 							continue;
 						}
-						case '<':
 						default:
 						{
 							this.writer.Write("\\u{0:X4}", Char.ConvertToUtf32(value, i));
