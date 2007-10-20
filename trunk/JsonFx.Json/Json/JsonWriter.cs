@@ -74,16 +74,28 @@ namespace JsonFx.Json
 
 		#region Init
 
+		/// <summary>
+		/// Ctor.
+		/// </summary>
+		/// <param name="output">TextWriter for writing</param>
 		public JsonWriter(TextWriter output)
 		{
 			this.writer = output;
 		}
 
+		/// <summary>
+		/// Ctor.
+		/// </summary>
+		/// <param name="output">Stream for writing</param>
 		public JsonWriter(Stream output)
 		{
 			this.writer = new StreamWriter(output, Encoding.UTF8);
 		}
 
+		/// <summary>
+		/// Ctor.
+		/// </summary>
+		/// <param name="output">File name for writing</param>
 		public JsonWriter(string outputFileName)
 		{
 			Stream stream = null;
@@ -100,6 +112,10 @@ namespace JsonFx.Json
 			this.writer = new StreamWriter(stream, Encoding.UTF8);
 		}
 
+		/// <summary>
+		/// Ctor.
+		/// </summary>
+		/// <param name="output">StringBuilder for appending</param>
 		public JsonWriter(StringBuilder output)
 		{
 			this.writer = new StringWriter(output, System.Globalization.CultureInfo.InvariantCulture);
