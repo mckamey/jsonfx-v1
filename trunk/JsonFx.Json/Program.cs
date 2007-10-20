@@ -84,9 +84,8 @@ namespace BuildTools.Json
 						try
 						{
 							obj = jsonReader.Deserialize();
-							writer.WriteLine("\"{0}\" passed producing {1}",
-								unitTest,
-								(obj == null) ? "null" : obj.GetType().Name);
+							writer.WriteLine("PASSED: {0}", unitTest.Replace(UnitTestsFolder, ""));
+							writer.WriteLine("Result: {0}", (obj == null) ? "null" : obj.GetType().Name);
 						}
 						catch (JsonSerializationException ex)
 						{
@@ -105,8 +104,8 @@ namespace BuildTools.Json
 								}
 							}
 
-							writer.WriteLine("\"{0}\" failed with message:", unitTest);
-							writer.WriteLine("\t\"{0}\" ({1}, {2})", ex.Message, line, col);
+							writer.WriteLine("FAILED: {0}", unitTest.Replace(UnitTestsFolder, ""));
+							writer.WriteLine("\"{0}\" ({1}, {2})", ex.Message, line, col);
 							continue;
 						}
 
