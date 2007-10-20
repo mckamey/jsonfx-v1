@@ -344,6 +344,7 @@ namespace JsonFx.Json
 				if (value[i] <= '\u001F' ||
 					value[i] >= '\u007F' ||
 					value[i] == '<' ||
+					value[i] == '\t' ||
 					value[i] == JsonReader.OperatorStringDelim ||
 					value[i] == JsonReader.OperatorCharEscape)
 				{
