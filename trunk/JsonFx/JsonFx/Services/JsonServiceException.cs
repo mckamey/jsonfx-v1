@@ -1,6 +1,6 @@
 using System;
 
-namespace JsonFx.Services
+namespace JsonFx.JsonRpc
 {
 	public class JsonServiceException : InvalidOperationException
 	{

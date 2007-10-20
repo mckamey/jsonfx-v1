@@ -1,12 +1,12 @@
 using System;
 
-namespace JsonFx.Services
+namespace JsonFx.JsonRpc
 {
 	/// <summary>
 	/// Specifies the service information to use when serializing to JSON.
 	/// </summary>
 	[AttributeUsage(AttributeTargets.Class, AllowMultiple = false)]
-	public sealed class JsonServiceAttribute : JsonFx.Services.JsonDocsAttribute
+	public sealed class JsonServiceAttribute : JsonFx.JsonRpc.JsonDocsAttribute
 	{
 		#region Fields
 

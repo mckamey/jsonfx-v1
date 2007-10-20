@@ -5,7 +5,7 @@ using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
-using JsonFx.JSON;
+using JsonFx.Json;
 
 namespace JsonFx.UI
 {

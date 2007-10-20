@@ -1,8 +1,8 @@
 using System;
 
-using JsonFx.JSON;
+using JsonFx.Json;
 
-namespace JsonFx.Services.Discovery
+namespace JsonFx.JsonRpc.Discovery
 {
 	public abstract class JsonDescriptionBase
 	{

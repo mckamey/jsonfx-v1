@@ -4,10 +4,10 @@ using System.Reflection;
 using System.Web;
 using System.Web.Compilation;
 
-using JsonFx.JSON;
-using JsonFx.Services;
-using JsonFx.Services.Discovery;
-using JsonFx.Services.Proxy;
+using JsonFx.Json;
+using JsonFx.JsonRpc;
+using JsonFx.JsonRpc.Discovery;
+using JsonFx.JsonRpc.Proxy;
 using JsonFx.UI;
 
 namespace JsonFx.Handlers

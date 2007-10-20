@@ -1,6 +1,6 @@
 using System;
 
-namespace JsonFx.JSON
+namespace JsonFx.Json
 {
 	public class JsonSerializationException : InvalidOperationException
 	{

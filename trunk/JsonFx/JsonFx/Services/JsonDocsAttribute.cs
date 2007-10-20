@@ -1,11 +1,11 @@
 using System;
 
-namespace JsonFx.Services
+namespace JsonFx.JsonRpc
 {
 	/// <summary>
 	/// Gets the help url for use in Json service description.
 	/// </summary>
-	public abstract class JsonDocsAttribute : JsonFx.JSON.JsonNameAttribute
+	public abstract class JsonDocsAttribute : JsonFx.Json.JsonNameAttribute
 	{
 		#region Fields
 

@@ -5,7 +5,7 @@ using System.Collections.Generic;
 using System.Reflection;
 using System.IO;
 
-namespace JsonFx.JSON
+namespace JsonFx.Json
 {
 	/// <summary>
 	/// Writer for producing JSON data.

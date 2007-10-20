@@ -2,9 +2,9 @@ using System;
 using System.IO;
 using System.Text.RegularExpressions;
 
-using JsonFx.Services.Discovery;
+using JsonFx.JsonRpc.Discovery;
 
-namespace JsonFx.Services.Proxy
+namespace JsonFx.JsonRpc.Proxy
 {
 	/// <summary>
 	/// Generates a JavaScript proxy class for communicating with a JsonService.
