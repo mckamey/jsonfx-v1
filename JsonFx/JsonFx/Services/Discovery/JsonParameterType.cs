@@ -1,6 +1,6 @@
 using System;
 
-using JsonFx.Serialization;
+using JsonFx.JSON;
 
 namespace JsonFx.Services.Discovery
 {

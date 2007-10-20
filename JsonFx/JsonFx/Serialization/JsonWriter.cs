@@ -5,8 +5,11 @@ using System.Collections.Generic;
 using System.Reflection;
 using System.IO;
 
-namespace JsonFx.Serialization
+namespace JsonFx.JSON
 {
+	/// <summary>
+	/// Writer for producing JSON data.
+	/// </summary>
 	public class JsonWriter : IDisposable
 	{
 		#region Constants

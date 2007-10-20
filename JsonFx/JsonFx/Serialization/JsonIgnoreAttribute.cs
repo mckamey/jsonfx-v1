@@ -1,6 +1,6 @@
 using System;
 
-namespace JsonFx.Serialization
+namespace JsonFx.JSON
 {
 	/// <summary>
 	/// Specifies the naming to use when serializing to JSON.

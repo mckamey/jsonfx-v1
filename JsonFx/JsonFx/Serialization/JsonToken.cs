@@ -1,7 +1,10 @@
 using System;
 
-namespace JsonFx.Serialization
+namespace JsonFx.JSON
 {
+	/// <summary>
+	/// Parse Tokens
+	/// </summary>
 	internal enum JsonToken
 	{
 		End,

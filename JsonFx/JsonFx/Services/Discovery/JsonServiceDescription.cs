@@ -3,7 +3,7 @@ using System.ComponentModel;
 using System.Collections.Generic;
 using System.Reflection;
 
-using JsonFx.Serialization;
+using JsonFx.JSON;
 using JsonFx.Services;
 
 namespace JsonFx.Services.Discovery

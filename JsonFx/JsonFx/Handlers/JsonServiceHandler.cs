@@ -4,7 +4,7 @@ using System.Reflection;
 using System.Web;
 using System.Web.Compilation;
 
-using JsonFx.Serialization;
+using JsonFx.JSON;
 using JsonFx.Services;
 using JsonFx.Services.Discovery;
 using JsonFx.Services.Proxy;
