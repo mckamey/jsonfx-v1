@@ -482,6 +482,12 @@ namespace JsonFx.Json
 					// decode
 					switch (this.Source[this.index])
 					{
+						case '0':
+						{
+							// don't allow NULL char '\0'
+							// causes CStrings to terminate
+							break;
+						}
 						case 'b':
 						{
 							// backspace
