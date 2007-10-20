@@ -1,8 +1,8 @@
 using System;
 
-using JsonFx.JSON;
+using JsonFx.Json;
 
-namespace JsonFx.Services
+namespace JsonFx.JsonRpc
 {
 	public abstract class JsonMessage
 	{

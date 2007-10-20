@@ -2,9 +2,9 @@ using System;
 using System.ComponentModel;
 using System.Reflection;
 
-using JsonFx.JSON;
+using JsonFx.Json;
 
-namespace JsonFx.Services.Discovery
+namespace JsonFx.JsonRpc.Discovery
 {
 	public class JsonNamedParameterDescription : JsonParameterDescription
 	{

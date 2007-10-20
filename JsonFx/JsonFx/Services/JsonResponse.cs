@@ -1,8 +1,8 @@
 using System;
 
-using JsonFx.JSON;
+using JsonFx.Json;
 
-namespace JsonFx.Services
+namespace JsonFx.JsonRpc
 {
 	/// <summary>
 	/// The message that frames the result of a successful call or the error in the case of a failed call.

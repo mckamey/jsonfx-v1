@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Xml.Serialization;
 
-namespace JsonFx.JSON
+namespace JsonFx.Json
 {
 	/// <summary>
 	/// Generalized object for containing untyped JSON data.

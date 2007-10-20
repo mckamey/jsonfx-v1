@@ -3,10 +3,10 @@ using System.ComponentModel;
 using System.Collections.Generic;
 using System.Reflection;
 
-using JsonFx.JSON;
-using JsonFx.Services;
+using JsonFx.Json;
+using JsonFx.JsonRpc;
 
-namespace JsonFx.Services.Discovery
+namespace JsonFx.JsonRpc.Discovery
 {
 	public class JsonServiceDescription : JsonDescriptionBase
 	{

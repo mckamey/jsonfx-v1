@@ -9,9 +9,9 @@ using System.Security.Permissions;
 using System.Text.RegularExpressions;
 using System.IO;
 
-using JsonFx.Services;
-using JsonFx.Services.Discovery;
-using JsonFx.Services.Proxy;
+using JsonFx.JsonRpc;
+using JsonFx.JsonRpc.Discovery;
+using JsonFx.JsonRpc.Proxy;
 using JsonFx.Handlers;
 
 namespace JsonFx.Compilation

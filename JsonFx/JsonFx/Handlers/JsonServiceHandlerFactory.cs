@@ -2,7 +2,7 @@ using System;
 using System.Web;
 using System.Web.Compilation;
 
-using JsonFx.Services;
+using JsonFx.JsonRpc;
 
 namespace JsonFx.Handlers
 {

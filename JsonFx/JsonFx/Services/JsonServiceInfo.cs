@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Reflection;
 
-namespace JsonFx.Services
+namespace JsonFx.JsonRpc
 {
 	public abstract class JsonServiceInfo
 	{

@@ -2,7 +2,7 @@ using System;
 
 namespace JsonFx.UI
 {
-	public class JsonLiteral : JsonFx.UI.IJsonControl, JsonFx.JSON.IJsonSerializable
+	public class JsonLiteral : JsonFx.UI.IJsonControl, JsonFx.Json.IJsonSerializable
 	{
 		#region Fields
 
@@ -31,12 +31,12 @@ namespace JsonFx.UI
 
 		#region IJsonSerializable Members
 
-		void JsonFx.JSON.IJsonSerializable.ReadJson(JsonFx.JSON.JsonReader reader)
+		void JsonFx.Json.IJsonSerializable.ReadJson(JsonFx.Json.JsonReader reader)
 		{
-			throw new NotImplementedException("JsonFx.Serialization.IJsonSerializable.ReadJson is not implemented.");
+			throw new NotImplementedException("IJsonSerializable.ReadJson is not implemented.");
 		}
 
-		void JsonFx.JSON.IJsonSerializable.WriteJson(JsonFx.JSON.JsonWriter writer)
+		void JsonFx.Json.IJsonSerializable.WriteJson(JsonFx.Json.JsonWriter writer)
 		{
 			writer.Write(this.Text);
 		}

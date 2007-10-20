@@ -6,7 +6,7 @@ using System.Globalization;
 using System.IO;
 using System.Reflection;
 
-namespace JsonFx.JSON
+namespace JsonFx.Json
 {
 	/// <summary>
 	/// Reader for consuming JSON data

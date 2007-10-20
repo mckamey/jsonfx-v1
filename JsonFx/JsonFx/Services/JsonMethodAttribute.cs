@@ -1,12 +1,12 @@
 using System;
 
-namespace JsonFx.Services
+namespace JsonFx.JsonRpc
 {
 	/// <summary>
 	/// Specifies the method information to use when serializing to JSON.
 	/// </summary>
 	[AttributeUsage(AttributeTargets.Method, AllowMultiple=false)]
-	public sealed class JsonMethodAttribute : JsonFx.Services.JsonDocsAttribute
+	public sealed class JsonMethodAttribute : JsonFx.JsonRpc.JsonDocsAttribute
 	{
 		#region Fields
 
