@@ -1,3 +1,3 @@
-Any *.json file in the UnitTests directory will be processed.
+Any *.json file in the .\UnitTests\ folder will be processed.
 
-Download http://www.json.org/JSON_checker/test.zip and place into this directory.
+Download http://www.json.org/JSON_checker/test.zip and place contents into the .\UnitTests\ folder.
