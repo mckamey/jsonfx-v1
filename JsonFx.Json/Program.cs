@@ -30,6 +30,8 @@
 
 using System;
 using System.IO;
+using System.Text;
+using System.Diagnostics;
 
 using JsonFx.Json;
 
@@ -39,13 +41,20 @@ namespace BuildTools.Json
 	{
 		#region Constants
 
-		private const string UnitTestsUrl = @"http://www.json.org/JSON_checker/test.zip";
-		private const string UnitTestsFolder = @"UnitTests\";
-		private const string UnitTestsFiles = @"*.json";
+		private const string ReportPath = "Report.txt";
+		private const string UnitTestsUrl = "http://www.json.org/JSON_checker/test.zip";
+		private const string UnitTestsFolder = @".\UnitTests\";
+		private const string OutputFolder = @".\Output\";
+		private const string UnitTestsFiles = "*.json";
+		private const string Separator = "________________________________________\r\n";
+		private const string HeaderMessage =
+			"NOTE: JsonFx.Json accepts valid JSON and can recover from many minor errors.\r\n\r\n"+
+			"Unit Test Report ({0:yyyy-MM-dd @ HH:mm:ss})";
 		private const string ErrorMessage =
+			Separator+"\r\n"+
 			"No unit tests were found.\r\n\r\n"+
 			"Any "+UnitTestsFiles+" file in the "+UnitTestsFolder+" folder will be processed.\r\n"+
-			"Download "+UnitTestsUrl+" and place into the "+UnitTestsFolder+" folder.";
+			"Download "+UnitTestsUrl+" and place contents into the "+UnitTestsFolder+" folder.";
 
 		#endregion Constants
 
@@ -53,33 +62,56 @@ namespace BuildTools.Json
 
 		static void Main(string[] args)
 		{
-			string[] unitTests = Directory.GetFiles(UnitTestsFolder, UnitTestsFiles, SearchOption.AllDirectories);
-			if (unitTests.Length < 1)
+			using (StreamWriter writer = new StreamWriter(ReportPath, false, Encoding.UTF8))
 			{
-				Console.Error.WriteLine(ErrorMessage);
-				Console.ReadLine();
-				Environment.Exit(-1);
+				writer.WriteLine(HeaderMessage, DateTime.Now);
+
+				string[] unitTests = Directory.GetFiles(UnitTestsFolder, UnitTestsFiles, SearchOption.AllDirectories);
+				if (unitTests.Length > 0)
+				{
+					if (!Directory.Exists(OutputFolder))
+					{
+						Directory.CreateDirectory(OutputFolder);
+					}
+
+					foreach (string unitTest in unitTests)
+					{
+						writer.WriteLine(Separator);
+
+						string source = File.ReadAllText(unitTest);
+						JsonReader jsonReader = new JsonReader(source);
+						object obj = null;
+						try
+						{
+							obj = jsonReader.Deserialize();
+							writer.WriteLine("\"{0}\" passed producing {1}",
+								unitTest,
+								(obj == null) ? "null" : obj.GetType().Name);
+						}
+						catch (Exception ex)
+						{
+							writer.WriteLine("\"{0}\" failed with message:", unitTest);
+							writer.WriteLine("\t\"{0}\"", ex.Message);
+							continue;
+						}
+
+						string outputFile = unitTest.Replace(UnitTestsFolder, OutputFolder);
+						using (JsonWriter jsonWriter = new JsonWriter(outputFile))
+						{
+							jsonWriter.Write(obj);
+						}
+					}
+				}
+				else
+				{
+					writer.WriteLine(ErrorMessage);
+				}
 			}
 
-			foreach (string unitTest in unitTests)
-			{
-				Console.Error.WriteLine("________________________________________");
-				Console.Error.WriteLine();
-				string source = File.ReadAllText(unitTest);
-				JsonReader reader = new JsonReader(source);
-				try
-				{
-					object obj = reader.Deserialize();
-					Console.Error.WriteLine("UnitTest \"{0}\" passed producing {1}",
-						unitTest,
-						(obj == null) ? "null" : obj.GetType().Name);
-				}
-				catch (Exception ex)
-				{
-					Console.Error.WriteLine("UnitTest \"{0}\" failed with message:", unitTest);
-					Console.Error.WriteLine("\t\"{0}\"", ex.Message);
-				}
-			}
+			Process process = new Process();
+			process.StartInfo.FileName = "notepad.exe";
+			process.StartInfo.Arguments = ReportPath;
+			process.Start();
 		}
 
 		#endregion Program Entry
