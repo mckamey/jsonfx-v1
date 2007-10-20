@@ -29,15 +29,57 @@
 #endregion BuildTools License
 
 using System;
+using System.IO;
+
+using JsonFx.Json;
 
 namespace BuildTools.Json
 {
 	class Program
 	{
+		#region Constants
+
+		private const string UnitTestsUrl = @"http://www.json.org/JSON_checker/test.zip";
+		private const string UnitTestsFolder = @"UnitTests\";
+		private const string UnitTestsFiles = @"*.json";
+		private const string ErrorMessage =
+			"No unit tests were found.\r\n\r\n"+
+			"Any "+UnitTestsFiles+" file in the "+UnitTestsFolder+" folder will be processed.\r\n"+
+			"Download "+UnitTestsUrl+" and place into the "+UnitTestsFolder+" folder.";
+
+		#endregion Constants
+
 		#region Program Entry
 
 		static void Main(string[] args)
 		{
+			string[] unitTests = Directory.GetFiles(UnitTestsFolder, UnitTestsFiles, SearchOption.AllDirectories);
+			if (unitTests.Length < 1)
+			{
+				Console.Error.WriteLine(ErrorMessage);
+				Console.ReadLine();
+				Environment.Exit(-1);
+			}
+
+			foreach (string unitTest in unitTests)
+			{
+				Console.Error.WriteLine("________________________________________");
+				Console.Error.WriteLine();
+				string source = File.ReadAllText(unitTest);
+				JsonReader reader = new JsonReader(source);
+				try
+				{
+					object obj = reader.Deserialize();
+					Console.Error.WriteLine("UnitTest \"{0}\" passed producing {1}",
+						unitTest,
+						(obj == null) ? "null" : obj.GetType().Name);
+				}
+				catch (Exception ex)
+				{
+					Console.Error.WriteLine("UnitTest \"{0}\" failed with message:", unitTest);
+					Console.Error.WriteLine("\t\"{0}\"", ex.Message);
+				}
+			}
 		}
 
 		#endregion Program Entry
