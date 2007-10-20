@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace JsonFx.Serialization
+namespace JsonFx.JSON
 {
 	/// <summary>
 	/// Specifies the naming to use when serializing to JSON.

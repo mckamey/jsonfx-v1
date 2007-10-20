@@ -6,8 +6,11 @@ using System.Globalization;
 using System.IO;
 using System.Reflection;
 
-namespace JsonFx.Serialization
+namespace JsonFx.JSON
 {
+	/// <summary>
+	/// Reader for consuming JSON data
+	/// </summary>
 	public class JsonReader
 	{
 		#region Constants
@@ -81,7 +84,7 @@ namespace JsonFx.Serialization
 
 		public object Deserialize(Type type)
 		{
-			// should run through Douglas Crockford's JSON Regex test here?
+			// should this run through a preliminary test here?
 			return this.Read(type);
 		}
 
@@ -162,9 +165,7 @@ namespace JsonFx.Serialization
 				ConstructorInfo ctor = objectType.GetConstructor(Type.EmptyTypes);
 				if (ctor == null)
 				{
-					//if (!objectType.IsArray && !objectType.IsSubclassOf(typeof(IEnumerable)))
 					throw new JsonSerializationException("Only objects with default constructors can be deserialized.", this.index);
-					//objectType.GetElementType();
 
 				}
 				jsObject = ctor.Invoke(null);

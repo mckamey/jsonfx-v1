@@ -2,8 +2,11 @@ using System;
 using System.Collections.Generic;
 using System.Xml.Serialization;
 
-namespace JsonFx.Serialization
+namespace JsonFx.JSON
 {
+	/// <summary>
+	/// Generalized object for containing untyped JSON data.
+	/// </summary>
 	public class JsonObject : System.Xml.Serialization.IXmlSerializable
 	{
 		#region Constants

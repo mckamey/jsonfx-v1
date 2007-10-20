@@ -336,7 +336,7 @@ namespace JsonFx.UI
 				// as if they are in an array if delimited by commas.
 				this.writer.Write(",");
 			}
-			using (JsonFx.Serialization.JsonWriter jw = new JsonFx.Serialization.JsonWriter(this.writer))
+			using (JsonFx.JSON.JsonWriter jw = new JsonFx.JSON.JsonWriter(this.writer))
 			{
 				if (this.Controls.Count > 1)
 				{

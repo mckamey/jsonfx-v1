@@ -5,7 +5,7 @@ namespace JsonFx.Services
 	/// <summary>
 	/// Gets the help url for use in Json service description.
 	/// </summary>
-	public abstract class JsonDocsAttribute : JsonFx.Serialization.JsonNameAttribute
+	public abstract class JsonDocsAttribute : JsonFx.JSON.JsonNameAttribute
 	{
 		#region Fields
 

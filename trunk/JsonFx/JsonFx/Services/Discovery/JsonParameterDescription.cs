@@ -2,7 +2,7 @@ using System;
 using System.ComponentModel;
 using System.Reflection;
 
-using JsonFx.Serialization;
+using JsonFx.JSON;
 
 namespace JsonFx.Services.Discovery
 {

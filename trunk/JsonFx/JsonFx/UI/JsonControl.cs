@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Web;
 
-using JsonFx.Serialization;
+using JsonFx.JSON;
 
 namespace JsonFx.UI
 {
