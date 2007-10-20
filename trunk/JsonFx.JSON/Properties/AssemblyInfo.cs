@@ -32,11 +32,11 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
-[assembly: AssemblyTitle("JsonFx.JSON")]
+[assembly: AssemblyTitle("JsonFx.Json")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("JsonFx")]
+[assembly: AssemblyProduct("JsonFx BuildTools")]
 [assembly: AssemblyCopyright("Copyright © 2006-2007 Stephen M. McKamey. All rights reserved.")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
