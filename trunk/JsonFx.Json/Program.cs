@@ -88,10 +88,25 @@ namespace BuildTools.Json
 								unitTest,
 								(obj == null) ? "null" : obj.GetType().Name);
 						}
-						catch (Exception ex)
+						catch (JsonSerializationException ex)
 						{
+							bool foundLF = false;
+							int col = 1, line = 1;
+							for (int i=ex.Index; i>0; i--)
+							{
+								if (!foundLF)
+								{
+									col++;
+								}
+								if (source[i-1] == '\n')
+								{
+									line++;
+									foundLF = true;
+								}
+							}
+
 							writer.WriteLine("\"{0}\" failed with message:", unitTest);
-							writer.WriteLine("\t\"{0}\"", ex.Message);
+							writer.WriteLine("\t\"{0}\" ({1}, {2})", ex.Message, line, col);
 							continue;
 						}
 

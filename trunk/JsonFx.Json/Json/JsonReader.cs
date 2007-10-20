@@ -131,10 +131,10 @@ namespace JsonFx.Json
 		public object Deserialize(Type type)
 		{
 			// should this run through a preliminary test here?
-			return this.Read(type);
+			return this.Read(type, false);
 		}
 
-		private object Read(Type expectedType)
+		private object Read(Type expectedType, bool typeIsHint)
 		{
 			if (expectedType == typeof(Object))
 			{
@@ -147,11 +147,11 @@ namespace JsonFx.Json
 			{
 				case JsonToken.ObjectStart:
 				{
-					return this.ReadObject(expectedType);
+					return this.ReadObject(typeIsHint ? null : expectedType);
 				}
 				case JsonToken.ArrayStart:
 				{
-					return this.ReadArray(expectedType);
+					return this.ReadArray(null);
 				}
 				case JsonToken.String:
 				{
@@ -212,7 +212,6 @@ namespace JsonFx.Json
 				if (ctor == null)
 				{
 					throw new JsonSerializationException("Only objects with default constructors can be deserialized.", this.index);
-
 				}
 				jsObject = ctor.Invoke(null);
 
@@ -274,12 +273,21 @@ namespace JsonFx.Json
 				// consume opening brace or delim
 				this.index++;
 				if (this.index >= this.SourceLength)
+				{
 					throw new JsonSerializationException("Unterminated JSON object.", this.index);
+				}
 
 				// get next token
 				token = this.Tokenize();
+				if (token == JsonToken.ObjectEnd)
+				{
+					break;
+				}
+
 				if (token != JsonToken.String)
-					throw new JsonSerializationException("Invalid JSON object.", this.index);
+				{
+					throw new JsonSerializationException("Expected JSON object property name.", this.index);
+				}
 
 				// parse object member value
 				string name = this.ReadString();
@@ -315,15 +323,19 @@ namespace JsonFx.Json
 				// get next token
 				token = this.Tokenize();
 				if (token != JsonToken.NameDelim)
-					throw new JsonSerializationException("Invalid JSON object.", this.index);
+				{
+					throw new JsonSerializationException("Missing JSON object property name delimiter.", this.index);
+				}
 
 				// consume delim
 				this.index++;
 				if (this.index >= this.SourceLength)
+				{
 					throw new JsonSerializationException("Unterminated JSON object.", this.index);
+				}
 
 				// parse object member value
-				object value = this.Read(propertyType);
+				object value = this.Read(propertyType, false);
 				if (propertyInfo is PropertyInfo)
 				{
 					// set value of public property
@@ -344,7 +356,9 @@ namespace JsonFx.Json
 			} while (token == JsonToken.ValueDelim);
 
 			if (token != JsonToken.ObjectEnd)
-				throw new JsonSerializationException("Invalid JSON object.", this.index);
+			{
+				throw new JsonSerializationException("Unterminated JSON object.", this.index);
+			}
 
 			// consume closing brace
 			this.index++;
@@ -355,7 +369,9 @@ namespace JsonFx.Json
 		private object CoerceType(Type targetType, object value)
 		{
 			if (value == null || targetType.IsAssignableFrom(value.GetType()))
+			{
 				return value;
+			}
 
 			if (targetType.IsEnum)
 			{
@@ -374,9 +390,13 @@ namespace JsonFx.Json
 				}
 
 				if (value is String)
+				{
 					return Enum.Parse(targetType, (string)value);
+				}
 				else
+				{
 					return Convert.ChangeType(value, targetType);
+				}
 			}
 
 			return value;
@@ -385,11 +405,15 @@ namespace JsonFx.Json
 		private Array ReadArray(Type arrayType)
 		{
 			if (this.Source[this.index] != JsonReader.OperatorArrayStart)
+			{
 				throw new JsonSerializationException("Not a valid JSON array.", this.index);
+			}
 
 			bool isArrayTypeSet = (arrayType != null);
 			if (isArrayTypeSet && arrayType.IsArray)
+			{
 				arrayType = arrayType.GetElementType();
+			}
 
 			ArrayList jsArray = new ArrayList();
 
@@ -399,15 +423,19 @@ namespace JsonFx.Json
 				// consume opening bracket or delim
 				this.index++;
 				if (this.index >= this.SourceLength)
+				{
 					throw new JsonSerializationException("Unterminated JSON array.", this.index);
+				}
 
 				// get next token
 				token = this.Tokenize();
 				if (token == JsonToken.ArrayEnd)
+				{
 					break;
+				}
 
 				// parse array item
-				object value = this.Read(arrayType);
+				object value = this.Read(arrayType, true);
 				jsArray.Add(value);
 
 				// establish if array is of common type
@@ -439,14 +467,18 @@ namespace JsonFx.Json
 			} while (token == JsonToken.ValueDelim);
 
 			if (token != JsonToken.ArrayEnd)
-				throw new JsonSerializationException("Invalid JSON array.", this.index);
+			{
+				throw new JsonSerializationException("Unterminated JSON array.", this.index);
+			}
 
 			// consume closing bracket
 			this.index++;
 
 			// check to see if all the same type and convert to that
 			if (arrayType != null && arrayType != typeof(object))
+			{
 				return jsArray.ToArray(arrayType);
+			}
 
 			return jsArray.ToArray();
 		}
@@ -455,14 +487,18 @@ namespace JsonFx.Json
 		{
 			if (this.Source[this.index] != JsonReader.OperatorStringDelim &&
 				this.Source[this.index] != JsonReader.OperatorStringDelimAlt)
+			{
 				throw new JsonSerializationException("Not a valid JSON string.", this.index);
+			}
 
 			char startStringDelim = this.Source[this.index];
 
 			// consume opening quote
 			this.index++;
 			if (this.index >= this.SourceLength)
+			{
 				throw new JsonSerializationException("Unterminated JSON string.", this.index);
+			}
 
 			int start = this.index;
 			StringBuilder builder = new StringBuilder();
@@ -477,7 +513,9 @@ namespace JsonFx.Json
 					// consume escape char
 					this.index++;
 					if (this.index >= this.SourceLength)
+					{
 						throw new JsonSerializationException("Unterminated JSON string.", this.index);
+					}
 
 					// decode
 					switch (this.Source[this.index])
@@ -553,7 +591,9 @@ namespace JsonFx.Json
 
 					this.index++;
 					if (this.index >= this.SourceLength)
+					{
 						throw new JsonSerializationException("Unterminated JSON string.", this.index);
+					}
 
 					start = this.index;
 				}
@@ -562,7 +602,9 @@ namespace JsonFx.Json
 					// next char
 					this.index++;
 					if (this.index >= this.SourceLength)
+					{
 						throw new JsonSerializationException("Unterminated JSON string.", this.index);
+					}
 				}
 			}
 
@@ -607,7 +649,9 @@ namespace JsonFx.Json
 				// consume decimal
 				this.index++;
 				if (this.index >= this.SourceLength || !Char.IsDigit(this.Source[this.index]))
+				{
 					throw new JsonSerializationException("Unterminated JSON number.", this.index);
+				}
 
 				// fraction part
 				while (this.index < this.SourceLength && Char.IsDigit(this.Source[this.index]))
@@ -628,7 +672,9 @@ namespace JsonFx.Json
 				// consume 'e'
 				this.index++;
 				if (this.index >= this.SourceLength)
+				{
 					throw new JsonSerializationException("Unterminated JSON number.", this.index);
+				}
 
 				int expStart = this.index;
 
@@ -638,12 +684,16 @@ namespace JsonFx.Json
 					// consume sign
 					this.index++;
 					if (this.index >= this.SourceLength || !Char.IsDigit(this.Source[this.index]))
+					{
 						throw new JsonSerializationException("Unterminated JSON number.", this.index);
+					}
 				}
 				else
 				{
 					if (!Char.IsDigit(this.Source[this.index]))
+					{
 						throw new JsonSerializationException("Unterminated JSON number.", this.index);
+					}
 				}
 
 				// exp part
@@ -731,14 +781,18 @@ namespace JsonFx.Json
 		private JsonToken Tokenize()
 		{
 			if (this.index >= this.SourceLength)
+			{
 				return JsonToken.End;
+			}
 
 			// skip whitespace
 			while (Char.IsWhiteSpace(this.Source[this.index]))
 			{
 				this.index++;
 				if (this.index >= this.SourceLength)
+				{
 					return JsonToken.End;
+				}
 			}
 
 			// consume positive signing (as is extraneous)
@@ -746,7 +800,9 @@ namespace JsonFx.Json
 			{
 				this.index++;
 				if (this.index >= this.SourceLength)
+				{
 					return JsonToken.End;
+				}
 			}
 
 			switch (this.Source[this.index])
@@ -835,7 +891,7 @@ namespace JsonFx.Json
 				return JsonToken.NegativeInfinity;
 			}
 
-			throw new JsonSerializationException("Unrecognized JSON text sequence.", this.index);
+			throw new JsonSerializationException("Illegal JSON sequence.", this.index);
 		}
 
 		#endregion Tokenizing Methods

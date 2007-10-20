@@ -66,5 +66,17 @@ namespace JsonFx.Json
 		}
 
 		#endregion Init
+
+		#region Properties
+
+		/// <summary>
+		/// Gets the character position in the stream where the error occurred.
+		/// </summary>
+		public int Index
+		{
+			get { return this.index; }
+		}
+
+		#endregion Properties
 	}
 }

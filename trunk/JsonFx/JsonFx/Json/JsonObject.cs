@@ -110,8 +110,10 @@ namespace JsonFx.Json
 		{
 			// need to check what the restrictions are on property names...
 
-			if (String.IsNullOrEmpty(name))
-				throw new InvalidOperationException("Invalid JsonObject property name.");
+			if (name == null)
+			{
+				throw new InvalidOperationException("Invalid JSON object property name.");
+			}
 		}
 
 		#endregion Methods
