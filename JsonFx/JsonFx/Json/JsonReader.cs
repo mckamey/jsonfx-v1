@@ -76,12 +76,20 @@ namespace JsonFx.Json
 
 		#region Init
 
+		/// <summary>
+		/// Ctor.
+		/// </summary>
+		/// <param name="input">TextReader containing source</param>
 		public JsonReader(TextReader input)
 		{
 			this.Source = input.ReadToEnd();
 			this.SourceLength = this.Source.Length;
 		}
 
+		/// <summary>
+		/// Ctor.
+		/// </summary>
+		/// <param name="input">Stream containing source</param>
 		public JsonReader(Stream input)
 		{
 			using (StreamReader reader = new StreamReader(input, true))
@@ -91,12 +99,20 @@ namespace JsonFx.Json
 			this.SourceLength = this.Source.Length;
 		}
 
+		/// <summary>
+		/// Ctor.
+		/// </summary>
+		/// <param name="input">string containing source</param>
 		public JsonReader(string input)
 		{
 			this.Source = input;
 			this.SourceLength = this.Source.Length;
 		}
 
+		/// <summary>
+		/// Ctor.
+		/// </summary>
+		/// <param name="input">StringBuilder containing source</param>
 		public JsonReader(StringBuilder input)
 		{
 			this.Source = input.ToString();
