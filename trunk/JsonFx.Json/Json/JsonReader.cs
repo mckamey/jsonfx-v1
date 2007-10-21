@@ -843,55 +843,67 @@ namespace JsonFx.Json
 			}
 
 			// number
-			if (Char.IsDigit(this.Source[this.index]) ||
-				((this.Source[this.index] == JsonReader.OperatorNegate) && (this.index+1 < this.SourceLength) && Char.IsDigit(this.Source[this.index+1])))
+			if (Char.IsDigit(this.Source[this.index]) || (this.Source[this.index] == JsonReader.OperatorNegate))
 			{
 				return JsonToken.Number;
 			}
 
 			// "false" literal
-			if (JsonReader.LiteralFalse.Length + this.index <= this.SourceLength &&
-				JsonReader.LiteralFalse.Equals(this.Source.Substring(this.index, JsonReader.LiteralFalse.Length), StringComparison.InvariantCulture))
+			if (this.MatchLiteral(JsonReader.LiteralFalse))
 			{
 				return JsonToken.False;
 			}
 
 			// "true" literal
-			if (JsonReader.LiteralTrue.Length + this.index <= this.SourceLength &&
-				JsonReader.LiteralTrue.Equals(this.Source.Substring(this.index, JsonReader.LiteralTrue.Length), StringComparison.InvariantCulture))
+			if (this.MatchLiteral(JsonReader.LiteralTrue))
 			{
 				return JsonToken.True;
 			}
 
 			// "null" literal
-			if (JsonReader.LiteralNull.Length + this.index <= this.SourceLength &&
-				JsonReader.LiteralNull.Equals(this.Source.Substring(this.index, JsonReader.LiteralNull.Length), StringComparison.InvariantCulture))
+			if (this.MatchLiteral(JsonReader.LiteralNull))
 			{
 				return JsonToken.Null;
 			}
 
 			// "NaN" literal
-			if (JsonReader.LiteralNotANumber.Length + this.index <= this.SourceLength &&
-				JsonReader.LiteralNotANumber.Equals(this.Source.Substring(this.index, JsonReader.LiteralNotANumber.Length), StringComparison.InvariantCulture))
+			if (this.MatchLiteral(JsonReader.LiteralNotANumber))
 			{
 				return JsonToken.NaN;
 			}
 
 			// "Infinity" literal
-			if (JsonReader.LiteralPositiveInfinity.Length + this.index <= this.SourceLength &&
-				JsonReader.LiteralPositiveInfinity.Equals(this.Source.Substring(this.index, JsonReader.LiteralPositiveInfinity.Length), StringComparison.InvariantCulture))
+			if (this.MatchLiteral(JsonReader.LiteralPositiveInfinity))
 			{
 				return JsonToken.PositiveInfinity;
 			}
 
 			// "-Infinity" literal
-			if (JsonReader.LiteralNegativeInfinity.Length + this.index <= this.SourceLength &&
-				JsonReader.LiteralNegativeInfinity.Equals(this.Source.Substring(this.index, JsonReader.LiteralNegativeInfinity.Length), StringComparison.InvariantCulture))
+			if (this.MatchLiteral(JsonReader.LiteralNegativeInfinity))
 			{
 				return JsonToken.NegativeInfinity;
 			}
 
 			throw new JsonSerializationException("Illegal JSON sequence.", this.index);
+		}
+
+		/// <summary>
+		/// Determines if the next token is the given literal
+		/// </summary>
+		/// <param name="literal"></param>
+		/// <returns></returns>
+		private bool MatchLiteral(string literal)
+		{
+			int literalLength = literal.Length;
+			for (int i=0, j=this.index; i<literalLength && j<this.SourceLength; i++, j++)
+			{
+				if (literal[i] != this.Source[j])
+				{
+					return false;
+				}
+			}
+
+			return true;
 		}
 
 		#endregion Tokenizing Methods
