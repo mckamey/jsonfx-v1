@@ -120,6 +120,12 @@ namespace BuildTools.ScriptCompactor
 			public bool evil = false;
 
 			/// <summary>
+			/// true if for...in statements must filter
+			/// </summary>
+			[Description("AllowForIn")]
+			public bool forin = false;
+
+			/// <summary>
 			/// true if HTML fragments should be allowed
 			/// </summary>
 			[Description("AllowHtmlFragments")]
@@ -156,7 +162,7 @@ namespace BuildTools.ScriptCompactor
 			public bool rhino = false;
 
 			/// <summary>
-			/// true if undefined variables are errors
+			/// true if variables should be declared before used
 			/// </summary>
 			[Description("NoUndefVars")]
 			public bool undef = true;
