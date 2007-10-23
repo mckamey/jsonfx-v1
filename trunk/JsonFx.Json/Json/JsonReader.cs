@@ -843,7 +843,8 @@ namespace JsonFx.Json
 			}
 
 			// number
-			if (Char.IsDigit(this.Source[this.index]) || (this.Source[this.index] == JsonReader.OperatorNegate))
+			if (Char.IsDigit(this.Source[this.index]) ||
+				((this.Source[this.index] == JsonReader.OperatorNegate) && (this.index+1 < this.SourceLength) && Char.IsDigit(this.Source[this.index+1])))
 			{
 				return JsonToken.Number;
 			}
