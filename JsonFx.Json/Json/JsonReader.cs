@@ -151,7 +151,7 @@ namespace JsonFx.Json
 				}
 				case JsonToken.ArrayStart:
 				{
-					return this.ReadArray(null);
+					return this.ReadArray(typeIsHint ? null : expectedType);
 				}
 				case JsonToken.String:
 				{
@@ -399,6 +399,12 @@ namespace JsonFx.Json
 				}
 			}
 
+			//if (targetType.IsArray)
+			//{
+			//    // would this help?
+			//    return Convert.ChangeType(value, targetType);
+			//}
+
 			return value;
 		}
 
@@ -410,6 +416,7 @@ namespace JsonFx.Json
 			}
 
 			bool isArrayTypeSet = (arrayType != null);
+			bool isArrayTypeAHint = !isArrayTypeSet;
 			if (isArrayTypeSet && arrayType.IsArray)
 			{
 				arrayType = arrayType.GetElementType();
@@ -435,7 +442,7 @@ namespace JsonFx.Json
 				}
 
 				// parse array item
-				object value = this.Read(arrayType, true);
+				object value = this.Read(arrayType, isArrayTypeAHint);
 				jsArray.Add(value);
 
 				// establish if array is of common type
