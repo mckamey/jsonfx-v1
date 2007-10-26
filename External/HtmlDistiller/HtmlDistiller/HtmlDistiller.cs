@@ -232,6 +232,17 @@ namespace BuildTools.HtmlDistiller
 		/// <summary>
 		/// Parses the source using the current settings.
 		/// </summary>
+		/// <param name="source"></param>
+		/// <returns>the output text</returns>
+		public string Parse(string source)
+		{
+			this.Source = source;
+			return this.Parse();
+		}
+
+		/// <summary>
+		/// Parses the source using the current settings.
+		/// </summary>
 		/// <returns>the output text</returns>
 		public string Parse()
 		{
