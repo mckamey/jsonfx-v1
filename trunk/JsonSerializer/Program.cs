@@ -69,11 +69,6 @@ namespace BuildTools.Json
 				string[] unitTests = Directory.GetFiles(UnitTestsFolder, UnitTestsFiles, SearchOption.AllDirectories);
 				if (unitTests.Length > 0)
 				{
-					if (!Directory.Exists(OutputFolder))
-					{
-						Directory.CreateDirectory(OutputFolder);
-					}
-
 					foreach (string unitTest in unitTests)
 					{
 						writer.WriteLine(Separator);
@@ -110,6 +105,11 @@ namespace BuildTools.Json
 						}
 
 						string outputFile = unitTest.Replace(UnitTestsFolder, OutputFolder);
+						string outputDir = Path.GetDirectoryName(outputFile);
+						if (!Directory.Exists(outputDir))
+						{
+							Directory.CreateDirectory(outputDir);
+						}
 						using (JsonWriter jsonWriter = new JsonWriter(outputFile))
 						{
 							jsonWriter.Write(obj);
