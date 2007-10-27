@@ -276,6 +276,17 @@ namespace BuildTools.HtmlDistiller
 		#region Parse Methods
 
 		/// <summary>
+		/// Resets state used for parsing
+		/// </summary>
+		public void Reset()
+		{
+			lock (this.SyncLock)
+			{
+				this.Reset(true);
+			}
+		}
+
+		/// <summary>
 		/// Parses the source using the current settings.
 		/// </summary>
 		/// <param name="source"></param>
@@ -294,7 +305,7 @@ namespace BuildTools.HtmlDistiller
 		{
 			lock (this.SyncLock)
 			{
-				this.Reset();
+				this.Reset(!this.IncrementalParsing);
 
 				while (!this.IsEOF)
 				{
@@ -981,10 +992,11 @@ namespace BuildTools.HtmlDistiller
 		}
 
 		/// <summary>
-		/// Reset fields used for parsing
+		/// Reset state used for parsing
 		/// </summary>
+		/// <param name="fullReset">clears incremental state as well</param>
 		/// <remarks>Does not SyncLock, call inside lock</remarks>
-		private void Reset()
+		private void Reset(bool fullReset)
 		{
 			if (this.htmlFilter == null)
 			{
@@ -992,7 +1004,7 @@ namespace BuildTools.HtmlDistiller
 			}
 			this.index = this.start = 0;
 
-			if (!this.IncrementalParsing || this.output == null)
+			if (fullReset || this.output == null)
 			{
 				// in incremental parse mode, continue as if same document
 				this.textSize = 0;
