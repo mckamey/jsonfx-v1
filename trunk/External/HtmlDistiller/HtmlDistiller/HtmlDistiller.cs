@@ -53,6 +53,7 @@ namespace BuildTools.HtmlDistiller
 		private IHtmlFilter htmlFilter;
 		private int maxLength = 0;
 		private bool normalizeWhitespace = true;
+		private bool balanceTags = true;
 
 		private StringBuilder output;
 		private int index;
@@ -139,6 +140,21 @@ namespace BuildTools.HtmlDistiller
 				lock (this.SyncLock)
 				{
 					this.normalizeWhitespace = value;
+				}
+			}
+		}
+
+		/// <summary>
+		/// Gets and sets if tags should be auto-balance
+		/// </summary>
+		public bool BalanceTags
+		{
+			get { return this.balanceTags; }
+			set
+			{
+				lock (this.SyncLock)
+				{
+					this.balanceTags = value;
 				}
 			}
 		}
@@ -298,9 +314,7 @@ namespace BuildTools.HtmlDistiller
 									#region repair mismatched tags
 
 									// if isn't in stack then it doesn't help to attempt to repair
-									bool repairable = this.openTags.Contains(tag.CreateOpenTag());
-
-									if (!repairable)
+									if (!this.balanceTags || !this.openTags.Contains(tag.CreateOpenTag()))
 									{
 										// put the tag back on
 										this.openTags.Push(openTag);
