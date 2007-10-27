@@ -54,6 +54,8 @@ namespace BuildTools.HtmlDistiller
 		private int maxLength = 0;
 		private bool normalizeWhitespace = true;
 		private bool balanceTags = true;
+		private bool encodeNonAscii = true;
+		private readonly bool IncrementalParsing = false;
 
 		private StringBuilder output;
 		private int index;
@@ -72,6 +74,16 @@ namespace BuildTools.HtmlDistiller
 		public HtmlDistiller()
 			: this(null, 0, null)
 		{
+		}
+
+		/// <summary>
+		/// Ctor.
+		/// </summary>
+		/// <param name="incremental">incremental parsing mode</param>
+		public HtmlDistiller(bool incremental)
+			: this(null, 0, null)
+		{
+			this.IncrementalParsing = incremental;
 		}
 
 		/// <summary>
@@ -160,6 +172,21 @@ namespace BuildTools.HtmlDistiller
 		}
 
 		/// <summary>
+		/// Gets and sets if non-ASCII chars should be encoded
+		/// </summary>
+		public bool EncodeNonAscii
+		{
+			get { return this.encodeNonAscii; }
+			set
+			{
+				lock (this.SyncLock)
+				{
+					this.encodeNonAscii = value;
+				}
+			}
+		}
+
+		/// <summary>
 		/// Gets and sets the source text
 		/// </summary>
 		public string Source
@@ -169,7 +196,10 @@ namespace BuildTools.HtmlDistiller
 			{
 				lock (this.SyncLock)
 				{
-					this.output = null;
+					if (!this.IncrementalParsing)
+					{
+						this.output = null;
+					}
 					this.source = (value == null) ? String.Empty : value;
 				}
 			}
@@ -479,7 +509,7 @@ namespace BuildTools.HtmlDistiller
 
 						#endregion normalize whitespace
 					}
-					else if (ch > 0x7F)
+					else if (this.encodeNonAscii && ch > 0x7F)
 					{
 						#region encode non-ASCII chars
 
@@ -516,11 +546,14 @@ namespace BuildTools.HtmlDistiller
 
 				#region close any open tags
 
-				while (this.openTags.Count > 0)
+				if (!this.IncrementalParsing)
 				{
-					// write out any unclosed tags
-					HtmlTag tag = this.openTags.Pop();
-					this.RenderCloseTag(tag);
+					while (this.openTags.Count > 0)
+					{
+						// write out any unclosed tags
+						HtmlTag tag = this.openTags.Pop();
+						this.RenderCloseTag(tag);
+					}
 				}
 
 				#endregion close any open tags
@@ -948,20 +981,32 @@ namespace BuildTools.HtmlDistiller
 		}
 
 		/// <summary>
-		/// Reset all fields used for parsing
+		/// Reset fields used for parsing
 		/// </summary>
+		/// <remarks>Does not SyncLock, call inside lock</remarks>
 		private void Reset()
 		{
 			if (this.htmlFilter == null)
 			{
 				this.htmlFilter = new SafeHtmlFilter();
 			}
-			this.index = this.start = this.textSize = 0;
-			this.output = new StringBuilder(this.source.Length);
-			this.openTags = new Stack<HtmlTag>(10);
-			this.taxonomy = HtmlTaxonomy.None;
+			this.index = this.start = 0;
+
+			if (!this.IncrementalParsing || this.output == null)
+			{
+				// in incremental parse mode, continue as if same document
+				this.textSize = 0;
+				this.openTags = new Stack<HtmlTag>(10);
+				this.taxonomy = HtmlTaxonomy.None;
+				this.output = new StringBuilder(this.source.Length);
+			}
 		}
 
+		/// <summary>
+		/// Encodes special characters into safe representation
+		/// </summary>
+		/// <param name="ch"></param>
+		/// <returns></returns>
 		private string EncodeHtmlEntity(char ch)
 		{
 			return String.Format("&#x{0:X2};", (int)ch);
