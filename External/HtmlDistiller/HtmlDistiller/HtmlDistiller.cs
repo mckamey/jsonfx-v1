@@ -45,6 +45,31 @@ namespace BuildTools.HtmlDistiller
 	/// </remarks>
 	public class HtmlDistiller
 	{
+		#region Constants
+
+		private const char NullChar = '\0';
+		private const char CRChar = '\r';
+		private const char LFChar = '\n';
+		private const char OpenTagChar = '<';
+		private const char CloseTagChar = '>';
+		private const char EndTagStartChar = '/';
+		private const char AttrDelimChar = '=';
+		private const char SingleQuoteChar = '\'';
+		private const char DoubleQuoteChar = '\"';
+		private const char StylePropChar = ':';
+		private const char StyleDelimChar = ';';
+		private const char AlphaStartChar = 'a';
+		private const char AlphaEndChar = 'z';
+		private const char NumStartChar = '0';
+		private const char NumEndChar = '9';
+		private const char AsciiEndChar = (char)0x7F;
+
+		private const string StyleAttrib = "style";
+		private const string Ellipsis = "&hellip;";
+		private const string LessThan = "&lt;";
+
+		#endregion Constants
+
 		#region Fields
 
 		private readonly object SyncLock = new object();
@@ -248,7 +273,7 @@ namespace BuildTools.HtmlDistiller
 			{
 				if (this.IsEOF)
 				{
-					return '\0';
+					return NullChar;
 				}
 				return this.source[this.index];
 			}
@@ -310,7 +335,7 @@ namespace BuildTools.HtmlDistiller
 				while (!this.IsEOF)
 				{
 					char ch = this.Current;
-					if (ch == '<')
+					if (ch == OpenTagChar)
 					{
 						#region found potential tag
 
@@ -415,10 +440,10 @@ namespace BuildTools.HtmlDistiller
 							#region encode LessThan char
 
 							// encode LessThan char
-							this.output.Append("&lt;");
+							this.output.Append(LessThan);
 
 							// remove from stream
-							this.FlushBuffer(1);
+							this.EmptyBuffer(1);
 
 							// count toward total text length
 							this.textSize++;
@@ -434,28 +459,28 @@ namespace BuildTools.HtmlDistiller
 
 						while (Char.IsWhiteSpace(ch))
 						{
-							if (ch == '\r')
+							if (ch == CRChar)
 							{
 								#region normalize line endings (CR/CRLF -> LF)
 
 								// write out all before CR
 								this.WriteBuffer();
 
-								if (this.Peek(1) != '\n')
+								if (this.Peek(1) != LFChar)
 								{
 									// just CR so replace CR with LF
-									this.output.Append('\n');
+									this.output.Append(LFChar);
 
 									// count toward total text length
 									this.textSize++;
 								}
 
 								// skip CR
-								this.FlushBuffer(1);
+								this.EmptyBuffer(1);
 
 								#endregion normalize line endings (CR/CRLF -> LF)
 							}
-							else if (ch == '\n')
+							else if (ch == LFChar)
 							{
 								#region limit line endings (no more than 2 LF)
 
@@ -464,20 +489,20 @@ namespace BuildTools.HtmlDistiller
 
 								char prev1 = this.PrevChar(1);
 								char prev2 = this.PrevChar(2);
-								if ((prev1 == '\n' || prev1 == '\0') &&
-									(prev2 == '\n' || prev2 == '\0'))
+								if ((prev1 == LFChar || prev1 == NullChar) &&
+									(prev2 == LFChar || prev2 == NullChar))
 								{
 									// skip 3rd+ LFs
 									while (true)
 									{
 										this.Advance();
 										ch = this.Current;
-										if (ch != '\n' && ch != '\r')
+										if (ch != LFChar && ch != CRChar)
 										{
 											break;
 										}
 									}
-									this.FlushBuffer();
+									this.EmptyBuffer();
 								}
 								else
 								{
@@ -495,13 +520,13 @@ namespace BuildTools.HtmlDistiller
 								#region normalize spaces and tabs
 
 								char prev1 = this.PrevChar(1);
-								if (Char.IsWhiteSpace(prev1) || prev1 == '\0')
+								if (Char.IsWhiteSpace(prev1) || prev1 == NullChar)
 								{
 									// write out all before extra whitespace
 									this.WriteBuffer();
 
 									// eat extra whitespace
-									this.FlushBuffer(1);
+									this.EmptyBuffer(1);
 								}
 								else
 								{
@@ -520,7 +545,8 @@ namespace BuildTools.HtmlDistiller
 
 						#endregion normalize whitespace
 					}
-					else if (this.encodeNonAscii && ch > 0x7F)
+					else if (this.encodeNonAscii &&
+						ch > AsciiEndChar)
 					{
 						#region encode non-ASCII chars
 
@@ -532,7 +558,7 @@ namespace BuildTools.HtmlDistiller
 						this.output.Append(entity);
 
 						// remove char from stream
-						this.FlushBuffer(1);
+						this.EmptyBuffer(1);
 
 						// count toward total text length
 						this.textSize++;
@@ -572,7 +598,7 @@ namespace BuildTools.HtmlDistiller
 				if (this.MaxLength > 0 && this.textSize >= this.MaxLength)
 				{
 					// source was cut off so add ellipsis
-					this.output.Append("&hellip;");
+					this.output.Append(Ellipsis);
 				}
 
 				return this.output.ToString();
@@ -611,14 +637,15 @@ namespace BuildTools.HtmlDistiller
 			}
 
 			char ch = Char.ToLowerInvariant(this.Peek(1));
-			if ((ch < 'a' || ch > 'z') && (ch != '/'))
+			if ((ch < AlphaStartChar || ch > AlphaEndChar) &&
+				(ch != EndTagStartChar))
 			{
 				// not a tag, treat as LessThan char
 				return null;
 			}
 
 			// remove tag open char
-			this.FlushBuffer(1);
+			this.EmptyBuffer(1);
 
 			while (!this.IsEOF)
 			{
@@ -626,44 +653,22 @@ namespace BuildTools.HtmlDistiller
 				this.Advance();
 
 				ch = Char.ToLowerInvariant(this.Current);
-				if ((ch < 'a' || ch > 'z') && (ch < '0' || ch > '9'))
+				if ((ch < AlphaStartChar || ch > AlphaEndChar) &&
+					(ch < NumStartChar || ch > NumEndChar))
 				{
 					break;
 				}
 			}
 
-			string buffer = this.FlushBuffer();
-			tag = new HtmlTag(buffer, this.htmlFilter);
+			tag = new HtmlTag(this.FlushBuffer(), this.htmlFilter);
 
-			// for now just include raw attributes
-			while (!this.IsEOF && this.Current != '>' && this.Current != '<')
-			{
-				string name = this.ParseAttributeName();
-				string value = String.Empty;
+			this.ParseAttributes(tag);
 
-				if (this.Current != '>' && this.Current != '<')
-				{
-					// Get the value(if any)
-					value = this.ParseAttributeValue();
-				}
-
-				if (!String.IsNullOrEmpty(name))
-				{
-					if ("style".Equals(name, StringComparison.InvariantCultureIgnoreCase))
-					{
-						this.ParseStyles(tag, value);
-					}
-					else
-					{
-						tag.Attributes[name] = value;
-					}
-				}
-			}
-
-			if (!this.IsEOF && this.Current != '<')
+			if (!this.IsEOF &&
+				this.Current != OpenTagChar)
 			{
 				// remove GreaterThan char from source
-				this.FlushBuffer(1);
+				this.EmptyBuffer(1);
 			}
 
 			return tag;
@@ -690,7 +695,7 @@ namespace BuildTools.HtmlDistiller
 			}
 
 			// flush LessThan
-			this.FlushBuffer(1);
+			this.EmptyBuffer(1);
 
 			string commentName = this.FlushBuffer(startDelim.Length-1);
 
@@ -717,7 +722,7 @@ namespace BuildTools.HtmlDistiller
 			string contents = this.FlushBuffer();
 			if (!this.IsEOF)
 			{
-				this.FlushBuffer(endDelim.Length);
+				this.EmptyBuffer(endDelim.Length);
 			}
 
 			HtmlTag comment = new HtmlTag(commentName, this.htmlFilter);
@@ -730,29 +735,65 @@ namespace BuildTools.HtmlDistiller
 			return comment;
 		}
 
+		private void ParseAttributes(HtmlTag tag)
+		{
+			char ch = this.Current;
+
+			while (!this.IsEOF &&
+				ch != CloseTagChar &&
+				ch != OpenTagChar)
+			{
+				string name = this.ParseAttributeName();
+				string value = String.Empty;
+				ch = this.Current;
+
+				if (ch != CloseTagChar &&
+					ch != OpenTagChar)
+				{
+					// Get the value(if any)
+					value = this.ParseAttributeValue();
+				}
+
+				if (!String.IsNullOrEmpty(name))
+				{
+					if (StyleAttrib.Equals(name, StringComparison.InvariantCultureIgnoreCase))
+					{
+						this.ParseStyles(tag, value);
+					}
+					else
+					{
+						tag.Attributes[name] = value;
+					}
+				}
+
+				ch = this.Current;
+			}
+		}
+
 		private string ParseAttributeName()
 		{
 			this.SkipWhiteSpace();
 
-			if (this.Current == '/')
+			char ch = this.Current;
+			if (ch == EndTagStartChar)
 			{
-				this.FlushBuffer(1);
+				this.EmptyBuffer(1);
 				return String.Empty;
 			}
 
 			while (!this.IsEOF)
 			{
-				char ch = this.Current;
-				if (Char.IsWhiteSpace(ch) ||
-					ch == '=' ||
-					ch == '>' ||
-					ch == '<')
+				ch = this.Current;
+				if ((ch == AttrDelimChar) ||
+					(ch == CloseTagChar) ||
+					(ch == OpenTagChar) ||
+					Char.IsWhiteSpace(ch))
 				{
 					break;
 				}
 
 				// add to attribute name
-				if (ch != '<')
+				if (ch != OpenTagChar)
 				{
 					this.Advance();
 				}
@@ -765,23 +806,32 @@ namespace BuildTools.HtmlDistiller
 		{
 			this.SkipWhiteSpace();
 
-			if (this.Current != '=')
+			char ch = this.Current;
+			if (ch != AttrDelimChar)
 			{
 				return String.Empty;
 			}
 
-			this.FlushBuffer(1);
+			this.EmptyBuffer(1);
 			this.SkipWhiteSpace();
 
-			char ch, quot = this.Current;
-			bool isQuoted = quot == '\'' || quot == '\"';
+			char quot = this.Current;
+			bool isQuoted =
+				(quot == SingleQuoteChar) ||
+				(quot == DoubleQuoteChar);
+
 			if (isQuoted)
 			{
-				this.FlushBuffer(1);
+				// consume open quote
+				this.EmptyBuffer(1);
+
 				while (!this.IsEOF)
 				{
 					ch = this.Current;
-					if (ch == quot || ch == '>' || ch == '<')
+
+					if ((ch == quot) ||
+						(ch == CloseTagChar) ||
+						(ch == OpenTagChar))
 					{
 						break;
 					}
@@ -795,7 +845,10 @@ namespace BuildTools.HtmlDistiller
 				while (!this.IsEOF)
 				{
 					ch = this.Current;
-					if (ch == '>' || ch == '<' || Char.IsWhiteSpace(ch))
+
+					if ((ch == CloseTagChar) ||
+						(ch == OpenTagChar) ||
+						(Char.IsWhiteSpace(ch)))
 					{
 						break;
 					}
@@ -808,7 +861,8 @@ namespace BuildTools.HtmlDistiller
 			string value = this.FlushBuffer();
 			if (isQuoted && !this.IsEOF)
 			{
-				this.FlushBuffer(1);
+				// consume close quote
+				this.EmptyBuffer(1);
 			}
 			return value;
 		}
@@ -823,18 +877,20 @@ namespace BuildTools.HtmlDistiller
 			string name, value;
 			int start=0, i=0;
 
-			while (i<style.Length)
+			while (i < style.Length)
 			{
 				name = value = String.Empty;
 
 				// skip whitespace
-				while (i < style.Length && Char.IsWhiteSpace(style, i))
+				while (i < style.Length &&
+					Char.IsWhiteSpace(style, i))
 				{
 					start = ++i;
 				}
 
 				// style name
-				while (i < style.Length && style[i] != ':')
+				while (i < style.Length &&
+					style[i] != StylePropChar)
 				{
 					i++;
 				}
@@ -845,22 +901,27 @@ namespace BuildTools.HtmlDistiller
 					name = style.Substring(start, i-start);
 				}
 
+				// inc first
 				start = ++i;
 
 				// skip whitespace
-				while (i < style.Length && Char.IsWhiteSpace(style, i))
+				while (i < style.Length &&
+					Char.IsWhiteSpace(style, i))
 				{
+					// inc first
 					start = ++i;
 				}
 
 				// style value
-				while (i < style.Length && style[i] != ';')
+				while (i < style.Length &&
+					style[i] != StyleDelimChar)
 				{
 					// TODO: handle HTML entities (e.g. "&quot;")
 					i++;
 				}
 
-				if (!String.IsNullOrEmpty(name) && start < style.Length)
+				if (!String.IsNullOrEmpty(name) &&
+					start < style.Length)
 				{
 					// copy style value
 					value = style.Substring(start, i-start);
@@ -869,6 +930,7 @@ namespace BuildTools.HtmlDistiller
 					tag.Styles[name.ToLowerInvariant()] = value;
 				}
 
+				// inc first
 				start = ++i;
 			}
 		}
@@ -902,7 +964,7 @@ namespace BuildTools.HtmlDistiller
 		{
 			while (!this.IsEOF && Char.IsWhiteSpace(this.Current))
 			{
-				this.FlushBuffer(1);
+				this.EmptyBuffer(1);
 			}
 		}
 
@@ -918,14 +980,14 @@ namespace BuildTools.HtmlDistiller
 				int pos = this.index-peek;
 				if (pos < 0 || pos >= this.source.Length)
 				{
-					return '\0';
+					return NullChar;
 				}
 				return this.source[pos];
 			}
 
 			if (this.output.Length < peek)
 			{
-				return '\0';
+				return NullChar;
 			}
 
 			return this.output[this.output.Length-peek];
@@ -935,7 +997,7 @@ namespace BuildTools.HtmlDistiller
 		{
 			if ((this.index + peek) >= this.source.Length)
 			{
-				return '\0';
+				return NullChar;
 			}
 
 			return this.source[this.index + peek];
@@ -958,6 +1020,17 @@ namespace BuildTools.HtmlDistiller
 					this.output.Append(this.source, this.start, this.index-this.start);
 				}
 			}
+			this.start = this.index;
+		}
+
+		private void EmptyBuffer()
+		{
+			this.EmptyBuffer(0);
+		}
+
+		private void EmptyBuffer(int skipCount)
+		{
+			this.index += skipCount;
 			this.start = this.index;
 		}
 
