@@ -1631,7 +1631,7 @@ JsonFx.UI.Animate.Engine = function(/*element*/ elem) {
 					function() {
 						t(state ? (step+op.s) : (step-op.s));
 					},
-					0);
+					40);// ~25Hz baseline, in case fast machine
 			}
 		}
 
