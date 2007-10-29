@@ -1,14 +1,23 @@
 using System;
+using System.Web;
 using System.Text.RegularExpressions;
+
+using BuildTools.HtmlDistiller;
+using BuildTools.HtmlDistiller.Filters;
 
 namespace JsonFx.UI
 {
-	public delegate void PreProcessLiteral(string value);
-
-	public class JsonControlBuilder : IDisposable
+	public class JsonControlBuilder : IDisposable, IHtmlFilter
 	{
 		#region Constants
 
+		private const string Pattern_Comment = @"(<!DOCTYPE[^>]*>)|(<!--(.)*?-->)";
+		private const string Pattern_Tag = "\\G<(?<tagname>[\\w:\\.]+)(\\s+(?<attrname>\\w[-\\w:]*)(\\s*=\\s*\"(?<attrval>[^\"]*)\"|\\s*=\\s*'(?<attrval>[^']*)'|\\s*=\\s*(?<attrval><%#.*?%>)|\\s*=\\s*(?<attrval>[^\\s=/>]*)|(?<attrval>\\s*?)))*\\s*(?<empty>/)?>";
+		private const string Pattern_EndTag = @"\G</(?<tagname>[\w:\.]+)\s*>";
+
+		private static readonly Regex Regex_Tag = new Regex(Pattern_Tag, RegexOptions.Singleline|RegexOptions.Multiline|RegexOptions.Compiled);
+		private static readonly Regex Regex_EndTag = new Regex(Pattern_EndTag, RegexOptions.Singleline|RegexOptions.Multiline|RegexOptions.Compiled);
+		private static readonly Regex Regex_Comment = new Regex(Pattern_Comment, RegexOptions.Singleline|RegexOptions.Multiline|RegexOptions.IgnoreCase);
 		private static readonly Regex RegexWhitespace = new Regex(@"\s{2,}", RegexOptions.Compiled);
 
 		#endregion Constants
@@ -25,8 +34,9 @@ namespace JsonFx.UI
 		private bool disposed = false;
 
 		private string cachedLiteral = null;
-		internal PreProcessLiteral PreProcess = null;
 		private bool processingLiteral = false;
+
+		//private readonly HtmlDistiller parser = new HtmlDistiller(true);
 
 		#endregion Fields
 
@@ -35,6 +45,9 @@ namespace JsonFx.UI
 		public JsonControlBuilder(System.IO.TextWriter writer)
 		{
 			this.writer = writer;
+
+			//this.parser.EncodeNonAscii = false;
+			//this.parser.HtmlFilter = this;
 		}
 
 		#endregion Init
@@ -77,11 +90,8 @@ namespace JsonFx.UI
 				this.cachedLiteral = null;
 				if (!String.IsNullOrEmpty(cached))
 				{
-					if (this.PreProcess != null)
-					{
-						// allow second-chance processing
-						this.PreProcess(cached);
-					}
+					// allow second-chance processing
+					this.ParseLiteral(cached);
 				}
 			}
 			finally
@@ -105,11 +115,12 @@ namespace JsonFx.UI
 
 		protected void OutputLiteral(string text)
 		{
-			text = this.ScrubLiteral(text);
 			if (String.IsNullOrEmpty(text))
 			{
 				return;
 			}
+
+			text = this.ScrubLiteral(text);
 
 			if (this.current == null)
 			{
@@ -131,7 +142,7 @@ namespace JsonFx.UI
 		/// <returns></returns>
 		private string ScrubLiteral(string text)
 		{
-			if (text == null || text.Trim().Length < 1)
+			if (text == null)
 			{
 				return null;
 			}
@@ -148,14 +159,7 @@ namespace JsonFx.UI
 
 		public void AddLiteral(string text)
 		{
-			if (this.cachedLiteral == null)
-			{
-				this.cachedLiteral = text;
-			}
-			else
-			{
-				this.cachedLiteral += text;
-			}
+			this.cachedLiteral += text;
 
 			this.ProcessLiteral();
 		}
@@ -194,10 +198,14 @@ namespace JsonFx.UI
 			this.FlushLiteralCache();
 
 			if (this.next != null)
+			{
 				throw new InvalidOperationException("Pop mismatch? (Next is null)");
+			}
 
 			if (this.current == null)
+			{
 				throw new InvalidOperationException("Pop mismatch? (Current is null)");
+			}
 
 			this.current = this.current.Parent;
 
@@ -352,6 +360,153 @@ namespace JsonFx.UI
 		}
 
 		#endregion Methods
+
+		#region Parse Methods
+
+		/// <summary>
+		/// Converts literal HTML into actual tags/attributes/etc.
+		/// </summary>
+		/// <param name="value"></param>
+		private void ParseLiteral(string value)
+		{
+			// Need to check for and parse for literal HTML here :(
+
+			// Handles this:
+			// <li><a class="AsyncLink" href="
+			// <%=this.ResolveUrl("~/FAQ/") %>
+			// ">FAQ</a></li>
+
+#warning Need to remove this filter
+			if (value == ">")
+			{
+				return;
+			}
+
+			// filter comments and DOCTYPEs
+			value = Regex_Comment.Replace(value, "");
+
+			// find until start of a tag
+			int end = value.IndexOf('<');
+			int start = 0;
+			while (end >= 0)
+			{
+				if (end-start > 0)
+				{
+					this.AddLiteral(value.Substring(start, end-start));
+				}
+
+				// check if wasn't part of a tag
+				start = value.IndexOf('>', end);
+				if (start < 0)
+				{
+					start = end;
+					break;
+				}
+				else
+				{
+					start++;
+				}
+
+				Match match = Regex_Tag.Match(value, end, start-end);
+				if (match.Success)
+				{
+					string tagName = match.Groups["tagname"].Value;
+
+					// open tag
+					this.PushTag(tagName);
+
+					// write out attributes
+					int attribCount = Math.Min(
+						match.Groups["attrname"].Captures.Count,
+						match.Groups["attrval"].Captures.Count);
+					for (int i=0; i<attribCount; i++)
+					{
+						this.AddAttribute(
+							match.Groups["attrname"].Captures[i].Value,
+							match.Groups["attrval"].Captures[i].Value);
+					}
+
+					if (!String.IsNullOrEmpty(match.Groups["empty"].Value))
+					{
+						// empty tag so immediately close it
+						this.PopTag();
+					}
+				}
+				else
+				{
+					match = Regex_EndTag.Match(value, end, start-end);
+					if (match.Success)
+					{
+						// found a closing tag
+						this.PopTag();
+					}
+					else
+					{
+						// wasn't part of a valid tag, but output as text
+						this.AddLiteral(value.Substring(end, start-end));
+					}
+				}
+
+				end = value.IndexOf('<', start);
+			}
+
+			// put rest back
+			this.AddLiteral(value.Substring(start));
+		}
+
+		#endregion Parse Methods
+
+		#region IHtmlFilter Members
+
+		/// <summary>
+		/// Callback from literal parser
+		/// </summary>
+		/// <param name="tag"></param>
+		/// <returns></returns>
+		bool IHtmlFilter.FilterTag(HtmlTag tag)
+		{
+			return true;
+		}
+
+		/// <summary>
+		/// Callback from literal parser
+		/// </summary>
+		/// <param name="tag"></param>
+		/// <param name="attribute"></param>
+		/// <param name="value"></param>
+		/// <returns></returns>
+		bool IHtmlFilter.FilterAttribute(string tag, string attribute, ref string value)
+		{
+			return true;
+		}
+
+		/// <summary>
+		/// Callback from literal parser
+		/// </summary>
+		/// <param name="tag"></param>
+		/// <param name="style"></param>
+		/// <param name="value"></param>
+		/// <returns></returns>
+		bool IHtmlFilter.FilterStyle(string tag, string style, ref string value)
+		{
+			return true;
+		}
+
+		/// <summary>
+		/// Callback from literal parser
+		/// </summary>
+		/// <param name="source"></param>
+		/// <param name="start"></param>
+		/// <param name="end"></param>
+		/// <param name="replacement"></param>
+		/// <returns></returns>
+		bool IHtmlFilter.FilterLiteral(string source, int start, int end, out string replacement)
+		{
+			replacement = null;
+			return false;
+		}
+
+		#endregion IHtmlFilter Members
 
 		#region IDisposable Members
 
