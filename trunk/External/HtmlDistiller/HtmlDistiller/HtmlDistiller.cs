@@ -631,7 +631,7 @@ namespace BuildTools.HtmlDistiller
 
 				#region close any open tags
 
-				if (!this.incrementalParsing)
+				if (this.balanceTags && !this.incrementalParsing)
 				{
 					while (this.openTags.Count > 0)
 					{
