@@ -443,9 +443,7 @@ namespace BuildTools.HtmlDistiller
 
 				foreach (string key in this.Styles.Keys)
 				{
-					string val =
-							/*(key == null) ? null :*/
-							this.styles[key];
+					string val = this.styles[key];
 
 					if (this.HtmlFilter.FilterStyle(this.TagName, key, ref val))
 					{

@@ -45,6 +45,17 @@ namespace BuildTools.HtmlDistiller
 	/// </remarks>
 	public class HtmlDistiller
 	{
+		#region ParseState
+
+		/// <summary>
+		/// Exception which halts parsing preserving last sync point
+		/// </summary>
+		private class UnexpectedEofException : System.IO.EndOfStreamException
+		{
+		}
+
+		#endregion ParseState
+
 		#region Constants
 
 		private const char NullChar = '\0';
@@ -52,7 +63,7 @@ namespace BuildTools.HtmlDistiller
 		private const char LFChar = '\n';
 		private const char OpenTagChar = '<';
 		private const char CloseTagChar = '>';
-		private const char EndTagStartChar = '/';
+		private const char EndTagChar = '/';
 		private const char AttrDelimChar = '=';
 		private const char SingleQuoteChar = '\'';
 		private const char DoubleQuoteChar = '\"';
@@ -62,7 +73,7 @@ namespace BuildTools.HtmlDistiller
 		private const char AlphaEndChar = 'z';
 		private const char NumStartChar = '0';
 		private const char NumEndChar = '9';
-		private const char AsciiEndChar = (char)0x7F;
+		private const char AsciiHighChar = (char)0x7F;
 
 		private const string StyleAttrib = "style";
 		private const string Ellipsis = "&hellip;";
@@ -77,15 +88,16 @@ namespace BuildTools.HtmlDistiller
 		private string source;
 		private IHtmlFilter htmlFilter;
 		private int maxLength = 0;
-		private bool normalizeWhitespace = true;
+		private bool normalizeWhitespace = false;
 		private bool balanceTags = true;
 		private bool encodeNonAscii = true;
-		private readonly bool IncrementalParsing = false;
+		private bool incrementalParsing = false;
 
 		private StringBuilder output;
-		private int index;
-		private int start;
-		private int textSize;
+		private int index;		// current char in source
+		private int start;		// last written char in source
+		private int textSize;	// length of plain text processed
+		private int syncPoint;	// last sync point (for incremental parsing)
 		private Stack<HtmlTag> openTags;
 		private HtmlTaxonomy taxonomy;
 
@@ -99,16 +111,6 @@ namespace BuildTools.HtmlDistiller
 		public HtmlDistiller()
 			: this(null, 0, null)
 		{
-		}
-
-		/// <summary>
-		/// Ctor.
-		/// </summary>
-		/// <param name="incremental">incremental parsing mode</param>
-		public HtmlDistiller(bool incremental)
-			: this(null, 0, null)
-		{
-			this.IncrementalParsing = incremental;
 		}
 
 		/// <summary>
@@ -197,7 +199,7 @@ namespace BuildTools.HtmlDistiller
 		}
 
 		/// <summary>
-		/// Gets and sets if non-ASCII chars should be encoded
+		/// Gets and sets if non-ASCII chars should be encoded as HTML entities
 		/// </summary>
 		public bool EncodeNonAscii
 		{
@@ -221,11 +223,22 @@ namespace BuildTools.HtmlDistiller
 			{
 				lock (this.SyncLock)
 				{
-					if (!this.IncrementalParsing)
+					if (this.incrementalParsing)
+					{
+						if (this.syncPoint >= 0)
+						{
+							// prepend remaining unparsed source
+							value = this.source.Substring(this.syncPoint) + value;
+						}
+					}
+					else
 					{
 						this.output = null;
 					}
-					this.source = (value == null) ? String.Empty : value;
+
+					this.source = (value == null) ?
+						String.Empty :
+						value;
 				}
 			}
 		}
@@ -301,18 +314,36 @@ namespace BuildTools.HtmlDistiller
 		#region Parse Methods
 
 		/// <summary>
-		/// Resets state used for parsing
+		/// Starts parsing to be performed incrementally
 		/// </summary>
-		public void Reset()
+		/// <remarks>
+		/// There is a performance hit for parsing in chunks.
+		/// </remarks>
+		public void BeginIncrementalParsing()
 		{
 			lock (this.SyncLock)
 			{
-				this.Reset(true);
+				this.Reset();
+				this.incrementalParsing = true;
 			}
 		}
 
 		/// <summary>
-		/// Parses the source using the current settings.
+		/// Stops incremental parsing and completes tag balancing, etc.
+		/// </summary>
+		/// <returns>the output text</returns>
+		public string EndIncrementalParsing()
+		{
+			this.Source = null;
+			lock (this.SyncLock)
+			{
+				this.incrementalParsing = false;
+			}
+			return this.Parse(false);
+		}
+
+		/// <summary>
+		/// Parses the provided source using the current settings.
 		/// </summary>
 		/// <param name="source"></param>
 		/// <returns>the output text</returns>
@@ -328,12 +359,24 @@ namespace BuildTools.HtmlDistiller
 		/// <returns>the output text</returns>
 		public string Parse()
 		{
-			lock (this.SyncLock)
+			return this.Parse(!this.incrementalParsing);
+		}
+
+		/// <summary>
+		/// Parses the source using the current settings.
+		/// </summary>
+		/// <param name="fullReset">clears incremental state as well</param>
+		private string Parse(bool fullReset)
+		{
+			try
 			{
-				this.Reset(!this.IncrementalParsing);
+				this.Reset(fullReset);
 
 				while (!this.IsEOF)
 				{
+					// store syncPoint
+					this.syncPoint = this.index;
+
 					char ch = this.Current;
 					if (ch == OpenTagChar)
 					{
@@ -490,14 +533,15 @@ namespace BuildTools.HtmlDistiller
 								char prev1 = this.PrevChar(1);
 								char prev2 = this.PrevChar(2);
 								if ((prev1 == LFChar || prev1 == NullChar) &&
-									(prev2 == LFChar || prev2 == NullChar))
+										(prev2 == LFChar || prev2 == NullChar))
 								{
 									// skip 3rd+ LFs
 									while (true)
 									{
 										this.Advance();
 										ch = this.Current;
-										if (ch != LFChar && ch != CRChar)
+										if (ch != LFChar &&
+												ch != CRChar)
 										{
 											break;
 										}
@@ -520,7 +564,8 @@ namespace BuildTools.HtmlDistiller
 								#region normalize spaces and tabs
 
 								char prev1 = this.PrevChar(1);
-								if (Char.IsWhiteSpace(prev1) || prev1 == NullChar)
+								if (Char.IsWhiteSpace(prev1) ||
+										prev1 == NullChar)
 								{
 									// write out all before extra whitespace
 									this.WriteBuffer();
@@ -546,7 +591,7 @@ namespace BuildTools.HtmlDistiller
 						#endregion normalize whitespace
 					}
 					else if (this.encodeNonAscii &&
-						ch > AsciiEndChar)
+							ch > AsciiHighChar)
 					{
 						#region encode non-ASCII chars
 
@@ -581,9 +626,12 @@ namespace BuildTools.HtmlDistiller
 
 				this.WriteBuffer();
 
+				// reset syncPoint
+				this.syncPoint = -1;
+
 				#region close any open tags
 
-				if (!this.IncrementalParsing)
+				if (!this.incrementalParsing)
 				{
 					while (this.openTags.Count > 0)
 					{
@@ -594,15 +642,20 @@ namespace BuildTools.HtmlDistiller
 				}
 
 				#endregion close any open tags
-
-				if (this.MaxLength > 0 && this.textSize >= this.MaxLength)
-				{
-					// source was cut off so add ellipsis
-					this.output.Append(Ellipsis);
-				}
-
-				return this.output.ToString();
 			}
+			catch (UnexpectedEofException)
+			{
+				// nothing needs to be done
+				// the source is preserved via last sync point
+			}
+
+			if (this.MaxLength > 0 && this.textSize >= this.MaxLength)
+			{
+				// source was cut off so add ellipsis
+				this.output.Append(Ellipsis);
+			}
+
+			return this.output.ToString();
 		}
 
 		/// <summary>
@@ -638,7 +691,7 @@ namespace BuildTools.HtmlDistiller
 
 			char ch = Char.ToLowerInvariant(this.Peek(1));
 			if ((ch < AlphaStartChar || ch > AlphaEndChar) &&
-				(ch != EndTagStartChar))
+				(ch != EndTagChar) && (ch != NullChar))
 			{
 				// not a tag, treat as LessThan char
 				return null;
@@ -649,7 +702,7 @@ namespace BuildTools.HtmlDistiller
 
 			while (!this.IsEOF)
 			{
-				// first tag char
+				// tag name chars
 				this.Advance();
 
 				ch = Char.ToLowerInvariant(this.Current);
@@ -662,10 +715,11 @@ namespace BuildTools.HtmlDistiller
 
 			tag = new HtmlTag(this.FlushBuffer(), this.htmlFilter);
 
+			this.ParseSyncPoint();
+
 			this.ParseAttributes(tag);
 
-			if (!this.IsEOF &&
-				this.Current != OpenTagChar)
+			if (this.Current == CloseTagChar)
 			{
 				// remove GreaterThan char from source
 				this.EmptyBuffer(1);
@@ -694,7 +748,7 @@ namespace BuildTools.HtmlDistiller
 				}
 			}
 
-			// flush LessThan
+			// consume LessThan
 			this.EmptyBuffer(1);
 
 			string commentName = this.FlushBuffer(startDelim.Length-1);
@@ -718,6 +772,8 @@ namespace BuildTools.HtmlDistiller
 					this.Advance();
 				}
 			}
+
+			this.ParseSyncPoint();
 
 			string contents = this.FlushBuffer();
 			if (!this.IsEOF)
@@ -744,15 +800,20 @@ namespace BuildTools.HtmlDistiller
 				ch != OpenTagChar)
 			{
 				string name = this.ParseAttributeName();
-				string value = String.Empty;
-				ch = this.Current;
 
+				this.ParseSyncPoint();
+
+				string value = String.Empty;
+
+				ch = this.Current;
 				if (ch != CloseTagChar &&
 					ch != OpenTagChar)
 				{
 					// Get the value(if any)
 					value = this.ParseAttributeValue();
 				}
+
+				this.ParseSyncPoint();
 
 				if (!String.IsNullOrEmpty(name))
 				{
@@ -775,7 +836,7 @@ namespace BuildTools.HtmlDistiller
 			this.SkipWhiteSpace();
 
 			char ch = this.Current;
-			if (ch == EndTagStartChar)
+			if (ch == EndTagChar)
 			{
 				this.EmptyBuffer(1);
 				return String.Empty;
@@ -859,7 +920,7 @@ namespace BuildTools.HtmlDistiller
 			}
 
 			string value = this.FlushBuffer();
-			if (isQuoted && !this.IsEOF)
+			if (isQuoted && this.Current == quot)
 			{
 				// consume close quote
 				this.EmptyBuffer(1);
@@ -950,6 +1011,52 @@ namespace BuildTools.HtmlDistiller
 			if (tag != null)
 			{
 				this.RenderTag(tag);
+			}
+		}
+
+		/// <summary>
+		/// Resets state used for parsing
+		/// </summary>
+		public void Reset()
+		{
+			lock (this.SyncLock)
+			{
+				this.Reset(true);
+			}
+		}
+
+		/// <summary>
+		/// Reset state used for parsing
+		/// </summary>
+		/// <param name="fullReset">clears incremental state as well</param>
+		/// <remarks>Does not SyncLock, call inside lock</remarks>
+		private void Reset(bool fullReset)
+		{
+			if (this.htmlFilter == null)
+			{
+				this.htmlFilter = new SafeHtmlFilter();
+			}
+			this.index = this.start = 0;
+
+			if (fullReset || this.output == null)
+			{
+				// in incremental parse mode, continue as if same document
+				this.textSize = 0;
+				this.syncPoint = -1;
+				this.openTags = new Stack<HtmlTag>(10);
+				this.taxonomy = HtmlTaxonomy.None;
+				this.output = new StringBuilder(this.source.Length);
+			}
+		}
+
+		/// <summary>
+		/// Causes parsing to end preserving partial source
+		/// </summary>
+		private void ParseSyncPoint()
+		{
+			if (this.incrementalParsing && this.IsEOF)
+			{
+				throw new UnexpectedEofException();
 			}
 		}
 
@@ -1062,29 +1169,6 @@ namespace BuildTools.HtmlDistiller
 		{
 			// count toward total text length
 			this.textSize++;
-		}
-
-		/// <summary>
-		/// Reset state used for parsing
-		/// </summary>
-		/// <param name="fullReset">clears incremental state as well</param>
-		/// <remarks>Does not SyncLock, call inside lock</remarks>
-		private void Reset(bool fullReset)
-		{
-			if (this.htmlFilter == null)
-			{
-				this.htmlFilter = new SafeHtmlFilter();
-			}
-			this.index = this.start = 0;
-
-			if (fullReset || this.output == null)
-			{
-				// in incremental parse mode, continue as if same document
-				this.textSize = 0;
-				this.openTags = new Stack<HtmlTag>(10);
-				this.taxonomy = HtmlTaxonomy.None;
-				this.output = new StringBuilder(this.source.Length);
-			}
 		}
 
 		/// <summary>
