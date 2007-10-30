@@ -567,7 +567,7 @@ namespace BuildTools.HtmlDistiller
 
 									char prev1 = this.PrevChar(1);
 									if (Char.IsWhiteSpace(prev1) ||
-										prev1 == NullChar)
+										(prev1 == NullChar && !this.incrementalParsing))
 									{
 										// write out all before extra whitespace
 										this.WriteBuffer();
