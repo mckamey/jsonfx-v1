@@ -407,6 +407,13 @@ namespace BuildTools.HtmlDistiller
 									}
 									case HtmlTagType.EndTag:
 									{
+										if (!this.balanceTags)
+										{
+											// render regardless
+											this.RenderTag(tag);
+											break;
+										}
+
 										if (this.openTags.Count == 0)
 										{
 											// no open tags so no need for EndTag
@@ -425,7 +432,7 @@ namespace BuildTools.HtmlDistiller
 										#region repair mismatched tags
 
 										// if isn't in stack then it doesn't help to attempt to repair
-										if (!this.balanceTags || !this.openTags.Contains(tag.CreateOpenTag()))
+										if (!this.openTags.Contains(tag.CreateOpenTag()))
 										{
 											// put the tag back on
 											this.openTags.Push(openTag);
