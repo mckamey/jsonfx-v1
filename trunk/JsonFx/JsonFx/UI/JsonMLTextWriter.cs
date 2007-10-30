@@ -94,20 +94,13 @@ namespace JsonFx.UI
 
 		protected override void Dispose(bool disposing)
 		{
-			try
-			{
-				base.Dispose(disposing);
-			}
-			finally
-			{
-				this.builder.Dispose();
-			}
+			this.builder.Dispose();
+			base.Dispose(disposing);
 		}
 
 		protected override string EncodeAttributeValue(HtmlTextWriterAttribute attrKey, string value)
 		{
 			// trap this, we don't want HtmlEncoded attributes
-
 			return value;
 		}
 
@@ -116,10 +109,11 @@ namespace JsonFx.UI
 		//    get { return System.Text.Encoding.UTF8; }
 		//}
 
-		//public override void EndRender()
-		//{
-		//    base.EndRender();
-		//}
+		public override void EndRender()
+		{
+			this.builder.Flush();
+			base.EndRender();
+		}
 
 		//public override void EnterStyle(System.Web.UI.WebControls.Style style)
 		//{
@@ -129,11 +123,6 @@ namespace JsonFx.UI
 		//public override void EnterStyle(System.Web.UI.WebControls.Style style, HtmlTextWriterTag tag)
 		//{
 		//    base.EnterStyle(style, tag);
-		//}
-
-		//public override bool Equals(object obj)
-		//{
-		//    return base.Equals(obj);
 		//}
 
 		//public override void ExitStyle(System.Web.UI.WebControls.Style style)
@@ -151,10 +140,11 @@ namespace JsonFx.UI
 			base.FilterAttributes();
 		}
 
-		//public override void Flush()
-		//{
-		//    base.Flush();
-		//}
+		public override void Flush()
+		{
+			this.builder.Flush();
+			base.Flush();
+		}
 
 		//public override IFormatProvider FormatProvider
 		//{
@@ -192,20 +182,20 @@ namespace JsonFx.UI
 		//    set { base.NewLine = value; }
 		//}
 
-		protected override bool OnAttributeRender(string name, string value, HtmlTextWriterAttribute key)
-		{
-			return base.OnAttributeRender(name, value, key);
-		}
+		//protected override bool OnAttributeRender(string name, string value, HtmlTextWriterAttribute key)
+		//{
+		//    return base.OnAttributeRender(name, value, key);
+		//}
 
-		protected override bool OnStyleAttributeRender(string name, string value, HtmlTextWriterStyle key)
-		{
-			return base.OnStyleAttributeRender(name, value, key);
-		}
+		//protected override bool OnStyleAttributeRender(string name, string value, HtmlTextWriterStyle key)
+		//{
+		//    return base.OnStyleAttributeRender(name, value, key);
+		//}
 
-		protected override bool OnTagRender(string name, HtmlTextWriterTag key)
-		{
-			return base.OnTagRender(name, key);
-		}
+		//protected override bool OnTagRender(string name, HtmlTextWriterTag key)
+		//{
+		//    return base.OnTagRender(name, key);
+		//}
 
 		protected override void OutputTabs()
 		{
@@ -247,11 +237,6 @@ namespace JsonFx.UI
 		{
 			this.builder.PopTag();
 		}
-
-		//public override string ToString()
-		//{
-		//    return base.ToString();
-		//}
 
 		public override void Write(bool value)
 		{
@@ -341,11 +326,10 @@ namespace JsonFx.UI
 			this.Write("{0}", value);
 		}
 
-		//public override void WriteAttribute(string name, string value)
-		//{
-		//    // this calls WriteAttribute(string name, string value, bool fEncode)
-		//    base.WriteAttribute(name, value);
-		//}
+		public override void WriteAttribute(string name, string value)
+		{
+			this.builder.AddAttribute(name, value);
+		}
 
 		public override void WriteAttribute(string name, string value, bool encode)
 		{
@@ -460,9 +444,9 @@ namespace JsonFx.UI
 			this.Write(format, arg0, arg1, arg2);
 		}
 
-		public override void WriteLine(string format, params object[] arg)
+		public override void WriteLine(string format, params object[] args)
 		{
-			this.Write(format, arg);
+			this.Write(format, args);
 		}
 
 		public override void WriteLine(string s)
@@ -482,7 +466,6 @@ namespace JsonFx.UI
 
 		public override void WriteStyleAttribute(string name, string value)
 		{
-			// this calls WriteStyleAttribute(string name, string value, bool encode)
 			this.builder.AddStyle(name, value);
 		}
 
