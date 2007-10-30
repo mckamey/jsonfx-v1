@@ -256,19 +256,32 @@ namespace JsonFx.UI
 			// flush any accumulated literals
 			this.Flush();
 
+			if (String.IsNullOrEmpty(name) && String.IsNullOrEmpty(value))
+			{
+				return;
+			}
+
 			if (target == null)
 			{
 				throw new NullReferenceException("target is null");
 			}
 
-			if (target.Attributes["style"] != null)
+			string style = target.Attributes["style"] as String;
+			if (style != null && !style.EndsWith(";"))
 			{
-				target.Attributes["style"] = target.Attributes["style"]+";"+value;
+				style += ";";
+			}
+
+			if (String.IsNullOrEmpty(name))
+			{
+				style += value;
 			}
 			else
 			{
-				target.Attributes["style"] = value;
+				style += name+':'+value;
 			}
+
+			target.Attributes["style"] = style;
 		}
 
 		#endregion Methods
