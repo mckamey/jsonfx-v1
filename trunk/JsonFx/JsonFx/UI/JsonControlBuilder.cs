@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using System.Web;
 using System.Text.RegularExpressions;
 
@@ -11,43 +12,40 @@ namespace JsonFx.UI
 	{
 		#region Constants
 
-		private const string Pattern_Comment = @"(<!DOCTYPE[^>]*>)|(<!--(.)*?-->)";
-		private const string Pattern_Tag = "\\G<(?<tagname>[\\w:\\.]+)(\\s+(?<attrname>\\w[-\\w:]*)(\\s*=\\s*\"(?<attrval>[^\"]*)\"|\\s*=\\s*'(?<attrval>[^']*)'|\\s*=\\s*(?<attrval><%#.*?%>)|\\s*=\\s*(?<attrval>[^\\s=/>]*)|(?<attrval>\\s*?)))*\\s*(?<empty>/)?>";
-		private const string Pattern_EndTag = @"\G</(?<tagname>[\w:\.]+)\s*>";
-
-		private static readonly Regex Regex_Tag = new Regex(Pattern_Tag, RegexOptions.Singleline|RegexOptions.Multiline|RegexOptions.Compiled);
-		private static readonly Regex Regex_EndTag = new Regex(Pattern_EndTag, RegexOptions.Singleline|RegexOptions.Multiline|RegexOptions.Compiled);
-		private static readonly Regex Regex_Comment = new Regex(Pattern_Comment, RegexOptions.Singleline|RegexOptions.Multiline|RegexOptions.IgnoreCase);
 		private static readonly Regex RegexWhitespace = new Regex(@"\s{2,}", RegexOptions.Compiled);
 
 		#endregion Constants
 
 		#region Fields
 
-		System.IO.TextWriter writer;
+		TextWriter writer;
 		JsonControlCollection controls = new JsonControlCollection(null);
 		JsonControl current = null;
 		JsonControl next = null;
 		bool allowLiteralsInRoot = false;
-		bool normalizeWhitespace = true;
 		private bool dirty = false;
 		private bool disposed = false;
 
-		private string cachedLiteral = null;
-		private bool processingLiteral = false;
-
-		//private readonly HtmlDistiller parser = new HtmlDistiller(true);
+		private bool parsingHtml = false;
+		private readonly HtmlDistiller parser = new HtmlDistiller();
 
 		#endregion Fields
 
 		#region Init
 
-		public JsonControlBuilder(System.IO.TextWriter writer)
+		/// <summary>
+		/// Ctor
+		/// </summary>
+		/// <param name="writer"></param>
+		public JsonControlBuilder(TextWriter writer)
 		{
 			this.writer = writer;
 
-			//this.parser.EncodeNonAscii = false;
-			//this.parser.HtmlFilter = this;
+			this.parser.EncodeNonAscii = false;
+			this.parser.BalanceTags = false;
+			this.parser.NormalizeWhitespace = false;
+			this.parser.HtmlFilter = this;
+			this.parser.BeginIncrementalParsing();
 		}
 
 		#endregion Init
@@ -65,51 +63,49 @@ namespace JsonFx.UI
 			set { this.allowLiteralsInRoot = value; }
 		}
 
-		public bool NormalizeWhitespace
-		{
-			get { return this.normalizeWhitespace; }
-			set { this.normalizeWhitespace = value; }
-		}
-
 		#endregion Properties
 
 		#region Methods
 
-		private void ProcessLiteral()
+		public void AddLiteral(string text)
 		{
-			if (this.processingLiteral)
+			if (this.parsingHtml)
 			{
 				return;
 			}
 
 			try
 			{
-				this.processingLiteral = true;
+				this.parsingHtml = true;
 
-				string cached = this.cachedLiteral;
-				this.cachedLiteral = null;
-				if (!String.IsNullOrEmpty(cached))
-				{
-					// allow second-chance processing
-					this.ParseLiteral(cached);
-				}
+				this.parser.Parse(text);
 			}
 			finally
 			{
-				this.processingLiteral = false;
+				this.parsingHtml = false;
 			}
 		}
 
-		private void FlushLiteralCache()
+		private void Flush()
 		{
-			this.ProcessLiteral();
-
-			// output anything remaining after second-chance processing
-			string cached = this.cachedLiteral;
-			this.cachedLiteral = null;
-			if (!String.IsNullOrEmpty(cached))
+			if (this.parsingHtml)
 			{
-				this.OutputLiteral(cached);
+				return;
+			}
+
+			try
+			{
+				this.parsingHtml = true;
+
+				// flush remaining
+				this.parser.EndIncrementalParsing();
+
+				// reset for additional
+				this.parser.BeginIncrementalParsing();
+			}
+			finally
+			{
+				this.parsingHtml = false;
 			}
 		}
 
@@ -120,7 +116,11 @@ namespace JsonFx.UI
 				return;
 			}
 
-			text = this.ScrubLiteral(text);
+			// this allows HTML entities to be encoded as unicode
+			text = HttpUtility.HtmlDecode(text);
+
+			// normalize whitespace
+			text = RegexWhitespace.Replace(text, " ");
 
 			if (this.current == null)
 			{
@@ -135,39 +135,10 @@ namespace JsonFx.UI
 			}
 		}
 
-		/// <summary>
-		/// Normalizes Whitespace, HtmlDecode content
-		/// </summary>
-		/// <param name="text"></param>
-		/// <returns></returns>
-		private string ScrubLiteral(string text)
-		{
-			if (text == null)
-			{
-				return null;
-			}
-
-			if (this.NormalizeWhitespace)
-			{
-				text = RegexWhitespace.Replace(text, " ");
-			}
-
-			// this allows HTML entities to be encoded as unicode
-			text = System.Web.HttpUtility.HtmlDecode(text);
-			return text;
-		}
-
-		public void AddLiteral(string text)
-		{
-			this.cachedLiteral += text;
-
-			this.ProcessLiteral();
-		}
-
 		public void PushTag(string tagName)
 		{
 			// flush any accumulated literals
-			this.FlushLiteralCache();
+			this.Flush();
 
 			JsonControl control = this.next;
 			if (control == null)
@@ -195,7 +166,7 @@ namespace JsonFx.UI
 		public void PopTag()
 		{
 			// flush any accumulated literals
-			this.FlushLiteralCache();
+			this.Flush();
 
 			if (this.next != null)
 			{
@@ -210,13 +181,17 @@ namespace JsonFx.UI
 			this.current = this.current.Parent;
 
 			if (this.current == null)
+			{
 				this.RenderControls();
+			}
 		}
 
 		public void StoreAttribute(string name, string value)
 		{
 			if (this.next == null)
+			{
 				this.next = new JsonControl();
+			}
 
 			this.SetAttribute(this.next, name, value);
 		}
@@ -224,7 +199,9 @@ namespace JsonFx.UI
 		public void AddAttribute(string name, string value)
 		{
 			if (this.current == null)
+			{
 				throw new InvalidOperationException("Unexpected attribute");
+			}
 
 			this.SetAttribute(this.current, name, value);
 		}
@@ -232,9 +209,9 @@ namespace JsonFx.UI
 		public void SetAttribute(JsonControl target, string name, string value)
 		{
 			// flush any accumulated literals
-			this.FlushLiteralCache();
+			this.Flush();
 
-			value = System.Web.HttpUtility.HtmlDecode(value);
+			value = HttpUtility.HtmlDecode(value);
 			if ("style".Equals(name, StringComparison.InvariantCultureIgnoreCase))
 			{
 				this.SetStyle(target, null, value);
@@ -248,7 +225,9 @@ namespace JsonFx.UI
 		public void StoreStyle(string name, string value)
 		{
 			if (this.next == null)
+			{
 				this.next = new JsonControl();
+			}
 
 			this.SetStyle(this.next, name, value);
 		}
@@ -256,7 +235,9 @@ namespace JsonFx.UI
 		public void AddStyle(string name, string value)
 		{
 			if (this.current == null)
+			{
 				throw new InvalidOperationException("Unexpected attribute");
+			}
 
 			this.SetStyle(this.current, name, value);
 		}
@@ -264,10 +245,12 @@ namespace JsonFx.UI
 		public void SetStyle(JsonControl target, string name, string value)
 		{
 			// flush any accumulated literals
-			this.FlushLiteralCache();
+			this.Flush();
 
 			if (target == null)
+			{
 				throw new NullReferenceException("target is null");
+			}
 
 			if (target.Attributes["style"] != null)
 			{
@@ -277,56 +260,6 @@ namespace JsonFx.UI
 			{
 				target.Attributes["style"] = value;
 			}
-
-//            if (!String.IsNullOrEmpty(value) && String.IsNullOrEmpty(name))
-//            {
-//                string[] rules = value.Split(';');
-//                foreach (string rule in rules)
-//                {
-//                    if (String.IsNullOrEmpty(rule))
-//                        continue;
-
-//#warning parsing doesn't handle IE filters
-//                    string[] parts = rule.Split(':');
-//                    if (parts.Length != 2)
-//                        throw new Exception("Bug in the Style parsing");
-
-//                    parts[0] = parts[0].Trim();
-//                    parts[1] = parts[1].Trim();
-//                    if (String.IsNullOrEmpty(parts[0]) || String.IsNullOrEmpty(parts[1]))
-//                        throw new Exception("Bug in the Style parsing");
-
-//                    if (target.Style == null)
-//                        throw new NullReferenceException("target.Style is null");
-
-//                    parts[0] = this.ToJavaScriptStyle(parts[0]);
-
-//                    target.Style[parts[0]] = parts[1];
-//                }
-//            }
-//            else
-//            {
-//                target.Style[name] = value;
-//            }
-		}
-
-		private string ToJavaScriptStyle(string property)
-		{
-			if ("float".Equals(property, StringComparison.OrdinalIgnoreCase))
-				return "styleFloat";
-
-			// break into words
-			string[] parts = property.Split('-');
-
-			if (parts.Length == 1)
-				return property;
-
-			for (int i=1; i<parts.Length; i++)
-			{
-				// make camel case
-				parts[i] = Char.ToUpperInvariant(parts[i][0])+parts[i].Substring(1).ToLowerInvariant();
-			}
-			return String.Join("", parts);
 		}
 
 		#endregion Methods
@@ -361,101 +294,6 @@ namespace JsonFx.UI
 
 		#endregion Methods
 
-		#region Parse Methods
-
-		/// <summary>
-		/// Converts literal HTML into actual tags/attributes/etc.
-		/// </summary>
-		/// <param name="value"></param>
-		private void ParseLiteral(string value)
-		{
-			// Need to check for and parse for literal HTML here :(
-
-			// Handles this:
-			// <li><a class="AsyncLink" href="
-			// <%=this.ResolveUrl("~/FAQ/") %>
-			// ">FAQ</a></li>
-
-#warning Need to remove this filter
-			if (value == ">")
-			{
-				return;
-			}
-
-			// filter comments and DOCTYPEs
-			value = Regex_Comment.Replace(value, "");
-
-			// find until start of a tag
-			int end = value.IndexOf('<');
-			int start = 0;
-			while (end >= 0)
-			{
-				if (end-start > 0)
-				{
-					this.AddLiteral(value.Substring(start, end-start));
-				}
-
-				// check if wasn't part of a tag
-				start = value.IndexOf('>', end);
-				if (start < 0)
-				{
-					start = end;
-					break;
-				}
-				else
-				{
-					start++;
-				}
-
-				Match match = Regex_Tag.Match(value, end, start-end);
-				if (match.Success)
-				{
-					string tagName = match.Groups["tagname"].Value;
-
-					// open tag
-					this.PushTag(tagName);
-
-					// write out attributes
-					int attribCount = Math.Min(
-						match.Groups["attrname"].Captures.Count,
-						match.Groups["attrval"].Captures.Count);
-					for (int i=0; i<attribCount; i++)
-					{
-						this.AddAttribute(
-							match.Groups["attrname"].Captures[i].Value,
-							match.Groups["attrval"].Captures[i].Value);
-					}
-
-					if (!String.IsNullOrEmpty(match.Groups["empty"].Value))
-					{
-						// empty tag so immediately close it
-						this.PopTag();
-					}
-				}
-				else
-				{
-					match = Regex_EndTag.Match(value, end, start-end);
-					if (match.Success)
-					{
-						// found a closing tag
-						this.PopTag();
-					}
-					else
-					{
-						// wasn't part of a valid tag, but output as text
-						this.AddLiteral(value.Substring(end, start-end));
-					}
-				}
-
-				end = value.IndexOf('<', start);
-			}
-
-			// put rest back
-			this.AddLiteral(value.Substring(start));
-		}
-
-		#endregion Parse Methods
-
 		#region IHtmlFilter Members
 
 		/// <summary>
@@ -463,9 +301,51 @@ namespace JsonFx.UI
 		/// </summary>
 		/// <param name="tag"></param>
 		/// <returns></returns>
-		bool IHtmlFilter.FilterTag(HtmlTag tag)
+		public bool FilterTag(HtmlTag tag)
 		{
-			return true;
+			switch (tag.TagType)
+			{
+				case HtmlTagType.FullTag:
+				case HtmlTagType.BeginTag:
+				{
+					this.PushTag(tag.TagName);
+
+					if (tag.HasAttributes)
+					{
+						foreach (string key in tag.Attributes.Keys)
+						{
+							this.AddAttribute(key, tag.Attributes[key]);
+						}
+					}
+
+					if (tag.HasStyles)
+					{
+						foreach (string key in tag.Styles.Keys)
+						{
+							this.AddStyle(key, tag.Styles[key]);
+						}
+					}
+
+					if (tag.TagType == HtmlTagType.FullTag)
+					{
+						this.PopTag();
+					}
+					break;
+				}
+				case HtmlTagType.EndTag:
+				{
+					this.PopTag();
+					break;
+				}
+				case HtmlTagType.Comment:
+				default:
+				{
+					break;
+				}
+			}
+
+			// suppress writing of HtmlDistiller output
+			return false;
 		}
 
 		/// <summary>
@@ -475,9 +355,10 @@ namespace JsonFx.UI
 		/// <param name="attribute"></param>
 		/// <param name="value"></param>
 		/// <returns></returns>
-		bool IHtmlFilter.FilterAttribute(string tag, string attribute, ref string value)
+		public bool FilterAttribute(string tag, string attribute, ref string value)
 		{
-			return true;
+			// suppress writing of HtmlDistiller output
+			return false;
 		}
 
 		/// <summary>
@@ -487,9 +368,10 @@ namespace JsonFx.UI
 		/// <param name="style"></param>
 		/// <param name="value"></param>
 		/// <returns></returns>
-		bool IHtmlFilter.FilterStyle(string tag, string style, ref string value)
+		public bool FilterStyle(string tag, string style, ref string value)
 		{
-			return true;
+			// suppress writing of HtmlDistiller output
+			return false;
 		}
 
 		/// <summary>
@@ -500,10 +382,13 @@ namespace JsonFx.UI
 		/// <param name="end"></param>
 		/// <param name="replacement"></param>
 		/// <returns></returns>
-		bool IHtmlFilter.FilterLiteral(string source, int start, int end, out string replacement)
+		public bool FilterLiteral(string source, int start, int end, out string replacement)
 		{
+			this.OutputLiteral(source.Substring(start, end-start));
+
+			// suppress writing of HtmlDistiller output
 			replacement = null;
-			return false;
+			return true;
 		}
 
 		#endregion IHtmlFilter Members
@@ -521,7 +406,7 @@ namespace JsonFx.UI
 					using (this.writer)
 					{
 						// flush any accumulated literals
-						this.FlushLiteralCache();
+						this.Flush();
 
 						while (this.current != null)
 						{
