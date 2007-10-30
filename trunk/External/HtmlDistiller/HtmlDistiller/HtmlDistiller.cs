@@ -334,12 +334,12 @@ namespace BuildTools.HtmlDistiller
 		/// <returns>the output text</returns>
 		public string EndIncrementalParsing()
 		{
-			this.Source = null;
 			lock (this.SyncLock)
 			{
+				this.Source = null;
 				this.incrementalParsing = false;
+				return this.Parse(false);
 			}
-			return this.Parse(false);
 		}
 
 		/// <summary>
@@ -368,294 +368,296 @@ namespace BuildTools.HtmlDistiller
 		/// <param name="fullReset">clears incremental state as well</param>
 		private string Parse(bool fullReset)
 		{
-			try
+			lock (this.SyncLock)
 			{
-				this.Reset(fullReset);
-
-				while (!this.IsEOF)
+				try
 				{
-					// store syncPoint
-					this.syncPoint = this.index;
+					this.Reset(fullReset);
 
-					char ch = this.Current;
-					if (ch == OpenTagChar)
+					while (!this.IsEOF)
 					{
-						#region found potential tag
+						// store syncPoint
+						this.syncPoint = this.index;
 
-						// write out all before CR
-						this.WriteBuffer();
-
-						HtmlTag tag = this.ParseTag();
-						if (tag != null)
+						char ch = this.Current;
+						if (ch == OpenTagChar)
 						{
-							switch (tag.TagType)
-							{
-								case HtmlTagType.Comment:
-								case HtmlTagType.FullTag:
-								{
-									this.RenderTag(tag);
-									break;
-								}
-								case HtmlTagType.BeginTag:
-								{
-									// keep copy for pairing
-									this.openTags.Push(tag);
-									this.RenderTag(tag);
-									break;
-								}
-								case HtmlTagType.EndTag:
-								{
-									if (this.openTags.Count == 0)
-									{
-										// no open tags so no need for EndTag
-										break;
-									}
+							#region found potential tag
 
-									// check for matching pair
-									HtmlTag openTag = this.openTags.Pop();
-									if (tag.TagName == openTag.TagName)
+							// write out all before CR
+							this.WriteBuffer();
+
+							HtmlTag tag = this.ParseTag();
+							if (tag != null)
+							{
+								switch (tag.TagType)
+								{
+									case HtmlTagType.Comment:
+									case HtmlTagType.FullTag:
 									{
-										// found match
 										this.RenderTag(tag);
 										break;
 									}
-
-									#region repair mismatched tags
-
-									// if isn't in stack then it doesn't help to attempt to repair
-									if (!this.balanceTags || !this.openTags.Contains(tag.CreateOpenTag()))
+									case HtmlTagType.BeginTag:
 									{
-										// put the tag back on
-										this.openTags.Push(openTag);
-
-										// ignore end tag
+										// keep copy for pairing
+										this.openTags.Push(tag);
+										this.RenderTag(tag);
 										break;
+									}
+									case HtmlTagType.EndTag:
+									{
+										if (this.openTags.Count == 0)
+										{
+											// no open tags so no need for EndTag
+											break;
+										}
+
+										// check for matching pair
+										HtmlTag openTag = this.openTags.Pop();
+										if (tag.TagName == openTag.TagName)
+										{
+											// found match
+											this.RenderTag(tag);
+											break;
+										}
+
+										#region repair mismatched tags
+
+										// if isn't in stack then it doesn't help to attempt to repair
+										if (!this.balanceTags || !this.openTags.Contains(tag.CreateOpenTag()))
+										{
+											// put the tag back on
+											this.openTags.Push(openTag);
+
+											// ignore end tag
+											break;
+										}
+										else
+										{
+											// try to repair mismatch
+											Stack<HtmlTag> mismatched = new Stack<HtmlTag>(this.openTags.Count);
+
+											do
+											{
+												// close mismatched tags
+												this.RenderCloseTag(openTag);
+
+												// store for re-opening
+												mismatched.Push(openTag);
+												if (this.openTags.Count == 0)
+												{
+													// no match found
+													openTag = null;
+													break;
+												}
+
+												// get next
+												openTag = this.openTags.Pop();
+											} while (tag.TagName != openTag.TagName);
+
+											if (openTag != null)
+											{
+												// found matching tag
+												this.RenderTag(tag);
+											}
+
+											// reopen mismatched tags
+											while (mismatched.Count > 0)
+											{
+												openTag = mismatched.Pop();
+												this.openTags.Push(openTag);
+												this.RenderTag(openTag);
+											}
+										}
+										break;
+
+										#endregion repair mismatched tags
+									}
+									default:
+									{
+										break;
+									}
+								}
+							}
+							else
+							{
+								#region encode LessThan char
+
+								// encode LessThan char
+								this.output.Append(LessThan);
+
+								// remove from stream
+								this.EmptyBuffer(1);
+
+								// count toward total text length
+								this.textSize++;
+
+								#endregion encode LessThan char
+							}
+
+							#endregion found potential tag
+						}
+						else if (this.normalizeWhitespace && Char.IsWhiteSpace(ch))
+						{
+							#region normalize whitespace
+
+							while (Char.IsWhiteSpace(ch))
+							{
+								if (ch == CRChar)
+								{
+									#region normalize line endings (CR/CRLF -> LF)
+
+									// write out all before CR
+									this.WriteBuffer();
+
+									if (this.Peek(1) != LFChar)
+									{
+										// just CR so replace CR with LF
+										this.output.Append(LFChar);
+
+										// count toward total text length
+										this.textSize++;
+									}
+
+									// skip CR
+									this.EmptyBuffer(1);
+
+									#endregion normalize line endings (CR/CRLF -> LF)
+								}
+								else if (ch == LFChar)
+								{
+									#region limit line endings (no more than 2 LF)
+
+									// write out all before LF
+									this.WriteBuffer();
+
+									char prev1 = this.PrevChar(1);
+									char prev2 = this.PrevChar(2);
+									if ((prev1 == LFChar || (prev1 == NullChar && !this.incrementalParsing)) &&
+										(prev2 == LFChar || (prev2 == NullChar && !this.incrementalParsing)))
+									{
+										// skip 3rd+ LFs
+										while (true)
+										{
+											this.Advance();
+											ch = this.Current;
+											if (ch != LFChar &&
+												ch != CRChar)
+											{
+												break;
+											}
+										}
+										this.EmptyBuffer();
 									}
 									else
 									{
-										// try to repair mismatch
-										Stack<HtmlTag> mismatched = new Stack<HtmlTag>(this.openTags.Count);
+										// keep going, will copy out as larger buffer
+										this.Advance();
 
-										do
-										{
-											// close mismatched tags
-											this.RenderCloseTag(openTag);
-
-											// store for re-opening
-											mismatched.Push(openTag);
-											if (this.openTags.Count == 0)
-											{
-												// no match found
-												openTag = null;
-												break;
-											}
-
-											// get next
-											openTag = this.openTags.Pop();
-										} while (tag.TagName != openTag.TagName);
-
-										if (openTag != null)
-										{
-											// found matching tag
-											this.RenderTag(tag);
-										}
-
-										// reopen mismatched tags
-										while (mismatched.Count > 0)
-										{
-											openTag = mismatched.Pop();
-											this.openTags.Push(openTag);
-											this.RenderTag(openTag);
-										}
+										// count towards text chars
+										this.IncTextCount();
 									}
-									break;
 
-									#endregion repair mismatched tags
+									#endregion limit line endings (no more than 2 LF)
 								}
-								default:
+								else
 								{
-									break;
+									#region normalize spaces and tabs
+
+									char prev1 = this.PrevChar(1);
+									if (Char.IsWhiteSpace(prev1) ||
+										prev1 == NullChar)
+									{
+										// write out all before extra whitespace
+										this.WriteBuffer();
+
+										// eat extra whitespace
+										this.EmptyBuffer(1);
+									}
+									else
+									{
+										// keep going, will copy out as larger buffer
+										this.Advance();
+
+										// count towards text chars
+										this.IncTextCount();
+									}
+
+									#endregion normalize spaces and tabs
 								}
+
+								ch = this.Current;
 							}
+
+							#endregion normalize whitespace
 						}
-						else
+						else if (this.encodeNonAscii && ch > AsciiHighChar)
 						{
-							#region encode LessThan char
+							#region encode non-ASCII chars
 
-							// encode LessThan char
-							this.output.Append(LessThan);
+							// write out all before non-ASCII char
+							this.WriteBuffer();
 
-							// remove from stream
+							// encode the non-ASCII char
+							string entity = this.EncodeHtmlEntity(ch);
+							this.output.Append(entity);
+
+							// remove char from stream
 							this.EmptyBuffer(1);
 
 							// count toward total text length
 							this.textSize++;
 
-							#endregion encode LessThan char
+							#endregion encode non-ASCII chars
 						}
-
-						#endregion found potential tag
-					}
-					else if (this.normalizeWhitespace && Char.IsWhiteSpace(ch))
-					{
-						#region normalize whitespace
-
-						while (Char.IsWhiteSpace(ch))
+						else
 						{
-							if (ch == CRChar)
-							{
-								#region normalize line endings (CR/CRLF -> LF)
+							#region all other chars
 
-								// write out all before CR
-								this.WriteBuffer();
+							// keep going, will copy out as larger buffer
+							this.Advance();
 
-								if (this.Peek(1) != LFChar)
-								{
-									// just CR so replace CR with LF
-									this.output.Append(LFChar);
+							// count towards text chars
+							this.IncTextCount();
 
-									// count toward total text length
-									this.textSize++;
-								}
-
-								// skip CR
-								this.EmptyBuffer(1);
-
-								#endregion normalize line endings (CR/CRLF -> LF)
-							}
-							else if (ch == LFChar)
-							{
-								#region limit line endings (no more than 2 LF)
-
-								// write out all before LF
-								this.WriteBuffer();
-
-								char prev1 = this.PrevChar(1);
-								char prev2 = this.PrevChar(2);
-								if ((prev1 == LFChar || prev1 == NullChar) &&
-										(prev2 == LFChar || prev2 == NullChar))
-								{
-									// skip 3rd+ LFs
-									while (true)
-									{
-										this.Advance();
-										ch = this.Current;
-										if (ch != LFChar &&
-												ch != CRChar)
-										{
-											break;
-										}
-									}
-									this.EmptyBuffer();
-								}
-								else
-								{
-									// keep going, will copy out as larger buffer
-									this.Advance();
-
-									// count towards text chars
-									this.IncTextCount();
-								}
-
-								#endregion limit line endings (no more than 2 LF)
-							}
-							else
-							{
-								#region normalize spaces and tabs
-
-								char prev1 = this.PrevChar(1);
-								if (Char.IsWhiteSpace(prev1) ||
-										prev1 == NullChar)
-								{
-									// write out all before extra whitespace
-									this.WriteBuffer();
-
-									// eat extra whitespace
-									this.EmptyBuffer(1);
-								}
-								else
-								{
-									// keep going, will copy out as larger buffer
-									this.Advance();
-
-									// count towards text chars
-									this.IncTextCount();
-								}
-
-								#endregion normalize spaces and tabs
-							}
-
-							ch = this.Current;
+							#endregion all other chars
 						}
-
-						#endregion normalize whitespace
 					}
-					else if (this.encodeNonAscii &&
-							ch > AsciiHighChar)
+
+					this.WriteBuffer();
+
+					// reset syncPoint
+					this.syncPoint = -1;
+
+					#region close any open tags
+
+					if (this.balanceTags && !this.incrementalParsing)
 					{
-						#region encode non-ASCII chars
-
-						// write out all before non-ASCII char
-						this.WriteBuffer();
-
-						// encode the non-ASCII char
-						string entity = this.EncodeHtmlEntity(ch);
-						this.output.Append(entity);
-
-						// remove char from stream
-						this.EmptyBuffer(1);
-
-						// count toward total text length
-						this.textSize++;
-
-						#endregion encode non-ASCII chars
+						while (this.openTags.Count > 0)
+						{
+							// write out any unclosed tags
+							HtmlTag tag = this.openTags.Pop();
+							this.RenderCloseTag(tag);
+						}
 					}
-					else
-					{
-						#region all other chars
 
-						// keep going, will copy out as larger buffer
-						this.Advance();
-
-						// count towards text chars
-						this.IncTextCount();
-
-						#endregion all other chars
-					}
+					#endregion close any open tags
 				}
-
-				this.WriteBuffer();
-
-				// reset syncPoint
-				this.syncPoint = -1;
-
-				#region close any open tags
-
-				if (this.balanceTags && !this.incrementalParsing)
+				catch (UnexpectedEofException)
 				{
-					while (this.openTags.Count > 0)
-					{
-						// write out any unclosed tags
-						HtmlTag tag = this.openTags.Pop();
-						this.RenderCloseTag(tag);
-					}
+					// nothing needs to be done
+					// the source is preserved via last sync point
 				}
 
-				#endregion close any open tags
-			}
-			catch (UnexpectedEofException)
-			{
-				// nothing needs to be done
-				// the source is preserved via last sync point
-			}
+				if (this.MaxLength > 0 && this.textSize >= this.MaxLength)
+				{
+					// source was cut off so add ellipsis
+					this.output.Append(Ellipsis);
+				}
 
-			if (this.MaxLength > 0 && this.textSize >= this.MaxLength)
-			{
-				// source was cut off so add ellipsis
-				this.output.Append(Ellipsis);
+				return this.output.ToString();
 			}
-
-			return this.output.ToString();
 		}
 
 		/// <summary>
