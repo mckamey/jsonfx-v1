@@ -67,18 +67,17 @@ namespace JsonFx.UI
 
 		#region Methods
 
-		public void AddLiteral(string text)
+		/// <summary>
+		/// Adds literal text to the output
+		/// </summary>
+		/// <param name="literal"></param>
+		public void AddLiteral(string literal)
 		{
-			if (this.parsingHtml)
-			{
-				return;
-			}
-
 			try
 			{
 				this.parsingHtml = true;
 
-				this.parser.Parse(text);
+				this.parser.Parse(literal);
 			}
 			finally
 			{
@@ -86,7 +85,10 @@ namespace JsonFx.UI
 			}
 		}
 
-		private void Flush()
+		/// <summary>
+		/// Writes any buffered text
+		/// </summary>
+		public void Flush()
 		{
 			if (this.parsingHtml)
 			{
@@ -116,23 +118,30 @@ namespace JsonFx.UI
 				return;
 			}
 
+			if (this.current == null && !this.AllowLiteralsInRoot)
+			{
+				return;
+			}
+
 			// this allows HTML entities to be encoded as unicode
 			text = HttpUtility.HtmlDecode(text);
 
-			// normalize whitespace
-			text = RegexWhitespace.Replace(text, " ");
+			JsonControlCollection childControls = (this.current == null) ?
+				this.controls : this.current.ChildControls;
 
-			if (this.current == null)
+			JsonLiteral jsonLiteral = childControls.Last as JsonLiteral;
+			if (jsonLiteral == null)
 			{
-				if (this.AllowLiteralsInRoot)
-				{
-					this.controls.Add(new JsonLiteral(text));
-				}
+				jsonLiteral = new JsonLiteral(text);
+				childControls.Add(jsonLiteral);
 			}
 			else
 			{
-				this.current.ChildControls.Add(new JsonLiteral(text));
+				jsonLiteral.Text += text;
 			}
+
+			// normalize whitespace
+			jsonLiteral.Text = RegexWhitespace.Replace(jsonLiteral.Text, " ");
 		}
 
 		public void PushTag(string tagName)
@@ -273,7 +282,7 @@ namespace JsonFx.UI
 				// hacky but seems to work:
 				// if this builder is dirty it means it has already written out a control graph
 				// adding another back to back will not be valid JSON
-				// for some reason Crockford's parseJSON method will treat multiple graphs
+				// for some reason Crockford's parseJSON method appears to treat multiple graphs
 				// as if they are in an array if delimited by commas.
 				this.writer.Write(",");
 			}
@@ -301,7 +310,7 @@ namespace JsonFx.UI
 		/// </summary>
 		/// <param name="tag"></param>
 		/// <returns></returns>
-		public bool FilterTag(HtmlTag tag)
+		bool IHtmlFilter.FilterTag(HtmlTag tag)
 		{
 			switch (tag.TagType)
 			{
@@ -355,7 +364,7 @@ namespace JsonFx.UI
 		/// <param name="attribute"></param>
 		/// <param name="value"></param>
 		/// <returns></returns>
-		public bool FilterAttribute(string tag, string attribute, ref string value)
+		bool IHtmlFilter.FilterAttribute(string tag, string attribute, ref string value)
 		{
 			// suppress writing of HtmlDistiller output
 			return false;
@@ -368,7 +377,7 @@ namespace JsonFx.UI
 		/// <param name="style"></param>
 		/// <param name="value"></param>
 		/// <returns></returns>
-		public bool FilterStyle(string tag, string style, ref string value)
+		bool IHtmlFilter.FilterStyle(string tag, string style, ref string value)
 		{
 			// suppress writing of HtmlDistiller output
 			return false;
@@ -382,7 +391,7 @@ namespace JsonFx.UI
 		/// <param name="end"></param>
 		/// <param name="replacement"></param>
 		/// <returns></returns>
-		public bool FilterLiteral(string source, int start, int end, out string replacement)
+		bool IHtmlFilter.FilterLiteral(string source, int start, int end, out string replacement)
 		{
 			this.OutputLiteral(source.Substring(start, end-start));
 
@@ -405,13 +414,13 @@ namespace JsonFx.UI
 				{
 					using (this.writer)
 					{
-						// flush any accumulated literals
-						this.Flush();
-
 						while (this.current != null)
 						{
 							this.PopTag();
 						}
+
+						// flush any accumulated literals
+						this.Flush();
 
 						this.writer.Flush();
 						this.writer.Close();
