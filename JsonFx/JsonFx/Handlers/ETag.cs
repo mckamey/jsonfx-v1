@@ -325,7 +325,7 @@ namespace JsonFx.Handlers
 			byte[] hash = MD5HashProvider.ComputeHash(value);
 
 			// convert hash to Base64 string
-			return ETag.Base64Encode(hash);
+			return ETag.EncodeToString(hash);
 		}
 
 		/// <summary>
@@ -339,7 +339,28 @@ namespace JsonFx.Handlers
 			byte[] hash = MD5HashProvider.ComputeHash(value);
 
 			// convert hash to Base64 string
-			return ETag.Base64Encode(hash);
+			return ETag.EncodeToString(hash);
+		}
+
+		/// <summary>
+		/// Converts Byte[] to string
+		/// </summary>
+		/// <param name="hash"></param>
+		/// <returns></returns>
+		protected static string EncodeToString(byte[] hash)
+		{
+			if (hash == null || hash.Length == 0)
+			{
+				return String.Empty;
+			}
+
+			if (hash.Length == 16)
+			{
+				Guid guid = new Guid(hash);
+				return guid.ToString("N");
+			}
+
+			return Base64Encode(hash);
 		}
 
 		/// <summary>
@@ -509,7 +530,7 @@ namespace JsonFx.Handlers
 			Hash hash = new Hash(this.Assembly);
 			Byte[] hashcode = hash.MD5;
 
-			string value = ETag.Base64Encode(hashcode);
+			string value = ETag.EncodeToString(hashcode);
 			value += ";"+this.ResourceName;
 
 			return value;
