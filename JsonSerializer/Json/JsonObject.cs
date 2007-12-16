@@ -29,6 +29,7 @@
 #endregion BuildTools License
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Xml.Serialization;
 
@@ -37,7 +38,7 @@ namespace JsonFx.Json
 	/// <summary>
 	/// Generalized object for containing untyped JSON data.
 	/// </summary>
-	public class JsonObject : System.Xml.Serialization.IXmlSerializable
+	public class JsonObject : IDictionary, IXmlSerializable
 	{
 		#region Constants
 
@@ -149,5 +150,93 @@ namespace JsonFx.Json
 		}
 
 		#endregion
+
+		#region IDictionary Members
+
+		void IDictionary.Add(object key, object value)
+		{
+			((IDictionary)this.properties).Add(key, value);
+		}
+
+		void IDictionary.Clear()
+		{
+			((IDictionary)this.properties).Clear();
+		}
+
+		bool IDictionary.Contains(object key)
+		{
+			return ((IDictionary)this.properties).Contains(key);
+		}
+
+		IDictionaryEnumerator IDictionary.GetEnumerator()
+		{
+			return ((IDictionary)this.properties).GetEnumerator();
+		}
+
+		bool IDictionary.IsFixedSize
+		{
+			get { return ((IDictionary)this.properties).IsFixedSize; }
+		}
+
+		bool IDictionary.IsReadOnly
+		{
+			get { return ((IDictionary)this.properties).IsReadOnly; }
+		}
+
+		ICollection IDictionary.Keys
+		{
+			get { return ((IDictionary)this.properties).Keys; }
+		}
+
+		void IDictionary.Remove(object key)
+		{
+			((IDictionary)this.properties).Remove(key);
+		}
+
+		ICollection IDictionary.Values
+		{
+			get { return ((IDictionary)this.properties).Values; }
+		}
+
+		object IDictionary.this[object key]
+		{
+			get { return ((IDictionary)this.properties)[key]; }
+			set { ((IDictionary)this.properties)[key] = value; }
+		}
+
+		#endregion IDictionary Members
+
+		#region ICollection Members
+
+		void ICollection.CopyTo(Array array, int index)
+		{
+			((ICollection)this.properties).CopyTo(array, index);
+		}
+
+		int ICollection.Count
+		{
+			get { return this.properties.Count; }
+		}
+
+		bool ICollection.IsSynchronized
+		{
+			get { return ((ICollection)this.properties).IsSynchronized; }
+		}
+
+		object ICollection.SyncRoot
+		{
+			get { return ((ICollection)this.properties).SyncRoot; }
+		}
+
+		#endregion ICollection Members
+
+		#region IEnumerable Members
+
+		IEnumerator IEnumerable.GetEnumerator()
+		{
+			return this.properties.GetEnumerator();
+		}
+
+		#endregion IEnumerable Members
 	}
 }
