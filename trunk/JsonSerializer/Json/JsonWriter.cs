@@ -173,9 +173,9 @@ namespace JsonFx.Json
 				return;
 			}
 
-			if (value is JsonObject)
+			if (value is IDictionary)
 			{
-				this.WriteObject((JsonObject)value);
+				this.WriteObject((IDictionary)value);
 				return;
 			}
 
@@ -290,7 +290,12 @@ namespace JsonFx.Json
 
 		public virtual void Write(DateTime value)
 		{
-			this.Write(value.ToString("r"));
+			string date = value.ToString("s");
+			if (value.Kind == DateTimeKind.Utc)
+			{
+				date += 'Z';
+			}
+			this.Write(date);
 		}
 
 		public virtual void Write(Guid value)
@@ -495,31 +500,40 @@ namespace JsonFx.Json
 			foreach (object item in value)
 			{
 				if (appendDelim)
+				{
 					this.writer.Write(JsonReader.OperatorValueDelim);
-				this.Write(item);
+				}
+				else
+				{
+					appendDelim = true;
+				}
 
-				appendDelim = true;
+				this.Write(item);
 			}
 
 			this.writer.Write(JsonReader.OperatorArrayEnd);
 		}
 
-		protected virtual void WriteObject(JsonObject value)
+		protected virtual void WriteObject(IDictionary value)
 		{
 			bool appendDelim = false;
 
 			this.writer.Write(JsonReader.OperatorObjectStart);
 
-			foreach (String name in value.Properties)
+			foreach (object name in value.Keys)
 			{
 				if (appendDelim)
+				{
 					this.writer.Write(JsonReader.OperatorValueDelim);
+				}
+				else
+				{
+					appendDelim = true;
+				}
 
-				this.Write(name);
+				this.Write((String)name);
 				this.writer.Write(JsonReader.OperatorNameDelim);
 				this.Write(value[name]);
-
-				appendDelim = true;
 			}
 
 			this.writer.Write(JsonReader.OperatorObjectEnd);
