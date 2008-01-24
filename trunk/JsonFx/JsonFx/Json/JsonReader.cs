@@ -29,6 +29,7 @@
 #endregion BuildTools License
 
 using System;
+using System.ComponentModel;
 using System.Text;
 using System.Collections;
 using System.Collections.Generic;
@@ -159,7 +160,7 @@ namespace JsonFx.Json
 				}
 				case JsonToken.Number:
 				{
-					return this.ReadNumber();
+					return this.ReadNumber(typeIsHint ? null : expectedType);
 				}
 				case JsonToken.False:
 				{
@@ -624,7 +625,7 @@ namespace JsonFx.Json
 			return builder.ToString();
 		}
 
-		private ValueType ReadNumber()
+		private ValueType ReadNumber(Type expectedType)
 		{
 			bool hasDecimal = false;
 			bool hasExponent = false;
@@ -714,70 +715,71 @@ namespace JsonFx.Json
 					NumberFormatInfo.InvariantInfo, out exponent);
 			}
 
+			// at this point, we have the full number string and know its characteristics
 			string numberString = this.Source.Substring(start, this.index - start);
+
 			if (!hasDecimal && !hasExponent && precision < 19)
 			{
-				// Integer value
-				try
+				// is Integer value
+
+				// parse as most flexible
+				decimal number = Decimal.Parse(
+					numberString,
+					NumberStyles.Integer,
+					NumberFormatInfo.InvariantInfo);
+
+				if (expectedType != null)
 				{
-					// try most common
-					return Int32.Parse(
-						numberString,
-						NumberStyles.Integer,
-						NumberFormatInfo.InvariantInfo);
-				}
-				catch (OverflowException)
-				{
-					try
+					TypeConverter converter = TypeDescriptor.GetConverter(typeof(Decimal));
+					if (converter.CanConvertTo(expectedType))
 					{
-						// try more flexible
-						return Int64.Parse(
-							numberString,
-							NumberStyles.Integer,
-							NumberFormatInfo.InvariantInfo);
-					}
-					catch (OverflowException)
-					{
-						// try most flexible
-						return Decimal.Parse(
-							numberString,
-							NumberStyles.Integer,
-							NumberFormatInfo.InvariantInfo);
+						return (ValueType)converter.ConvertTo(number, expectedType);
 					}
 				}
+
+				if (number >= Int32.MinValue && number <= Int32.MaxValue)
+				{
+					// use most common
+					return (int)number;
+				}
+				if (number >= Int64.MinValue && number <= Int64.MaxValue)
+				{
+					// use more flexible
+					return (long)number;
+				}
+
+				// use most flexible
+				return number;
 			}
 			else
 			{
-				// Floating point
-				if (precision > 15 && (exponent >= -28 && exponent <= 28))
+				// is Floating Point value
+
+				if (expectedType == typeof(Decimal))
 				{
-					// if better precision is needed than double can give
-					// use decimal unless a larger exponent is needed
-					try
-					{
-						// try most common
-						return Decimal.Parse(
-							numberString,
-							NumberStyles.Float,
-							NumberFormatInfo.InvariantInfo);
-					}
-					catch (OverflowException)
-					{
-						// try most flexible
-						return Double.Parse(
-							numberString,
-							NumberStyles.Float,
-							NumberFormatInfo.InvariantInfo);
-					}
-				}
-				else
-				{
-					// try most flexible
-					return Double.Parse(
+					// special case since Double does not convert to Decimal
+					return Decimal.Parse(
 						numberString,
 						NumberStyles.Float,
 						NumberFormatInfo.InvariantInfo);
 				}
+
+				// use native EcmaScript number (IEEE 754)
+				double number = Double.Parse(
+					numberString,
+					NumberStyles.Float,
+					NumberFormatInfo.InvariantInfo);
+
+				if (expectedType != null)
+				{
+					TypeConverter converter = TypeDescriptor.GetConverter(typeof(Double));
+					if (converter.CanConvertTo(expectedType))
+					{
+						return (ValueType)converter.ConvertTo(number, expectedType);
+					}
+				}
+
+				return number;
 			}
 		}
 
