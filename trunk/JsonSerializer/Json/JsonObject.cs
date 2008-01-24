@@ -75,7 +75,7 @@ namespace JsonFx.Json
 
 		#region Properties
 
-		public object this[string name]
+		public virtual object this[string name]
 		{
 			get
 			{
