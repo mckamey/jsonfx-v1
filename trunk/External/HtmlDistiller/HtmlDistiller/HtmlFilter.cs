@@ -471,6 +471,27 @@ namespace BuildTools.HtmlDistiller.Filters
 					}
 					return false;
 				}
+				case "iframe":
+				{
+					switch (attribute)
+					{
+						case "align":
+						case "allowtransparency":
+						case "frameborder":
+						case "height":
+						case "longdesc":
+						case "marginheight":
+						case "marginwidth":
+						case "scrolling":
+						case "src":
+						case "width":
+						case "z-index":
+						{
+							return true;
+						}
+					}
+					return false;
+				}
 				case "img":
 				{
 					switch (attribute)
