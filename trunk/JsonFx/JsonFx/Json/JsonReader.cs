@@ -418,7 +418,10 @@ namespace JsonFx.Json
 
 			if (actualType.IsArray && !targetType.IsArray)
 			{
-				Array arrayValue = (Array)value;
+				// targetType serializes as a JSON array but is not an array
+				// assume is an ICollection / IEnumerable with AddRange, Add,
+				// or custom Constructor with which we can populate it
+
 				ConstructorInfo ctor = targetType.GetConstructor(Type.EmptyTypes);
 				if (ctor == null)
 				{
@@ -426,10 +429,17 @@ namespace JsonFx.Json
 				}
 				object collection = ctor.Invoke(null);
 
+				Array arrayValue = (Array)value;
+
+				// many ICollection types have an AddRange method
+				// which adds all items at once
 				MethodInfo method = targetType.GetMethod("AddRange");
-				ParameterInfo[] parameters = (method == null) ? null : method.GetParameters();
-				Type paramType = (parameters == null || parameters.Length != 1) ? null : parameters[0].ParameterType;
-				if (paramType != null && paramType.IsAssignableFrom(arrayValue.GetType()))
+				ParameterInfo[] parameters = (method == null) ?
+					null : method.GetParameters();
+				Type paramType = (parameters == null || parameters.Length != 1) ?
+					null : parameters[0].ParameterType;
+				if (paramType != null &&
+					paramType.IsAssignableFrom(actualType))
 				{
 					// add all members in one method
 					method.Invoke(
@@ -439,9 +449,13 @@ namespace JsonFx.Json
 				}
 				else
 				{
+					// many ICollection types have an Add method
+					// which adds items one at a time
 					method = targetType.GetMethod("Add");
-					parameters = (method == null) ? null : method.GetParameters();
-					paramType = (parameters == null || parameters.Length != 1) ? null : parameters[0].ParameterType;
+					parameters = (method == null) ?
+						null : method.GetParameters();
+					paramType = (parameters == null || parameters.Length != 1) ?
+						null : parameters[0].ParameterType;
 					if (paramType != null)
 					{
 						// loop through adding items to collection
@@ -454,6 +468,27 @@ namespace JsonFx.Json
 								});
 						}
 						return collection;
+					}
+				}
+
+				// many ICollection types take an IEnumerable or ICollection
+				// as a constructor argument.  look through constructors for
+				// a compatible match.
+				ConstructorInfo[] ctors = targetType.GetConstructors();
+				foreach (ConstructorInfo ctor2 in ctors)
+				{
+					ParameterInfo[] paramList = ctor2.GetParameters();
+					if (paramList.Length == 1 &&
+						paramList[0].ParameterType.IsAssignableFrom(actualType))
+					{
+						try
+						{
+							// invoke first constructor that can take this value as an argument
+							return ctor2.Invoke(
+									new object[] { value }
+								);
+						}
+						catch { }
 					}
 				}
 			}
