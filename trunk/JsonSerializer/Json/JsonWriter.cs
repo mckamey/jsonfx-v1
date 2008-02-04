@@ -173,15 +173,18 @@ namespace JsonFx.Json
 				return;
 			}
 
-			if (value is IDictionary)
-			{
-				this.WriteObject((IDictionary)value);
-				return;
-			}
-
 			if (value is String)
 			{
 				this.Write((String)value);
+				return;
+			}
+
+			// IDictionary test must happen BEFORE IEnumerable test
+			// since IDictionary implements IEnumerable
+
+			if (value is IDictionary)
+			{
+				this.WriteObject((IDictionary)value);
 				return;
 			}
 
@@ -191,20 +194,11 @@ namespace JsonFx.Json
 				return;
 			}
 
+			// cannot use 'is' for ValueTypes, using string comparison
 			// these are ordered based on an intuitive sense of their
 			// frequency of use for nominally better switch performance
 			switch (value.GetType().FullName)
 			{
-				case JsonWriter.TypeDateTime:
-				{
-					this.Write((DateTime)value);
-					return;
-				}
-				case JsonWriter.TypeGuid:
-				{
-					this.Write((Guid)value);
-					return;
-				}
 				case JsonWriter.TypeDouble:
 				{
 					this.Write((Double)value);
@@ -220,8 +214,19 @@ namespace JsonFx.Json
 					this.Write((Boolean)value);
 					return;
 				}
+				case JsonWriter.TypeDateTime:
+				{
+					this.Write((DateTime)value);
+					return;
+				}
+				case JsonWriter.TypeGuid:
+				{
+					this.Write((Guid)value);
+					return;
+				}
 				case JsonWriter.TypeDecimal:
 				{
+					// From MSDN:
 					// Conversions from Char, SByte, Int16, Int32, Int64, Byte, UInt16, UInt32, and UInt64
 					// to Decimal are widening conversions that never lose information or throw exceptions.
 					// Conversions from Single or Double to Decimal throw an OverflowException
