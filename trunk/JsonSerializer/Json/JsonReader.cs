@@ -203,7 +203,9 @@ namespace JsonFx.Json
 		private object ReadObject(Type objectType)
 		{
 			if (this.Source[this.index] != JsonReader.OperatorObjectStart)
+			{
 				throw new JsonSerializationException("Not a valid JSON object.", this.index);
+			}
 
 			Dictionary<string, MemberInfo> propertyMap = new Dictionary<string, MemberInfo>();
 			Object jsObject;
@@ -243,10 +245,14 @@ namespace JsonFx.Json
 				foreach (FieldInfo info in fieldInfos)
 				{
 					if (!info.IsPublic)
+					{
 						continue;
+					}
 
 					if (JsonIgnoreAttribute.IsJsonIgnore(info))
+					{
 						continue;
+					}
 
 					string jsonName = JsonNameAttribute.GetJsonName(info);
 					if (String.IsNullOrEmpty(jsonName))
@@ -347,9 +353,9 @@ namespace JsonFx.Json
 					// set value of public field
 					((FieldInfo)propertyInfo).SetValue(jsObject, this.CoerceType(propertyType, value));
 				}
-				else if (jsObject is JsonObject)
+				else if (jsObject is IDictionary)
 				{
-					((JsonObject)jsObject)[name] = value;
+					((IDictionary)jsObject)[name] = value;
 				}
 
 				// get next token
@@ -369,7 +375,17 @@ namespace JsonFx.Json
 
 		private object CoerceType(Type targetType, object value)
 		{
-			if (value == null || targetType.IsAssignableFrom(value.GetType()))
+			if (value == null)
+			{
+				if (!targetType.IsClass)
+				{
+					throw new JsonSerializationException(targetType.Name+" does not accept null as a value", this.index);
+				}
+				return value;
+			}
+
+			Type actualType = value.GetType();
+			if (targetType.IsAssignableFrom(actualType))
 			{
 				return value;
 			}
@@ -400,11 +416,47 @@ namespace JsonFx.Json
 				}
 			}
 
-			//if (targetType.IsArray)
-			//{
-			//    // would this help?
-			//    return Convert.ChangeType(value, targetType);
-			//}
+			if (actualType.IsArray && !targetType.IsArray)
+			{
+				Array arrayValue = (Array)value;
+				ConstructorInfo ctor = targetType.GetConstructor(Type.EmptyTypes);
+				if (ctor == null)
+				{
+					throw new JsonSerializationException("Only objects with default constructors can be deserialized.", this.index);
+				}
+				object collection = ctor.Invoke(null);
+
+				MethodInfo method = targetType.GetMethod("AddRange");
+				ParameterInfo[] parameters = (method == null) ? null : method.GetParameters();
+				Type paramType = (parameters == null || parameters.Length != 1) ? null : parameters[0].ParameterType;
+				if (paramType != null && paramType.IsAssignableFrom(arrayValue.GetType()))
+				{
+					// add all members in one method
+					method.Invoke(
+						collection,
+						new object[] { arrayValue });
+					return collection;
+				}
+				else
+				{
+					method = targetType.GetMethod("Add");
+					parameters = (method == null) ? null : method.GetParameters();
+					paramType = (parameters == null || parameters.Length != 1) ? null : parameters[0].ParameterType;
+					if (paramType != null)
+					{
+						// loop through adding items to collection
+						foreach (object item in arrayValue)
+						{
+							method.Invoke(
+								collection,
+								new object[] {
+									this.CoerceType(paramType, item)
+								});
+						}
+						return collection;
+					}
+				}
+			}
 
 			return value;
 		}
@@ -418,9 +470,30 @@ namespace JsonFx.Json
 
 			bool isArrayTypeSet = (arrayType != null);
 			bool isArrayTypeAHint = !isArrayTypeSet;
-			if (isArrayTypeSet && arrayType.IsArray)
+
+			if (isArrayTypeSet)
 			{
-				arrayType = arrayType.GetElementType();
+				if (arrayType.IsArray)
+				{
+					arrayType = arrayType.GetElementType();
+				}
+				else if (arrayType.IsGenericType)
+				{
+					Type[] generics = arrayType.GetGenericArguments();
+					if (generics.Length != 1)
+					{
+						// could use the first or last, but this more correct
+						arrayType = null;
+					}
+					else
+					{
+						arrayType = generics[0];
+					}
+				}
+				else
+				{
+					arrayType = null;
+				}
 			}
 
 			ArrayList jsArray = new ArrayList();
