@@ -461,7 +461,7 @@ namespace JsonFx.Json
 			}
 			else
 			{
-				this.writer.Write("{0:g}", value);
+				this.writer.Write("{0:r}", value);
 			}
 		}
 
@@ -473,7 +473,7 @@ namespace JsonFx.Json
 			}
 			else
 			{
-				this.writer.Write("{0:g}", value);
+				this.writer.Write("{0:r}", value);
 			}
 		}
 
