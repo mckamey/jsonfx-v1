@@ -72,6 +72,7 @@ namespace JsonFx.Json
 		private readonly string Source = null;
 		private readonly int SourceLength = 0;
 		private int index = 0;
+		private bool allowNullValueTypes = false;
 
 		#endregion Fields
 
@@ -122,13 +123,41 @@ namespace JsonFx.Json
 
 		#endregion Init
 
+		#region Properties
+
+		/// <summary>
+		/// Gets and sets if ValueTypes can accept values of null
+		/// </summary>
+		/// <remarks>
+		/// Only affects deserialization: if a ValueType is assigned the
+		/// value of null, it will receive the value default(TheType).
+		/// Setting this to false, throws an exception if null is
+		/// specified for a ValueType member.
+		/// </remarks>
+		public bool AllowNullValueTypes
+		{
+			get { return this.allowNullValueTypes; }
+			set { this.allowNullValueTypes = value; }
+		}
+
+		#endregion Properties
+
 		#region Parsing Methods
 
+		/// <summary>
+		/// Convert from JSON string to Object graph
+		/// </summary>
+		/// <returns></returns>
 		public object Deserialize()
 		{
 			return this.Deserialize(null);
 		}
 
+		/// <summary>
+		/// Convert from JSON string to Object graph of specific Type
+		/// </summary>
+		/// <param name="type"></param>
+		/// <returns></returns>
 		public object Deserialize(Type type)
 		{
 			// should this run through a preliminary test here?
@@ -377,7 +406,9 @@ namespace JsonFx.Json
 		{
 			if (value == null)
 			{
-				if (!targetType.IsClass)
+				if (this.AllowNullValueTypes &&
+					targetType.IsValueType &&
+					!this.IsNullable(targetType))
 				{
 					throw new JsonSerializationException(targetType.Name+" does not accept null as a value", this.index);
 				}
@@ -493,7 +524,51 @@ namespace JsonFx.Json
 				}
 			}
 
-			return value;
+			if (value is String)
+			{
+				if (targetType == typeof(DateTime))
+				{
+					DateTime date;
+					if (DateTime.TryParse(
+						(string)value,
+						DateTimeFormatInfo.InvariantInfo,
+						DateTimeStyles.RoundtripKind|DateTimeStyles.AllowWhiteSpaces|DateTimeStyles.NoCurrentDateDefault,
+						out date))
+					{
+						return date;
+					}
+				}
+				else if (targetType == typeof(Guid))
+				{
+					// try-catch is pointless since will throw upon generic conversion
+					return new Guid((string)value);
+				}
+				else if (targetType == typeof(Uri))
+				{
+					Uri uri;
+					if (Uri.TryCreate((string)value, UriKind.RelativeOrAbsolute, out uri))
+					{
+						return uri;
+					}
+				}
+				else if (targetType == typeof(Version))
+				{
+					// try-catch is pointless since will throw upon generic conversion
+					return new Version((string)value);
+				}
+			}
+
+			else if (value is Int64 && targetType == typeof(TimeSpan))
+			{
+				return new TimeSpan((long)value);
+			}
+
+			return Convert.ChangeType(value, targetType);
+		}
+
+		private bool IsNullable(Type type)
+		{
+			return type.IsGenericType && (typeof(Nullable<>) == type.GetGenericTypeDefinition());
 		}
 
 		private Array ReadArray(Type arrayType)
@@ -508,7 +583,7 @@ namespace JsonFx.Json
 
 			if (isArrayTypeSet)
 			{
-				if (arrayType.IsArray)
+				if (arrayType.HasElementType)
 				{
 					arrayType = arrayType.GetElementType();
 				}
