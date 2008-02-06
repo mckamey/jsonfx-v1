@@ -60,7 +60,10 @@ namespace JsonFx.Json
 		private const string TypeDouble = "System.Double";
 		private const string TypeDecimal = "System.Decimal";
 		private const string TypeDateTime = "System.DateTime";
+		private const string TypeTimeSpan = "System.TimeSpan";
 		private const string TypeGuid = "System.Guid";
+		private const string TypeUri = "System.Uri";
+		private const string TypeVersion = "System.Version";
 
 		#endregion Constants
 		
@@ -259,6 +262,21 @@ namespace JsonFx.Json
 					this.Write((Single)value);
 					return;
 				}
+				case JsonWriter.TypeUri:
+				{
+					this.Write((Uri)value);
+					return;
+				}
+				case JsonWriter.TypeTimeSpan:
+				{
+					this.Write((TimeSpan)value);
+					return;
+				}
+				case JsonWriter.TypeVersion:
+				{
+					this.Write((Version)value);
+					return;
+				}
 				case JsonWriter.TypeUInt16:
 				{
 					this.Write((UInt16)value);
@@ -295,12 +313,9 @@ namespace JsonFx.Json
 
 		public virtual void Write(DateTime value)
 		{
-			string date = value.ToString("s");
-			if (value.Kind == DateTimeKind.Utc)
-			{
-				date += 'Z';
-			}
-			this.Write(date);
+			// UTC DateTime in ISO-8601
+			value = value.ToUniversalTime();
+			this.Write(String.Format("{0:s}Z", value));
 		}
 
 		public virtual void Write(Guid value)
@@ -489,7 +504,22 @@ namespace JsonFx.Json
 
 		public virtual void Write(char value)
 		{
-			this.Write(Convert.ToString(value));
+			this.Write(new String(value, 1));
+		}
+
+		public virtual void Write(TimeSpan value)
+		{
+			this.Write(value.Ticks);
+		}
+
+		public virtual void Write(Uri value)
+		{
+			this.Write(value.ToString());
+		}
+
+		public virtual void Write(Version value)
+		{
+			this.Write(value.ToString());
 		}
 
 		#endregion Primative Methods
