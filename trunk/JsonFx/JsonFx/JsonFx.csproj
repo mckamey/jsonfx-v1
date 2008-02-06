@@ -66,6 +66,7 @@
     <Compile Include="Json\JsonObject.cs" />
     <Compile Include="Json\JsonReader.cs" />
     <Compile Include="Json\JsonSerializationException.cs" />
+    <Compile Include="Json\JsonSpecifiedPropertyAttribute.cs" />
     <Compile Include="Json\JsonToken.cs" />
     <Compile Include="Json\JsonWriter.cs" />
     <Compile Include="Properties\AssemblyVersion.cs" />
