@@ -404,15 +404,25 @@ namespace JsonFx.Json
 
 		private object CoerceType(Type targetType, object value)
 		{
+			bool isNullable = this.IsNullable(targetType);
 			if (value == null)
 			{
 				if (this.AllowNullValueTypes &&
 					targetType.IsValueType &&
-					!this.IsNullable(targetType))
+					!isNullable)
 				{
 					throw new JsonSerializationException(targetType.Name+" does not accept null as a value", this.index);
 				}
 				return value;
+			}
+
+			if (isNullable)
+			{
+				Type[] genericArgs = targetType.GetGenericArguments();
+				if (genericArgs.Length == 1)
+				{
+					targetType = genericArgs[0];
+				}
 			}
 
 			Type actualType = value.GetType();
