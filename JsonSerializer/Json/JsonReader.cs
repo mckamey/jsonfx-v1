@@ -338,184 +338,6 @@ namespace JsonFx.Json
 			return result;
 		}
 
-		private object CoerceType(Type targetType, object value)
-		{
-			bool isNullable = JsonReader.IsNullable(targetType);
-			if (value == null)
-			{
-				if (this.AllowNullValueTypes &&
-					targetType.IsValueType &&
-					!isNullable)
-				{
-					throw new JsonSerializationException(targetType.Name+" does not accept null as a value", this.index);
-				}
-				return value;
-			}
-
-			if (isNullable)
-			{
-				Type[] genericArgs = targetType.GetGenericArguments();
-				if (genericArgs.Length == 1)
-				{
-					targetType = genericArgs[0];
-				}
-			}
-
-			Type actualType = value.GetType();
-			if (targetType.IsAssignableFrom(actualType))
-			{
-				return value;
-			}
-
-			if (targetType.IsEnum)
-			{
-				if (!Enum.IsDefined(targetType, value))
-				{
-					// if isn't a defined value perhaps it is the JsonName
-					foreach (FieldInfo field in targetType.GetFields())
-					{
-						string jsonName = JsonNameAttribute.GetJsonName(field);
-						if (((string)value).Equals(jsonName))
-						{
-							value = field.Name;
-							break;
-						}
-					}
-				}
-
-				if (value is String)
-				{
-					return Enum.Parse(targetType, (string)value);
-				}
-				else
-				{
-					return Convert.ChangeType(value, targetType);
-				}
-			}
-
-			if (actualType.IsArray && !targetType.IsArray)
-			{
-				// targetType serializes as a JSON array but is not an array
-				// assume is an ICollection / IEnumerable with AddRange, Add,
-				// or custom Constructor with which we can populate it
-
-				ConstructorInfo ctor = targetType.GetConstructor(Type.EmptyTypes);
-				if (ctor == null)
-				{
-					throw new JsonSerializationException("Only objects with default constructors can be deserialized.", this.index);
-				}
-				object collection = ctor.Invoke(null);
-
-				Array arrayValue = (Array)value;
-
-				// many ICollection types have an AddRange method
-				// which adds all items at once
-				MethodInfo method = targetType.GetMethod("AddRange");
-				ParameterInfo[] parameters = (method == null) ?
-					null : method.GetParameters();
-				Type paramType = (parameters == null || parameters.Length != 1) ?
-					null : parameters[0].ParameterType;
-				if (paramType != null &&
-					paramType.IsAssignableFrom(actualType))
-				{
-					// add all members in one method
-					method.Invoke(
-						collection,
-						new object[] { arrayValue });
-					return collection;
-				}
-				else
-				{
-					// many ICollection types have an Add method
-					// which adds items one at a time
-					method = targetType.GetMethod("Add");
-					parameters = (method == null) ?
-						null : method.GetParameters();
-					paramType = (parameters == null || parameters.Length != 1) ?
-						null : parameters[0].ParameterType;
-					if (paramType != null)
-					{
-						// loop through adding items to collection
-						foreach (object item in arrayValue)
-						{
-							method.Invoke(
-								collection,
-								new object[] {
-									this.CoerceType(paramType, item)
-								});
-						}
-						return collection;
-					}
-				}
-
-				// many ICollection types take an IEnumerable or ICollection
-				// as a constructor argument.  look through constructors for
-				// a compatible match.
-				ConstructorInfo[] ctors = targetType.GetConstructors();
-				foreach (ConstructorInfo ctor2 in ctors)
-				{
-					ParameterInfo[] paramList = ctor2.GetParameters();
-					if (paramList.Length == 1 &&
-						paramList[0].ParameterType.IsAssignableFrom(actualType))
-					{
-						try
-						{
-							// invoke first constructor that can take this value as an argument
-							return ctor2.Invoke(
-									new object[] { value }
-								);
-						}
-						catch
-						{
-							// there might exist a better match
-							continue;
-						}
-					}
-				}
-			}
-
-			if (value is String)
-			{
-				if (targetType == typeof(DateTime))
-				{
-					DateTime date;
-					if (DateTime.TryParse(
-						(string)value,
-						DateTimeFormatInfo.InvariantInfo,
-						DateTimeStyles.RoundtripKind|DateTimeStyles.AllowWhiteSpaces|DateTimeStyles.NoCurrentDateDefault,
-						out date))
-					{
-						return date;
-					}
-				}
-				else if (targetType == typeof(Guid))
-				{
-					// try-catch is pointless since will throw upon generic conversion
-					return new Guid((string)value);
-				}
-				else if (targetType == typeof(Uri))
-				{
-					Uri uri;
-					if (Uri.TryCreate((string)value, UriKind.RelativeOrAbsolute, out uri))
-					{
-						return uri;
-					}
-				}
-				else if (targetType == typeof(Version))
-				{
-					// try-catch is pointless since will throw upon generic conversion
-					return new Version((string)value);
-				}
-			}
-
-			else if (value is Int64 && targetType == typeof(TimeSpan))
-			{
-				return new TimeSpan((long)value);
-			}
-
-			return Convert.ChangeType(value, targetType);
-		}
-
 		private Array ReadArray(Type arrayType)
 		{
 			if (this.Source[this.index] != JsonReader.OperatorArrayStart)
@@ -913,7 +735,7 @@ namespace JsonFx.Json
 
 		#endregion Parsing Methods
 
-		#region Utility Methods
+		#region Object Methods
 
 		/// <summary>
 		/// If a Type Hint is present then this method attempts to
@@ -1090,12 +912,202 @@ namespace JsonFx.Json
 			// all other values are ignored
 		}
 
+		#endregion Object Methods
+
+		#region Type Methods
+
+		private object CoerceType(Type targetType, object value)
+		{
+			bool isNullable = JsonReader.IsNullable(targetType);
+			if (value == null)
+			{
+				if (this.AllowNullValueTypes &&
+					targetType.IsValueType &&
+					!isNullable)
+				{
+					throw new JsonSerializationException(targetType.Name+" does not accept null as a value", this.index);
+				}
+				return value;
+			}
+
+			if (isNullable)
+			{
+				// nullable types have a real underlying struct
+				Type[] genericArgs = targetType.GetGenericArguments();
+				if (genericArgs.Length == 1)
+				{
+					targetType = genericArgs[0];
+				}
+			}
+
+			Type actualType = value.GetType();
+			if (targetType.IsAssignableFrom(actualType))
+			{
+				return value;
+			}
+
+			if (targetType.IsEnum)
+			{
+				if (!Enum.IsDefined(targetType, value))
+				{
+					// if isn't a defined value perhaps it is the JsonName
+					foreach (FieldInfo field in targetType.GetFields())
+					{
+						string jsonName = JsonNameAttribute.GetJsonName(field);
+						if (((string)value).Equals(jsonName))
+						{
+							value = field.Name;
+							break;
+						}
+					}
+				}
+
+				if (value is String)
+				{
+					return Enum.Parse(targetType, (string)value);
+				}
+				else
+				{
+					return Convert.ChangeType(value, targetType);
+				}
+			}
+
+			if (actualType.IsArray && !targetType.IsArray)
+			{
+				return this.CoerceArray(targetType, actualType, value);
+			}
+
+			if (value is String)
+			{
+				if (targetType == typeof(DateTime))
+				{
+					DateTime date;
+					if (DateTime.TryParse(
+						(string)value,
+						DateTimeFormatInfo.InvariantInfo,
+						DateTimeStyles.RoundtripKind|DateTimeStyles.AllowWhiteSpaces|DateTimeStyles.NoCurrentDateDefault,
+						out date))
+					{
+						return date;
+					}
+				}
+				else if (targetType == typeof(Guid))
+				{
+					// try-catch is pointless since will throw upon generic conversion
+					return new Guid((string)value);
+				}
+				else if (targetType == typeof(Uri))
+				{
+					Uri uri;
+					if (Uri.TryCreate((string)value, UriKind.RelativeOrAbsolute, out uri))
+					{
+						return uri;
+					}
+				}
+				else if (targetType == typeof(Version))
+				{
+					// try-catch is pointless since will throw upon generic conversion
+					return new Version((string)value);
+				}
+			}
+
+			else if (value is Int64 && targetType == typeof(TimeSpan))
+			{
+				return new TimeSpan((long)value);
+			}
+
+			return Convert.ChangeType(value, targetType);
+		}
+
+		private object CoerceArray(Type targetType, Type arrayType, object value)
+		{
+			// targetType serializes as a JSON array but is not an array
+			// assume is an ICollection / IEnumerable with AddRange, Add,
+			// or custom Constructor with which we can populate it
+
+			ConstructorInfo ctor = targetType.GetConstructor(Type.EmptyTypes);
+			if (ctor == null)
+			{
+				throw new JsonSerializationException("Only objects with default constructors can be deserialized.", this.index);
+			}
+			object collection = ctor.Invoke(null);
+
+			Array arrayValue = (Array)value;
+
+			// many ICollection types have an AddRange method
+			// which adds all items at once
+			MethodInfo method = targetType.GetMethod("AddRange");
+			ParameterInfo[] parameters = (method == null) ?
+					null : method.GetParameters();
+			Type paramType = (parameters == null || parameters.Length != 1) ?
+					null : parameters[0].ParameterType;
+			if (paramType != null &&
+					paramType.IsAssignableFrom(arrayType))
+			{
+				// add all members in one method
+				method.Invoke(
+					collection,
+					new object[] { arrayValue });
+				return collection;
+			}
+			else
+			{
+				// many ICollection types have an Add method
+				// which adds items one at a time
+				method = targetType.GetMethod("Add");
+				parameters = (method == null) ?
+						null : method.GetParameters();
+				paramType = (parameters == null || parameters.Length != 1) ?
+						null : parameters[0].ParameterType;
+				if (paramType != null)
+				{
+					// loop through adding items to collection
+					foreach (object item in arrayValue)
+					{
+						method.Invoke(
+							collection,
+							new object[] {
+									this.CoerceType(paramType, item)
+								});
+					}
+					return collection;
+				}
+			}
+
+			// many ICollection types take an IEnumerable or ICollection
+			// as a constructor argument.  look through constructors for
+			// a compatible match.
+			ConstructorInfo[] ctors = targetType.GetConstructors();
+			foreach (ConstructorInfo ctor2 in ctors)
+			{
+				ParameterInfo[] paramList = ctor2.GetParameters();
+				if (paramList.Length == 1 &&
+						paramList[0].ParameterType.IsAssignableFrom(arrayType))
+				{
+					try
+					{
+						// invoke first constructor that can take this value as an argument
+						return ctor2.Invoke(
+								new object[] { value }
+							);
+					}
+					catch
+					{
+						// there might exist a better match
+						continue;
+					}
+				}
+			}
+
+			return Convert.ChangeType(value, targetType);
+		}
+
 		private static bool IsNullable(Type type)
 		{
 			return type.IsGenericType && (typeof(Nullable<>) == type.GetGenericTypeDefinition());
 		}
 
-		#endregion Utility Methods
+		#endregion Type Methods
 
 		#region Tokenizing Methods
 
