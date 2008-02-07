@@ -34,9 +34,10 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
-    <Reference Include="System.Xml" />
+    <Reference Include="System.XML" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Json\JsonSpecifiedPropertyAttribute.cs" />
     <Compile Include="Json\IJsonSerializable.cs" />
     <Compile Include="Json\JsonIgnoreAttribute.cs" />
     <Compile Include="Json\JsonNameAttribute.cs" />

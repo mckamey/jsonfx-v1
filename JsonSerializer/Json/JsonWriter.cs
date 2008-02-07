@@ -29,11 +29,12 @@
 #endregion BuildTools License
 
 using System;
-using System.Text;
+using System.IO;
+using System.ComponentModel;
 using System.Collections;
 using System.Collections.Generic;
+using System.Text;
 using System.Reflection;
-using System.IO;
 
 namespace JsonFx.Json
 {
@@ -43,8 +44,6 @@ namespace JsonFx.Json
 	public class JsonWriter : IDisposable
 	{
 		#region Constants
-
-		protected const string IgnorePropertySuffix = "Specified";
 
 		private const string TypeBoolean = "System.Boolean";
 		private const string TypeChar = "System.Char";
@@ -59,18 +58,13 @@ namespace JsonFx.Json
 		private const string TypeSingle = "System.Single";
 		private const string TypeDouble = "System.Double";
 		private const string TypeDecimal = "System.Decimal";
-		private const string TypeDateTime = "System.DateTime";
-		private const string TypeTimeSpan = "System.TimeSpan";
-		private const string TypeGuid = "System.Guid";
-		private const string TypeUri = "System.Uri";
-		private const string TypeVersion = "System.Version";
 
 		#endregion Constants
 		
 		#region Fields
 
 		private bool strictConformance = true;
-		private bool classHinting = false;
+		private string typeHintName = null;
 		private System.IO.TextWriter writer = null;
 
 		#endregion Fields
@@ -141,15 +135,12 @@ namespace JsonFx.Json
 		}
 
 		/// <summary>
-		/// Gets and sets if should produce class hinting.
+		/// Gets and sets the property name used for type hinting.
 		/// </summary>
-		/// <remarks>
-		/// Class hinting is output as per JSON-RPC 1.1.
-		/// </remarks>
-		public bool ClassHinting
+		public string TypeHintName
 		{
-			get { return this.classHinting; }
-			set { this.classHinting = value; }
+			get { return this.typeHintName; }
+			set { this.typeHintName = value; }
 		}
 
 		#endregion Properties
@@ -184,7 +175,6 @@ namespace JsonFx.Json
 
 			// IDictionary test must happen BEFORE IEnumerable test
 			// since IDictionary implements IEnumerable
-
 			if (value is IDictionary)
 			{
 				this.WriteObject((IDictionary)value);
@@ -194,6 +184,36 @@ namespace JsonFx.Json
 			if (value is IEnumerable)
 			{
 				this.WriteArray((IEnumerable)value);
+				return;
+			}
+
+			if (value is DateTime)
+			{
+				this.Write((DateTime)value);
+				return;
+			}
+
+			if (value is Guid)
+			{
+				this.Write((Guid)value);
+				return;
+			}
+
+			if (value is Uri)
+			{
+				this.Write((Uri)value);
+				return;
+			}
+
+			if (value is TimeSpan)
+			{
+				this.Write((TimeSpan)value);
+				return;
+			}
+
+			if (value is Version)
+			{
+				this.Write((Version)value);
 				return;
 			}
 
@@ -215,16 +235,6 @@ namespace JsonFx.Json
 				case JsonWriter.TypeBoolean:
 				{
 					this.Write((Boolean)value);
-					return;
-				}
-				case JsonWriter.TypeDateTime:
-				{
-					this.Write((DateTime)value);
-					return;
-				}
-				case JsonWriter.TypeGuid:
-				{
-					this.Write((Guid)value);
 					return;
 				}
 				case JsonWriter.TypeDecimal:
@@ -260,21 +270,6 @@ namespace JsonFx.Json
 				case JsonWriter.TypeSingle:
 				{
 					this.Write((Single)value);
-					return;
-				}
-				case JsonWriter.TypeUri:
-				{
-					this.Write((Uri)value);
-					return;
-				}
-				case JsonWriter.TypeTimeSpan:
-				{
-					this.Write((TimeSpan)value);
-					return;
-				}
-				case JsonWriter.TypeVersion:
-				{
-					this.Write((Version)value);
 					return;
 				}
 				case JsonWriter.TypeUInt16:
@@ -576,48 +571,66 @@ namespace JsonFx.Json
 
 		protected virtual void WriteObject(object value)
 		{
-			if (this.ClassHinting)
-			{
-				throw new NotImplementedException("Class Hinting is not yet implemented.");
-			}
-
 			bool appendDelim = false;
 
 			this.writer.Write(JsonReader.OperatorObjectStart);
 
 			Type objType = value.GetType();
 
+			if (!String.IsNullOrEmpty(this.TypeHintName))
+			{
+				if (appendDelim)
+				{
+					this.writer.Write(JsonReader.OperatorValueDelim);
+				}
+				else
+				{
+					appendDelim = true;
+				}
+
+				this.Write(this.TypeHintName);
+				this.writer.Write(JsonReader.OperatorNameDelim);
+				this.Write(objType.FullName);
+			}
+
 			// serialize public properties
 			PropertyInfo[] properties = objType.GetProperties();
 			foreach (PropertyInfo property in properties)
 			{
 				if (!property.CanWrite || !property.CanRead)
-					continue;
-
-				if (JsonIgnoreAttribute.IsJsonIgnore(property))
-					continue;
-
-				PropertyInfo specProp = objType.GetProperty(property.Name+JsonWriter.IgnorePropertySuffix);
-				if (specProp != null)
 				{
-					object isSpecified = specProp.GetValue(value, null);
-					if (isSpecified is Boolean && !Convert.ToBoolean(isSpecified))
-						continue;
+					continue;
+				}
+
+				if (this.IsIgnored(objType, property, value))
+				{
+					continue;
+				}
+
+				object propertyValue = property.GetValue(value, null);
+				if (this.IsDefaultValue(property, propertyValue))
+				{
+					continue;
 				}
 
 				if (appendDelim)
+				{
 					this.writer.Write(JsonReader.OperatorValueDelim);
+				}
+				else
+				{
+					appendDelim = true;
+				}
 
 				string propertyName = JsonNameAttribute.GetJsonName(property);
 				if (String.IsNullOrEmpty(propertyName))
+				{
 					propertyName = property.Name;
+				}
 
 				this.Write(propertyName);
 				this.writer.Write(JsonReader.OperatorNameDelim);
-				object propertyValue = property.GetValue(value, null);
 				this.Write(propertyValue);
-
-				appendDelim = true;
 			}
 
 			// serialize public fields
@@ -625,36 +638,99 @@ namespace JsonFx.Json
 			foreach (FieldInfo field in fields)
 			{
 				if (!field.IsPublic || field.IsStatic)
-					continue;
-				
-				if (JsonIgnoreAttribute.IsJsonIgnore(field))
-					continue;
-
-				PropertyInfo specProp = objType.GetProperty(field.Name+JsonWriter.IgnorePropertySuffix);
-				if (specProp != null)
 				{
-					object isSpecified = specProp.GetValue(value, null);
-					if (isSpecified is Boolean && !Convert.ToBoolean(isSpecified))
-						continue;
+					continue;
+				}
+
+				if (this.IsIgnored(objType, field, value))
+				{
+					continue;
+				}
+
+				object fieldValue = field.GetValue(value);
+				if (this.IsDefaultValue(field, fieldValue))
+				{
+					continue;
 				}
 
 				if (appendDelim)
+				{
 					this.writer.Write(JsonReader.OperatorValueDelim);
+				}
+				else
+				{
+					appendDelim = true;
+				}
 				
 				string fieldName = JsonNameAttribute.GetJsonName(field);
 				if (String.IsNullOrEmpty(fieldName))
+				{
 					fieldName = field.Name;
+				}
 
 				// use Attributes here to control naming
 				this.Write(fieldName);
 				this.writer.Write(JsonReader.OperatorNameDelim);
-				object fieldValue = field.GetValue(value);
 				this.Write(fieldValue);
-
-				appendDelim = true;
 			}
 
 			this.writer.Write(JsonReader.OperatorObjectEnd);
+		}
+
+		/// <summary>
+		/// Determines if the property or field should not be serialized.
+		/// </summary>
+		/// <param name="objType"></param>
+		/// <param name="member"></param>
+		/// <param name="value"></param>
+		/// <returns></returns>
+		/// <remarks>
+		/// Checks these in order, if any returns true then this is true:
+		/// - is flagged with the JsonIgnoreAttribute property
+		/// - has a JsonSpecifiedProperty which returns false
+		/// </remarks>
+		private bool IsIgnored(Type objType, MemberInfo member, object obj)
+		{
+			if (JsonIgnoreAttribute.IsJsonIgnore(member))
+			{
+				return true;
+			}
+
+			string specifiedProperty = JsonSpecifiedPropertyAttribute.GetJsonSpecifiedProperty(member);
+			if (!String.IsNullOrEmpty(specifiedProperty))
+			{
+				PropertyInfo specProp = objType.GetProperty(specifiedProperty);
+				if (specProp != null)
+				{
+					object isSpecified = specProp.GetValue(obj, null);
+					if (isSpecified is Boolean && !Convert.ToBoolean(isSpecified))
+					{
+						return true;
+					}
+				}
+			}
+
+			return false;
+		}
+
+		/// <summary>
+		/// Determines if the member value matches the DefaultValue attribute
+		/// </summary>
+		/// <returns>if has a value equivalent to the DefaultValueAttribute</returns>
+		private bool IsDefaultValue(MemberInfo member, object value)
+		{
+			DefaultValueAttribute attribute = Attribute.GetCustomAttribute(member, typeof(DefaultValueAttribute)) as DefaultValueAttribute;
+			if (attribute == null)
+			{
+				return false;
+			}
+
+			if (attribute.Value == null)
+			{
+				return (value == null);
+			}
+
+			return (attribute.Value.Equals(value));
 		}
 
 		#region GetFlagList

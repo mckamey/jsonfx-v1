@@ -40,12 +40,6 @@ namespace JsonFx.Json
 	[AttributeUsage(AttributeTargets.Property|AttributeTargets.Field, AllowMultiple=false)]
 	public class JsonSpecifiedPropertyAttribute : Attribute
 	{
-		#region Constants
-
-		private const string SpecifiedPropertySuffix = "Specified";
-
-		#endregion Constants
-
 		#region Fields
 
 		private string specifiedProperty = null;
@@ -55,12 +49,12 @@ namespace JsonFx.Json
 		#region Init
 
 		/// <summary>
-		/// Ctor.
+		/// Ctor
 		/// </summary>
-		/// <param name="ignoreProperty"></param>
-		public JsonSpecifiedPropertyAttribute(string specifiedProperty)
+		/// <param name="propertyName">the name of the property which controls serialization for this member</param>
+		public JsonSpecifiedPropertyAttribute(string propertyName)
 		{
-			this.specifiedProperty = specifiedProperty;
+			this.specifiedProperty = propertyName;
 		}
 
 		#endregion Init
@@ -88,14 +82,10 @@ namespace JsonFx.Json
 		/// <returns></returns>
 		public static string GetJsonSpecifiedProperty(MemberInfo memberInfo)
 		{
-			if (memberInfo == null)
+			if (memberInfo == null ||
+				!Attribute.IsDefined(memberInfo, typeof(JsonSpecifiedPropertyAttribute)))
 			{
-				throw new ArgumentNullException();
-			}
-
-			if (!Attribute.IsDefined(memberInfo, typeof(JsonSpecifiedPropertyAttribute)))
-			{
-				return memberInfo.Name+JsonSpecifiedPropertyAttribute.SpecifiedPropertySuffix;
+				return null;
 			}
 
 			JsonSpecifiedPropertyAttribute attribute = (JsonSpecifiedPropertyAttribute)Attribute.GetCustomAttribute(memberInfo, typeof(JsonSpecifiedPropertyAttribute));

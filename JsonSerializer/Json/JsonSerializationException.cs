@@ -78,5 +78,40 @@ namespace JsonFx.Json
 		}
 
 		#endregion Properties
+
+		#region Methods
+
+		/// <summary>
+		/// Helper method which converts the index into Line and Column numbers
+		/// </summary>
+		/// <param name="source"></param>
+		/// <param name="line"></param>
+		/// <param name="col"></param>
+		public void GetLineAndColumn(string source, out int line, out int col)
+		{
+			if (source == null)
+			{
+				throw new ArgumentNullException();
+			}
+
+			col = 1;
+			line = 1;
+
+			bool foundLF = false;
+			for (int i=this.Index; i>0; i--)
+			{
+				if (!foundLF)
+				{
+					col++;
+				}
+				if (source[i-1] == '\n')
+				{
+					line++;
+					foundLF = true;
+				}
+			}
+		}
+
+		#endregion Methods
 	}
 }
