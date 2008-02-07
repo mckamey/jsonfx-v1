@@ -63,9 +63,13 @@ namespace JsonFx.Json
 		
 		#region Fields
 
-		private bool strictConformance = true;
+		private readonly TextWriter writer = null;
 		private string typeHintName = null;
-		private System.IO.TextWriter writer = null;
+		private bool strictConformance = true;
+
+		private bool prettyPrint = false;
+		private int depth = 0;
+		private string tab = "\t";
 
 		#endregion Fields
 
@@ -123,6 +127,42 @@ namespace JsonFx.Json
 		#region Properties
 
 		/// <summary>
+		/// Gets and sets the property name used for type hinting.
+		/// </summary>
+		public string TypeHintName
+		{
+			get { return this.typeHintName; }
+			set { this.typeHintName = value; }
+		}
+
+		/// <summary>
+		/// Gets and sets if JSON will be formatted for human reading.
+		/// </summary>
+		public bool PrettyPrint
+		{
+			get { return this.prettyPrint; }
+			set { this.prettyPrint = value; }
+		}
+
+		/// <summary>
+		/// Gets and sets the string to use for indentation
+		/// </summary>
+		public string Tab
+		{
+			get { return tab; }
+			set { tab = value; }
+		}
+
+		/// <summary>
+		/// Gets and sets the lien terminator string
+		/// </summary>
+		public string NewLine
+		{
+			get { return this.writer.NewLine; }
+			set { this.writer.NewLine = value; }
+		}
+
+		/// <summary>
 		/// Gets and sets if should conform strictly to JSON spec.
 		/// </summary>
 		/// <remarks>
@@ -134,21 +174,22 @@ namespace JsonFx.Json
 			set { this.strictConformance = value; }
 		}
 
-		/// <summary>
-		/// Gets and sets the property name used for type hinting.
-		/// </summary>
-		public string TypeHintName
-		{
-			get { return this.typeHintName; }
-			set { this.typeHintName = value; }
-		}
-
 		#endregion Properties
 
 		#region Public Methods
 
 		public virtual void Write(object value)
 		{
+			this.Write(value, false);
+		}
+
+		private void Write(object value, bool isProperty)
+		{
+			if (isProperty && this.prettyPrint)
+			{
+				this.writer.Write(' ');
+			}
+
 			if (value == null)
 			{
 				this.writer.Write(JsonReader.LiteralNull);
@@ -157,7 +198,22 @@ namespace JsonFx.Json
 
 			if (value is IJsonSerializable)
 			{
-				((IJsonSerializable)value).WriteJson(this);
+				try
+				{
+					if (isProperty)
+					{
+						this.depth++;
+						this.WriteLine();
+					}
+					((IJsonSerializable)value).WriteJson(this);
+				}
+				finally
+				{
+					if (isProperty)
+					{
+						this.depth--;
+					}
+				}
 				return;
 			}
 
@@ -177,13 +233,43 @@ namespace JsonFx.Json
 			// since IDictionary implements IEnumerable
 			if (value is IDictionary)
 			{
-				this.WriteObject((IDictionary)value);
+				try
+				{
+					if (isProperty)
+					{
+						this.depth++;
+						this.WriteLine();
+					}
+					this.WriteObject((IDictionary)value);
+				}
+				finally
+				{
+					if (isProperty)
+					{
+						this.depth--;
+					}
+				}
 				return;
 			}
 
 			if (value is IEnumerable)
 			{
-				this.WriteArray((IEnumerable)value);
+				try
+				{
+					if (isProperty)
+					{
+						this.depth++;
+						this.WriteLine();
+					}
+					this.WriteArray((IEnumerable)value);
+				}
+				finally
+				{
+					if (isProperty)
+					{
+						this.depth--;
+					}
+				}
 				return;
 			}
 
@@ -295,7 +381,22 @@ namespace JsonFx.Json
 				default:
 				{
 					// structs and classes
-					this.WriteObject(value);
+					try
+					{
+						if (isProperty)
+						{
+							this.depth++;
+							this.WriteLine();
+						}
+						this.WriteObject(value);
+					}
+					finally
+					{
+						if (isProperty)
+						{
+							this.depth--;
+						}
+					}
 					return;
 				}
 			}
@@ -421,7 +522,7 @@ namespace JsonFx.Json
 
 		#endregion Public Methods
 
-		#region Primative Methods
+		#region Primative Writer Methods
 
 		public virtual void Write(bool value)
 		{
@@ -517,9 +618,9 @@ namespace JsonFx.Json
 			this.Write(value.ToString());
 		}
 
-		#endregion Primative Methods
+		#endregion Primative Writer Methods
 
-		#region Private Methods
+		#region Writer Methods
 
 		protected internal virtual void WriteArray(IEnumerable value)
 		{
@@ -527,20 +628,33 @@ namespace JsonFx.Json
 
 			this.writer.Write(JsonReader.OperatorArrayStart);
 
-			foreach (object item in value)
+			this.depth++;
+			try
 			{
-				if (appendDelim)
+				foreach (object item in value)
 				{
-					this.writer.Write(JsonReader.OperatorValueDelim);
-				}
-				else
-				{
-					appendDelim = true;
-				}
+					if (appendDelim)
+					{
+						this.writer.Write(JsonReader.OperatorValueDelim);
+					}
+					else
+					{
+						appendDelim = true;
+					}
 
-				this.Write(item);
+					this.WriteLine();
+					this.Write(item);
+				}
+			}
+			finally
+			{
+				this.depth--;
 			}
 
+			if (appendDelim)
+			{
+				this.WriteLine();
+			}
 			this.writer.Write(JsonReader.OperatorArrayEnd);
 		}
 
@@ -550,22 +664,35 @@ namespace JsonFx.Json
 
 			this.writer.Write(JsonReader.OperatorObjectStart);
 
-			foreach (object name in value.Keys)
+			this.depth++;
+			try
 			{
-				if (appendDelim)
+				foreach (object name in value.Keys)
 				{
-					this.writer.Write(JsonReader.OperatorValueDelim);
-				}
-				else
-				{
-					appendDelim = true;
-				}
+					if (appendDelim)
+					{
+						this.writer.Write(JsonReader.OperatorValueDelim);
+					}
+					else
+					{
+						appendDelim = true;
+					}
 
-				this.Write((String)name);
-				this.writer.Write(JsonReader.OperatorNameDelim);
-				this.Write(value[name]);
+					this.WriteLine();
+					this.Write((String)name);
+					this.writer.Write(JsonReader.OperatorNameDelim);
+					this.Write(value[name], true);
+				}
+			}
+			finally
+			{
+				this.depth--;
 			}
 
+			if (appendDelim)
+			{
+				this.WriteLine();
+			}
 			this.writer.Write(JsonReader.OperatorObjectEnd);
 		}
 
@@ -575,107 +702,140 @@ namespace JsonFx.Json
 
 			this.writer.Write(JsonReader.OperatorObjectStart);
 
-			Type objType = value.GetType();
-
-			if (!String.IsNullOrEmpty(this.TypeHintName))
+			this.depth++;
+			try
 			{
-				if (appendDelim)
+				Type objType = value.GetType();
+
+				if (!String.IsNullOrEmpty(this.TypeHintName))
 				{
-					this.writer.Write(JsonReader.OperatorValueDelim);
-				}
-				else
-				{
-					appendDelim = true;
+					if (appendDelim)
+					{
+						this.writer.Write(JsonReader.OperatorValueDelim);
+					}
+					else
+					{
+						appendDelim = true;
+					}
+
+					this.WriteLine();
+					this.Write(this.TypeHintName);
+					this.writer.Write(JsonReader.OperatorNameDelim);
+					this.Write(objType.FullName, true);
 				}
 
-				this.Write(this.TypeHintName);
-				this.writer.Write(JsonReader.OperatorNameDelim);
-				this.Write(objType.FullName);
+				// serialize public properties
+				PropertyInfo[] properties = objType.GetProperties();
+				foreach (PropertyInfo property in properties)
+				{
+					if (!property.CanWrite || !property.CanRead)
+					{
+						continue;
+					}
+
+					if (this.IsIgnored(objType, property, value))
+					{
+						continue;
+					}
+
+					object propertyValue = property.GetValue(value, null);
+					if (this.IsDefaultValue(property, propertyValue))
+					{
+						continue;
+					}
+
+					if (appendDelim)
+					{
+						this.writer.Write(JsonReader.OperatorValueDelim);
+						this.WriteLine();
+					}
+					else
+					{
+						appendDelim = true;
+					}
+
+					string propertyName = JsonNameAttribute.GetJsonName(property);
+					if (String.IsNullOrEmpty(propertyName))
+					{
+						propertyName = property.Name;
+					}
+
+					this.Write(propertyName);
+					this.writer.Write(JsonReader.OperatorNameDelim);
+					this.Write(propertyValue, true);
+				}
+
+				// serialize public fields
+				FieldInfo[] fields = objType.GetFields();
+				foreach (FieldInfo field in fields)
+				{
+					if (!field.IsPublic || field.IsStatic)
+					{
+						continue;
+					}
+
+					if (this.IsIgnored(objType, field, value))
+					{
+						continue;
+					}
+
+					object fieldValue = field.GetValue(value);
+					if (this.IsDefaultValue(field, fieldValue))
+					{
+						continue;
+					}
+
+					if (appendDelim)
+					{
+						this.writer.Write(JsonReader.OperatorValueDelim);
+						this.WriteLine();
+					}
+					else
+					{
+						appendDelim = true;
+					}
+
+					string fieldName = JsonNameAttribute.GetJsonName(field);
+					if (String.IsNullOrEmpty(fieldName))
+					{
+						fieldName = field.Name;
+					}
+
+					// use Attributes here to control naming
+					this.Write(fieldName);
+					this.writer.Write(JsonReader.OperatorNameDelim);
+					this.Write(fieldValue, true);
+				}
+			}
+			finally
+			{
+				this.depth--;
 			}
 
-			// serialize public properties
-			PropertyInfo[] properties = objType.GetProperties();
-			foreach (PropertyInfo property in properties)
+			if (appendDelim)
 			{
-				if (!property.CanWrite || !property.CanRead)
-				{
-					continue;
-				}
-
-				if (this.IsIgnored(objType, property, value))
-				{
-					continue;
-				}
-
-				object propertyValue = property.GetValue(value, null);
-				if (this.IsDefaultValue(property, propertyValue))
-				{
-					continue;
-				}
-
-				if (appendDelim)
-				{
-					this.writer.Write(JsonReader.OperatorValueDelim);
-				}
-				else
-				{
-					appendDelim = true;
-				}
-
-				string propertyName = JsonNameAttribute.GetJsonName(property);
-				if (String.IsNullOrEmpty(propertyName))
-				{
-					propertyName = property.Name;
-				}
-
-				this.Write(propertyName);
-				this.writer.Write(JsonReader.OperatorNameDelim);
-				this.Write(propertyValue);
+				this.WriteLine();
 			}
-
-			// serialize public fields
-			FieldInfo[] fields = objType.GetFields();
-			foreach (FieldInfo field in fields)
-			{
-				if (!field.IsPublic || field.IsStatic)
-				{
-					continue;
-				}
-
-				if (this.IsIgnored(objType, field, value))
-				{
-					continue;
-				}
-
-				object fieldValue = field.GetValue(value);
-				if (this.IsDefaultValue(field, fieldValue))
-				{
-					continue;
-				}
-
-				if (appendDelim)
-				{
-					this.writer.Write(JsonReader.OperatorValueDelim);
-				}
-				else
-				{
-					appendDelim = true;
-				}
-				
-				string fieldName = JsonNameAttribute.GetJsonName(field);
-				if (String.IsNullOrEmpty(fieldName))
-				{
-					fieldName = field.Name;
-				}
-
-				// use Attributes here to control naming
-				this.Write(fieldName);
-				this.writer.Write(JsonReader.OperatorNameDelim);
-				this.Write(fieldValue);
-			}
-
 			this.writer.Write(JsonReader.OperatorObjectEnd);
 		}
+
+		protected virtual void WriteLine()
+		{
+			if (!this.prettyPrint)
+			{
+				return;
+			}
+
+			this.writer.WriteLine();
+			for (int i=0; i<this.depth; i++)
+			{
+				this.writer.Write(this.tab);
+			}
+		}
+
+		#endregion Writer Methods
+
+		#region Private Methods
 
 		/// <summary>
 		/// Determines if the property or field should not be serialized.

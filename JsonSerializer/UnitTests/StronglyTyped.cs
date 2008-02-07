@@ -72,6 +72,7 @@ namespace BuildTools.Json.UnitTests
 			using (JsonWriter jsonWriter = new JsonWriter(unitTestsFolder+UnitTestFile))
 			{
 				jsonWriter.TypeHintName = MyTypeHintName;
+				jsonWriter.PrettyPrint = true;
 				jsonWriter.Write(collectionTest);
 			}
 
