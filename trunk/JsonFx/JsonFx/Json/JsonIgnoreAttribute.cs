@@ -38,17 +38,6 @@ namespace JsonFx.Json
 	[AttributeUsage(AttributeTargets.All, AllowMultiple=false)]
 	public sealed class JsonIgnoreAttribute : Attribute
 	{
-		#region Init
-
-		/// <summary>
-		/// Ctor.
-		/// </summary>
-		public JsonIgnoreAttribute()
-		{
-		}
-
-		#endregion Init
-
 		#region Methods
 
 		/// <summary>
@@ -59,7 +48,9 @@ namespace JsonFx.Json
 		public static bool IsJsonIgnore(object value)
 		{
 			if (value == null)
+			{
 				return false;
+			}
 
 			Type type = value.GetType();
 			System.Reflection.MemberInfo memberInfo = null;
@@ -75,10 +66,10 @@ namespace JsonFx.Json
 
 			if (memberInfo == null)
 			{
-				throw new NotImplementedException();
+				throw new ArgumentException();
 			}
 
-			return JsonIgnoreAttribute.IsDefined(memberInfo, typeof(JsonIgnoreAttribute));
+			return Attribute.IsDefined(memberInfo, typeof(JsonIgnoreAttribute));
 		}
 
 		#endregion Methods

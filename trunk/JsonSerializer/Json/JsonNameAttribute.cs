@@ -29,7 +29,6 @@
 #endregion BuildTools License
 
 using System;
-using System.Collections.Generic;
 
 namespace JsonFx.Json
 {
@@ -48,14 +47,14 @@ namespace JsonFx.Json
 		#region Init
 
 		/// <summary>
-		/// Ctor.
+		/// Ctor
 		/// </summary>
 		public JsonNameAttribute()
 		{
 		}
 
 		/// <summary>
-		/// Ctor.
+		/// Ctor
 		/// </summary>
 		/// <param name="jsonName"></param>
 		public JsonNameAttribute(string jsonName)
@@ -88,7 +87,9 @@ namespace JsonFx.Json
 		public static string GetJsonName(object value)
 		{
 			if (value == null)
+			{
 				return null;
+			}
 
 			Type type = value.GetType();
 			System.Reflection.MemberInfo memberInfo = null;
@@ -97,7 +98,9 @@ namespace JsonFx.Json
 			{
 				string name = Enum.GetName(type, value);
 				if (String.IsNullOrEmpty(name))
+				{
 					return null;
+				}
 				memberInfo = type.GetField(name);
 			}
 			else
@@ -107,12 +110,14 @@ namespace JsonFx.Json
 
 			if (memberInfo == null)
 			{
-				throw new NotImplementedException();
+				throw new ArgumentException();
 			}
 
-			if (!JsonNameAttribute.IsDefined(memberInfo, typeof(JsonNameAttribute)))
+			if (!Attribute.IsDefined(memberInfo, typeof(JsonNameAttribute)))
+			{
 				return null;
-			JsonNameAttribute attribute = (JsonNameAttribute)JsonNameAttribute.GetCustomAttribute(memberInfo, typeof(JsonNameAttribute));
+			}
+			JsonNameAttribute attribute = (JsonNameAttribute)Attribute.GetCustomAttribute(memberInfo, typeof(JsonNameAttribute));
 
 			return attribute.Name;
 		}
