@@ -18,7 +18,6 @@ namespace BuildTools.Json.UnitTests
 
 		public const string MyTypeHintName = "__type";
 		public const string UnitTestFile = "StronglyTyped.json";
-		private const string Separator = "________________________________________\r\n";
 
 		#endregion Constants
 
@@ -26,8 +25,6 @@ namespace BuildTools.Json.UnitTests
 
 		public static void RunTest(TextWriter writer, string unitTestsFolder, string outputFolder)
 		{
-			writer.WriteLine(Separator);
-
 			ComplexObject collectionTest = new ComplexObject();
 
 			collectionTest.MyNested = new NestedObject();
