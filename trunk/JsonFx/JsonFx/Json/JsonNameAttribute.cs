@@ -33,7 +33,7 @@ using System;
 namespace JsonFx.Json
 {
 	/// <summary>
-	/// Specifies the naming to use when serializing to JSON.
+	/// Specifies the naming to use for a property or field when serializing
 	/// </summary>
 	[AttributeUsage(AttributeTargets.All, AllowMultiple=false)]
 	public class JsonNameAttribute : Attribute
