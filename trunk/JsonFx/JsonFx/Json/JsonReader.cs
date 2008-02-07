@@ -73,6 +73,7 @@ namespace JsonFx.Json
 		private readonly int SourceLength = 0;
 		private int index = 0;
 		private bool allowNullValueTypes = false;
+		private string typeHintName = null;
 
 		#endregion Fields
 
@@ -138,6 +139,15 @@ namespace JsonFx.Json
 		{
 			get { return this.allowNullValueTypes; }
 			set { this.allowNullValueTypes = value; }
+		}
+
+		/// <summary>
+		/// Gets and sets the property name used for type hinting.
+		/// </summary>
+		public string TypeHintName
+		{
+			get { return this.typeHintName; }
+			set { this.typeHintName = value; }
 		}
 
 		#endregion Properties
@@ -236,75 +246,22 @@ namespace JsonFx.Json
 				throw new JsonSerializationException("Not a valid JSON object.", this.index);
 			}
 
-			Dictionary<string, MemberInfo> propertyMap = new Dictionary<string, MemberInfo>();
-			Object jsObject;
+			Dictionary<string, MemberInfo> memberMap = null;
+			Object result;
 			if (objectType != null)
 			{
-				ConstructorInfo ctor = objectType.GetConstructor(Type.EmptyTypes);
-				if (ctor == null)
-				{
-					throw new JsonSerializationException("Only objects with default constructors can be deserialized.", this.index);
-				}
-				jsObject = ctor.Invoke(null);
-
-				// load properties into property map
-				PropertyInfo[] propertyInfos = objectType.GetProperties();
-
-				foreach (PropertyInfo info in propertyInfos)
-				{
-					if (!info.CanRead || !info.CanWrite)
-						continue;
-
-					if (JsonIgnoreAttribute.IsJsonIgnore(info))
-						continue;
-
-					string jsonName = JsonNameAttribute.GetJsonName(info);
-					if (String.IsNullOrEmpty(jsonName))
-					{
-						propertyMap[info.Name] = info;
-					}
-					else
-					{
-						propertyMap[jsonName] = info;
-					}
-				}
-
-				// load public fields into property map
-				FieldInfo[] fieldInfos = objectType.GetFields();
-				foreach (FieldInfo info in fieldInfos)
-				{
-					if (!info.IsPublic)
-					{
-						continue;
-					}
-
-					if (JsonIgnoreAttribute.IsJsonIgnore(info))
-					{
-						continue;
-					}
-
-					string jsonName = JsonNameAttribute.GetJsonName(info);
-					if (String.IsNullOrEmpty(jsonName))
-					{
-						propertyMap[info.Name] = info;
-					}
-					else
-					{
-						propertyMap[jsonName] = info;
-					}
-				}
+				result = this.InstantiateObject(objectType, ref memberMap);
 			}
 			else
 			{
-				jsObject = new JsonObject();
+				result = new JsonObject();
 			}
 
 			JsonToken token;
 			do
 			{
-				MemberInfo propertyInfo = null;
-
-				Type propertyType = null;
+				Type memberType;
+				MemberInfo memberInfo;
 
 				// consume opening brace or delim
 				this.index++;
@@ -326,35 +283,10 @@ namespace JsonFx.Json
 				}
 
 				// parse object member value
-				string name = this.ReadString();
+				string memberName = this.ReadString();
 
 				// determine the type of the property/field
-				if (objectType != null && propertyMap.ContainsKey(name))
-				{
-					// Check properties for object member
-					propertyInfo = propertyMap[name];
-
-					if (propertyInfo is PropertyInfo)
-					{
-						// maps to public property
-						propertyType = ((PropertyInfo)propertyInfo).PropertyType;
-					}
-					else if (propertyInfo is FieldInfo)
-					{
-						// maps to public field
-						propertyType = ((FieldInfo)propertyInfo).FieldType;
-					}
-					else
-					{
-						// none found
-						propertyType = null;
-					}
-				}
-				else
-				{
-					// none found
-					propertyType = null;
-				}
+				JsonReader.GetMemberInfo(memberMap, memberName, out memberType, out memberInfo);
 
 				// get next token
 				token = this.Tokenize();
@@ -371,20 +303,24 @@ namespace JsonFx.Json
 				}
 
 				// parse object member value
-				object value = this.Read(propertyType, false);
-				if (propertyInfo is PropertyInfo)
+				object value = this.Read(memberType, false);
+
+				if (result is IDictionary)
 				{
-					// set value of public property
-					((PropertyInfo)propertyInfo).SetValue(jsObject, this.CoerceType(propertyType, value), null);
+					if (objectType == null &&
+						!String.IsNullOrEmpty(this.typeHintName) &&
+						this.typeHintName.Equals(memberName, StringComparison.InvariantCulture))
+					{
+						result = this.ProcessTypeHint(ref objectType, ref memberMap, (IDictionary)result, value as string);
+					}
+					else
+					{
+						((IDictionary)result)[memberName] = value;
+					}
 				}
-				else if (propertyInfo is FieldInfo)
+				else
 				{
-					// set value of public field
-					((FieldInfo)propertyInfo).SetValue(jsObject, this.CoerceType(propertyType, value));
-				}
-				else if (jsObject is IDictionary)
-				{
-					((IDictionary)jsObject)[name] = value;
+					this.SetMemberValue(result, memberType, memberInfo, value);
 				}
 
 				// get next token
@@ -399,12 +335,12 @@ namespace JsonFx.Json
 			// consume closing brace
 			this.index++;
 
-			return jsObject;
+			return result;
 		}
 
 		private object CoerceType(Type targetType, object value)
 		{
-			bool isNullable = this.IsNullable(targetType);
+			bool isNullable = JsonReader.IsNullable(targetType);
 			if (value == null)
 			{
 				if (this.AllowNullValueTypes &&
@@ -529,7 +465,11 @@ namespace JsonFx.Json
 									new object[] { value }
 								);
 						}
-						catch { }
+						catch
+						{
+							// there might exist a better match
+							continue;
+						}
 					}
 				}
 			}
@@ -574,11 +514,6 @@ namespace JsonFx.Json
 			}
 
 			return Convert.ChangeType(value, targetType);
-		}
-
-		private bool IsNullable(Type type)
-		{
-			return type.IsGenericType && (typeof(Nullable<>) == type.GetGenericTypeDefinition());
 		}
 
 		private Array ReadArray(Type arrayType)
@@ -977,6 +912,190 @@ namespace JsonFx.Json
 		}
 
 		#endregion Parsing Methods
+
+		#region Utility Methods
+
+		/// <summary>
+		/// If a Type Hint is present then this method attempts to
+		/// use it and move any previously parsed data over.
+		/// </summary>
+		/// <param name="objectType">reference to the objectType</param>
+		/// <param name="memberMap">reference to the memberMap</param>
+		/// <param name="result">the previous result</param>
+		/// <param name="typeInfo">the type info string to use</param>
+		/// <returns></returns>
+		private Object ProcessTypeHint(
+			ref Type objectType,
+			ref Dictionary<string, MemberInfo> memberMap,
+			IDictionary result,
+			string typeInfo)
+		{
+			if (String.IsNullOrEmpty(typeInfo))
+			{
+				return result;
+			}
+
+			Type hintedType = Type.GetType(typeInfo, false);
+			if (hintedType == null)
+			{
+				return result;
+			}
+			objectType = hintedType;
+
+			object newResult = this.InstantiateObject(hintedType, ref memberMap);
+			if (memberMap != null)
+			{
+				Type memberType;
+				MemberInfo memberInfo;
+
+				// copy any values into new object
+				foreach (object key in result.Keys)
+				{
+					JsonReader.GetMemberInfo(memberMap, key as String, out memberType, out memberInfo);
+					this.SetMemberValue(newResult, memberType, memberInfo, result[key]);
+				}
+			}
+
+			return newResult;
+		}
+
+		private Object InstantiateObject(Type objectType, ref Dictionary<string, MemberInfo> memberMap)
+		{
+			Object result;
+			ConstructorInfo ctor = objectType.GetConstructor(Type.EmptyTypes);
+			if (ctor == null)
+			{
+				throw new JsonSerializationException("Only objects with default constructors can be deserialized.", this.index);
+			}
+			result = ctor.Invoke(null);
+
+			// don't incurr the cost of member map if a dictionary
+			if (!typeof(IDictionary).IsAssignableFrom(objectType))
+			{
+				memberMap = JsonReader.CreateMemberMap(objectType);
+			}
+			return result;
+		}
+
+		private static Dictionary<string, MemberInfo> CreateMemberMap(Type objectType)
+		{
+			Dictionary<string, MemberInfo> memberMap = new Dictionary<string, MemberInfo>();
+
+			// load properties into property map
+			PropertyInfo[] properties = objectType.GetProperties();
+			foreach (PropertyInfo info in properties)
+			{
+				if (!info.CanRead || !info.CanWrite)
+					continue;
+
+				if (JsonIgnoreAttribute.IsJsonIgnore(info))
+					continue;
+
+				string jsonName = JsonNameAttribute.GetJsonName(info);
+				if (String.IsNullOrEmpty(jsonName))
+				{
+					memberMap[info.Name] = info;
+				}
+				else
+				{
+					memberMap[jsonName] = info;
+				}
+			}
+
+			// load public fields into property map
+			FieldInfo[] fields = objectType.GetFields();
+			foreach (FieldInfo info in fields)
+			{
+				if (!info.IsPublic)
+				{
+					continue;
+				}
+
+				if (JsonIgnoreAttribute.IsJsonIgnore(info))
+				{
+					continue;
+				}
+
+				string jsonName = JsonNameAttribute.GetJsonName(info);
+				if (String.IsNullOrEmpty(jsonName))
+				{
+					memberMap[info.Name] = info;
+				}
+				else
+				{
+					memberMap[jsonName] = info;
+				}
+			}
+			return memberMap;
+		}
+
+		private static void GetMemberInfo(
+			Dictionary<string, MemberInfo> memberMap,
+			string memberName,
+			out Type memberType,
+			out MemberInfo memberInfo)
+		{
+			memberType = null;
+			memberInfo = null;
+
+			if (memberMap != null &&
+				memberMap.ContainsKey(memberName))
+			{
+				// Check properties for object member
+				memberInfo = memberMap[memberName];
+
+				if (memberInfo is PropertyInfo)
+				{
+					// maps to public property
+					memberType = ((PropertyInfo)memberInfo).PropertyType;
+				}
+				else if (memberInfo is FieldInfo)
+				{
+					// maps to public field
+					memberType = ((FieldInfo)memberInfo).FieldType;
+				}
+				else
+				{
+					// none found
+					memberType = null;
+				}
+			}
+			else
+			{
+				// none found
+				memberType = null;
+			}
+		}
+
+		/// <summary>
+		/// Helper method to set value of either property or field
+		/// </summary>
+		/// <param name="result"></param>
+		/// <param name="memberType"></param>
+		/// <param name="memberInfo"></param>
+		/// <param name="value"></param>
+		private void SetMemberValue(Object result, Type memberType, MemberInfo memberInfo, object value)
+		{
+			if (memberInfo is PropertyInfo)
+			{
+				// set value of public property
+				((PropertyInfo)memberInfo).SetValue(result, this.CoerceType(memberType, value), null);
+			}
+			else if (memberInfo is FieldInfo)
+			{
+				// set value of public field
+				((FieldInfo)memberInfo).SetValue(result, this.CoerceType(memberType, value));
+			}
+
+			// all other values are ignored
+		}
+
+		private static bool IsNullable(Type type)
+		{
+			return type.IsGenericType && (typeof(Nullable<>) == type.GetGenericTypeDefinition());
+		}
+
+		#endregion Utility Methods
 
 		#region Tokenizing Methods
 
