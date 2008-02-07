@@ -643,7 +643,7 @@ namespace JsonFx.Json
 					}
 
 					this.WriteLine();
-					this.Write(item);
+					this.Write(item, false);
 				}
 			}
 			finally
