@@ -34,8 +34,7 @@ using System.Reflection;
 namespace JsonFx.Json
 {
 	/// <summary>
-	/// Specifies the name of the property to use when serializing
-	/// to JSON which specifies if member should be serialized.
+	/// Specifies the name of the property which specifies if member should be serialized.
 	/// </summary>
 	[AttributeUsage(AttributeTargets.Property|AttributeTargets.Field, AllowMultiple=false)]
 	public class JsonSpecifiedPropertyAttribute : Attribute
