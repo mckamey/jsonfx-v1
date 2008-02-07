@@ -42,19 +42,11 @@ namespace BuildTools.Json
 		#region Constants
 
 		private const string ReportPath = "Report.txt";
-		private const string UnitTestsUrl = "http://www.json.org/JSON_checker/test.zip";
 		private const string UnitTestsFolder = @".\UnitTests\";
 		private const string OutputFolder = @".\Output\";
-		private const string UnitTestsFiles = "*.json";
-		private const string Separator = "________________________________________\r\n";
 		private const string HeaderMessage =
-			"NOTE: JsonFx.Json accepts valid JSON and can recover from many minor errors.\r\n\r\n"+
+			"NOTE: JsonFx.Json accepts all valid JSON and can recover from many minor errors.\r\n\r\n"+
 			"Unit Test Report ({0:yyyy-MM-dd @ HH:mm:ss})";
-		private const string ErrorMessage =
-			Separator+"\r\n"+
-			"No unit tests were found.\r\n\r\n"+
-			"Any "+UnitTestsFiles+" file in the "+UnitTestsFolder+" folder will be processed.\r\n"+
-			"Download "+UnitTestsUrl+" and place contents into the "+UnitTestsFolder+" folder.";
 
 		#endregion Constants
 
@@ -66,60 +58,8 @@ namespace BuildTools.Json
 			{
 				writer.WriteLine(HeaderMessage, DateTime.Now);
 
-				string[] unitTests = Directory.GetFiles(UnitTestsFolder, UnitTestsFiles, SearchOption.AllDirectories);
-				if (unitTests.Length > 0)
-				{
-					foreach (string unitTest in unitTests)
-					{
-						writer.WriteLine(Separator);
-
-						string source = File.ReadAllText(unitTest);
-						JsonReader jsonReader = new JsonReader(source);
-						object obj = null;
-						try
-						{
-							obj = jsonReader.Deserialize();
-							writer.WriteLine("PASSED: {0}", unitTest.Replace(UnitTestsFolder, ""));
-							writer.WriteLine("Result: {0}", (obj == null) ? "null" : obj.GetType().Name);
-						}
-						catch (JsonSerializationException ex)
-						{
-							bool foundLF = false;
-							int col = 1, line = 1;
-							for (int i=ex.Index; i>0; i--)
-							{
-								if (!foundLF)
-								{
-									col++;
-								}
-								if (source[i-1] == '\n')
-								{
-									line++;
-									foundLF = true;
-								}
-							}
-
-							writer.WriteLine("FAILED: {0}", unitTest.Replace(UnitTestsFolder, ""));
-							writer.WriteLine("\"{0}\" ({1}, {2})", ex.Message, line, col);
-							continue;
-						}
-
-						string outputFile = unitTest.Replace(UnitTestsFolder, OutputFolder);
-						string outputDir = Path.GetDirectoryName(outputFile);
-						if (!Directory.Exists(outputDir))
-						{
-							Directory.CreateDirectory(outputDir);
-						}
-						using (JsonWriter jsonWriter = new JsonWriter(outputFile))
-						{
-							jsonWriter.Write(obj);
-						}
-					}
-				}
-				else
-				{
-					writer.WriteLine(ErrorMessage);
-				}
+				UnitTests.StronglyTyped.RunTest(writer, UnitTestsFolder, OutputFolder);
+				UnitTests.JsonChecker.RunTest(writer, UnitTestsFolder, OutputFolder);
 			}
 
 			Process process = new Process();
