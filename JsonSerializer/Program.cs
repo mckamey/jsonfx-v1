@@ -41,6 +41,7 @@ namespace BuildTools.Json
 	{
 		#region Constants
 
+		private const string Separator = "________________________________________\r\n";
 		private const string ReportPath = "Report.txt";
 		private const string UnitTestsFolder = @".\UnitTests\";
 		private const string OutputFolder = @".\Output\";
@@ -57,9 +58,18 @@ namespace BuildTools.Json
 			using (StreamWriter writer = new StreamWriter(ReportPath, false, Encoding.UTF8))
 			{
 				writer.WriteLine(HeaderMessage, DateTime.Now);
+				writer.WriteLine(Separator);
+
+				Stopwatch watch = Stopwatch.StartNew();
 
 				UnitTests.StronglyTyped.RunTest(writer, UnitTestsFolder, OutputFolder);
+
 				UnitTests.JsonChecker.RunTest(writer, UnitTestsFolder, OutputFolder);
+
+				watch.Stop();
+
+				writer.WriteLine(Separator);
+				writer.WriteLine("Elapsed: {0} ms", watch.Elapsed.TotalMilliseconds);
 			}
 
 			Process process = new Process();
