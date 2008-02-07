@@ -69,6 +69,7 @@ namespace JsonFx.Json
 		
 		#region Fields
 
+		private Dictionary<Type, Dictionary<string, MemberInfo>> MemberMapCache = null;
 		private readonly string Source = null;
 		private readonly int SourceLength = 0;
 		private int index = 0;
@@ -794,13 +795,25 @@ namespace JsonFx.Json
 			// don't incurr the cost of member map if a dictionary
 			if (!typeof(IDictionary).IsAssignableFrom(objectType))
 			{
-				memberMap = JsonReader.CreateMemberMap(objectType);
+				memberMap = this.CreateMemberMap(objectType);
 			}
 			return result;
 		}
 
-		private static Dictionary<string, MemberInfo> CreateMemberMap(Type objectType)
+		private Dictionary<string, MemberInfo> CreateMemberMap(Type objectType)
 		{
+			if (this.MemberMapCache == null)
+			{
+				// instantiate space for cache
+				this.MemberMapCache = new Dictionary<Type, Dictionary<string, MemberInfo>>();
+			}
+			else if (this.MemberMapCache.ContainsKey(objectType))
+			{
+				// map was stored in cache
+				return this.MemberMapCache[objectType];
+			}
+
+			// create a new map
 			Dictionary<string, MemberInfo> memberMap = new Dictionary<string, MemberInfo>();
 
 			// load properties into property map
@@ -848,6 +861,10 @@ namespace JsonFx.Json
 					memberMap[jsonName] = info;
 				}
 			}
+
+			// store in cache for repeated usage
+			this.MemberMapCache[objectType] = memberMap;
+
 			return memberMap;
 		}
 
