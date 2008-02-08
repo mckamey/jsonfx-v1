@@ -747,7 +747,6 @@ namespace JsonFx.Json
 					if (appendDelim)
 					{
 						this.writer.Write(JsonReader.OperatorValueDelim);
-						this.WriteLine();
 					}
 					else
 					{
@@ -760,6 +759,7 @@ namespace JsonFx.Json
 						propertyName = property.Name;
 					}
 
+					this.WriteLine();
 					this.Write(propertyName);
 					this.writer.Write(JsonReader.OperatorNameDelim);
 					this.Write(propertyValue, true);
