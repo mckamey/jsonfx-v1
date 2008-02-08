@@ -252,6 +252,12 @@ namespace JsonFx.Json
 				return;
 			}
 
+			Type type = value.GetType();
+			if (type.GetInterface("IDictionary`2") != null)
+			{
+				throw new JsonSerializationException("Types which implement IDictionary<TKey, TValue> also need to implement IDictionary to be serialized.");
+			}
+
 			if (value is IEnumerable)
 			{
 				try
@@ -306,7 +312,7 @@ namespace JsonFx.Json
 			// cannot use 'is' for ValueTypes, using string comparison
 			// these are ordered based on an intuitive sense of their
 			// frequency of use for nominally better switch performance
-			switch (value.GetType().FullName)
+			switch (type.FullName)
 			{
 				case JsonWriter.TypeDouble:
 				{

@@ -319,6 +319,10 @@ namespace JsonFx.Json
 						((IDictionary)result)[memberName] = value;
 					}
 				}
+				else if (objectType.GetInterface("IDictionary`2") != null)
+				{
+					throw new JsonSerializationException("Types which implement IDictionary<TKey, TValue> also need to implement IDictionary to be serialized.", this.index);
+				}
 				else
 				{
 					this.SetMemberValue(result, memberType, memberInfo, value);
