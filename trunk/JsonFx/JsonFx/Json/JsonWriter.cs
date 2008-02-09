@@ -61,6 +61,8 @@ namespace JsonFx.Json
 		private const string TypeDouble = "System.Double";
 		private const string TypeDecimal = "System.Decimal";
 
+		private const string ErrorGenericIDictionary = "Types which implement Generic IDictionary<TKey, TValue> also need to implement IDictionary to be serialized.";
+
 		#endregion Constants
 		
 		#region Fields
@@ -247,7 +249,7 @@ namespace JsonFx.Json
 			Type type = value.GetType();
 			if (type.GetInterface(JsonWriter.TypeGenericIDictionary) != null)
 			{
-				throw new JsonSerializationException("Types which implement Generic IDictionary<TKey, TValue> also need to implement IDictionary to be serialized.");
+				throw new JsonSerializationException(JsonWriter.ErrorGenericIDictionary);
 			}
 
 			if (value is IEnumerable)
