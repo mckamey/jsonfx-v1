@@ -1,17 +1,17 @@
 JsonFx.NET - BuildTools
 
-JSON Serializer functions like XML Serialization in .NET Framework
+The JsonFx.NET JSON parser/serializer functions like XML Serialization in .NET
 
-Serializes and deserializes IDictionary<String, T> and IDictionary with
+Serializes and deserializes any Dictionary<String, T> and IDictionary with
 String keys directly as a JSON object
 
-Serializes and deserializes List<T>, ArrayList, LinkedList<T>, Queue<T> and
+Serializes and deserializes any List<T>, ArrayList, LinkedList<T>, Queue<T> and
 many other IEnumerable types directly as JSON arrays
 
 Serializes and deserializes DateTime, Enum, Nullable<T>, Guid and other
 common .NET Types directly as JSON primitives
 
-Serializes and deserializes strongly-typed classes (similarly to XML
+Serializes and deserializes strongly-typed custom classes (similarly to XML
 Serialization in .NET Framework)
 
 Optional ability to control serialization via attributes/interfaces:
@@ -36,6 +36,6 @@ Optional Type-Hinting improves deserializing to strongly-typed objects
 	JsonFx.Json.JsonWriter.TypeHintName & JsonFx.Json.JsonReader.TypeHintName:
 	Property designates the name of the type hint property (e.g. "__type") and enables type hinting
 
-Optional PrettyPrint mode helps with debugging
+Optional PrettyPrint mode helps with debugging / human-readability
 
 	JsonFx.Json.JsonWriter.PrettyPrint
