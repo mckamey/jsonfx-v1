@@ -1,3 +1,33 @@
+#region BuildTools License
+/*---------------------------------------------------------------------------------*\
+
+	BuildTools distributed under the terms of an MIT-style license:
+
+	The MIT License
+
+	Copyright (c) 2006-2008 Stephen M. McKamey
+
+	Permission is hereby granted, free of charge, to any person obtaining a copy
+	of this software and associated documentation files (the "Software"), to deal
+	in the Software without restriction, including without limitation the rights
+	to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+	copies of the Software, and to permit persons to whom the Software is
+	furnished to do so, subject to the following conditions:
+
+	The above copyright notice and this permission notice shall be included in
+	all copies or substantial portions of the Software.
+
+	THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+	IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+	FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+	AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+	LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+	OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+	THE SOFTWARE.
+
+\*---------------------------------------------------------------------------------*/
+#endregion BuildTools License
+
 using System;
 using System.IO;
 
@@ -29,30 +59,26 @@ namespace BuildTools.Json.UnitTests
 			{
 				foreach (string unitTest in unitTests)
 				{
-					writer.WriteLine(Separator);
+					string source = String.Empty;
 
-					string source = File.ReadAllText(unitTest);
-					JsonReader jsonReader = new JsonReader(source);
-					object obj = null;
 					try
 					{
-						bool hasRead = false;
-						jsonReader.TypeHintName = StronglyTyped.MyTypeHintName;
-						while (true)
-						{
-							obj = jsonReader.Deserialize();
+						writer.WriteLine(Separator);
 
-							if (hasRead && obj == null)
-							{
-								break;
-							}
-							else
-							{
-								hasRead = true;
-							}
+						source = File.ReadAllText(unitTest);
+						JsonReader jsonReader = new JsonReader(source);
+
+						jsonReader.TypeHintName = StronglyTyped.MyTypeHintName;
+						object obj, obj2;
+						obj2 = obj = jsonReader.Deserialize();
+
+						do
+						{
 							writer.WriteLine("READ: {0}", unitTest.Replace(unitTestsFolder, ""));
 							writer.WriteLine("Result: {0}", (obj == null) ? "null" : obj.GetType().FullName);
-						}
+
+							obj = jsonReader.Deserialize();
+						} while (obj != null);
 
 						string outputFile = unitTest.Replace(unitTestsFolder, outputFolder);
 						string outputDir = Path.GetDirectoryName(outputFile);
@@ -63,8 +89,8 @@ namespace BuildTools.Json.UnitTests
 						using (JsonWriter jsonWriter = new JsonWriter(outputFile))
 						{
 							jsonWriter.TypeHintName = StronglyTyped.MyTypeHintName;
-							jsonWriter.PrettyPrint = true;
-							jsonWriter.Write(obj);
+							//jsonWriter.PrettyPrint = true;
+							jsonWriter.Write(obj2);
 						}
 					}
 					catch (JsonDeserializationException ex)
@@ -76,7 +102,7 @@ namespace BuildTools.Json.UnitTests
 						writer.WriteLine("\"{0}\" ({1}, {2})", ex.Message, line, col);
 						continue;
 					}
-					catch (JsonSerializationException ex)
+					catch (Exception ex)
 					{
 						writer.WriteLine("ERROR: {0}", unitTest.Replace(unitTestsFolder, ""));
 						writer.WriteLine("\"{0}\"", ex.Message);
