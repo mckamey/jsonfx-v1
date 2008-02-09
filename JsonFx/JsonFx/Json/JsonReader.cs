@@ -71,6 +71,18 @@ namespace JsonFx.Json
 		private const string LineEndings = "\r\n";
 
 		private const string ErrorUnrecognizedToken = "Illegal JSON sequence.";
+		private const string ErrorIllegalNumber = "Illegal JSON number.";
+		private const string ErrorUnterminatedString = "Unterminated JSON string.";
+		private const string ErrorDefaultCtor = "Only objects with default constructors can be deserialized.";
+		private const string ErrorUnterminatedComment = "Unterminated comment block.";
+		private const string ErrorUnterminatedObject = "Unterminated JSON object.";
+		private const string ErrorUnterminatedArray = "Unterminated JSON array.";
+		private const string ErrorExpectedString = "Expected JSON string.";
+		private const string ErrorExpectedObject = "Expected JSON object.";
+		private const string ErrorExpectedArray = "Expected JSON array.";
+		private const string ErrorExpectedPropertyName = "Expected JSON object property name.";
+		private const string ErrorExpectedPropertyNameDelim = "Expected JSON object property name delimiter.";
+		private const string ErrorGenericIDictionary = "Types which implement Generic IDictionary<TKey, TValue> also need to implement IDictionary to be deserialized.";
 
 		#endregion Constants
 		
@@ -251,7 +263,7 @@ namespace JsonFx.Json
 		{
 			if (this.Source[this.index] != JsonReader.OperatorObjectStart)
 			{
-				throw new JsonDeserializationException("Invalid JSON object.", this.index);
+				throw new JsonDeserializationException(JsonReader.ErrorExpectedObject, this.index);
 			}
 
 			Dictionary<string, MemberInfo> memberMap = null;
@@ -275,7 +287,7 @@ namespace JsonFx.Json
 				this.index++;
 				if (this.index >= this.SourceLength)
 				{
-					throw new JsonDeserializationException("Unterminated JSON object.", this.index);
+					throw new JsonDeserializationException(JsonReader.ErrorUnterminatedObject, this.index);
 				}
 
 				// get next token
@@ -287,7 +299,7 @@ namespace JsonFx.Json
 
 				if (token != JsonToken.String)
 				{
-					throw new JsonDeserializationException("Expected JSON object property name.", this.index);
+					throw new JsonDeserializationException(JsonReader.ErrorExpectedPropertyName, this.index);
 				}
 
 				// parse object member value
@@ -300,14 +312,14 @@ namespace JsonFx.Json
 				token = this.Tokenize();
 				if (token != JsonToken.NameDelim)
 				{
-					throw new JsonDeserializationException("Missing JSON object property name delimiter.", this.index);
+					throw new JsonDeserializationException(JsonReader.ErrorExpectedPropertyNameDelim, this.index);
 				}
 
 				// consume delim
 				this.index++;
 				if (this.index >= this.SourceLength)
 				{
-					throw new JsonDeserializationException("Unterminated JSON object.", this.index);
+					throw new JsonDeserializationException(JsonReader.ErrorUnterminatedObject, this.index);
 				}
 
 				// parse object member value
@@ -328,7 +340,7 @@ namespace JsonFx.Json
 				}
 				else if (objectType.GetInterface(JsonWriter.TypeGenericIDictionary) != null)
 				{
-					throw new JsonDeserializationException("Types which implement Generic IDictionary<TKey, TValue> also need to implement IDictionary to be deserialized.", this.index);
+					throw new JsonDeserializationException(JsonReader.ErrorGenericIDictionary, this.index);
 				}
 				else
 				{
@@ -341,7 +353,7 @@ namespace JsonFx.Json
 
 			if (token != JsonToken.ObjectEnd)
 			{
-				throw new JsonDeserializationException("Unterminated JSON object.", this.index);
+				throw new JsonDeserializationException(JsonReader.ErrorUnterminatedObject, this.index);
 			}
 
 			// consume closing brace
@@ -354,7 +366,7 @@ namespace JsonFx.Json
 		{
 			if (this.Source[this.index] != JsonReader.OperatorArrayStart)
 			{
-				throw new JsonDeserializationException("Invalid JSON array.", this.index);
+				throw new JsonDeserializationException(JsonReader.ErrorExpectedArray, this.index);
 			}
 
 			bool isArrayTypeSet = (arrayType != null);
@@ -394,7 +406,7 @@ namespace JsonFx.Json
 				this.index++;
 				if (this.index >= this.SourceLength)
 				{
-					throw new JsonDeserializationException("Unterminated JSON array.", this.index);
+					throw new JsonDeserializationException(JsonReader.ErrorUnterminatedArray, this.index);
 				}
 
 				// get next token
@@ -438,7 +450,7 @@ namespace JsonFx.Json
 
 			if (token != JsonToken.ArrayEnd)
 			{
-				throw new JsonDeserializationException("Unterminated JSON array.", this.index);
+				throw new JsonDeserializationException(JsonReader.ErrorUnterminatedArray, this.index);
 			}
 
 			// consume closing bracket
@@ -458,7 +470,7 @@ namespace JsonFx.Json
 			if (this.Source[this.index] != JsonReader.OperatorStringDelim &&
 				this.Source[this.index] != JsonReader.OperatorStringDelimAlt)
 			{
-				throw new JsonDeserializationException("Invalid JSON string.", this.index);
+				throw new JsonDeserializationException(JsonReader.ErrorExpectedString, this.index);
 			}
 
 			char startStringDelim = this.Source[this.index];
@@ -467,7 +479,7 @@ namespace JsonFx.Json
 			this.index++;
 			if (this.index >= this.SourceLength)
 			{
-				throw new JsonDeserializationException("Unterminated JSON string.", this.index);
+				throw new JsonDeserializationException(JsonReader.ErrorUnterminatedString, this.index);
 			}
 
 			int start = this.index;
@@ -484,7 +496,7 @@ namespace JsonFx.Json
 					this.index++;
 					if (this.index >= this.SourceLength)
 					{
-						throw new JsonDeserializationException("Unterminated JSON string.", this.index);
+						throw new JsonDeserializationException(JsonReader.ErrorUnterminatedString, this.index);
 					}
 
 					// decode
@@ -562,7 +574,7 @@ namespace JsonFx.Json
 					this.index++;
 					if (this.index >= this.SourceLength)
 					{
-						throw new JsonDeserializationException("Unterminated JSON string.", this.index);
+						throw new JsonDeserializationException(JsonReader.ErrorUnterminatedString, this.index);
 					}
 
 					start = this.index;
@@ -573,7 +585,7 @@ namespace JsonFx.Json
 					this.index++;
 					if (this.index >= this.SourceLength)
 					{
-						throw new JsonDeserializationException("Unterminated JSON string.", this.index);
+						throw new JsonDeserializationException(JsonReader.ErrorUnterminatedString, this.index);
 					}
 				}
 			}
@@ -601,7 +613,7 @@ namespace JsonFx.Json
 				// consume sign
 				this.index++;
 				if (this.index >= this.SourceLength || !Char.IsDigit(this.Source[this.index]))
-					throw new JsonDeserializationException("Unterminated JSON number.", this.index);
+					throw new JsonDeserializationException(JsonReader.ErrorIllegalNumber, this.index);
 			}
 
 			// integer part
@@ -620,7 +632,7 @@ namespace JsonFx.Json
 				this.index++;
 				if (this.index >= this.SourceLength || !Char.IsDigit(this.Source[this.index]))
 				{
-					throw new JsonDeserializationException("Unterminated JSON number.", this.index);
+					throw new JsonDeserializationException(JsonReader.ErrorIllegalNumber, this.index);
 				}
 
 				// fraction part
@@ -643,7 +655,7 @@ namespace JsonFx.Json
 				this.index++;
 				if (this.index >= this.SourceLength)
 				{
-					throw new JsonDeserializationException("Unterminated JSON number.", this.index);
+					throw new JsonDeserializationException(JsonReader.ErrorIllegalNumber, this.index);
 				}
 
 				int expStart = this.index;
@@ -655,14 +667,14 @@ namespace JsonFx.Json
 					this.index++;
 					if (this.index >= this.SourceLength || !Char.IsDigit(this.Source[this.index]))
 					{
-						throw new JsonDeserializationException("Unterminated JSON number.", this.index);
+						throw new JsonDeserializationException(JsonReader.ErrorIllegalNumber, this.index);
 					}
 				}
 				else
 				{
 					if (!Char.IsDigit(this.Source[this.index]))
 					{
-						throw new JsonDeserializationException("Unterminated JSON number.", this.index);
+						throw new JsonDeserializationException(JsonReader.ErrorIllegalNumber, this.index);
 					}
 				}
 
@@ -799,7 +811,7 @@ namespace JsonFx.Json
 			ConstructorInfo ctor = objectType.GetConstructor(Type.EmptyTypes);
 			if (ctor == null)
 			{
-				throw new JsonDeserializationException("Only objects with default constructors can be deserialized.", this.index);
+				throw new JsonDeserializationException(JsonReader.ErrorDefaultCtor, this.index);
 			}
 			result = ctor.Invoke(null);
 
@@ -1056,7 +1068,7 @@ namespace JsonFx.Json
 			ConstructorInfo ctor = targetType.GetConstructor(Type.EmptyTypes);
 			if (ctor == null)
 			{
-				throw new JsonDeserializationException("Only objects with default constructors can be deserialized.", this.index);
+				throw new JsonDeserializationException(JsonReader.ErrorDefaultCtor, this.index);
 			}
 			object collection = ctor.Invoke(null);
 
@@ -1187,7 +1199,7 @@ namespace JsonFx.Json
 
 					if (this.index+1 >= this.SourceLength)
 					{
-						throw new JsonDeserializationException("Unterminated comment block.", commentStart);
+						throw new JsonDeserializationException(JsonReader.ErrorUnterminatedComment, commentStart);
 					}
 
 					// skip over everything until reach block comment ending
@@ -1197,7 +1209,7 @@ namespace JsonFx.Json
 						this.index++;
 						if (this.index+1 >= this.SourceLength)
 						{
-							throw new JsonDeserializationException("Unterminated comment block.", commentStart);
+							throw new JsonDeserializationException(JsonReader.ErrorUnterminatedComment, commentStart);
 						}
 					}
 
