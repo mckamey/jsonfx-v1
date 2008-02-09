@@ -56,6 +56,8 @@ namespace BuildTools.Json.UnitTests
 		{
 			#region Non-IDictionary, IDictionary<TKey, TValue> Test
 
+			writer.WriteLine(UnitTests.JsonText.Seperator);
+
 			NotIDictionary notIDictionary = new NotIDictionary();
 			notIDictionary["This Collection"] = "is not an IDictionary";
 			notIDictionary["But It is"] = "an IDictionary<string, object>";
@@ -65,6 +67,8 @@ namespace BuildTools.Json.UnitTests
 			#endregion Non-IDictionary ,IDictionary<TKey, TValue> Test
 
 			#region Strongly Typed Object Graph Test
+
+			writer.WriteLine(UnitTests.JsonText.Seperator);
 
 			ComplexObject collectionTest = new ComplexObject();
 
@@ -130,19 +134,19 @@ namespace BuildTools.Json.UnitTests
 				jsonReader.TypeHintName = MyTypeHintName;
 				obj = jsonReader.Deserialize(typeof(ComplexObject));
 				writer.WriteLine("READ: "+unitTestFile);
-				writer.WriteLine("Result: {0}", (obj == null) ? "null" : obj.GetType().Name);
+				writer.WriteLine("Result: {0}", (obj == null) ? "null" : obj.GetType().FullName);
 			}
 			catch (JsonDeserializationException ex)
 			{
 				int col, line;
 				writer.WriteLine("ERROR: "+unitTestFile);
 				ex.GetLineAndColumn(source, out line, out col);
-				writer.WriteLine("\"{0}\" ({1}, {2})", ex.Message, line, col);
+				writer.WriteLine("-- \"{0}\" ({1}, {2})", ex.Message, line, col);
 			}
 			catch (Exception ex)
 			{
 				writer.WriteLine("ERROR: "+unitTestFile);
-				writer.WriteLine("\"{0}\"", ex.Message);
+				writer.WriteLine("-- \"{0}\"", ex.Message);
 			}
 		}
 

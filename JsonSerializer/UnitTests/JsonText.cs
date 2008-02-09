@@ -39,11 +39,11 @@ namespace BuildTools.Json.UnitTests
 	{
 		#region Constants
 
+		internal const string Seperator = "________________________________________\r\n";
 		private const string UnitTestsUrl = "http://www.json.org/JSON_checker/test.zip";
 		private const string UnitTestsFiles = "*.json";
-		private const string Separator = "________________________________________\r\n";
 		private const string ErrorMessage =
-			Separator+"\r\n"+
+			Seperator+"\r\n"+
 			"No unit tests were found.\r\n\r\n"+
 			"Any "+UnitTestsFiles+" file in the {0} folder will be processed.\r\n"+
 			"Download "+UnitTestsUrl+" and place contents into the {0} folder.";
@@ -63,7 +63,7 @@ namespace BuildTools.Json.UnitTests
 
 					try
 					{
-						writer.WriteLine(Separator);
+						writer.WriteLine(Seperator);
 
 						source = File.ReadAllText(unitTest);
 						JsonReader jsonReader = new JsonReader(source);
@@ -99,13 +99,13 @@ namespace BuildTools.Json.UnitTests
 						ex.GetLineAndColumn(source, out line, out col);
 
 						writer.WriteLine("ERROR: {0}", unitTest.Replace(unitTestsFolder, ""));
-						writer.WriteLine("\"{0}\" ({1}, {2})", ex.Message, line, col);
+						writer.WriteLine("-- \"{0}\" ({1}, {2})", ex.Message, line, col);
 						continue;
 					}
 					catch (Exception ex)
 					{
 						writer.WriteLine("ERROR: {0}", unitTest.Replace(unitTestsFolder, ""));
-						writer.WriteLine("\"{0}\"", ex.Message);
+						writer.WriteLine("-- \"{0}\"", ex.Message);
 						continue;
 					}
 				}
