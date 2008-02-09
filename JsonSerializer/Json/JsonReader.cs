@@ -71,17 +71,17 @@ namespace JsonFx.Json
 		private const string LineEndings = "\r\n";
 
 		private const string ErrorUnrecognizedToken = "Illegal JSON sequence.";
-		private const string ErrorIllegalNumber = "Illegal JSON number.";
-		private const string ErrorUnterminatedString = "Unterminated JSON string.";
-		private const string ErrorDefaultCtor = "Only objects with default constructors can be deserialized.";
 		private const string ErrorUnterminatedComment = "Unterminated comment block.";
 		private const string ErrorUnterminatedObject = "Unterminated JSON object.";
 		private const string ErrorUnterminatedArray = "Unterminated JSON array.";
+		private const string ErrorUnterminatedString = "Unterminated JSON string.";
+		private const string ErrorIllegalNumber = "Illegal JSON number.";
 		private const string ErrorExpectedString = "Expected JSON string.";
 		private const string ErrorExpectedObject = "Expected JSON object.";
 		private const string ErrorExpectedArray = "Expected JSON array.";
 		private const string ErrorExpectedPropertyName = "Expected JSON object property name.";
 		private const string ErrorExpectedPropertyNameDelim = "Expected JSON object property name delimiter.";
+		private const string ErrorDefaultCtor = "Only objects with default constructors can be deserialized.";
 		private const string ErrorGenericIDictionary = "Types which implement Generic IDictionary<TKey, TValue> also need to implement IDictionary to be deserialized.";
 
 		#endregion Constants
@@ -1173,12 +1173,13 @@ namespace JsonFx.Json
 			// skip block and line comments
 			if (this.Source[this.index] == JsonReader.CommentStart[0])
 			{
-				// skip over first char of comment start
-				this.index++;
-				if (this.index >= this.SourceLength)
+				if (this.index+1 >= this.SourceLength)
 				{
 					throw new JsonDeserializationException(JsonReader.ErrorUnrecognizedToken, this.index);
 				}
+
+				// skip over first char of comment start
+				this.index++;
 
 				bool isBlockComment = false;
 				if (this.Source[this.index] == JsonReader.CommentStart[1])
