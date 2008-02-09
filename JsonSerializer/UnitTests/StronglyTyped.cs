@@ -24,11 +24,17 @@ namespace BuildTools.Json.UnitTests
 
 		public static void RunTest(TextWriter writer, string unitTestsFolder, string outputFolder)
 		{
+			#region Non-IDictionary, IDictionary<TKey, TValue> Test
+
 			NotIDictionary notIDictionary = new NotIDictionary();
 			notIDictionary["This Collection"] = "is not an IDictionary";
 			notIDictionary["But It is"] = "an IDictionary<string, object>";
 
 			SerializeDeserialize(writer, unitTestsFolder, "NotIDictionary.json", notIDictionary);
+
+			#endregion Non-IDictionary ,IDictionary<TKey, TValue> Test
+
+			#region Strongly Typed Object Graph Test
 
 			ComplexObject collectionTest = new ComplexObject();
 
@@ -72,6 +78,8 @@ namespace BuildTools.Json.UnitTests
 			collectionTest.MyQueue = new Queue<SimpleObject>(collectionTest.MyArray);
 
 			SerializeDeserialize(writer, unitTestsFolder, "StronglyTyped.json", collectionTest);
+
+			#endregion Strongly Typed Object Graph Test
 		}
 
 		private static void SerializeDeserialize(TextWriter writer, string unitTestsFolder, string unitTestFile, object obj)
@@ -96,14 +104,18 @@ namespace BuildTools.Json.UnitTests
 			}
 			catch (JsonSerializationException ex)
 			{
+				writer.WriteLine("FAILED: "+unitTestFile);
+
 				int col = 0, line = 0;
-				if (!String.IsNullOrEmpty(source))
+				if (String.IsNullOrEmpty(source))
+				{
+					writer.WriteLine("\"{0}\"", ex.Message);
+				}
+				else
 				{
 					ex.GetLineAndColumn(source, out col, out line);
+					writer.WriteLine("\"{0}\" ({1}, {2})", ex.Message, line, col);
 				}
-
-				writer.WriteLine("FAILED: "+unitTestFile);
-				writer.WriteLine("\"{0}\" ({1}, {2})", ex.Message, line, col);
 			}
 		}
 

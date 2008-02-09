@@ -321,7 +321,7 @@ namespace JsonFx.Json
 				}
 				else if (objectType.GetInterface(JsonWriter.TypeGenericIDictionary) != null)
 				{
-					throw new JsonSerializationException("Types which implement IDictionary<TKey, TValue> also need to implement IDictionary to be serialized.", this.index);
+					throw new JsonSerializationException("Types which implement Generic IDictionary<TKey, TValue> also need to implement IDictionary to be serialized.", this.index);
 				}
 				else
 				{

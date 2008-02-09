@@ -257,7 +257,7 @@ namespace JsonFx.Json
 			Type type = value.GetType();
 			if (type.GetInterface(JsonWriter.TypeGenericIDictionary) != null)
 			{
-				throw new JsonSerializationException("Types which implement IDictionary<TKey, TValue> also need to implement IDictionary to be serialized.");
+				throw new JsonSerializationException("Types which implement Generic IDictionary<TKey, TValue> also need to implement IDictionary to be serialized.");
 			}
 
 			if (value is IEnumerable)
