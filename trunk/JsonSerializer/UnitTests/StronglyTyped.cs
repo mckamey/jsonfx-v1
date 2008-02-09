@@ -98,24 +98,21 @@ namespace BuildTools.Json.UnitTests
 				JsonReader jsonReader = new JsonReader(source);
 
 				jsonReader.TypeHintName = MyTypeHintName;
-				obj = (ComplexObject)jsonReader.Deserialize(typeof(ComplexObject));
-				writer.WriteLine("PASSED: "+unitTestFile);
+				obj = jsonReader.Deserialize(typeof(ComplexObject));
+				writer.WriteLine("READ: "+unitTestFile);
 				writer.WriteLine("Result: {0}", (obj == null) ? "null" : obj.GetType().Name);
+			}
+			catch (JsonDeserializationException ex)
+			{
+				int col, line;
+				writer.WriteLine("ERROR: "+unitTestFile);
+				ex.GetLineAndColumn(source, out line, out col);
+				writer.WriteLine("\"{0}\" ({1}, {2})", ex.Message, line, col);
 			}
 			catch (JsonSerializationException ex)
 			{
-				writer.WriteLine("FAILED: "+unitTestFile);
-
-				int col = 0, line = 0;
-				if (String.IsNullOrEmpty(source))
-				{
-					writer.WriteLine("\"{0}\"", ex.Message);
-				}
-				else
-				{
-					ex.GetLineAndColumn(source, out col, out line);
-					writer.WriteLine("\"{0}\" ({1}, {2})", ex.Message, line, col);
-				}
+				writer.WriteLine("ERROR: "+unitTestFile);
+				writer.WriteLine("\"{0}\"", ex.Message);
 			}
 		}
 

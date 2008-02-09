@@ -36,31 +36,51 @@ namespace BuildTools.Json.UnitTests
 					object obj = null;
 					try
 					{
+						bool hasRead = false;
 						jsonReader.TypeHintName = StronglyTyped.MyTypeHintName;
-						obj = jsonReader.Deserialize();
-						writer.WriteLine("PASSED: {0}", unitTest.Replace(unitTestsFolder, ""));
-						writer.WriteLine("Result: {0}", (obj == null) ? "null" : obj.GetType().Name);
+						while (true)
+						{
+							obj = jsonReader.Deserialize();
+
+							if (hasRead && obj == null)
+							{
+								break;
+							}
+							else
+							{
+								hasRead = true;
+							}
+							writer.WriteLine("READ: {0}", unitTest.Replace(unitTestsFolder, ""));
+							writer.WriteLine("Result: {0}", (obj == null) ? "null" : obj.GetType().FullName);
+						}
+
+						string outputFile = unitTest.Replace(unitTestsFolder, outputFolder);
+						string outputDir = Path.GetDirectoryName(outputFile);
+						if (!Directory.Exists(outputDir))
+						{
+							Directory.CreateDirectory(outputDir);
+						}
+						using (JsonWriter jsonWriter = new JsonWriter(outputFile))
+						{
+							jsonWriter.TypeHintName = StronglyTyped.MyTypeHintName;
+							jsonWriter.PrettyPrint = true;
+							jsonWriter.Write(obj);
+						}
 					}
-					catch (JsonSerializationException ex)
+					catch (JsonDeserializationException ex)
 					{
 						int col, line;
-						ex.GetLineAndColumn(source, out col, out line);
+						ex.GetLineAndColumn(source, out line, out col);
 
-						writer.WriteLine("FAILED: {0}", unitTest.Replace(unitTestsFolder, ""));
+						writer.WriteLine("ERROR: {0}", unitTest.Replace(unitTestsFolder, ""));
 						writer.WriteLine("\"{0}\" ({1}, {2})", ex.Message, line, col);
 						continue;
 					}
-
-					string outputFile = unitTest.Replace(unitTestsFolder, outputFolder);
-					string outputDir = Path.GetDirectoryName(outputFile);
-					if (!Directory.Exists(outputDir))
+					catch (JsonSerializationException ex)
 					{
-						Directory.CreateDirectory(outputDir);
-					}
-					using (JsonWriter jsonWriter = new JsonWriter(outputFile))
-					{
-						jsonWriter.TypeHintName = StronglyTyped.MyTypeHintName;
-						jsonWriter.Write(obj);
+						writer.WriteLine("ERROR: {0}", unitTest.Replace(unitTestsFolder, ""));
+						writer.WriteLine("\"{0}\"", ex.Message);
+						continue;
 					}
 				}
 			}

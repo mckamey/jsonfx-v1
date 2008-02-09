@@ -34,6 +34,26 @@ namespace JsonFx.Json
 {
 	public class JsonSerializationException : InvalidOperationException
 	{
+		#region Init
+
+		public JsonSerializationException() : base() { }
+
+		public JsonSerializationException(string message) : base(message) { }
+
+		public JsonSerializationException(string message, Exception innerException) : base(message, innerException) { }
+
+		public JsonSerializationException(
+			System.Runtime.Serialization.SerializationInfo info,
+			System.Runtime.Serialization.StreamingContext context)
+			: base(info, context)
+		{
+		}
+
+		#endregion Init
+	}
+
+	public class JsonDeserializationException : JsonSerializationException
+	{
 		#region Fields
 
 		private int index = -1;
@@ -42,23 +62,18 @@ namespace JsonFx.Json
 
 		#region Init
 
-		public JsonSerializationException() : base() { }
-
-		public JsonSerializationException(string message) : base(message) { }
-
-		public JsonSerializationException(string message, int index) : base(message)
+		public JsonDeserializationException(string message, int index) : base(message)
 		{
 			this.index = index;
 		}
 
-		public JsonSerializationException(string message, Exception innerException) : base(message, innerException) { }
-
-		public JsonSerializationException(string message, Exception innerException, int index) : base(message, innerException)
+		public JsonDeserializationException(string message, Exception innerException, int index)
+			: base(message, innerException)
 		{
 			this.index = index;
 		}
 
-		public JsonSerializationException(
+		public JsonDeserializationException(
 			System.Runtime.Serialization.SerializationInfo info,
 			System.Runtime.Serialization.StreamingContext context)
 			: base(info, context)
@@ -98,7 +113,8 @@ namespace JsonFx.Json
 			line = 1;
 
 			bool foundLF = false;
-			for (int i=this.Index; i>0; i--)
+			int i = Math.Min(this.index, source.Length);
+			for (; i>0; i--)
 			{
 				if (!foundLF)
 				{

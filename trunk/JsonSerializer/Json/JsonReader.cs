@@ -65,6 +65,13 @@ namespace JsonFx.Json
 		internal const char OperatorNameDelim = ':';
 		internal const char OperatorCharEscape = '\\';
 
+		private const string CommentStart = "/*";
+		private const string CommentEnd = "*/";
+		private const string CommentLine = "//";
+		private const string LineEndings = "\r\n";
+
+		private const string ErrorUnrecognizedToken = "Illegal JSON sequence.";
+
 		#endregion Constants
 		
 		#region Fields
@@ -244,7 +251,7 @@ namespace JsonFx.Json
 		{
 			if (this.Source[this.index] != JsonReader.OperatorObjectStart)
 			{
-				throw new JsonSerializationException("Not a valid JSON object.", this.index);
+				throw new JsonDeserializationException("Invalid JSON object.", this.index);
 			}
 
 			Dictionary<string, MemberInfo> memberMap = null;
@@ -268,7 +275,7 @@ namespace JsonFx.Json
 				this.index++;
 				if (this.index >= this.SourceLength)
 				{
-					throw new JsonSerializationException("Unterminated JSON object.", this.index);
+					throw new JsonDeserializationException("Unterminated JSON object.", this.index);
 				}
 
 				// get next token
@@ -280,7 +287,7 @@ namespace JsonFx.Json
 
 				if (token != JsonToken.String)
 				{
-					throw new JsonSerializationException("Expected JSON object property name.", this.index);
+					throw new JsonDeserializationException("Expected JSON object property name.", this.index);
 				}
 
 				// parse object member value
@@ -293,14 +300,14 @@ namespace JsonFx.Json
 				token = this.Tokenize();
 				if (token != JsonToken.NameDelim)
 				{
-					throw new JsonSerializationException("Missing JSON object property name delimiter.", this.index);
+					throw new JsonDeserializationException("Missing JSON object property name delimiter.", this.index);
 				}
 
 				// consume delim
 				this.index++;
 				if (this.index >= this.SourceLength)
 				{
-					throw new JsonSerializationException("Unterminated JSON object.", this.index);
+					throw new JsonDeserializationException("Unterminated JSON object.", this.index);
 				}
 
 				// parse object member value
@@ -321,7 +328,7 @@ namespace JsonFx.Json
 				}
 				else if (objectType.GetInterface(JsonWriter.TypeGenericIDictionary) != null)
 				{
-					throw new JsonSerializationException("Types which implement Generic IDictionary<TKey, TValue> also need to implement IDictionary to be serialized.", this.index);
+					throw new JsonDeserializationException("Types which implement Generic IDictionary<TKey, TValue> also need to implement IDictionary to be deserialized.", this.index);
 				}
 				else
 				{
@@ -334,7 +341,7 @@ namespace JsonFx.Json
 
 			if (token != JsonToken.ObjectEnd)
 			{
-				throw new JsonSerializationException("Unterminated JSON object.", this.index);
+				throw new JsonDeserializationException("Unterminated JSON object.", this.index);
 			}
 
 			// consume closing brace
@@ -347,7 +354,7 @@ namespace JsonFx.Json
 		{
 			if (this.Source[this.index] != JsonReader.OperatorArrayStart)
 			{
-				throw new JsonSerializationException("Not a valid JSON array.", this.index);
+				throw new JsonDeserializationException("Invalid JSON array.", this.index);
 			}
 
 			bool isArrayTypeSet = (arrayType != null);
@@ -387,7 +394,7 @@ namespace JsonFx.Json
 				this.index++;
 				if (this.index >= this.SourceLength)
 				{
-					throw new JsonSerializationException("Unterminated JSON array.", this.index);
+					throw new JsonDeserializationException("Unterminated JSON array.", this.index);
 				}
 
 				// get next token
@@ -431,7 +438,7 @@ namespace JsonFx.Json
 
 			if (token != JsonToken.ArrayEnd)
 			{
-				throw new JsonSerializationException("Unterminated JSON array.", this.index);
+				throw new JsonDeserializationException("Unterminated JSON array.", this.index);
 			}
 
 			// consume closing bracket
@@ -451,7 +458,7 @@ namespace JsonFx.Json
 			if (this.Source[this.index] != JsonReader.OperatorStringDelim &&
 				this.Source[this.index] != JsonReader.OperatorStringDelimAlt)
 			{
-				throw new JsonSerializationException("Not a valid JSON string.", this.index);
+				throw new JsonDeserializationException("Invalid JSON string.", this.index);
 			}
 
 			char startStringDelim = this.Source[this.index];
@@ -460,7 +467,7 @@ namespace JsonFx.Json
 			this.index++;
 			if (this.index >= this.SourceLength)
 			{
-				throw new JsonSerializationException("Unterminated JSON string.", this.index);
+				throw new JsonDeserializationException("Unterminated JSON string.", this.index);
 			}
 
 			int start = this.index;
@@ -477,7 +484,7 @@ namespace JsonFx.Json
 					this.index++;
 					if (this.index >= this.SourceLength)
 					{
-						throw new JsonSerializationException("Unterminated JSON string.", this.index);
+						throw new JsonDeserializationException("Unterminated JSON string.", this.index);
 					}
 
 					// decode
@@ -555,7 +562,7 @@ namespace JsonFx.Json
 					this.index++;
 					if (this.index >= this.SourceLength)
 					{
-						throw new JsonSerializationException("Unterminated JSON string.", this.index);
+						throw new JsonDeserializationException("Unterminated JSON string.", this.index);
 					}
 
 					start = this.index;
@@ -566,7 +573,7 @@ namespace JsonFx.Json
 					this.index++;
 					if (this.index >= this.SourceLength)
 					{
-						throw new JsonSerializationException("Unterminated JSON string.", this.index);
+						throw new JsonDeserializationException("Unterminated JSON string.", this.index);
 					}
 				}
 			}
@@ -594,7 +601,7 @@ namespace JsonFx.Json
 				// consume sign
 				this.index++;
 				if (this.index >= this.SourceLength || !Char.IsDigit(this.Source[this.index]))
-					throw new JsonSerializationException("Unterminated JSON number.", this.index);
+					throw new JsonDeserializationException("Unterminated JSON number.", this.index);
 			}
 
 			// integer part
@@ -613,7 +620,7 @@ namespace JsonFx.Json
 				this.index++;
 				if (this.index >= this.SourceLength || !Char.IsDigit(this.Source[this.index]))
 				{
-					throw new JsonSerializationException("Unterminated JSON number.", this.index);
+					throw new JsonDeserializationException("Unterminated JSON number.", this.index);
 				}
 
 				// fraction part
@@ -636,7 +643,7 @@ namespace JsonFx.Json
 				this.index++;
 				if (this.index >= this.SourceLength)
 				{
-					throw new JsonSerializationException("Unterminated JSON number.", this.index);
+					throw new JsonDeserializationException("Unterminated JSON number.", this.index);
 				}
 
 				int expStart = this.index;
@@ -648,14 +655,14 @@ namespace JsonFx.Json
 					this.index++;
 					if (this.index >= this.SourceLength || !Char.IsDigit(this.Source[this.index]))
 					{
-						throw new JsonSerializationException("Unterminated JSON number.", this.index);
+						throw new JsonDeserializationException("Unterminated JSON number.", this.index);
 					}
 				}
 				else
 				{
 					if (!Char.IsDigit(this.Source[this.index]))
 					{
-						throw new JsonSerializationException("Unterminated JSON number.", this.index);
+						throw new JsonDeserializationException("Unterminated JSON number.", this.index);
 					}
 				}
 
@@ -792,7 +799,7 @@ namespace JsonFx.Json
 			ConstructorInfo ctor = objectType.GetConstructor(Type.EmptyTypes);
 			if (ctor == null)
 			{
-				throw new JsonSerializationException("Only objects with default constructors can be deserialized.", this.index);
+				throw new JsonDeserializationException("Only objects with default constructors can be deserialized.", this.index);
 			}
 			result = ctor.Invoke(null);
 
@@ -946,7 +953,7 @@ namespace JsonFx.Json
 					targetType.IsValueType &&
 					!isNullable)
 				{
-					throw new JsonSerializationException(targetType.Name+" does not accept null as a value", this.index);
+					throw new JsonDeserializationException(targetType.Name+" does not accept null as a value", this.index);
 				}
 				return value;
 			}
@@ -1049,7 +1056,7 @@ namespace JsonFx.Json
 			ConstructorInfo ctor = targetType.GetConstructor(Type.EmptyTypes);
 			if (ctor == null)
 			{
-				throw new JsonSerializationException("Only objects with default constructors can be deserialized.", this.index);
+				throw new JsonDeserializationException("Only objects with default constructors can be deserialized.", this.index);
 			}
 			object collection = ctor.Invoke(null);
 
@@ -1149,6 +1156,84 @@ namespace JsonFx.Json
 				}
 			}
 
+			#region Skip Comments
+
+			// skip block and line comments
+			if (this.Source[this.index] == JsonReader.CommentStart[0])
+			{
+				// skip over first char of comment start
+				this.index++;
+				if (this.index >= this.SourceLength)
+				{
+					throw new JsonDeserializationException(JsonReader.ErrorUnrecognizedToken, this.index);
+				}
+
+				bool isBlockComment = false;
+				if (this.Source[this.index] == JsonReader.CommentStart[1])
+				{
+					isBlockComment = true;
+				}
+				else if (this.Source[this.index] != JsonReader.CommentLine[1])
+				{
+					throw new JsonDeserializationException(JsonReader.ErrorUnrecognizedToken, this.index);
+				}
+				// skip over second char of comment start
+				this.index++;
+
+				if (isBlockComment)
+				{
+					// store index for unterminated case
+					int commentStart = this.index-2;
+
+					if (this.index+1 >= this.SourceLength)
+					{
+						throw new JsonDeserializationException("Unterminated comment block.", commentStart);
+					}
+
+					// skip over everything until reach block comment ending
+					while (this.Source[this.index] != JsonReader.CommentEnd[0] &&
+						this.Source[this.index+1] != JsonReader.CommentEnd[1])
+					{
+						this.index++;
+						if (this.index+1 >= this.SourceLength)
+						{
+							throw new JsonDeserializationException("Unterminated comment block.", commentStart);
+						}
+					}
+
+					// skip block comment end token
+					this.index += 2;
+					if (this.index >= this.SourceLength)
+					{
+						return JsonToken.End;
+					}
+				}
+				else
+				{
+					// skip over everything until reach line ending
+					while (JsonReader.LineEndings.IndexOf(this.Source[this.index]) < 0)
+					{
+						this.index++;
+						if (this.index >= this.SourceLength)
+						{
+							return JsonToken.End;
+						}
+					}
+				}
+
+				// skip whitespace again
+				while (Char.IsWhiteSpace(this.Source[this.index]))
+				{
+					this.index++;
+					if (this.index >= this.SourceLength)
+					{
+						return JsonToken.End;
+					}
+				}
+			}
+
+			#endregion Skip Comments
+
 			// consume positive signing (as is extraneous)
 			if (this.Source[this.index] == JsonReader.OperatorUnaryPlus)
 			{
@@ -1239,7 +1324,7 @@ namespace JsonFx.Json
 				return JsonToken.NegativeInfinity;
 			}
 
-			throw new JsonSerializationException("Illegal JSON sequence.", this.index);
+			throw new JsonDeserializationException(JsonReader.ErrorUnrecognizedToken, this.index);
 		}
 
 		/// <summary>

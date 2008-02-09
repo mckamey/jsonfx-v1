@@ -101,17 +101,7 @@ namespace JsonFx.Json
 		/// <param name="output">File name for writing</param>
 		public JsonWriter(string outputFileName)
 		{
-			Stream stream = null;
-			try
-			{
-				stream = new FileStream(outputFileName, FileMode.Create, FileAccess.Write, FileShare.Read);
-			}
-			catch
-			{
-				if (stream != null)
-					stream.Close();
-				throw;
-			}
+			Stream stream = new FileStream(outputFileName, FileMode.Create, FileAccess.Write, FileShare.Read);
 			this.writer = new StreamWriter(stream, Encoding.UTF8);
 		}
 
