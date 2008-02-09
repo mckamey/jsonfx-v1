@@ -35,7 +35,7 @@ using JsonFx.Json;
 
 namespace BuildTools.Json.UnitTests
 {
-	public class JsonChecker
+	public class JsonText
 	{
 		#region Constants
 
