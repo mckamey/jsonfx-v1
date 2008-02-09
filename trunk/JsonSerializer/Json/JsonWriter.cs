@@ -45,6 +45,8 @@ namespace JsonFx.Json
 	{
 		#region Constants
 
+		internal const string TypeGenericIDictionary = "System.Collections.Generic.IDictionary`2";
+
 		private const string TypeBoolean = "System.Boolean";
 		private const string TypeChar = "System.Char";
 		private const string TypeByte = "System.Byte";
@@ -253,7 +255,7 @@ namespace JsonFx.Json
 			}
 
 			Type type = value.GetType();
-			if (type.GetInterface("IDictionary`2") != null)
+			if (type.GetInterface(JsonWriter.TypeGenericIDictionary) != null)
 			{
 				throw new JsonSerializationException("Types which implement IDictionary<TKey, TValue> also need to implement IDictionary to be serialized.");
 			}
