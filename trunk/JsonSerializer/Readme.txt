@@ -14,6 +14,8 @@ common .NET Types directly as JSON primitives
 Serializes and deserializes strongly-typed custom classes (similarly to XML
 Serialization in .NET Framework)
 
+Ignores block and line comments when deserializing
+
 Optional ability to control serialization via attributes/interfaces:
 
 	JsonFx.Json.IJsonSerializable:
