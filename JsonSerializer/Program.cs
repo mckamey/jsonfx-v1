@@ -64,7 +64,7 @@ namespace BuildTools.Json
 
 				UnitTests.StronglyTyped.RunTest(writer, UnitTestsFolder, OutputFolder);
 
-				UnitTests.JsonChecker.RunTest(writer, UnitTestsFolder, OutputFolder);
+				UnitTests.JsonText.RunTest(writer, UnitTestsFolder, OutputFolder);
 
 				watch.Stop();
 
