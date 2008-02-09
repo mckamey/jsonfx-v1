@@ -17,7 +17,6 @@ namespace BuildTools.Json.UnitTests
 		#region Constants
 
 		public const string MyTypeHintName = "__type";
-		public const string UnitTestFile = "StronglyTyped.json";
 
 		#endregion Constants
 
@@ -25,6 +24,12 @@ namespace BuildTools.Json.UnitTests
 
 		public static void RunTest(TextWriter writer, string unitTestsFolder, string outputFolder)
 		{
+			NotIDictionary notIDictionary = new NotIDictionary();
+			notIDictionary["This Collection"] = "is not an IDictionary";
+			notIDictionary["But It is"] = "an IDictionary<string, object>";
+
+			SerializeDeserialize(writer, unitTestsFolder, "NotIDictionary.json", notIDictionary);
+
 			ComplexObject collectionTest = new ComplexObject();
 
 			collectionTest.MyNested = new NestedObject();
@@ -66,28 +71,38 @@ namespace BuildTools.Json.UnitTests
 			// duplicate for Queue<T>
 			collectionTest.MyQueue = new Queue<SimpleObject>(collectionTest.MyArray);
 
-			using (JsonWriter jsonWriter = new JsonWriter(unitTestsFolder+UnitTestFile))
-			{
-				jsonWriter.TypeHintName = MyTypeHintName;
-				jsonWriter.PrettyPrint = true;
-				jsonWriter.Write(collectionTest);
-			}
+			SerializeDeserialize(writer, unitTestsFolder, "StronglyTyped.json", collectionTest);
+		}
 
-			string source = File.ReadAllText(unitTestsFolder+UnitTestFile);
-			JsonReader jsonReader = new JsonReader(source);
+		private static void SerializeDeserialize(TextWriter writer, string unitTestsFolder, string unitTestFile, object obj)
+		{
+			string source = null;
 			try
 			{
+				using (JsonWriter jsonWriter = new JsonWriter(unitTestsFolder+unitTestFile))
+				{
+					jsonWriter.TypeHintName = MyTypeHintName;
+					jsonWriter.PrettyPrint = true;
+					jsonWriter.Write(obj);
+				}
+
+				source = File.ReadAllText(unitTestsFolder+unitTestFile);
+				JsonReader jsonReader = new JsonReader(source);
+
 				jsonReader.TypeHintName = MyTypeHintName;
-				collectionTest = (ComplexObject)jsonReader.Deserialize(typeof(ComplexObject));
-				writer.WriteLine("PASSED: "+UnitTestFile);
-				writer.WriteLine("Result: {0}", (collectionTest == null) ? "null" : collectionTest.GetType().Name);
+				obj = (ComplexObject)jsonReader.Deserialize(typeof(ComplexObject));
+				writer.WriteLine("PASSED: "+unitTestFile);
+				writer.WriteLine("Result: {0}", (obj == null) ? "null" : obj.GetType().Name);
 			}
 			catch (JsonSerializationException ex)
 			{
-				int col, line;
-				ex.GetLineAndColumn(source, out col, out line);
+				int col = 0, line = 0;
+				if (!String.IsNullOrEmpty(source))
+				{
+					ex.GetLineAndColumn(source, out col, out line);
+				}
 
-				writer.WriteLine("FAILED: StronglyTyped");
+				writer.WriteLine("FAILED: "+unitTestFile);
 				writer.WriteLine("\"{0}\" ({1}, {2})", ex.Message, line, col);
 			}
 		}
@@ -235,6 +250,112 @@ namespace BuildTools.Json.UnitTests
 		}
 
 		#endregion Properties
+	}
+
+	public class NotIDictionary : IDictionary<string, object>
+	{
+		#region Fields
+
+		private IDictionary<string, object> dictionary = new Dictionary<string, object>();
+
+		#endregion Fields
+
+		#region IDictionary<string,object> Members
+
+		public object this[string key]
+		{
+			get { return this.dictionary[key]; }
+			set { this.dictionary[key] = value; }
+		}
+
+		void IDictionary<string, object>.Add(string key, object value)
+		{
+			this.dictionary.Add(key, value);
+		}
+
+		bool IDictionary<string, object>.ContainsKey(string key)
+		{
+			return this.dictionary.ContainsKey(key);
+		}
+
+		ICollection<string> IDictionary<string, object>.Keys
+		{
+			get { return this.dictionary.Keys; }
+		}
+
+		bool IDictionary<string, object>.Remove(string key)
+		{
+			return this.dictionary.Remove(key);
+		}
+
+		bool IDictionary<string, object>.TryGetValue(string key, out object value)
+		{
+			return this.dictionary.TryGetValue(key, out value);
+		}
+
+		ICollection<object> IDictionary<string, object>.Values
+		{
+			get { return this.dictionary.Values; }
+		}
+
+		#endregion IDictionary<string,object> Members
+
+		#region ICollection<KeyValuePair<string,object>> Members
+
+		void ICollection<KeyValuePair<string, object>>.Add(KeyValuePair<string, object> item)
+		{
+			((ICollection<KeyValuePair<string, object>>)this.dictionary).Add(item);
+		}
+
+		void ICollection<KeyValuePair<string, object>>.Clear()
+		{
+			((ICollection<KeyValuePair<string, object>>)this.dictionary).Clear();
+		}
+
+		bool ICollection<KeyValuePair<string, object>>.Contains(KeyValuePair<string, object> item)
+		{
+			return ((ICollection<KeyValuePair<string, object>>)this.dictionary).Contains(item);
+		}
+
+		void ICollection<KeyValuePair<string, object>>.CopyTo(KeyValuePair<string, object>[] array, int arrayIndex)
+		{
+			((ICollection<KeyValuePair<string, object>>)this.dictionary).CopyTo(array, arrayIndex);
+		}
+
+		int ICollection<KeyValuePair<string, object>>.Count
+		{
+			get { return ((ICollection<KeyValuePair<string, object>>)this.dictionary).Count; }
+		}
+
+		bool ICollection<KeyValuePair<string, object>>.IsReadOnly
+		{
+			get { return ((ICollection<KeyValuePair<string, object>>)this.dictionary).IsReadOnly; }
+		}
+
+		bool ICollection<KeyValuePair<string, object>>.Remove(KeyValuePair<string, object> item)
+		{
+			return ((ICollection<KeyValuePair<string, object>>)this.dictionary).Remove(item);
+		}
+
+		#endregion ICollection<KeyValuePair<string,object>> Members
+
+		#region IEnumerable<KeyValuePair<string,object>> Members
+
+		IEnumerator<KeyValuePair<string, object>> IEnumerable<KeyValuePair<string, object>>.GetEnumerator()
+		{
+			return ((IEnumerable<KeyValuePair<string, object>>)this.dictionary).GetEnumerator();
+		}
+
+		#endregion IEnumerable<KeyValuePair<string,object>> Members
+
+		#region IEnumerable Members
+
+		IEnumerator IEnumerable.GetEnumerator()
+		{
+			return ((IEnumerable)this.dictionary).GetEnumerator();
+		}
+
+		#endregion IEnumerable Members
 	}
 
 	public class NestedObject
