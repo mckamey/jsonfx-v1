@@ -81,6 +81,7 @@ namespace JsonFx.Json
 		private const string ErrorExpectedArray = "Expected JSON array.";
 		private const string ErrorExpectedPropertyName = "Expected JSON object property name.";
 		private const string ErrorExpectedPropertyNameDelim = "Expected JSON object property name delimiter.";
+		private const string ErrorNullValueType = "{0} does not accept null as a value";
 		private const string ErrorDefaultCtor = "Only objects with default constructors can be deserialized.";
 		private const string ErrorGenericIDictionary = "Types which implement Generic IDictionary<TKey, TValue> also need to implement IDictionary to be deserialized.";
 
@@ -941,12 +942,17 @@ namespace JsonFx.Json
 			if (memberInfo is PropertyInfo)
 			{
 				// set value of public property
-				((PropertyInfo)memberInfo).SetValue(result, this.CoerceType(memberType, value), null);
+				((PropertyInfo)memberInfo).SetValue(
+					result,
+					JsonReader.CoerceType(memberType, value, this.index, this.AllowNullValueTypes),
+					null);
 			}
 			else if (memberInfo is FieldInfo)
 			{
 				// set value of public field
-				((FieldInfo)memberInfo).SetValue(result, this.CoerceType(memberType, value));
+				((FieldInfo)memberInfo).SetValue(
+					result,
+					JsonReader.CoerceType(memberType, value, this.index, this.AllowNullValueTypes));
 			}
 
 			// all other values are ignored
@@ -956,16 +962,21 @@ namespace JsonFx.Json
 
 		#region Type Methods
 
-		private object CoerceType(Type targetType, object value)
+		public static object CoerceType(Type targetType, object value)
+		{
+			return JsonReader.CoerceType(targetType, value, -1, false);
+		}
+
+		private static object CoerceType(Type targetType, object value, int index, bool allowNullValueTypes)
 		{
 			bool isNullable = JsonReader.IsNullable(targetType);
 			if (value == null)
 			{
-				if (this.AllowNullValueTypes &&
+				if (allowNullValueTypes &&
 					targetType.IsValueType &&
 					!isNullable)
 				{
-					throw new JsonDeserializationException(targetType.Name+" does not accept null as a value", this.index);
+					throw new JsonDeserializationException(String.Format(JsonReader.ErrorNullValueType, targetType.FullName), index);
 				}
 				return value;
 			}
@@ -1014,7 +1025,7 @@ namespace JsonFx.Json
 
 			if (actualType.IsArray && !targetType.IsArray)
 			{
-				return this.CoerceArray(targetType, actualType, value);
+				return JsonReader.CoerceArray(targetType, actualType, value, index, allowNullValueTypes);
 			}
 
 			if (value is String)
@@ -1056,10 +1067,22 @@ namespace JsonFx.Json
 				return new TimeSpan((long)value);
 			}
 
+			TypeConverter converter = TypeDescriptor.GetConverter(targetType);
+			if (converter.CanConvertFrom(actualType))
+			{
+				converter.ConvertFrom(value);
+			}
+
+			converter = TypeDescriptor.GetConverter(actualType);
+			if (converter.CanConvertTo(targetType))
+			{
+				converter.ConvertTo(value, targetType);
+			}
+
 			return Convert.ChangeType(value, targetType);
 		}
 
-		private object CoerceArray(Type targetType, Type arrayType, object value)
+		private static object CoerceArray(Type targetType, Type arrayType, object value, int index, bool allowNullValueTypes)
 		{
 			// targetType serializes as a JSON array but is not an array
 			// assume is an ICollection / IEnumerable with AddRange, Add,
@@ -1068,7 +1091,7 @@ namespace JsonFx.Json
 			ConstructorInfo ctor = targetType.GetConstructor(Type.EmptyTypes);
 			if (ctor == null)
 			{
-				throw new JsonDeserializationException(JsonReader.ErrorDefaultCtor, this.index);
+				throw new JsonDeserializationException(JsonReader.ErrorDefaultCtor, index);
 			}
 			object collection = ctor.Invoke(null);
 
@@ -1107,7 +1130,7 @@ namespace JsonFx.Json
 						method.Invoke(
 							collection,
 							new object[] {
-									this.CoerceType(paramType, item)
+									JsonReader.CoerceType(paramType, item, index, allowNullValueTypes)
 								});
 					}
 					return collection;
