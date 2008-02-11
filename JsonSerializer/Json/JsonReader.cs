@@ -1227,7 +1227,7 @@ namespace JsonFx.Json
 					}
 
 					// skip over everything until reach block comment ending
-					while (this.Source[this.index] != JsonReader.CommentEnd[0] &&
+					while (this.Source[this.index] != JsonReader.CommentEnd[0] ||
 						this.Source[this.index+1] != JsonReader.CommentEnd[1])
 					{
 						this.index++;
