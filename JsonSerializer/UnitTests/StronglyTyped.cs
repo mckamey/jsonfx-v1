@@ -54,17 +54,18 @@ namespace BuildTools.Json.UnitTests
 
 		public static void RunTest(TextWriter writer, string unitTestsFolder, string outputFolder)
 		{
-			#region Non-IDictionary, IDictionary<TKey, TValue> Test
+			#region Simple Root Types
 
 			writer.WriteLine(UnitTests.JsonText.Seperator);
+			SerializeDeserialize(writer, unitTestsFolder, "RootEnum.json", BlahBlah.Three);
 
-			NotIDictionary notIDictionary = new NotIDictionary();
-			notIDictionary["This Collection"] = "is not an IDictionary";
-			notIDictionary["But It is"] = "an IDictionary<string, object>";
+			writer.WriteLine(UnitTests.JsonText.Seperator);
+			SerializeDeserialize(writer, unitTestsFolder, "RootInt64.json", 42678L);
 
-			SerializeDeserialize(writer, unitTestsFolder, "NotIDictionary.json", notIDictionary);
+			writer.WriteLine(UnitTests.JsonText.Seperator);
+			SerializeDeserialize(writer, unitTestsFolder, "RootDateTime.json", DateTime.Now);
 
-			#endregion Non-IDictionary ,IDictionary<TKey, TValue> Test
+			#endregion Simple Root Types
 
 			#region Strongly Typed Object Graph Test
 
@@ -114,6 +115,18 @@ namespace BuildTools.Json.UnitTests
 			SerializeDeserialize(writer, unitTestsFolder, "StronglyTyped.json", collectionTest);
 
 			#endregion Strongly Typed Object Graph Test
+
+			#region Non-IDictionary, IDictionary<TKey, TValue> Test
+
+			writer.WriteLine(UnitTests.JsonText.Seperator);
+
+			NotIDictionary notIDictionary = new NotIDictionary();
+			notIDictionary["This Collection"] = "is not an IDictionary";
+			notIDictionary["But It is"] = "an IDictionary<string, object>";
+
+			SerializeDeserialize(writer, unitTestsFolder, "NotIDictionary.json", notIDictionary);
+
+			#endregion Non-IDictionary ,IDictionary<TKey, TValue> Test
 		}
 
 		private static void SerializeDeserialize(TextWriter writer, string unitTestsFolder, string unitTestFile, object obj)
@@ -132,7 +145,7 @@ namespace BuildTools.Json.UnitTests
 				JsonReader jsonReader = new JsonReader(source);
 
 				jsonReader.TypeHintName = MyTypeHintName;
-				obj = jsonReader.Deserialize(typeof(ComplexObject));
+				obj = jsonReader.Deserialize((obj == null) ? null : obj.GetType());
 				writer.WriteLine("READ: "+unitTestFile);
 				writer.WriteLine("Result: {0}", (obj == null) ? "null" : obj.GetType().FullName);
 			}
