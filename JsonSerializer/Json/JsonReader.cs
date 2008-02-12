@@ -216,7 +216,7 @@ namespace JsonFx.Json
 				}
 				case JsonToken.String:
 				{
-					return this.ReadString();
+					return this.ReadString(typeIsHint ? null : expectedType);
 				}
 				case JsonToken.Number:
 				{
@@ -304,7 +304,7 @@ namespace JsonFx.Json
 				}
 
 				// parse object member value
-				string memberName = this.ReadString();
+				string memberName = (String)this.ReadString(null);
 
 				// determine the type of the property/field
 				JsonReader.GetMemberInfo(memberMap, memberName, out memberType, out memberInfo);
@@ -466,7 +466,7 @@ namespace JsonFx.Json
 			return jsArray.ToArray();
 		}
 
-		private string ReadString()
+		private object ReadString(Type expectedType)
 		{
 			if (this.Source[this.index] != JsonReader.OperatorStringDelim &&
 				this.Source[this.index] != JsonReader.OperatorStringDelimAlt)
@@ -597,10 +597,15 @@ namespace JsonFx.Json
 			// consume closing quote
 			this.index++;
 
+			if (expectedType != null && expectedType != typeof(String))
+			{
+				return JsonReader.CoerceType(expectedType, builder.ToString(), this.index, this.AllowNullValueTypes);
+			}
+
 			return builder.ToString();
 		}
 
-		private ValueType ReadNumber(Type expectedType)
+		private object ReadNumber(Type expectedType)
 		{
 			bool hasDecimal = false;
 			bool hasExponent = false;
@@ -705,11 +710,7 @@ namespace JsonFx.Json
 
 				if (expectedType != null)
 				{
-					TypeConverter converter = TypeDescriptor.GetConverter(typeof(Decimal));
-					if (converter.CanConvertTo(expectedType))
-					{
-						return (ValueType)converter.ConvertTo(number, expectedType);
-					}
+					return JsonReader.CoerceType(expectedType, number, this.index, this.AllowNullValueTypes);
 				}
 
 				if (number >= Int32.MinValue && number <= Int32.MaxValue)
@@ -747,11 +748,7 @@ namespace JsonFx.Json
 
 				if (expectedType != null)
 				{
-					TypeConverter converter = TypeDescriptor.GetConverter(typeof(Double));
-					if (converter.CanConvertTo(expectedType))
-					{
-						return (ValueType)converter.ConvertTo(number, expectedType);
-					}
+					return JsonReader.CoerceType(expectedType, number, this.index, this.AllowNullValueTypes);
 				}
 
 				return number;
@@ -1062,21 +1059,21 @@ namespace JsonFx.Json
 				}
 			}
 
-			else if (value is Int64 && targetType == typeof(TimeSpan))
+			else if (targetType == typeof(TimeSpan))
 			{
-				return new TimeSpan((long)value);
+				return new TimeSpan((long)JsonReader.CoerceType(typeof(Int64), value, index, allowNullValueTypes));
 			}
 
 			TypeConverter converter = TypeDescriptor.GetConverter(targetType);
 			if (converter.CanConvertFrom(actualType))
 			{
-				converter.ConvertFrom(value);
+				return converter.ConvertFrom(value);
 			}
 
 			converter = TypeDescriptor.GetConverter(actualType);
 			if (converter.CanConvertTo(targetType))
 			{
-				converter.ConvertTo(value, targetType);
+				return converter.ConvertTo(value, targetType);
 			}
 
 			return Convert.ChangeType(value, targetType);
