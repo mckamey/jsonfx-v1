@@ -29,6 +29,7 @@
 #endregion BuildTools License
 
 using System;
+using System.Reflection;
 
 namespace JsonFx.Json
 {
@@ -53,23 +54,23 @@ namespace JsonFx.Json
 			}
 
 			Type type = value.GetType();
-			System.Reflection.MemberInfo memberInfo = null;
 
+			ICustomAttributeProvider provider = null;
 			if (type.IsEnum)
 			{
-				memberInfo = type.GetField(Enum.GetName(type, value));
+				provider = type.GetField(Enum.GetName(type, value));
 			}
 			else
 			{
-				memberInfo = value as System.Reflection.MemberInfo;
+				provider = value as ICustomAttributeProvider;
 			}
 
-			if (memberInfo == null)
+			if (provider == null)
 			{
 				throw new ArgumentException();
 			}
 
-			return Attribute.IsDefined(memberInfo, typeof(JsonIgnoreAttribute));
+			return provider.IsDefined(typeof(JsonIgnoreAttribute));
 		}
 
 		#endregion Methods
