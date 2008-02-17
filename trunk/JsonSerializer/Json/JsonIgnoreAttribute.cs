@@ -70,7 +70,7 @@ namespace JsonFx.Json
 				throw new ArgumentException();
 			}
 
-			return provider.IsDefined(typeof(JsonIgnoreAttribute));
+			return provider.IsDefined(typeof(JsonIgnoreAttribute), true);
 		}
 
 		#endregion Methods
