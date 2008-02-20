@@ -29,6 +29,8 @@
 #endregion BuildTools License
 
 using System;
+using System.Reflection;
+using System.Xml.Serialization;
 
 namespace JsonFx.Json
 {
@@ -92,7 +94,7 @@ namespace JsonFx.Json
 			}
 
 			Type type = value.GetType();
-			System.Reflection.MemberInfo memberInfo = null;
+			MemberInfo memberInfo = null;
 
 			if (type.IsEnum)
 			{
@@ -105,7 +107,7 @@ namespace JsonFx.Json
 			}
 			else
 			{
-				memberInfo = value as System.Reflection.MemberInfo;
+				memberInfo = value as MemberInfo;
 			}
 
 			if (memberInfo == null)
@@ -121,6 +123,55 @@ namespace JsonFx.Json
 
 			return attribute.Name;
 		}
+
+		///// <summary>
+		///// Gets the name specified for use in Json serialization.
+		///// </summary>
+		///// <param name="value"></param>
+		///// <returns></returns>
+		//public static string GetXmlName(object value)
+		//{
+		//    if (value == null)
+		//    {
+		//        return null;
+		//    }
+
+		//    Type type = value.GetType();
+		//    ICustomAttributeProvider memberInfo = null;
+
+		//    if (type.IsEnum)
+		//    {
+		//        string name = Enum.GetName(type, value);
+		//        if (String.IsNullOrEmpty(name))
+		//        {
+		//            return null;
+		//        }
+		//        memberInfo = type.GetField(name);
+		//    }
+		//    else
+		//    {
+		//        memberInfo = value as ICustomAttributeProvider;
+		//    }
+
+		//    if (memberInfo == null)
+		//    {
+		//        throw new ArgumentException();
+		//    }
+
+		//    XmlAttributes xmlAttributes = new XmlAttributes(memberInfo);
+		//    if (xmlAttributes.XmlElements.Count == 1 &&
+		//        !String.IsNullOrEmpty(xmlAttributes.XmlElements[0].ElementName))
+		//    {
+		//        return xmlAttributes.XmlElements[0].ElementName;
+		//    }
+		//    if (xmlAttributes.XmlAttribute != null &&
+		//        !String.IsNullOrEmpty(xmlAttributes.XmlAttribute.AttributeName))
+		//    {
+		//        return xmlAttributes.XmlAttribute.AttributeName;
+		//    }
+
+		//    return null;
+		//}
 
 		#endregion Methods
 	}

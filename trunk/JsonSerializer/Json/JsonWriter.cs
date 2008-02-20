@@ -35,6 +35,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Text;
 using System.Reflection;
+using System.Xml;
 
 namespace JsonFx.Json
 {
@@ -72,6 +73,7 @@ namespace JsonFx.Json
 		private bool strictConformance = true;
 
 		private bool prettyPrint = false;
+		private bool useXmlSerializationAttributes = false;
 		private int depth = 0;
 		private string tab = "\t";
 
@@ -154,6 +156,18 @@ namespace JsonFx.Json
 		{
 			get { return this.writer.NewLine; }
 			set { this.writer.NewLine = value; }
+		}
+
+		/// <summary>
+		/// Gets and sets if should use XmlSerialization Attributes.
+		/// </summary>
+		/// <remarks>
+		/// Respects XmlIgnoreAttribute, ...
+		/// </remarks>
+		public bool UseXmlSerializationAttributes
+		{
+			get { return this.useXmlSerializationAttributes; }
+			set { this.useXmlSerializationAttributes = value; }
 		}
 
 		/// <summary>
@@ -254,6 +268,12 @@ namespace JsonFx.Json
 
 			if (value is IEnumerable)
 			{
+				if (value is XmlNode)
+				{
+					this.Write((System.Xml.XmlNode)value);
+					return;
+				}
+
 				try
 				{
 					if (isProperty)
@@ -618,6 +638,12 @@ namespace JsonFx.Json
 			this.Write(value.ToString());
 		}
 
+		public virtual void Write(XmlNode value)
+		{
+			// TODO: translate XML to JSON
+			this.Write(value.OuterXml);
+		}
+
 		#endregion Primative Writer Methods
 
 		#region Writer Methods
@@ -860,6 +886,24 @@ namespace JsonFx.Json
 			if (!String.IsNullOrEmpty(specifiedProperty))
 			{
 				PropertyInfo specProp = objType.GetProperty(specifiedProperty);
+				if (specProp != null)
+				{
+					object isSpecified = specProp.GetValue(obj, null);
+					if (isSpecified is Boolean && !Convert.ToBoolean(isSpecified))
+					{
+						return true;
+					}
+				}
+			}
+
+			if (this.UseXmlSerializationAttributes)
+			{
+				if (JsonIgnoreAttribute.IsXmlIgnore(member))
+				{
+					return true;
+				}
+
+				PropertyInfo specProp = objType.GetProperty(member.Name+"Specified");
 				if (specProp != null)
 				{
 					object isSpecified = specProp.GetValue(obj, null);
