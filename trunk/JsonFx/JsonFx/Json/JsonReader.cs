@@ -842,10 +842,14 @@ namespace JsonFx.Json
 			foreach (PropertyInfo info in properties)
 			{
 				if (!info.CanRead || !info.CanWrite)
+				{
 					continue;
+				}
 
 				if (JsonIgnoreAttribute.IsJsonIgnore(info))
+				{
 					continue;
+				}
 
 				string jsonName = JsonNameAttribute.GetJsonName(info);
 				if (String.IsNullOrEmpty(jsonName))
