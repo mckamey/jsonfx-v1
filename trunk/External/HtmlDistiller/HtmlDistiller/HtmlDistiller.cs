@@ -505,11 +505,11 @@ namespace BuildTools.HtmlDistiller
 
 							#endregion found potential tag
 						}
-						else if (this.normalizeWhitespace && Char.IsWhiteSpace(ch))
+						else if (this.normalizeWhitespace && (Char.IsWhiteSpace(ch) || Char.IsControl(ch)))
 						{
 							#region normalize whitespace
 
-							while (Char.IsWhiteSpace(ch))
+							while ((Char.IsWhiteSpace(ch) || Char.IsControl(ch)) && !this.IsEOF)
 							{
 								if (ch == CRChar)
 								{
