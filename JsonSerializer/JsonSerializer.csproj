@@ -41,7 +41,6 @@
     <Compile Include="Json\IJsonSerializable.cs" />
     <Compile Include="Json\JsonIgnoreAttribute.cs" />
     <Compile Include="Json\JsonNameAttribute.cs" />
-    <Compile Include="Json\JsonObject.cs" />
     <Compile Include="Json\JsonReader.cs" />
     <Compile Include="Json\JsonSerializationException.cs" />
     <Compile Include="Json\JsonToken.cs" />

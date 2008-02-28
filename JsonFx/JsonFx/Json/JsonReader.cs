@@ -275,7 +275,7 @@ namespace JsonFx.Json
 			}
 			else
 			{
-				result = new JsonObject();
+				result = new Dictionary<String, Object>();
 			}
 
 			JsonToken token;
