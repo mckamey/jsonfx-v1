@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 
 using JsonFx.Json;
 
@@ -33,7 +34,7 @@ namespace JsonFx.JsonRpc
 			if (ex != null)
 			{
 				this.Message = ex.Message;
-				JsonObject innerError = new JsonObject();
+				Dictionary<String, Object> innerError = new Dictionary<String, Object>();
 				innerError["Type"] = ex.GetType().Name;
 #if DEBUG
 			innerError["StackTrace"] = ex.StackTrace;

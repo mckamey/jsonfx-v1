@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 
 using JsonFx.Json;
 
@@ -59,9 +60,9 @@ namespace JsonFx.JsonRpc
 		/// OPTIONAL. An Array or Object that holds the actual parameter values for the invocation of the procedure.
 		/// </remarks>
 		[JsonIgnore]
-		public virtual JsonObject NamedParams
+		public virtual Dictionary<String, Object> NamedParams
 		{
-			get { return this.Params as JsonObject; }
+			get { return this.Params as Dictionary<String, Object>; }
 			set { this.Params = value; }
 		}
 

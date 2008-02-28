@@ -12,7 +12,7 @@ namespace JsonFx.UI
 		#region Fields
 
 		private string tagName;
-		private JsonObject attributes = new JsonObject();
+		private Dictionary<String, Object> attributes = new Dictionary<String, Object>();
 		private JsonControlCollection childControls;
 		private JsonControl parent = null;
 
@@ -42,7 +42,7 @@ namespace JsonFx.UI
 		}
 
 		[JsonName("attributes")]
-		public JsonObject Attributes
+		public Dictionary<String, Object> Attributes
 		{
 			get { return this.attributes; }
 			set { this.attributes = value; }
@@ -51,19 +51,19 @@ namespace JsonFx.UI
 		[JsonIgnore]
 		public bool AttributesSpecified
 		{
-			get { return this.Attributes.Properties.Count > 0; }
+			get { return this.Attributes.Keys.Count > 0; }
 			set { }
 		}
 
 		//[JsonIgnore]
-		//public JsonObject Style
+		//public Dictionary<String, Object> Style
 		//{
 		//    get
 		//    {
-		//        JsonObject style = this.Attributes["style"] as JsonObject;
+		//        Dictionary<String, Object> style = this.Attributes["style"] as Dictionary<String, Object>;
 		//        if (style == null)
 		//        {
-		//            style = new JsonObject();
+		//            style = new Dictionary<String, Object>();
 		//            this.Attributes["style"] = style;
 		//        }
 		//        return style;

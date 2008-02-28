@@ -69,7 +69,7 @@ namespace JsonFx.Handlers
 		{
 			JsonRequest request = new JsonRequest();
 
-			JsonObject parameters = new JsonObject();
+			Dictionary<String, Object> parameters = new Dictionary<String, Object>();
 			foreach (string key in context.Request.QueryString.Keys)
 			{
 				if (String.IsNullOrEmpty(key))
@@ -84,7 +84,7 @@ namespace JsonFx.Handlers
 			if (!String.IsNullOrEmpty(context.Request.PathInfo))
 			{
 				request.Method = context.Request.PathInfo.Substring(1);
-				if (String.IsNullOrEmpty(request.Method) && request.NamedParams.Properties.Count < 1)
+				if (String.IsNullOrEmpty(request.Method) && request.NamedParams.Keys.Count < 1)
 				{
 					request.Method = JsonServiceHandler.DescriptionMethodName;
 				}
