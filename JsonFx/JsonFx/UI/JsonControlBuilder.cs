@@ -266,7 +266,10 @@ namespace JsonFx.UI
 				throw new NullReferenceException("target is null");
 			}
 
-			string style = target.Attributes["style"] as String;
+			string style =
+				target.Attributes.ContainsKey("style") ?
+				target.Attributes["style"] as String :
+				null;
 			if (style != null && !style.EndsWith(";"))
 			{
 				style += ";";
