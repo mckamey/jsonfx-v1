@@ -144,6 +144,12 @@ namespace BuildTools.ScriptCompactor
 			public bool nomen = false;
 
 			/// <summary>
+			/// true if HTML event handlers should be allowed
+			/// </summary>
+			[Description("OnEventHandlers")]
+			public bool on = true;
+
+			/// <summary>
 			/// true if the scan should stop on first error
 			/// </summary>
 			[Description("StopOnFirstError")]
@@ -156,10 +162,22 @@ namespace BuildTools.ScriptCompactor
 			public bool plusplus = false;
 
 			/// <summary>
+			/// true if the . should not be allowed in regexp literals
+			/// </summary>
+			[Description("CheckRegExp")]
+			public bool regexp = false;
+
+			/// <summary>
 			/// true if the Rhino environment globals should be predefined
 			/// </summary>
 			[Description("IsRhino")]
 			public bool rhino = false;
+
+			/// <summary>
+			/// true if the System object should be predefined
+			/// </summary>
+			[Description("IsSidebar")]
+			public bool sidebar = false;
 
 			/// <summary>
 			/// true if variables should be declared before used
