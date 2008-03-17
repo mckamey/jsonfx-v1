@@ -113,7 +113,7 @@
     <EmbeddedResource Include="Scripts\Compacted\Trace.js" />
     <EmbeddedResource Include="Scripts\Compacted\Utility.js" />
     <EmbeddedResource Include="Scripts\IO.js" />
-    <EmbeddedResource Include="Scripts\JSON.js" />
+    <EmbeddedResource Include="Scripts\json.js" />
     <EmbeddedResource Include="Scripts\Trace.js" />
     <EmbeddedResource Include="Scripts\Utility.js" />
   </ItemGroup>
@@ -164,6 +164,8 @@
     <Content Include="Scripts\Compact.txt" />
     <EmbeddedResource Include="Scripts\Compacted\Controls.js" />
     <Content Include="Scripts\Concat.txt" />
+    <Content Include="Scripts\json2.js" />
+    <Content Include="Scripts\JsonML2.js" />
     <EmbeddedResource Include="Scripts\Controls.js" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
