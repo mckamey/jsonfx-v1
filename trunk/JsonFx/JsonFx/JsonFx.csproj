@@ -109,7 +109,7 @@
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Scripts\Compacted\IO.js" />
-    <EmbeddedResource Include="Scripts\Compacted\JSON.js" />
+    <EmbeddedResource Include="Scripts\Compacted\json.js" />
     <EmbeddedResource Include="Scripts\Compacted\Trace.js" />
     <EmbeddedResource Include="Scripts\Compacted\Utility.js" />
     <EmbeddedResource Include="Scripts\IO.js" />
