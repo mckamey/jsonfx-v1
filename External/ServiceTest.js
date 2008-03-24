@@ -42,10 +42,9 @@ JsonFx.IO.ServiceTest.Context = function(/*string*/ request, /*element*/ target)
 	if ("object" === type && val) {
 		ul = ["ul", {id:"JsonFx_UI_Dump_"+(JsonFx.IO.ServiceTest.dumpDataID++),"class":"jsonfx-object"}];
 		for (var pn in val) {
-			if (!val.hasOwnProperty(pn)) {
-				continue;
+			if (val.hasOwnProperty(pn)) {
+				ul.push(["li", JsonFx.IO.ServiceTest.dumpData(pn, val[pn])]);
 			}
-			ul.push(["li", JsonFx.IO.ServiceTest.dumpData(pn, val[pn])]);
 		}
 
 		if (a) {
