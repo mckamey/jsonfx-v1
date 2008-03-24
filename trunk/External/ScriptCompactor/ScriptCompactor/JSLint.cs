@@ -174,7 +174,7 @@ namespace BuildTools.ScriptCompactor
 			public bool rhino = false;
 
 			/// <summary>
-			/// true if the System object should be predefined
+			/// true if the Windows Siderbar Gadget globals should be predefined
 			/// </summary>
 			[Description("IsSidebar")]
 			public bool sidebar = false;
