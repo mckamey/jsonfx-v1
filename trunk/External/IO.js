@@ -173,7 +173,7 @@ JsonFx.IO = {};
 			status = 0;
 			try {
 				status = Number(xhr.status);
-			} catch (ex) {
+			} catch (ex2) {
 				// Firefox doesn't allow status to be accessed after xhr.abort()
 			}
 
@@ -226,10 +226,10 @@ JsonFx.IO = {};
 		}
 		xhr.send(options.params);
 
-	} catch (ex) {
+	} catch (ex2) {
 		// immediate failure: exception thrown
 		if (options.onFailure) {
-			options.onFailure(xhr, options.context, ex);
+			options.onFailure(xhr, options.context, ex2);
 		}
 
 	} finally {
@@ -305,9 +305,11 @@ JsonFx.IO = {};
 			}
 		} else {
 			for (var p in rpcParams) {
-				rpcUrl += enc(p);
-				rpcUrl += "=";
-				rpcUrl += enc(rpcParams[p]);
+				if (rpcParams.hasOwnProperty(p)) {
+					rpcUrl += enc(p);
+					rpcUrl += "=";
+					rpcUrl += enc(rpcParams[p]);
+				}
 			}
 		}
 	}

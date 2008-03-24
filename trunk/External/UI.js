@@ -445,8 +445,8 @@ JsonFx.UI.Bindings = function() {
 							// perform action on element and
 							// allow binding to replace element
 							elem = tagBindings[css][a](elem, options) || elem;
-						} catch (ex) {
-							window.alert("Error binding "+tag+"."+css+":\n\n\""+ex.message+"\"");
+						} catch (ex2) {
+							window.alert("Error binding "+tag+"."+css+":\n\n\""+ex2.message+"\"");
 						}
 					}
 				}
@@ -1355,7 +1355,7 @@ JsonFx.UI.Animate.Engine = function(/*element*/ elem) {
 				if (es.filter) {
 					es.filter = userFilter;
 				}
-			} catch (ex) {}
+			} catch (ex2) {}
 		}
 		if (op.hasZoom()) {
 			es.zoom = userZoom;
@@ -1397,7 +1397,7 @@ JsonFx.UI.Animate.Engine = function(/*element*/ elem) {
 							try {
 								// check IE4.0+
 								alpha = elem.filters.item("alpha");
-							} catch (ex) { alpha = null; }
+							} catch (ex2) { alpha = null; }
 						}
 					}
 					if (!alpha) {
@@ -1405,13 +1405,13 @@ JsonFx.UI.Animate.Engine = function(/*element*/ elem) {
 						es.filter += " progid:DXImageTransform.Microsoft.Alpha(enabled=false)";
 						try {
 							alpha = elem.filters.item("DXImageTransform.Microsoft.Alpha");
-						} catch (ex) { alpha = null; }
+						} catch (ex3) { alpha = null; }
 						if (!alpha) {
 							// try IE4.0+
 							es.filter += " alpha(enabled=false)";
 							try {
 								alpha = elem.filters.item("alpha");
-							} catch (ex) { alpha = null; }
+							} catch (ex4) { alpha = null; }
 						}
 					}
 				}
@@ -1420,12 +1420,12 @@ JsonFx.UI.Animate.Engine = function(/*element*/ elem) {
 						try {
 							// check IE5.5+
 							blur = elem.filters.item("DXImageTransform.Microsoft.Blur");
-						} catch (ex) { blur = null; }
+						} catch (ex5) { blur = null; }
 						if (!blur) {
 							try {
 								// check IE4.0+
 								blur = elem.filters.item("blur");
-							} catch (ex) { blur = null; }
+							} catch (ex6) { blur = null; }
 						}
 					}
 					if (!blur) {
@@ -1433,18 +1433,18 @@ JsonFx.UI.Animate.Engine = function(/*element*/ elem) {
 						es.filter += " progid:DXImageTransform.Microsoft.Blur(enabled=false)";
 						try {
 							blur = elem.filters.item("DXImageTransform.Microsoft.Blur");
-						} catch (ex) { blur = null; }
+						} catch (ex7) { blur = null; }
 						if (!blur) {
 							// try IE4.0+
 							es.filter += " blur(enabled=false)";
 							try {
 								blur = elem.filters.item("blur");
-							} catch (ex) { blur = null; }
+							} catch (ex8) { blur = null; }
 						}
 					}
 				}
 			}
-		} catch (ex) {}
+		} catch (ex9) {}
 	}
 
 	/*bool*/ this.hasAppliedOp = function() {
@@ -1538,7 +1538,7 @@ JsonFx.UI.Animate.Engine = function(/*element*/ elem) {
 						}
 						blur.pixelRadius = JsonFx.UI.lerpInt(start.bl, op.bl, step);
 						blur.enabled = true;
-					} catch (ex) {
+					} catch (ex2) {
 						blur = null;
 					}
 				}
