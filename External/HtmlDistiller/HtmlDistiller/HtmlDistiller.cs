@@ -599,7 +599,7 @@ namespace BuildTools.HtmlDistiller
 
 							#endregion normalize whitespace
 						}
-						else if (this.encodeNonAscii && (ch > AsciiHighChar || Char.IsControl(ch)))
+						else if (this.encodeNonAscii && (ch > AsciiHighChar || (Char.IsControl(ch) && !Char.IsWhiteSpace(ch))))
 						{
 							#region encode non-ASCII chars
 
