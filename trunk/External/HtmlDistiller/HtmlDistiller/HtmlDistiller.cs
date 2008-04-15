@@ -75,9 +75,17 @@ namespace BuildTools.HtmlDistiller
 		private const char NumEndChar = '9';
 		private const char AsciiHighChar = (char)0x7F;
 
+		public const char EntityStartChar = '&';
+		private const char EntityEndChar = ';';
+		private const char EntityNumChar = '#';
+		private const char EntityHexChar = 'x';
+		private const char HexStartChar = 'A';
+		private const char HexEndChar = 'F';
+
 		private const string StyleAttrib = "style";
-		private const string Ellipsis = "&hellip;";
-		private const string LessThan = "&lt;";
+		private const string EllipsisEntity = "&hellip;";
+		private const string Ellipsis = "...";
+		private const string LessThanEntity = "&lt;";
 
 		#endregion Constants
 
@@ -491,14 +499,21 @@ namespace BuildTools.HtmlDistiller
 							{
 								#region encode LessThan char
 
-								// encode LessThan char
-								this.output.Append(LessThan);
+								if (this.EncodeNonAscii)
+								{
+									// encode LessThan char
+									this.output.Append(LessThanEntity);
 
-								// remove from stream
-								this.EmptyBuffer(1);
+									// remove from stream
+									this.EmptyBuffer(1);
+								}
+								else
+								{
+									this.Advance();
+								}
 
 								// count toward total text length
-								this.textSize++;
+								this.IncTextCount();
 
 								#endregion encode LessThan char
 							}
@@ -524,7 +539,7 @@ namespace BuildTools.HtmlDistiller
 										this.output.Append(LFChar);
 
 										// count toward total text length
-										this.textSize++;
+										this.IncTextCount();
 									}
 
 									// skip CR
@@ -599,7 +614,7 @@ namespace BuildTools.HtmlDistiller
 
 							#endregion normalize whitespace
 						}
-						else if (this.encodeNonAscii && (ch > AsciiHighChar || (Char.IsControl(ch) && !Char.IsWhiteSpace(ch))))
+						else if (this.EncodeNonAscii && (ch > AsciiHighChar || (Char.IsControl(ch) && !Char.IsWhiteSpace(ch))))
 						{
 							#region encode non-ASCII chars
 
@@ -607,16 +622,45 @@ namespace BuildTools.HtmlDistiller
 							this.WriteBuffer();
 
 							// encode the non-ASCII char
-							string entity = this.EncodeHtmlEntity(ch);
+							string entity = HtmlDistiller.EncodeHtmlEntity(ch);
 							this.output.Append(entity);
 
 							// remove char from stream
 							this.EmptyBuffer(1);
 
 							// count toward total text length
-							this.textSize++;
+							this.IncTextCount();
 
 							#endregion encode non-ASCII chars
+						}
+						else if (!this.EncodeNonAscii && (ch == EntityStartChar))
+						{
+							#region decode HTML entities
+
+							char entityChar;
+
+							// encode the HTML entity
+							int entityLength = HtmlDistiller.DecodeHtmlEntity(this.source, this.index, out entityChar);
+							if (entityLength > 1)
+							{
+								this.WriteBuffer();
+
+								// output decoded char
+								this.output.Append(entityChar);
+
+								// remove char from stream
+								this.EmptyBuffer(entityLength);
+							}
+							else
+							{
+								// no entity found, simply treat as normal char
+								this.Advance();
+							}
+
+							// count toward total text length
+							this.IncTextCount();
+
+							#endregion decode HTML entities
 						}
 						else
 						{
@@ -660,7 +704,7 @@ namespace BuildTools.HtmlDistiller
 				if (this.MaxLength > 0 && this.textSize >= this.MaxLength)
 				{
 					// source was cut off so add ellipsis
-					this.output.Append(Ellipsis);
+					this.output.Append(this.EncodeNonAscii ? EllipsisEntity : Ellipsis);
 				}
 
 				return this.output.ToString();
@@ -1185,9 +1229,370 @@ namespace BuildTools.HtmlDistiller
 		/// </summary>
 		/// <param name="ch"></param>
 		/// <returns></returns>
-		private string EncodeHtmlEntity(char ch)
+		public static string EncodeHtmlEntity(char ch)
 		{
-			return String.Format("&#x{0:X2};", (int)ch);
+			return String.Format(
+				(ch > (char)0xFF) ? "&#x{0:X4};" : "&#x{0:X2};",
+				(int)ch);
+		}
+
+		/// <summary>
+		/// Decodes HTML entities into special characters
+		/// </summary>
+		/// <param name="source"></param>
+		/// <param name="index"></param>
+		/// <param name="entity"></param>
+		/// <returns>the number of character consumed</returns>
+		public static int DecodeHtmlEntity(string source, int index, out char entity)
+		{
+			int Start = index;
+			int End = source.Length-1;
+
+			// consume '&'
+			index++;
+
+			if ((index < End) &&
+				(source[index] == HtmlDistiller.EntityNumChar))
+			{
+				// entity is Unicode Code Point
+
+				// consume '#'
+				index++;
+
+				bool isHex = false;
+				if ((index < End) &&
+					(Char.ToLowerInvariant(source[index]) == HtmlDistiller.EntityHexChar))
+				{
+					isHex = true;
+
+					// consume 'x'
+					index++;
+
+				}
+
+				int NumStart = index;
+				while ((index < End) && (source[index] != ';'))
+				{
+					char ch = Char.ToUpperInvariant(source[index]);
+					if (!Char.IsDigit(ch) &&
+						(isHex && (ch < HtmlDistiller.HexStartChar || ch > HtmlDistiller.HexEndChar)))
+					{
+						break;
+					}
+
+					index++;
+				}
+
+				int codePoint;
+				if (Int32.TryParse(
+					source.Substring(NumStart, index-NumStart),
+					isHex ? NumberStyles.AllowHexSpecifier : NumberStyles.None,
+					CultureInfo.InvariantCulture,
+					out codePoint))
+				{
+					entity = (char)codePoint;
+					if (source[index] == ';')
+					{
+						index++;
+					}
+					return index-Start;
+				}
+				else
+				{
+					entity = EntityStartChar;
+					return 1;
+				}
+			}
+
+			int NameStart = index;
+			while ((index < End) && (source[index] != ';'))
+			{
+				if (!Char.IsLetter(source, index))
+				{
+					break;
+				}
+
+				index++;
+			}
+
+			entity = HtmlDistiller.MapEntityName(source.Substring(NameStart, index-NameStart));
+			if (entity == '\0')
+			{
+				entity = HtmlDistiller.EntityStartChar;
+				return 1;
+			}
+
+			if (source[index] == ';')
+			{
+				index++;
+			}
+			return index-Start;
+		}
+
+		private static char MapEntityName(string name)
+		{
+			// http://www.w3.org/TR/REC-html40/sgml/entities.html
+			// http://www.bigbaer.com/sidebars/entities/
+			// NOTE: these names are case-sensitive
+			switch (name)
+			{
+				case "quot": { return (char)34; }
+				case "amp": { return (char)38; }
+				case "lt": { return (char)60; }
+				case "gt": { return (char)62; }
+				case "nbsp": { return (char)160; }
+				case "iexcl": { return (char)161; }
+				case "cent": { return (char)162; }
+				case "pound": { return (char)163; }
+				case "curren": { return (char)164; }
+				case "yen": { return (char)165; }
+				case "euro": { return (char)8364; }
+				case "brvbar": { return (char)166; }
+				case "sect": { return (char)167; }
+				case "uml": { return (char)168; }
+				case "copy": { return (char)169; }
+				case "ordf": { return (char)170; }
+				case "laquo": { return (char)171; }
+				case "not": { return (char)172; }
+				case "shy": { return (char)173; }
+				case "reg": { return (char)174; }
+				case "trade": { return (char)8482; }
+				case "macr": { return (char)175; }
+				case "deg": { return (char)176; }
+				case "plusmn": { return (char)177; }
+				case "sup2": { return (char)178; }
+				case "sup3": { return (char)179; }
+				case "acute": { return (char)180; }
+				case "micro": { return (char)181; }
+				case "para": { return (char)182; }
+				case "middot": { return (char)183; }
+				case "cedil": { return (char)184; }
+				case "sup1": { return (char)185; }
+				case "ordm": { return (char)186; }
+				case "raquo": { return (char)187; }
+				case "frac14": { return (char)188; }
+				case "frac12": { return (char)189; }
+				case "frac34": { return (char)190; }
+				case "iquest": { return (char)191; }
+				case "times": { return (char)215; }
+				case "divide": { return (char)247; }
+				case "Agrave": { return (char)192; }
+				case "Aacute": { return (char)193; }
+				case "Acirc": { return (char)194; }
+				case "Atilde": { return (char)195; }
+				case "Auml": { return (char)196; }
+				case "Aring": { return (char)197; }
+				case "AElig": { return (char)198; }
+				case "Ccedil": { return (char)199; }
+				case "Egrave": { return (char)200; }
+				case "Eacute": { return (char)201; }
+				case "Ecirc": { return (char)202; }
+				case "Euml": { return (char)203; }
+				case "Igrave": { return (char)204; }
+				case "Iacute": { return (char)205; }
+				case "Icirc": { return (char)206; }
+				case "Iuml": { return (char)207; }
+				case "ETH": { return (char)208; }
+				case "Ntilde": { return (char)209; }
+				case "Ograve": { return (char)210; }
+				case "Oacute": { return (char)211; }
+				case "Ocirc": { return (char)212; }
+				case "Otilde": { return (char)213; }
+				case "Ouml": { return (char)214; }
+				case "Oslash": { return (char)216; }
+				case "Ugrave": { return (char)217; }
+				case "Uacute": { return (char)218; }
+				case "Ucirc": { return (char)219; }
+				case "Uuml": { return (char)220; }
+				case "Yacute": { return (char)221; }
+				case "THORN": { return (char)222; }
+				case "szlig": { return (char)223; }
+				case "agrave": { return (char)224; }
+				case "aacute": { return (char)225; }
+				case "acirc": { return (char)226; }
+				case "atilde": { return (char)227; }
+				case "auml": { return (char)228; }
+				case "aring": { return (char)229; }
+				case "aelig": { return (char)230; }
+				case "ccedil": { return (char)231; }
+				case "egrave": { return (char)232; }
+				case "eacute": { return (char)233; }
+				case "ecirc": { return (char)234; }
+				case "euml": { return (char)235; }
+				case "igrave": { return (char)236; }
+				case "iacute": { return (char)237; }
+				case "icirc": { return (char)238; }
+				case "iuml": { return (char)239; }
+				case "eth": { return (char)240; }
+				case "ntilde": { return (char)241; }
+				case "ograve": { return (char)242; }
+				case "oacute": { return (char)243; }
+				case "ocirc": { return (char)244; }
+				case "otilde": { return (char)245; }
+				case "ouml": { return (char)246; }
+				case "oslash": { return (char)248; }
+				case "ugrave": { return (char)249; }
+				case "uacute": { return (char)250; }
+				case "ucirc": { return (char)251; }
+				case "uuml": { return (char)252; }
+				case "yacute": { return (char)253; }
+				case "thorn": { return (char)254; }
+				case "yuml": { return (char)255; }
+				case "OElig": { return (char)338; }
+				case "oelig": { return (char)339; }
+				case "Scaron": { return (char)352; }
+				case "scaron": { return (char)353; }
+				case "Yuml": { return (char)376; }
+				case "circ": { return (char)710; }
+				case "tilde": { return (char)732; }
+				case "ensp": { return (char)8194; }
+				case "emsp": { return (char)8195; }
+				case "thinsp": { return (char)8201; }
+				case "zwnj": { return (char)8204; }
+				case "zwj": { return (char)8205; }
+				case "lrm": { return (char)8206; }
+				case "rlm": { return (char)8207; }
+				case "ndash": { return (char)8211; }
+				case "mdash": { return (char)8212; }
+				case "lsquo": { return (char)8216; }
+				case "rsquo": { return (char)8217; }
+				case "sbquo": { return (char)8218; }
+				case "ldquo": { return (char)8220; }
+				case "rdquo": { return (char)8221; }
+				case "bdquo": { return (char)8222; }
+				case "dagger": { return (char)8224; }
+				case "Dagger": { return (char)8225; }
+				case "permil": { return (char)8240; }
+				case "lsaquo": { return (char)8249; }
+				case "rsaquo": { return (char)8250; }
+				case "fnof": { return (char)402; }
+				case "bull": { return (char)8226; }
+				case "hellip": { return (char)8230; }
+				case "prime": { return (char)8242; }
+				case "Prime": { return (char)8243; }
+				case "oline": { return (char)8254; }
+				case "frasl": { return (char)8260; }
+				case "weierp": { return (char)8472; }
+				case "image": { return (char)8465; }
+				case "real": { return (char)8476; }
+				case "alefsym": { return (char)8501; }
+				case "larr": { return (char)8592; }
+				case "uarr": { return (char)8593; }
+				case "rarr": { return (char)8594; }
+				case "darr": { return (char)8495; }
+				case "harr": { return (char)8596; }
+				case "crarr": { return (char)8629; }
+				case "lArr": { return (char)8656; }
+				case "uArr": { return (char)8657; }
+				case "rArr": { return (char)8658; }
+				case "dArr": { return (char)8659; }
+				case "hArr": { return (char)8660; }
+				case "forall": { return (char)8704; }
+				case "part": { return (char)8706; }
+				case "exist": { return (char)8707; }
+				case "empty": { return (char)8709; }
+				case "nabla": { return (char)8711; }
+				case "isin": { return (char)8712; }
+				case "notin": { return (char)8713; }
+				case "ni": { return (char)8715; }
+				case "prod": { return (char)8719; }
+				case "sum": { return (char)8721; }
+				case "minus": { return (char)8722; }
+				case "lowast": { return (char)8727; }
+				case "radic": { return (char)8730; }
+				case "prop": { return (char)8733; }
+				case "infin": { return (char)8734; }
+				case "ang": { return (char)8736; }
+				case "and": { return (char)8743; }
+				case "or": { return (char)8744; }
+				case "cap": { return (char)8745; }
+				case "cup": { return (char)8746; }
+				case "int": { return (char)8747; }
+				case "there4": { return (char)8756; }
+				case "sim": { return (char)8764; }
+				case "cong": { return (char)8773; }
+				case "asymp": { return (char)8776; }
+				case "ne": { return (char)8800; }
+				case "equiv": { return (char)8801; }
+				case "le": { return (char)8804; }
+				case "ge": { return (char)8805; }
+				case "sub": { return (char)8834; }
+				case "sup": { return (char)8835; }
+				case "nsub": { return (char)8836; }
+				case "sube": { return (char)8838; }
+				case "supe": { return (char)8839; }
+				case "oplus": { return (char)8853; }
+				case "otimes": { return (char)8855; }
+				case "perp": { return (char)8869; }
+				case "sdot": { return (char)8901; }
+				case "lceil": { return (char)8968; }
+				case "rceil": { return (char)8969; }
+				case "lfloor": { return (char)8970; }
+				case "rfloor": { return (char)8971; }
+				case "lang": { return (char)9001; }
+				case "rang": { return (char)9002; }
+				case "loz": { return (char)9674; }
+				case "spades": { return (char)9824; }
+				case "clubs": { return (char)9827; }
+				case "hearts": { return (char)9829; }
+				case "diams": { return (char)9830; }
+				case "Alpha": { return (char)913; }
+				case "Beta": { return (char)914; }
+				case "Gamma": { return (char)915; }
+				case "Delta": { return (char)916; }
+				case "Epsilon": { return (char)917; }
+				case "Zeta": { return (char)918; }
+				case "Eta": { return (char)919; }
+				case "Theta": { return (char)920; }
+				case "Iota": { return (char)921; }
+				case "Kappa": { return (char)922; }
+				case "Lambda": { return (char)923; }
+				case "Mu": { return (char)924; }
+				case "Nu": { return (char)925; }
+				case "Xi": { return (char)926; }
+				case "Omicron": { return (char)927; }
+				case "Pi": { return (char)928; }
+				case "Rho": { return (char)929; }
+				case "Sigma": { return (char)931; }
+				case "Tau": { return (char)932; }
+				case "Upsilon": { return (char)933; }
+				case "Phi": { return (char)934; }
+				case "Chi": { return (char)935; }
+				case "Psi": { return (char)936; }
+				case "Omega": { return (char)937; }
+				case "alpha": { return (char)945; }
+				case "beta": { return (char)946; }
+				case "gamma": { return (char)947; }
+				case "delta": { return (char)948; }
+				case "epsilon": { return (char)949; }
+				case "zeta": { return (char)950; }
+				case "eta": { return (char)951; }
+				case "theta": { return (char)952; }
+				case "iota": { return (char)953; }
+				case "kappa": { return (char)954; }
+				case "lambda": { return (char)955; }
+				case "mu": { return (char)956; }
+				case "nu": { return (char)957; }
+				case "xi": { return (char)958; }
+				case "omicron": { return (char)959; }
+				case "pi": { return (char)960; }
+				case "rho": { return (char)961; }
+				case "sigmaf": { return (char)962; }
+				case "sigma": { return (char)963; }
+				case "tau": { return (char)964; }
+				case "upsilon": { return (char)965; }
+				case "phi": { return (char)966; }
+				case "chi": { return (char)967; }
+				case "psi": { return (char)968; }
+				case "omega": { return (char)969; }
+				case "thetasym": { return (char)977; }
+				case "upsih": { return (char)978; }
+				case "piv": { return (char)982; }
+				default:
+				{
+					return '\0';
+				}
+			}
 		}
 
 		#endregion Methods

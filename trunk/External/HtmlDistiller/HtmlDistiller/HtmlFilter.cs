@@ -84,10 +84,145 @@ namespace BuildTools.HtmlDistiller.Filters
 	}
 
 	/// <summary>
+	/// Defines a literal filter which optionally breaks words at a certain length
+	/// </summary>
+	public abstract class WordBreakFilter : IHtmlFilter
+	{
+		#region Constants
+
+		private const string WordBreak = "<wbr />&shy;";
+		private readonly int MaxWordLength;
+
+		#endregion Constants
+
+		#region Init
+
+		/// <summary>
+		/// Ctor.
+		/// </summary>
+		public WordBreakFilter()
+			: this(0)
+		{
+		}
+
+		/// <summary>
+		/// Ctor.
+		/// </summary>
+		/// <param name="maxWordLength"></param>
+		public WordBreakFilter(int maxWordLength)
+		{
+			this.MaxWordLength = maxWordLength;
+		}
+
+		#endregion Init
+
+		#region IHtmlFilter Members
+
+		public abstract bool FilterTag(HtmlTag tag);
+
+		public abstract bool FilterAttribute(string tag, string attribute, ref string value);
+
+		public abstract bool FilterStyle(string tag, string style, ref string value);
+
+		/// <summary>
+		/// Optionally allows breaking of long words
+		/// </summary>
+		/// <param name="source"></param>
+		/// <param name="start"></param>
+		/// <param name="end"></param>
+		/// <param name="replacement"></param>
+		/// <returns></returns>
+		public virtual bool FilterLiteral(string source, int start, int end, out string replacement)
+		{
+			replacement = null;
+
+			if (this.MaxWordLength <= 0)
+			{
+				return false;
+			}
+
+			int lastOutput = start,
+				sinceSpace = 0;
+
+			for (int i=start; i<end; i++)
+			{
+				if (Char.IsWhiteSpace(source[i]))
+				{
+					sinceSpace = 0;
+					continue;
+				}
+
+				if (sinceSpace >= this.MaxWordLength)
+				{
+					// append all before break
+					replacement += source.Substring(lastOutput, i-lastOutput);
+					replacement += SafeHtmlFilter.WordBreak;
+					lastOutput = i;
+					sinceSpace = 0;
+				}
+				else
+				{
+					sinceSpace++;
+				}
+
+				if (source[i] == HtmlDistiller.EntityStartChar)
+				{
+					char entityChar;
+					int entityLength = HtmlDistiller.DecodeHtmlEntity(source, i, out entityChar);
+					if (entityLength > 1)
+					{
+						// compensating for the length of this entity
+						// so that doesn't break within the entity symbol
+						i += entityLength-1;
+					}
+				}
+			}
+
+			if (replacement != null)
+			{
+				if (lastOutput < end)
+				{
+					// append remaining string
+					replacement += source.Substring(lastOutput, end-lastOutput);
+				}
+
+				// a replacement was generated
+				return true;
+			}
+
+			// don't replace since didn't need to
+			return false;
+		}
+
+		#endregion IHtmlFilter Members
+	}
+
+	/// <summary>
 	/// HtmlFilter which strips all tags
 	/// </summary>
-	public class StripHtmlFilter : IHtmlFilter
+	public class StripHtmlFilter : WordBreakFilter
 	{
+		#region Init
+
+		/// <summary>
+		/// Ctor.
+		/// </summary>
+		public StripHtmlFilter()
+			: base(0)
+		{
+		}
+
+		/// <summary>
+		/// Ctor.
+		/// </summary>
+		/// <param name="maxWordLength"></param>
+		public StripHtmlFilter(int maxWordLength)
+			: base(maxWordLength)
+		{
+		}
+
+		#endregion Init
+
 		#region IHtmlFilter Members
 
 		/// <summary>
@@ -95,7 +230,7 @@ namespace BuildTools.HtmlDistiller.Filters
 		/// </summary>
 		/// <param name="tag"></param>
 		/// <returns></returns>
-		public virtual bool FilterTag(HtmlTag tag)
+		public override bool FilterTag(HtmlTag tag)
 		{
 			return false;
 		}
@@ -107,7 +242,7 @@ namespace BuildTools.HtmlDistiller.Filters
 		/// <param name="name"></param>
 		/// <param name="value"></param>
 		/// <returns></returns>
-		public virtual bool FilterAttribute(string tag, string attribute, ref string value)
+		public override bool FilterAttribute(string tag, string attribute, ref string value)
 		{
 			return false;
 		}
@@ -119,22 +254,8 @@ namespace BuildTools.HtmlDistiller.Filters
 		/// <param name="name"></param>
 		/// <param name="value"></param>
 		/// <returns></returns>
-		public virtual bool FilterStyle(string tag, string style, ref string value)
+		public override bool FilterStyle(string tag, string style, ref string value)
 		{
-			return false;
-		}
-
-		/// <summary>
-		/// 
-		/// </summary>
-		/// <param name="source"></param>
-		/// <param name="start"></param>
-		/// <param name="end"></param>
-		/// <param name="replacement"></param>
-		/// <returns></returns>
-		public virtual bool FilterLiteral(string source, int start, int end, out string replacement)
-		{
-			replacement = null;
 			return false;
 		}
 
@@ -144,8 +265,29 @@ namespace BuildTools.HtmlDistiller.Filters
 	/// <summary>
 	/// HtmlFilter which allows only simple tags/attributes
 	/// </summary>
-	public class StrictHtmlFilter : IHtmlFilter
+	public class StrictHtmlFilter : WordBreakFilter
 	{
+		#region Init
+
+		/// <summary>
+		/// Ctor.
+		/// </summary>
+		public StrictHtmlFilter()
+			: base(0)
+		{
+		}
+
+		/// <summary>
+		/// Ctor.
+		/// </summary>
+		/// <param name="maxWordLength"></param>
+		public StrictHtmlFilter(int maxWordLength)
+			: base(maxWordLength)
+		{
+		}
+
+		#endregion Init
+
 		#region IHtmlFilter Members
 
 		/// <summary>
@@ -153,7 +295,7 @@ namespace BuildTools.HtmlDistiller.Filters
 		/// </summary>
 		/// <param name="tag"></param>
 		/// <returns></returns>
-		public virtual bool FilterTag(HtmlTag tag)
+		public override bool FilterTag(HtmlTag tag)
 		{
 			// whitelist of safe tags
 			switch (tag.TagName)
@@ -184,7 +326,7 @@ namespace BuildTools.HtmlDistiller.Filters
 		/// <param name="attribute"></param>
 		/// <param name="value"></param>
 		/// <returns></returns>
-		public virtual bool FilterAttribute(string tag, string attribute, ref string value)
+		public override bool FilterAttribute(string tag, string attribute, ref string value)
 		{
 			attribute = attribute.ToLowerInvariant();
 
@@ -227,22 +369,8 @@ namespace BuildTools.HtmlDistiller.Filters
 		/// <param name="name"></param>
 		/// <param name="value"></param>
 		/// <returns></returns>
-		public virtual bool FilterStyle(string tag, string style, ref string value)
+		public override bool FilterStyle(string tag, string style, ref string value)
 		{
-			return false;
-		}
-
-		/// <summary>
-		/// 
-		/// </summary>
-		/// <param name="source"></param>
-		/// <param name="start"></param>
-		/// <param name="end"></param>
-		/// <param name="replacement"></param>
-		/// <returns></returns>
-		public virtual bool FilterLiteral(string source, int start, int end, out string replacement)
-		{
-			replacement = null;
 			return false;
 		}
 
@@ -252,21 +380,15 @@ namespace BuildTools.HtmlDistiller.Filters
 	/// <summary>
 	/// HtmlFilter which allows only safe tags/attributes/styles
 	/// </summary>
-	public class SafeHtmlFilter : IHtmlFilter
+	public class SafeHtmlFilter : WordBreakFilter
 	{
-		#region Constants
-
-		private const string WordBreak = "<wbr />&shy;";
-		private readonly int MaxWordLength;
-
-		#endregion Constants
-
 		#region Init
 
 		/// <summary>
 		/// Ctor.
 		/// </summary>
-		public SafeHtmlFilter() : this(0)
+		public SafeHtmlFilter()
+			: base(0)
 		{
 		}
 
@@ -275,8 +397,8 @@ namespace BuildTools.HtmlDistiller.Filters
 		/// </summary>
 		/// <param name="maxWordLength"></param>
 		public SafeHtmlFilter(int maxWordLength)
+			: base(maxWordLength)
 		{
-			this.MaxWordLength = maxWordLength;
 		}
 
 		#endregion Init
@@ -291,7 +413,7 @@ namespace BuildTools.HtmlDistiller.Filters
 		/// <remarks>
 		/// http://www.w3.org/TR/html401/index/elements.html
 		/// </remarks>
-		public virtual bool FilterTag(HtmlTag tag)
+		public override bool FilterTag(HtmlTag tag)
 		{
 			// whitelist of safe tags
 			switch (tag.TagName)
@@ -388,7 +510,7 @@ namespace BuildTools.HtmlDistiller.Filters
 		/// <remarks>
 		/// http://www.w3.org/TR/html401/index/attributes.html
 		/// </remarks>
-		public virtual bool FilterAttribute(string tag, string attribute, ref string value)
+		public override bool FilterAttribute(string tag, string attribute, ref string value)
 		{
 			attribute = attribute.ToLowerInvariant();
 			if (attribute == "id" || attribute.StartsWith("on"))
@@ -581,7 +703,7 @@ namespace BuildTools.HtmlDistiller.Filters
 		/// <remarks>
 		/// http://www.w3.org/TR/CSS21/propidx.html
 		/// </remarks>
-		public virtual bool FilterStyle(string tag, string style, ref string value)
+		public override bool FilterStyle(string tag, string style, ref string value)
 		{
 			if (value != null &&
 				value.IndexOf("expression", StringComparison.InvariantCultureIgnoreCase) >= 0)
@@ -603,65 +725,35 @@ namespace BuildTools.HtmlDistiller.Filters
 			return true;
 		}
 
-		/// <summary>
-		/// Optionally allows breaking of long words
-		/// </summary>
-		/// <param name="source"></param>
-		/// <param name="start"></param>
-		/// <param name="end"></param>
-		/// <param name="replacement"></param>
-		/// <returns></returns>
-		public virtual bool FilterLiteral(string source, int start, int end, out string replacement)
-		{
-			replacement = null;
-
-			if (this.MaxWordLength <= 0)
-			{
-				return false;
-			}
-
-			int lastOutput = start,
-				lastSpace = start;
-
-			for (int i=start; i<end; i++)
-			{
-				if (Char.IsWhiteSpace(source[i]))
-				{
-					lastSpace = i;
-				}
-				if (i-lastSpace > this.MaxWordLength)
-				{
-					// append all before break
-					replacement += source.Substring(lastOutput, i-lastOutput);
-					replacement += SafeHtmlFilter.WordBreak;
-					lastSpace = lastOutput = i;
-				}
-			}
-
-			if (replacement != null)
-			{
-				if (lastOutput < end)
-				{
-					// append remaining string
-					replacement += source.Substring(lastOutput, end-lastOutput);
-				}
-
-				// a replacement was generated
-				return true;
-			}
-
-			// don't replace since didn't need to
-			return false;
-		}
-
 		#endregion IHtmlFilter Members
 	}
 
 	/// <summary>
 	/// HtmlFilter which allows all tags/attributes/styles
 	/// </summary>
-	public class UnsafeHtmlFilter : IHtmlFilter
+	public class UnsafeHtmlFilter : WordBreakFilter
 	{
+		#region Init
+
+		/// <summary>
+		/// Ctor.
+		/// </summary>
+		public UnsafeHtmlFilter()
+			: base(0)
+		{
+		}
+
+		/// <summary>
+		/// Ctor.
+		/// </summary>
+		/// <param name="maxWordLength"></param>
+		public UnsafeHtmlFilter(int maxWordLength)
+			: base(maxWordLength)
+		{
+		}
+
+		#endregion Init
+
 		#region IHtmlFilter Members
 
 		/// <summary>
@@ -669,7 +761,7 @@ namespace BuildTools.HtmlDistiller.Filters
 		/// </summary>
 		/// <param name="tag"></param>
 		/// <returns></returns>
-		public virtual bool FilterTag(HtmlTag tag)
+		public override bool FilterTag(HtmlTag tag)
 		{
 			return true;
 		}
@@ -681,7 +773,7 @@ namespace BuildTools.HtmlDistiller.Filters
 		/// <param name="name"></param>
 		/// <param name="value"></param>
 		/// <returns></returns>
-		public virtual bool FilterAttribute(string tag, string attribute, ref string value)
+		public override bool FilterAttribute(string tag, string attribute, ref string value)
 		{
 			return true;
 		}
@@ -693,23 +785,9 @@ namespace BuildTools.HtmlDistiller.Filters
 		/// <param name="name"></param>
 		/// <param name="value"></param>
 		/// <returns></returns>
-		public virtual bool FilterStyle(string tag, string style, ref string value)
+		public override bool FilterStyle(string tag, string style, ref string value)
 		{
 			return true;
-		}
-
-		/// <summary>
-		/// 
-		/// </summary>
-		/// <param name="source"></param>
-		/// <param name="start"></param>
-		/// <param name="end"></param>
-		/// <param name="replacement"></param>
-		/// <returns></returns>
-		public virtual bool FilterLiteral(string source, int start, int end, out string replacement)
-		{
-			replacement = null;
-			return false;
 		}
 
 		#endregion IHtmlFilter Members
