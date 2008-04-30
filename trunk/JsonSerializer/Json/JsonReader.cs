@@ -83,6 +83,7 @@ namespace JsonFx.Json
 		private const string ErrorExpectedPropertyNameDelim = "Expected JSON object property name delimiter.";
 		private const string ErrorNullValueType = "{0} does not accept null as a value";
 		private const string ErrorDefaultCtor = "Only objects with default constructors can be deserialized.";
+		private const string ErrorCannotInstantiate = "Interfaces, Abstract classes, and unsupported ValueTypes cannot be deserialized.";
 		private const string ErrorGenericIDictionary = "Types which implement Generic IDictionary<TKey, TValue> also need to implement IDictionary to be deserialized.";
 
 		#endregion Constants
@@ -805,13 +806,17 @@ namespace JsonFx.Json
 
 		private Object InstantiateObject(Type objectType, ref Dictionary<string, MemberInfo> memberMap)
 		{
-			Object result;
+			if (objectType.IsInterface || objectType.IsAbstract || objectType.IsValueType)
+			{
+				throw new JsonDeserializationException(JsonReader.ErrorCannotInstantiate, this.index);
+			}
+
 			ConstructorInfo ctor = objectType.GetConstructor(Type.EmptyTypes);
 			if (ctor == null)
 			{
 				throw new JsonDeserializationException(JsonReader.ErrorDefaultCtor, this.index);
 			}
-			result = ctor.Invoke(null);
+			Object result = ctor.Invoke(null);
 
 			// don't incurr the cost of member map if a dictionary
 			if (!typeof(IDictionary).IsAssignableFrom(objectType))
