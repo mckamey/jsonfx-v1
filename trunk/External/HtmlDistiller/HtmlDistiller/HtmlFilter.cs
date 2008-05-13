@@ -532,6 +532,29 @@ namespace BuildTools.HtmlDistiller.Filters
 					switch (attribute)
 					{
 						case "href":
+						{
+							if (String.IsNullOrEmpty(value))
+							{
+								return false;
+							}
+
+							value = value.Trim();
+							string protocol = value.Substring(0, value.IndexOf(':')+1);
+							switch (protocol.ToLowerInvariant())
+							{
+								case "http:":
+								case "https:":
+								case "mailto:":
+								case "":
+								{
+									return true;
+								}
+								default:
+								{
+									return false;
+								}
+							}
+						}
 						case "target":
 						{
 							return true;
