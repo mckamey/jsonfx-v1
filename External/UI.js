@@ -542,20 +542,23 @@ JsonFx.UI.Bindings = function() {
 		}
 	};
 
-/* NOTE: using JsonFx.UI.attachHandler makes it hard to control handler order */
-	// wire up binding
-	if ("function" === typeof window.onload) {
-		window.onload = JsonFx.UI.combineHandlers(b.bindAll, window.onload);
-	} else {
-		window.onload = b.bindAll;
-	}
+	window.setTimeout(function() {
+			/* NOTE: using JsonFx.UI.attachHandler makes it hard to control handler order */
 
-	// wire up unbinding
-	if ("function" === typeof window.onunload) {
-		window.onunload = JsonFx.UI.combineHandlers(b.unbindAll, window.onunload);
-	} else {
-		window.onunload = b.unbindAll;
-	}
+			// wire up binding
+			if ("function" === typeof window.onload) {
+				window.onload = JsonFx.UI.combineHandlers(b.bindAll, window.onload);
+			} else {
+				window.onload = b.bindAll;
+			}
+
+			// wire up unbinding
+			if ("function" === typeof window.onunload) {
+				window.onunload = JsonFx.UI.combineHandlers(b.unbindAll, window.onunload);
+			} else {
+				window.onunload = b.unbindAll;
+			}
+		}, 0);
 };
 
 // instantiate only one, destroying the constructor
