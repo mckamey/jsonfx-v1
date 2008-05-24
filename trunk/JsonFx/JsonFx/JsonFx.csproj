@@ -89,7 +89,6 @@
     <Compile Include="JsonRpc\JsonServiceException.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="JsonRpc\Proxy\JsonServiceProxy.cs" />
-    <Compile Include="UI\HistoryManager.cs" />
     <Compile Include="UI\HtmlScriptControl.cs" />
     <Compile Include="UI\JsonFxBrowserCapabilities.cs" />
     <Compile Include="UI\JsonML\IJsonControl.cs" />
@@ -131,6 +130,7 @@
   <ItemGroup>
     <None Include="App_Browsers\Fixes.browser" />
     <None Include="Build.bat" />
+    <None Include="JsonFx.pfx" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Scripts\Compacted\JsonFx.js" />
@@ -164,6 +164,10 @@
     <ProjectReference Include="..\JsonFx.Json\JsonFx.Json.csproj">
       <Project>{ABA23F14-7E47-43FE-A3E7-1FF97840C3FB}</Project>
       <Name>JsonFx.Json</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\JsonFx.UI.History\JsonFx.UI.History.csproj">
+      <Project>{241E7122-64CA-43B8-B3F0-5BC776FC37BC}</Project>
+      <Name>JsonFx.UI.History</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
