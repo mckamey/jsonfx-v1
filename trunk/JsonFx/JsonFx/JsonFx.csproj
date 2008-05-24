@@ -155,8 +155,10 @@
     <Content Include="Dotfuscator_Proj.xml" />
     <Content Include="Scripts\Compact.txt" />
     <EmbeddedResource Include="Scripts\Compacted\Controls.js" />
+    <Content Include="Scripts\Compacted\JsonFx.History.js" />
     <Content Include="Scripts\Concat.txt" />
     <Content Include="Scripts\json2.js" />
+    <Content Include="Scripts\JsonFx.History.js" />
     <Content Include="Scripts\JsonML2.js" />
     <EmbeddedResource Include="Scripts\Controls.js" />
   </ItemGroup>
