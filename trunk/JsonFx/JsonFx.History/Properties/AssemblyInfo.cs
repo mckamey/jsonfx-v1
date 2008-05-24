@@ -32,7 +32,7 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
-[assembly: AssemblyTitle("JsonFx.UI.History")]
+[assembly: AssemblyTitle("JsonFx.History")]
 [assembly: AssemblyDescription("JsonFx.NET Ajax History")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
