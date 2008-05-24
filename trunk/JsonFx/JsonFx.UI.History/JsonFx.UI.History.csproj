@@ -48,6 +48,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="License.txt" />
     <Content Include="Scripts\json2.js" />
     <Content Include="Scripts\JsonFx.History.js" />
   </ItemGroup>
