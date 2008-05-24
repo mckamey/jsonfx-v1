@@ -49,7 +49,7 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Scripts\json2.js" />
-    <Content Include="Scripts\JsonFx.Hisory.js" />
+    <Content Include="Scripts\JsonFx.History.js" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
