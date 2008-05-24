@@ -149,13 +149,6 @@
 
 /*global JSON */
 
-/*members "", "\b", "\t", "\n", "\f", "\r", "\"", JSON, "\\", call,
-    charCodeAt, getUTCDate, getUTCFullYear, getUTCHours, getUTCMinutes,
-    getUTCMonth, getUTCSeconds, hasOwnProperty, join, lastIndex, length,
-    parse, propertyIsEnumerable, prototype, push, replace, slice, stringify,
-    test, toJSON, toString
-*/
-
 if (!this.JSON) {
 
 // Create a JSON object only if one does not already exist. We create the
