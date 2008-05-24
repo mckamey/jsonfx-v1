@@ -268,25 +268,6 @@ if ("undefined" === typeof JsonFx.UI) {
 	}
 };
 
-/*element*/ JsonFx.UI.getIFrameDocument = function(/*element*/ elem) {
-	if (!elem) {
-		return null;
-	}
-
-	if ("undefined" !== typeof elem.contentDocument) {
-		// W3C
-		return elem.contentDocument;
-	} else if ("undefined" !== typeof elem.contentWindow) {
-		// Microsoft
-		return elem.contentWindow.document;
-	} else if ("undefined" !== typeof elem.document) {
-		// deprecated
-		return elem.document;
-	}
-	// not available
-	return elem;
-};
-
 /*string*/ JsonFx.UI.toHtmlColor = function(/*int*/ r, /*int*/ g, /*int*/ b) {
 	if (!isFinite(r) || r<0x00 || r>0xFF ||
 		!isFinite(g) || g<0x00 || g>0xFF ||
@@ -563,58 +544,6 @@ JsonFx.UI.Bindings = function() {
 
 // instantiate only one, destroying the constructor
 JsonFx.UI.Bindings = new JsonFx.UI.Bindings();
-
-/*-----------*\
-	History
-\*-----------*/
-
-/* singleton JsonFx.UI.History */
-JsonFx.UI.History = {
-
-	/*elem*/ h: null,
-	/*function(object)*/ onchange: null,
-
-	/*void*/ add: function(/*object*/ info) {
-		if (!JsonFx.UI.History.h) {
-			// doesn't support history or no binding
-			if ("function" === typeof JsonFx.UI.History.onchange) {
-				JsonFx.UI.History.onchange(info);
-			}
-			return;
-		}
-		var h = JsonFx.UI.getIFrameDocument(JsonFx.UI.History.h);
-		if (h && h.location) {
-			info = '?'+encodeURIComponent(info.toJSONString());
-			h.location.href = h.location.href.replace(/[?].*$/, info);
-		} else {
-			// Opera 8 doesn't trigger onload so no history
-			JsonFx.UI.History.h = null;
-		}
-	},
-
-	/*void*/ changed: function(/*element*/ elem) {
-		if (!JsonFx.UI.History.h) {
-			// first time through is just for binding
-			JsonFx.UI.History.h = elem;
-			return;
-		}
-		var h, info;
-		if ("function" === typeof JsonFx.UI.History.onchange) {
-			h = JsonFx.UI.getIFrameDocument(elem);
-			if (h) {
-				info = h.location.search;
-				if (info) {
-					info = info.substring(info.indexOf('?')+1);
-					info = decodeURIComponent(info);
-					if (info) {
-						info = info.parseJSON();
-					}
-					JsonFx.UI.History.onchange(info);
-				}
-			}
-		}
-	}
-};
 
 /*------------------*\
 	JsonML Methods

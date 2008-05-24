@@ -2,6 +2,7 @@ Core.js
 UA.js
 IO.js
 UI.js
+JsonFx.History.js
 Controls.js
 ServiceTest.js
 Utility.js

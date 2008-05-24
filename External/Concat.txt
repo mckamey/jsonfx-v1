@@ -1,7 +1,9 @@
 Core.js
 json.js
+json2.js
 JsonML.js
 UA.js
 IO.js
 UI.js
+JsonFx.History.js
 Controls.js
