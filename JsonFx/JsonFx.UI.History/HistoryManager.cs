@@ -110,7 +110,7 @@ namespace JsonFx.UI
 
 			writer.AddAttribute(HtmlTextWriterAttribute.Src, this.ResolveUrl(url));
 
-			writer.AddAttribute("onload", "JsonFx.UI.History.changed(this)");
+			writer.AddAttribute("onload", "JsonFx.History.changed(this)");
 
 			if (!this.IsDebugMode)
 			{
