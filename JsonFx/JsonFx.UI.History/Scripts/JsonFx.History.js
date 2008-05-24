@@ -3,7 +3,7 @@
 	JsonFx.History.js
 	Copyright (c)2006-2008 Stephen M. McKamey
 	Created: 2006-11-11-1759
-	Modified: 2007-06-03-1433
+	Modified: 2008-05-21-2244
 \*---------------------------------------------------------*/
 
 /* namespace JsonFx */
