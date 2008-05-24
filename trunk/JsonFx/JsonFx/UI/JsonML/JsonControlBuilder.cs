@@ -6,7 +6,7 @@ using System.Text.RegularExpressions;
 using BuildTools.HtmlDistiller;
 using BuildTools.HtmlDistiller.Filters;
 
-namespace JsonFx.UI
+namespace JsonFx.UI.JsonML
 {
 	public class JsonControlBuilder : IDisposable, IHtmlFilter
 	{

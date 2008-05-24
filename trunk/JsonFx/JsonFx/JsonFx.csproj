@@ -91,14 +91,14 @@
     <Compile Include="JsonRpc\Proxy\JsonServiceProxy.cs" />
     <Compile Include="UI\HistoryManager.cs" />
     <Compile Include="UI\HtmlScriptControl.cs" />
-    <Compile Include="UI\IJsonControl.cs" />
-    <Compile Include="UI\JsonControl.cs" />
-    <Compile Include="UI\JsonControlBuilder.cs" />
-    <Compile Include="UI\JsonControlCollection.cs" />
     <Compile Include="UI\JsonFxBrowserCapabilities.cs" />
-    <Compile Include="UI\JsonMLTextWriter.cs" />
-    <Compile Include="UI\JsonLiteral.cs" />
-    <Compile Include="UI\NullTextWriter.cs" />
+    <Compile Include="UI\JsonML\IJsonControl.cs" />
+    <Compile Include="UI\JsonML\JsonControl.cs" />
+    <Compile Include="UI\JsonML\JsonControlBuilder.cs" />
+    <Compile Include="UI\JsonML\JsonControlCollection.cs" />
+    <Compile Include="UI\JsonML\JsonLiteral.cs" />
+    <Compile Include="UI\JsonML\JsonMLTextWriter.cs" />
+    <Compile Include="UI\JsonML\NullTextWriter.cs" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Scripts\Compacted\IO.js" />

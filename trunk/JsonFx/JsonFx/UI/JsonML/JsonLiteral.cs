@@ -1,8 +1,8 @@
 using System;
 
-namespace JsonFx.UI
+namespace JsonFx.UI.JsonML
 {
-	public class JsonLiteral : JsonFx.UI.IJsonControl, JsonFx.Json.IJsonSerializable
+	public class JsonLiteral : JsonFx.UI.JsonML.IJsonControl, JsonFx.Json.IJsonSerializable
 	{
 		#region Fields
 
