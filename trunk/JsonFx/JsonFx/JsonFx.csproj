@@ -13,8 +13,9 @@
     <SccLocalPath>SAK</SccLocalPath>
     <SccAuxPath>SAK</SccAuxPath>
     <SccProvider>SAK</SccProvider>
-    <SignAssembly>true</SignAssembly>
-    <AssemblyOriginatorKeyFile>JsonFx.pfx</AssemblyOriginatorKeyFile>
+    <SignAssembly>false</SignAssembly>
+    <AssemblyOriginatorKeyFile>
+    </AssemblyOriginatorKeyFile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -60,14 +61,6 @@
     <Compile Include="Handlers\ResourceHandlerInfo.cs" />
     <Compile Include="Handlers\ResourceHandler.cs" />
     <Compile Include="About.cs" />
-    <Compile Include="Json\IJsonSerializable.cs" />
-    <Compile Include="Json\JsonIgnoreAttribute.cs" />
-    <Compile Include="Json\JsonNameAttribute.cs" />
-    <Compile Include="Json\JsonReader.cs" />
-    <Compile Include="Json\JsonSerializationException.cs" />
-    <Compile Include="Json\JsonSpecifiedPropertyAttribute.cs" />
-    <Compile Include="Json\JsonToken.cs" />
-    <Compile Include="Json\JsonWriter.cs" />
     <Compile Include="Properties\AssemblyVersion.cs" />
     <Compile Include="Compilation\ScriptCompactorCodeProvider.cs">
       <SubType>Component</SubType>
@@ -138,7 +131,6 @@
   <ItemGroup>
     <None Include="App_Browsers\Fixes.browser" />
     <None Include="Build.bat" />
-    <None Include="JsonFx.pfx" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Scripts\Compacted\JsonFx.js" />
@@ -167,6 +159,12 @@
     <Content Include="Scripts\json2.js" />
     <Content Include="Scripts\JsonML2.js" />
     <EmbeddedResource Include="Scripts\Controls.js" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\JsonFx.Json\JsonFx.Json.csproj">
+      <Project>{ABA23F14-7E47-43FE-A3E7-1FF97840C3FB}</Project>
+      <Name>JsonFx.Json</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
