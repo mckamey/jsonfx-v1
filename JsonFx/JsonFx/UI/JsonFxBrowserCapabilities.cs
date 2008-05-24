@@ -3,6 +3,7 @@ using System.Collections;
 using System.Web;
 
 using JsonFx.Handlers;
+using JsonFx.UI.JsonML;
 
 namespace JsonFx.UI
 {
