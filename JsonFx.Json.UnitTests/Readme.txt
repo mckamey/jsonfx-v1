@@ -1,4 +1,4 @@
-JsonFx.NET - BuildTools
+JsonFx.NET - JSON Serializer
 
 The JsonFx.NET JSON parser/serializer functions like XML Serialization in .NET
 
@@ -14,7 +14,10 @@ common .NET Types directly as JSON primitives
 Serializes and deserializes strongly-typed custom classes (similarly to XML
 Serialization in .NET Framework)
 
-Ignores block and line comments when deserializing
+Follows Postel's Law ("Be conservative in what you do; be liberal in what you accept from others.")
+by accepting handling many non-JSON JavaScript concepts:
+	- Common literals such as "Infinity", "NaN", and "undefined"
+	- Ignores block and line comments when deserializing
 
 Optional ability to control serialization via attributes/interfaces:
 
