@@ -64,8 +64,7 @@ JsonFx.History = {
 		}
 		var h = JsonFx.UI.getIFrameDocument(JsonFx.History.h);
 		if (h && h.location) {
-			info = '?'+encodeURIComponent(JSON.stringify(info));
-			h.location.href = h.location.href.replace(/[?].*$/, info);
+			h.location.search = '?'+encodeURIComponent(JSON.stringify(info));
 		} else {
 			// Opera 8 doesn't trigger onload so no history
 			JsonFx.History.h = null;
