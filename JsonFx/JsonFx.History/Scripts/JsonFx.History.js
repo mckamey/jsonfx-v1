@@ -54,7 +54,7 @@ JsonFx.History = {
 	/*DOM*/ h: null,
 	/*function(object)*/ onchange: null,
 
-	/*void*/ add: function(/*object*/ info) {
+	/*void*/ push: function(/*object*/ info) {
 		if (!JsonFx.History.h) {
 			// doesn't support history or no binding
 			if ("function" === typeof JsonFx.History.onchange) {
