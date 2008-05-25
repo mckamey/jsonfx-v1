@@ -49,6 +49,7 @@ namespace JsonFx.Json
 		internal const string LiteralFalse = "false";
 		internal const string LiteralTrue = "true";
 		internal const string LiteralNull = "null";
+		internal const string LiteralUndefined = "undefined";
 		internal const string LiteralNotANumber = "NaN";
 		internal const string LiteralPositiveInfinity = "Infinity";
 		internal const string LiteralNegativeInfinity = "-Infinity";
@@ -252,6 +253,11 @@ namespace JsonFx.Json
 				{
 					this.index += JsonReader.LiteralNegativeInfinity.Length;
 					return Double.NegativeInfinity;
+				}
+				case JsonToken.Undefined:
+				{
+					this.index += JsonReader.LiteralUndefined.Length;
+					return null;
 				}
 				case JsonToken.End:
 				default:
@@ -1364,6 +1370,12 @@ namespace JsonFx.Json
 			if (this.MatchLiteral(JsonReader.LiteralNegativeInfinity))
 			{
 				return JsonToken.NegativeInfinity;
+			}
+
+			// "undefined" literal
+			if (this.MatchLiteral(JsonReader.LiteralUndefined))
+			{
+				return JsonToken.Undefined;
 			}
 
 			throw new JsonDeserializationException(JsonReader.ErrorUnrecognizedToken, this.index);

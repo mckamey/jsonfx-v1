@@ -38,6 +38,7 @@ namespace JsonFx.Json
 	internal enum JsonToken
 	{
 		End,
+		Undefined,
 		Null,
 		False,
 		True,
