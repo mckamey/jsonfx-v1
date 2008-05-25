@@ -2,7 +2,7 @@
 	Fixes.browser
 
 	Created: 2006-05-17-1155
-	Modified: 2007-04-24-0813
+	Modified: 2007-11-25-1537
 
 	Fixes common Browsers incorrectly detected by ASP.NET 2.0.50727
 
@@ -42,7 +42,7 @@
 		</identification>
 
 		<capture>
-			<userAgent match="^W3C_Validator/(?'version'\d+(\.\d+)*)" />
+			<userAgent match="^W3C_Validator/(?'version'(?'major'\d+)\.(?'minor'\d+)(\.\d+)*)" />
 		</capture>
 
 		<capabilities>
@@ -61,22 +61,23 @@
 		</capabilities>
 	</browser>
 
-	<!--Gecko --> 
-	<browser refID="Gecko"> 
-		<capture> 
-			<userAgent match="\brv\:(?'rv'\d+(\.\d+)*)" /> 
-			<header match="^(?'accept'.*)$" name="Accept" /> 
-		</capture> 
-		<capabilities> 
-			<capability name="accept" value="${accept}" /> 
-			<capability name="renderEngine" value="gecko/${rv}" /> 
-		</capabilities> 
+	<!-- Gecko -->
+	<browser refID="Gecko">
+		<capture>
+			<userAgent match="\brv\:(?'rv'\d+(\.\d+)+)" />
+			<header match="^(?'accept'.*)$" name="Accept" />
+		</capture>
+		<capabilities>
+			<capability name="accept" value="${accept}" />
+			<capability name="renderengine" value="Gecko/${rv}" />
+		</capabilities>
 	</browser>
 
 	<!-- Safari -->
 	<browser refID="Safari">
 		<capture>
-			<userAgent match="Safari/(?'version'(?'major'\d+)(\.\d+)*)" />
+			<userAgent match="\bSafari/(?'version'(?'major'\d+)(\.(?'minor'\d+))?(\.\d+)*)" />
+			<userAgent match="\bAppleWebKit/(?'webkit'\d+(\.\d+)+)" />
 			<header match="^(?'accept'.*)$" name="Accept" />
 		</capture>
 
@@ -87,6 +88,18 @@
 			<capability name="version" value="${version}" />
 			<capability name="majorversion" value="${major}" />
 			<capability name="minorversion" value="${minor}" />
+			<capability name="renderengine" value="AppleWebKit/${webkit}" />
+			<capability name="applewebkit" value="AppleWebKit/${webkit}" />
+		</capabilities>
+	</browser>
+
+	<!-- Safari iPhone -->
+	<browser id="iPhoneSafari" parentID="Safari">
+		<identification>
+			<userAgent match="\bMobile/(?'iphone'\B+)" />
+		</identification>
+		<capabilities>
+			<capability name="iphone" value="${iphone}" />
 		</capabilities>
 	</browser>
 
