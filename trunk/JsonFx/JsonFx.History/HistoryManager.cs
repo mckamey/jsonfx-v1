@@ -135,7 +135,7 @@ namespace JsonFx.UI
 				{
 					jsonWriter.Write(this.StartState);
 				}
-				url += "?"+HttpUtility.UrlPathEncode(builder.ToString());
+				url += "?"+HttpUtility.UrlEncode(builder.ToString());
 			}
 
 			writer.AddAttribute(HtmlTextWriterAttribute.Src, this.ResolveUrl(url));
