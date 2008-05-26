@@ -1,13 +1,18 @@
 /*extern JsonFx, JSON, JsonML */
 
+// dependency checks
+if ("undefined" === typeof JSON) {
+	throw new Error("JsonFx.ServiceTest requires json2.js");
+}
+if ("undefined" === typeof JsonML) {
+	throw new Error("JsonFx.ServiceTest requires JsonML2.js");
+}
+
+/* ----------------------------------------------------*/
+
 /* namespace JsonFx.IO */
 if ("undefined" === typeof window.JsonFx) {
 	JsonFx = {};
-}
-
-// dependency checks
-if ("undefined" === typeof JSON) {
-	throw new Error("JsonFx.IO requires json2.js");
 }
 
 /* namespace JsonFx.ServiceTest */
