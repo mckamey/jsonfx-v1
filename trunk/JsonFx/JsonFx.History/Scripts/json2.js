@@ -1,6 +1,6 @@
 /*
     http://www.JSON.org/json2.js
-    2008-05-20
+    2008-05-25
 
     Public Domain.
 
@@ -10,7 +10,6 @@
 
     This file creates a global JSON object containing two methods: stringify
     and parse.
-
 
         JSON.stringify(value, replacer, space)
             value       any JavaScript value, usually an object or array.
@@ -141,8 +140,8 @@
     This code should be minified before deployment.
     See http://javascript.crockford.com/jsmin.html
 
-    USE YOUR OWN COPY. IT IS EXTREMELY UNWISE TO LOAD THIRD PARTY
-    CODE INTO YOUR PAGES.
+    USE YOUR OWN COPY. IT IS EXTREMELY UNWISE TO LOAD CODE FROM SERVERS YOU DO
+    NOT CONTROL.
 */
 
 /*jslint evil: true */
@@ -152,7 +151,7 @@
 if (!this.JSON) {
 
 // Create a JSON object only if one does not already exist. We create the
-// object in a closure to avoid global variables.
+// object in a closure to avoid creating global variables.
 
     JSON = function () {
 
@@ -328,15 +327,12 @@ if (!this.JSON) {
 // and wrap them in braces.
 
                 v = partial.length === 0 ? '{}' :
-                    gap ? '{\n' + gap +
-                            partial.join(',\n' + gap) + '\n' +
-                            mind + '}' :
-                          '{' + partial.join(',') + '}';
+                    gap ? '{\n' + gap + partial.join(',\n' + gap) + '\n' +
+                            mind + '}' : '{' + partial.join(',') + '}';
                 gap = mind;
                 return v;
             }
         }
-
 
 // Return the JSON object containing the stringify and parse methods.
 
@@ -425,21 +421,21 @@ if (!this.JSON) {
                     });
                 }
 
-// In the second stage, we run the text against
-// regular expressions that look for non-JSON patterns. We are especially
-// concerned with '()' and 'new' because they can cause invocation, and '='
-// because it can cause mutation. But just to be safe, we want to reject all
-// unexpected forms.
+// In the second stage, we run the text against regular expressions that look
+// for non-JSON patterns. We are especially concerned with '()' and 'new'
+// because they can cause invocation, and '=' because it can cause mutation.
+// But just to be safe, we want to reject all unexpected forms.
 
 // We split the second stage into 4 regexp operations in order to work around
 // crippling inefficiencies in IE's and Safari's regexp engines. First we
-// replace all backslash pairs with '@' (a non-JSON character). Second, we
+// replace the JSON backslash pairs with '@' (a non-JSON character). Second, we
 // replace all simple value tokens with ']' characters. Third, we delete all
 // open brackets that follow a colon or comma or that begin the text. Finally,
 // we look to see that the remaining characters are only whitespace or ']' or
 // ',' or ':' or '{' or '}'. If that is so, then the text is safe for eval.
 
-                if (/^[\],:{}\s]*$/.test(text.replace(/\\["\\\/bfnrtu]/g, '@').
+                if (/^[\],:{}\s]*$/.
+test(text.replace(/\\(?:["\\\/bfnrt]|u[0-9a-fA-F]{4})/g, '@').
 replace(/"[^"\\\n\r]*"|true|false|null|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?/g, ']').
 replace(/(?:^|:|,)(?:\s*\[)+/g, ''))) {
 
