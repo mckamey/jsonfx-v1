@@ -1,7 +1,6 @@
 Core.js
-json.js
 json2.js
-JsonML.js
+JsonML2.js
 UA.js
 IO.js
 UI.js

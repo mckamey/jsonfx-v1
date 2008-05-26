@@ -1,19 +1,22 @@
-/*extern JsonFx */
+/*extern JsonFx, JSON */
+
 /* namespace JsonFx.IO */
 if ("undefined" === typeof window.JsonFx) {
 	JsonFx = {};
 }
-if ("undefined" === typeof JsonFx.IO) {
-	JsonFx.IO = {};
+
+// dependency checks
+if ("undefined" === typeof JSON) {
+	throw new Error("JsonFx.IO requires json2.js");
 }
 
-/* namespace JsonFx.IO.ServiceTest */
-JsonFx.IO.ServiceTest = {};
+/* namespace JsonFx.ServiceTest */
+JsonFx.ServiceTest = {};
 
 /*-------------------------------------------------------------------*/
 
 /* context object */
-JsonFx.IO.ServiceTest.Context = function(/*string*/ request, /*element*/ target) {
+JsonFx.ServiceTest.Context = function(/*string*/ request, /*element*/ target) {
 	var cx = this;
 	var start = new Date().valueOf();
 	cx.target = target;
@@ -25,8 +28,8 @@ JsonFx.IO.ServiceTest.Context = function(/*string*/ request, /*element*/ target)
 	};
 };
 
-/*int*/ JsonFx.IO.ServiceTest.dumpDataID = 0;
-/*JsonML*/ JsonFx.IO.ServiceTest.dumpData = function(/*string*/ name, /*json*/ val) {
+/*int*/ JsonFx.ServiceTest.dumpDataID = 0;
+/*JsonML*/ JsonFx.ServiceTest.dumpData = function(/*string*/ name, /*json*/ val) {
 	var c = ["span"];
 	var type = typeof val;
 
@@ -40,10 +43,10 @@ JsonFx.IO.ServiceTest.Context = function(/*string*/ request, /*element*/ target)
 
 	var ul;
 	if ("object" === type && val) {
-		ul = ["ul", {id:"JsonFx_UI_Dump_"+(JsonFx.IO.ServiceTest.dumpDataID++),"class":"jsonfx-object"}];
+		ul = ["ul", {id:"JsonFx_UI_Dump_"+(JsonFx.ServiceTest.dumpDataID++),"class":"jsonfx-object"}];
 		for (var pn in val) {
 			if (val.hasOwnProperty(pn)) {
-				ul.push(["li", JsonFx.IO.ServiceTest.dumpData(pn, val[pn])]);
+				ul.push(["li", JsonFx.ServiceTest.dumpData(pn, val[pn])]);
 			}
 		}
 
@@ -59,9 +62,9 @@ JsonFx.IO.ServiceTest.Context = function(/*string*/ request, /*element*/ target)
 };
 
 /* display result callback */
-/*void*/ JsonFx.IO.ServiceTest.cb_displayResult = function(/*object*/ result, /*JsonFx.IO.ServiceTest.Context*/ context, /*Error*/ error) {
+/*void*/ JsonFx.ServiceTest.cb_displayResult = function(/*object*/ result, /*JsonFx.ServiceTest.Context*/ context, /*Error*/ error) {
 	var target = null;
-	if (context instanceof JsonFx.IO.ServiceTest.Context) {
+	if (context instanceof JsonFx.ServiceTest.Context) {
 		target = context.target;
  		delete context.target;
 		context.setResponseTime();
@@ -81,14 +84,14 @@ JsonFx.IO.ServiceTest.Context = function(/*string*/ request, /*element*/ target)
 	var data = error ? error : result;
 	JsonFx.UI.displayJsonML(
 		["div",
-			JsonFx.IO.ServiceTest.dumpData("Call Context", context),
+			JsonFx.ServiceTest.dumpData("Call Context", context),
 			["hr"],
-			JsonFx.IO.ServiceTest.dumpData(label, data)],
+			JsonFx.ServiceTest.dumpData(label, data)],
 			target);
 };
 
 /* creates actual method call */		
-/*function*/ JsonFx.IO.ServiceTest.createServiceCall = function(/*object*/ service, /*object*/ proc, /*element*/ target) {
+/*function*/ JsonFx.ServiceTest.createServiceCall = function(/*object*/ service, /*object*/ proc, /*element*/ target) {
 	return function() {
 		var call = service.proxyName+"."+proc.name+"(";
 		var args = [], i;
@@ -101,10 +104,10 @@ JsonFx.IO.ServiceTest.Context = function(/*string*/ request, /*element*/ target)
 				if (args[i] !== null) {
 					if (proc.params[i].type !== "str") {
 						try {
-							args[i] = args[i].parseJSON();
+							args[i] = JSON.parse(args[i]);
 						} catch (ex) {}
 					}
-					call += args[i].toJSONString();
+					call += JSON.stringify(args[i]);
 				} else {
 					call += "null";
 				}
@@ -112,21 +115,21 @@ JsonFx.IO.ServiceTest.Context = function(/*string*/ request, /*element*/ target)
 		}
 		call += ")";
 
-		var cx = new JsonFx.IO.ServiceTest.Context(call, target);
+		var cx = new JsonFx.ServiceTest.Context(call, target);
 
 		service.callService(
 			proc.name,
 			args,
 			{
-				onSuccess : JsonFx.IO.ServiceTest.cb_displayResult,
-				onFailure : JsonFx.IO.ServiceTest.cb_displayResult,
+				onSuccess : JsonFx.ServiceTest.cb_displayResult,
+				onFailure : JsonFx.ServiceTest.cb_displayResult,
 				context : cx
 			});
 	};
 };
 
 /* generates test buttons from the system.describe result */
-/*void*/ JsonFx.IO.ServiceTest.cb_buildTestUI = function(/*object*/ result, /*object*/ context) {
+/*void*/ JsonFx.ServiceTest.cb_buildTestUI = function(/*object*/ result, /*object*/ context) {
 	if ("object" !== typeof result && result !== null) {
 		return;
 	}
@@ -149,7 +152,7 @@ JsonFx.IO.ServiceTest.Context = function(/*string*/ request, /*element*/ target)
 		btn = ["input", {type:"button", "class":"ServiceTest", value:proc.name, title:proc.summary}];
 		btn = btn.parseJsonML(null);
 
-		handler = JsonFx.IO.ServiceTest.createServiceCall(context.service, proc, context.target);
+		handler = JsonFx.ServiceTest.createServiceCall(context.service, proc, context.target);
 		if (handler) {
 			btn.onclick = handler;
 			context.container.appendChild(btn);
@@ -157,12 +160,12 @@ JsonFx.IO.ServiceTest.Context = function(/*string*/ request, /*element*/ target)
 	}
 };
 
-/*void*/ JsonFx.IO.ServiceTest.buildTestUI = function(/*JsonFx.IO.Service*/ service, /*element*/ container, /*element*/ target) {
+/*void*/ JsonFx.ServiceTest.buildTestUI = function(/*JsonFx.IO.Service*/ service, /*element*/ container, /*element*/ target) {
 	if (service) {
 		service.$describe(
 			{
-				onSuccess : JsonFx.IO.ServiceTest.cb_buildTestUI,
-				onFailure : JsonFx.IO.ServiceTest.cb_displayResult,
+				onSuccess : JsonFx.ServiceTest.cb_buildTestUI,
+				onFailure : JsonFx.ServiceTest.cb_displayResult,
 				context : { service:service, container:container, target:target }
 			});
 	}

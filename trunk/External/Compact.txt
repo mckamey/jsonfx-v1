@@ -1,3 +1,7 @@
+json.js
+json2.js
+JsonML.js
+JsonML2.js
 Core.js
 UA.js
 IO.js
@@ -6,4 +10,5 @@ JsonFx.History.js
 Controls.js
 ServiceTest.js
 Utility.js
+JsonFx.Timer.js
 Trace.js

@@ -298,7 +298,7 @@ namespace JsonFx.UI.JsonML
 				// hacky but seems to work:
 				// if this builder is dirty it means it has already written out a control graph
 				// adding another back to back will not be valid JSON
-				// for some reason Crockford's parseJSON method appears to treat multiple graphs
+				// for some reason Crockford's JSON parse method appears to treat multiple graphs
 				// as if they are in an array if delimited by commas.
 				this.writer.Write(",");
 			}
