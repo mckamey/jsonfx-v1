@@ -1,4 +1,4 @@
-/*extern JsonFx, JSON */
+/*extern JsonFx, JSON, JsonML */
 /*---------------------------------------------------------*\
 	JsonFx UI
 	Copyright (c)2006-2007 Stephen M. McKamey
