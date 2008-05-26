@@ -1,10 +1,15 @@
-/*extern JsonFx */
+/*extern JsonFx, JSON */
 /*---------------------------------------------------------*\
 	JsonFx IO
 	Copyright (c)2006-2007 Stephen M. McKamey
 	Created: 2006-11-09-0120
-	Modified: 2007-04-15-2234
+	Modified: 2008-05-25-2253
 \*---------------------------------------------------------*/
+
+// dependency checks
+if ("undefined" === typeof JSON) {
+	throw new Error("JsonFx.IO requires json2.js");
+}
 
 /* namespace JsonFx */
 if ("undefined" === typeof JsonFx) {
@@ -255,7 +260,7 @@ JsonFx.IO = {};
 		// decode response as JSON
 		var json = xhr ? xhr.responseText : null;
 		try {
-			json = ("string" === typeof json) ? json.parseJSON() : null;
+			json = ("string" === typeof json) ? JSON.parse(json) : null;
 
 			if ("function" === typeof onSuccess) {
 				onSuccess(json, context);
@@ -336,7 +341,7 @@ JsonFx.IO = {};
 
 		var json = xhr ? xhr.responseText : null;
 		try {
-			json = ("string" === typeof json) ? json.parseJSON() : null;
+			json = ("string" === typeof json) ? JSON.parse(json) : null;
 
 			if (json.error) {
 				if (onFailure) {
@@ -363,7 +368,7 @@ JsonFx.IO = {};
 
 		var json = xhr ? xhr.responseText : null;
 		try {
-			json = ("string" === typeof json) ? json.parseJSON() : null;
+			json = ("string" === typeof json) ? JSON.parse(json) : null;
 
 			if (onFailure) {
 				onFailure(json, cx, ex);
@@ -397,7 +402,7 @@ JsonFx.IO = {};
 
 		try {
 			// JSON encode request object
-			rpcRequest = rpcRequest.toJSONString();
+			rpcRequest = JSON.stringify(rpcRequest);
 		} catch (ex) {
 			// if violates JSON, then fail
 			if (onFailure) {

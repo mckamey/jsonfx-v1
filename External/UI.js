@@ -1,9 +1,9 @@
-/*extern JsonFx */
+/*extern JsonFx, JSON */
 /*---------------------------------------------------------*\
 	JsonFx UI
 	Copyright (c)2006-2007 Stephen M. McKamey
 	Created: 2006-11-11-1759
-	Modified: 2007-06-03-1433
+	Modified: 2008-05-25-2253
 \*---------------------------------------------------------*/
 
 /* namespace JsonFx */
@@ -415,12 +415,12 @@ JsonFx.UI.Bindings = function() {
 
 						// allow element to provide parameters for bindings
 						options = elem.getAttribute("jsonfx:options");
-						try {
-							if (options && options.parseJSON) {
+						if (options) {
+							try {
 								// treat string as JSON
-								options = options.parseJSON();
-							}
-						} catch (ex) { }
+								options = JSON.parse(options);
+							} catch (ex) { }
+						}
 
 						try {
 							// perform action on element and
