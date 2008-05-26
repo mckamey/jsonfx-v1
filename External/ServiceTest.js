@@ -1,4 +1,4 @@
-/*extern JsonFx, JSON */
+/*extern JsonFx, JSON, JsonML */
 
 /* namespace JsonFx.IO */
 if ("undefined" === typeof window.JsonFx) {
