@@ -204,12 +204,12 @@ if ("undefined" === typeof window.decodeURIComponent) {
 	// wrapping in anonymous function so that the XHR ID list
 	// will be only available as a closure, as this will not
 	// modify the global namespace, and it will be shared
-	var xhrOCXs;
+	var XHR_OCXs;
 
 	if ("undefined" === typeof window.XMLHttpRequest) {
 
 		// these IDs are as per MSDN documentation (including case)
-		/*string[]*/ xhrOCXs = !window.ActiveXObject ? [] :
+		/*string[]*/ XHR_OCXs = !window.ActiveXObject ? [] :
 			[
 				"Msxml2.XMLHTTP.6.0",
 				"Msxml2.XMLHttp.5.0",
@@ -221,16 +221,16 @@ if ("undefined" === typeof window.decodeURIComponent) {
 
 		// XMLHttpRequest: augment browser to have "native" XHR
 		/*XMLHttpRequest*/ window.XMLHttpRequest = function() {
-			while (xhrOCXs.length) {
+			while (XHR_OCXs.length) {
 				try {
-					return new window.ActiveXObject(xhrOCXs[0]);
+					return new window.ActiveXObject(XHR_OCXs[0]);
 				} catch (ex) {
-					// remove the failed xhrOCXs for all future requests
-					xhrOCXs.shift();
+					// remove the failed XHR_OCXs for all future requests
+					XHR_OCXs.shift();
 				}
 			}
 
-			// all xhrOCXs failed		
+			// all XHR_OCXs failed		
 			return null;
 		};
 	}
