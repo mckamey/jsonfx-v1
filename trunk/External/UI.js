@@ -6,6 +6,16 @@
 	Modified: 2008-05-25-2253
 \*---------------------------------------------------------*/
 
+// dependency checks
+if ("undefined" === typeof JSON) {
+	throw new Error("JsonFx.UI requires json2.js");
+}
+if ("undefined" === typeof JsonML) {
+	throw new Error("JsonFx.UI requires JsonML2.js");
+}
+
+/* Utilities ----------------------------------------------------*/
+
 /* namespace JsonFx */
 if ("undefined" === typeof JsonFx) {
 	window.JsonFx = {};
