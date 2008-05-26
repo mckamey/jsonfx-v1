@@ -83,11 +83,13 @@ JsonFx.ServiceTest.Context = function(/*string*/ request, /*element*/ target) {
 	var label = error ? "JSON-RPC Error" : "JSON-RPC Result";
 	var data = error ? error : result;
 	JsonFx.UI.displayJsonML(
-		["div",
+		[
+			"div",
 			JsonFx.ServiceTest.dumpData("Call Context", context),
 			["hr"],
-			JsonFx.ServiceTest.dumpData(label, data)],
-			target);
+			JsonFx.ServiceTest.dumpData(label, data)
+		],
+		target);
 };
 
 /* creates actual method call */		
