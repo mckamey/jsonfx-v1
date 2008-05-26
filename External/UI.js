@@ -562,8 +562,8 @@ JsonFx.UI.Bindings = new JsonFx.UI.Bindings();
 
 /*	creates DOM elements from JsonML and binds them accordingly */
 /*element*/ JsonFx.UI.bindJsonML = function(/*JsonML*/ jml) {
-	if (jml && ("function" === typeof jml.parseJsonML)) {
-		return jml.parseJsonML(JsonFx.UI.Bindings.bindOne);
+	if (jml) {
+		return JsonML.parse(jml, JsonFx.UI.Bindings.bindOne);
 	} else {
 		return null;
 	}

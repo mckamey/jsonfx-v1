@@ -152,7 +152,7 @@ JsonFx.ServiceTest.Context = function(/*string*/ request, /*element*/ target) {
 	for (var i=0; i<result.procs.length; i++) {
 		proc = result.procs[i];
 		btn = ["input", {type:"button", "class":"ServiceTest", value:proc.name, title:proc.summary}];
-		btn = btn.parseJsonML(null);
+		btn = JsonML.parse(btn, null);
 
 		handler = JsonFx.ServiceTest.createServiceCall(context.service, proc, context.target);
 		if (handler) {
