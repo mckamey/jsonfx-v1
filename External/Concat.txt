@@ -1,4 +1,3 @@
-Core.js
 json2.js
 JsonML2.js
 UA.js

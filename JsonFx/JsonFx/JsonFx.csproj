@@ -159,7 +159,9 @@
     <EmbeddedResource Include="Scripts\Compacted\JsonFx.Timer.js" />
     <EmbeddedResource Include="Scripts\Compacted\json2.js" />
     <EmbeddedResource Include="Scripts\Compacted\JsonML2.js" />
+    <EmbeddedResource Include="Scripts\Compacted\JsonFx.Browser.js" />
     <Content Include="Scripts\Concat.txt" />
+    <EmbeddedResource Include="Scripts\JsonFx.Browser.js" />
     <EmbeddedResource Include="Scripts\json2.js" />
     <EmbeddedResource Include="Scripts\JsonFx.History.js" />
     <EmbeddedResource Include="Scripts\JsonFx.Timer.js" />
