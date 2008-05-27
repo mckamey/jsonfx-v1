@@ -46,6 +46,8 @@ namespace JsonFx.Json
 	{
 		#region Constants
 
+		public const string JsonMimeType = "application/json";
+
 		internal const string TypeGenericIDictionary = "System.Collections.Generic.IDictionary`2";
 
 		private const string TypeBoolean = "System.Boolean";
