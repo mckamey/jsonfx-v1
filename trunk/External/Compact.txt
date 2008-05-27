@@ -1,6 +1,4 @@
-json.js
 json2.js
-JsonML.js
 JsonML2.js
 ECMAScript.js
 String.js
