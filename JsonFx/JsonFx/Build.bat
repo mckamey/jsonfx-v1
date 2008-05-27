@@ -36,15 +36,15 @@ FOR /F %%F IN (%ROOT%\Compact.txt) DO (
 )
 
 :: -------------------------------------------------------------------
-:: Concat and compact the entire set of files
+:: Concat and compact the core set of files
 ECHO.
-SET CONCATLIST="%ROOT%\JsonFx.js"
+SET CONCATLIST="%ROOT%\JsonFx.Core.js"
 FOR /F %%F IN (%ROOT%\Concat.txt) DO (
 	CALL :APPEND_LIST %ROOT%\%%F
 )
 
 %CONCAT% %CONCATLIST%
-%COMPACT% /IN:"%ROOT%\JsonFx.js" /OUT:"%OUTDIR%\JsonFx.js" /WARNING
+%COMPACT% /IN:"%ROOT%\JsonFx.Core.js" /OUT:"%OUTDIR%\JsonFx.Core.js" /WARNING
 
 :: -------------------------------------------------------------------
 :: Copy JsonML scripts over to JsonML project
