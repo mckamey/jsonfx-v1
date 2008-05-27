@@ -136,7 +136,9 @@
     <EmbeddedResource Include="Scripts\Compacted\JsonML2.js" />
     <EmbeddedResource Include="Scripts\Compacted\ECMAScript.js" />
     <EmbeddedResource Include="Scripts\Compacted\JsonFx.IO.js" />
+    <EmbeddedResource Include="Scripts\Compacted\JsonFx.Bindings.js" />
     <Content Include="Scripts\Concat.txt" />
+    <EmbeddedResource Include="Scripts\JsonFx.Bindings.js" />
     <EmbeddedResource Include="Scripts\JsonFx.IO.js" />
     <EmbeddedResource Include="Scripts\ECMAScript.js" />
     <EmbeddedResource Include="Scripts\json2.js" />
