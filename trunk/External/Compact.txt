@@ -6,6 +6,7 @@ ECMAScript.js
 String.js
 JsonFx.UA.js
 JsonFx.IO.js
+JsonFx.Bindings.js
 JsonFx.UI.js
 JsonFx.History.js
 JsonFx.Controls.js
