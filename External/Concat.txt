@@ -1,7 +1,6 @@
 json2.js
 JsonML2.js
-UA.js
-IO.js
-UI.js
+JsonFx.UA.js
+JsonFx.IO.js
+JsonFx.UI.js
 JsonFx.History.js
-Controls.js

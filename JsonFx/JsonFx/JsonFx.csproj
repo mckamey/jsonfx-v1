@@ -77,14 +77,12 @@
     <Compile Include="UI\JsonML\NullTextWriter.cs" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Scripts\Compacted\IO.js" />
     <EmbeddedResource Include="Scripts\Compacted\json.js" />
-    <EmbeddedResource Include="Scripts\Compacted\Trace.js" />
-    <EmbeddedResource Include="Scripts\Compacted\Utility.js" />
-    <EmbeddedResource Include="Scripts\IO.js" />
+    <EmbeddedResource Include="Scripts\Compacted\JsonFx.Trace.js" />
+    <EmbeddedResource Include="Scripts\Compacted\JsonFx.Utility.js" />
     <EmbeddedResource Include="Scripts\json.js" />
-    <EmbeddedResource Include="Scripts\Trace.js" />
-    <EmbeddedResource Include="Scripts\Utility.js" />
+    <EmbeddedResource Include="Scripts\JsonFx.Trace.js" />
+    <EmbeddedResource Include="Scripts\JsonFx.Utility.js" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Scripts\JsonML.js" />
@@ -93,16 +91,16 @@
     <EmbeddedResource Include="Scripts\Compacted\JsonML.js" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Scripts\UI.js" />
+    <EmbeddedResource Include="Scripts\JsonFx.UI.js" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Scripts\Compacted\UI.js" />
+    <EmbeddedResource Include="Scripts\Compacted\JsonFx.UI.js" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Scripts\Core.js" />
+    <EmbeddedResource Include="Scripts\String.js" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Scripts\Compacted\Core.js" />
+    <EmbeddedResource Include="Scripts\Compacted\String.js" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App_Browsers\Fixes.browser" />
@@ -116,34 +114,36 @@
     <EmbeddedResource Include="Scripts\JsonFx.js" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Scripts\UA.js" />
+    <EmbeddedResource Include="Scripts\JsonFx.UA.js" />
     <EmbeddedResource Include="Scripts\Theme.js" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Scripts\Compacted\UA.js" />
+    <EmbeddedResource Include="Scripts\Compacted\JsonFx.UA.js" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Scripts\ServiceTest.js" />
+    <EmbeddedResource Include="Scripts\JsonFx.ServiceTest.js" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Scripts\Compacted\ServiceTest.js" />
+    <EmbeddedResource Include="Scripts\Compacted\JsonFx.ServiceTest.js" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="Dotfuscator_Proj.xml" />
     <Content Include="Scripts\Compact.txt" />
-    <EmbeddedResource Include="Scripts\Compacted\Controls.js" />
+    <EmbeddedResource Include="Scripts\Compacted\JsonFx.Controls.js" />
     <EmbeddedResource Include="Scripts\Compacted\JsonFx.History.js" />
     <EmbeddedResource Include="Scripts\Compacted\JsonFx.Timer.js" />
     <EmbeddedResource Include="Scripts\Compacted\json2.js" />
     <EmbeddedResource Include="Scripts\Compacted\JsonML2.js" />
-    <EmbeddedResource Include="Scripts\Compacted\JsonFx.Browser.js" />
+    <EmbeddedResource Include="Scripts\Compacted\ECMAScript.js" />
+    <EmbeddedResource Include="Scripts\Compacted\JsonFx.IO.js" />
     <Content Include="Scripts\Concat.txt" />
-    <EmbeddedResource Include="Scripts\JsonFx.Browser.js" />
+    <EmbeddedResource Include="Scripts\JsonFx.IO.js" />
+    <EmbeddedResource Include="Scripts\ECMAScript.js" />
     <EmbeddedResource Include="Scripts\json2.js" />
     <EmbeddedResource Include="Scripts\JsonFx.History.js" />
     <EmbeddedResource Include="Scripts\JsonFx.Timer.js" />
     <EmbeddedResource Include="Scripts\JsonML2.js" />
-    <EmbeddedResource Include="Scripts\Controls.js" />
+    <EmbeddedResource Include="Scripts\JsonFx.Controls.js" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\JsonFx.History\JsonFx.History.csproj">
