@@ -1,609 +1,479 @@
-/*extern JsonFx */
-/*---------------------------------------------------------*\
-	Modifications to browser global objects
-	Copyright (c)2006-2007 Stephen M. McKamey
-	Created: 2006-11-14-0928
-	Modified: 2007-03-17-1241
-\*---------------------------------------------------------*/
-
-/* namespace JsonFx */
-if ("undefined" === typeof JsonFx) {
-	window.JsonFx = {};
-}
-
-///*float*/ JsonFx.JScriptVersion = ("undefined" === typeof window.ScriptEngineMajorVersion) ? NaN :
-//		Number(window.ScriptEngineMajorVersion()+"."+window.ScriptEngineMinorVersion());
-
-if ("undefined" === typeof window.global) {
-	/*object*/ window.global = window;
-}
-
-if ("undefined" === typeof Object.prototype.hasOwnProperty) {
-	/*bool*/ Object.prototype.hasOwnProperty = function(/*object*/ p) {
-		return ("undefined" !== typeof(this[p]) && ("undefined" === typeof(this.constructor.prototype[p])));
-	};
-}
-
-if ("undefined" === typeof Object.prototype.propertyIsEnumerable) {
-	/*bool*/ Object.prototype.propertyIsEnumerable = function(/*object*/ p) {
-		return this.hasOwnProperty(p);
-	};
-}
-
-if ("undefined" === typeof Array.prototype.push) {
-	/*int*/ Array.prototype.push = function(/*object*/ item) {
-		// add item to end
-		this[this.length] = item;
-		return this.length;
-	};
-}
-
-if ("undefined" === typeof Array.prototype.pop) {
-	/*object*/ Array.prototype.pop = function() {
-		if (this.length < 1) {
-			return undefined;
-		}
-
-		// grab the last item
-		var item = this[this.length-1];
-
-		// reduce the length
-		this.length--;
-		return item;
-	};
-}
-
-if ("undefined" === typeof Array.prototype.splice) {
-	/*array*/ Array.prototype.splice = function (/*int*/ start, /*int*/ del) {
-		// based on http://javascript.crockford.com/remedial.html
-        var max = Math.max,
-            min = Math.min,
-            a = [], // The return value array
-            e,  // element
-            i = max(arguments.length-2, 0),   // insert count
-            k = 0,
-            l = this.length,
-            n,  // new length
-            v,  // delta
-            x;  // shift count
-
-        start = start || 0;
-        if (start < 0) {
-            start += l;
-        }
-
-        // start point
-        start = max(min(start, l), 0);
-
-        // delete count
-        del = max(min((typeof del === 'number' && isFinite(del)) ? del : l, l - start), 0);
-
-        v = i - del;
-        n = l + v;
-        while (k < del) {
-            e = this[start + k];
-            if (e !== undefined) {
-                a[k] = e;
-            }
-            k += 1;
-        }
-        x = l - start - del;
-        if (v < 0) {
-            k = start + i;
-            while (x) {
-                this[k] = this[k - v];
-                k += 1;
-                x -= 1;
-            }
-            this.length = n;
-        } else if (v > 0) {
-            k = 1;
-            while (x) {
-                this[n - k] = this[l - k];
-                k += 1;
-                x -= 1;
-            }
-        }
-        for (k = 0; k < i; ++k) {
-            this[start + k] = arguments[k + 2];
-        }
-        return a;
-    };
-}
-
-if ("undefined" === typeof Array.prototype.shift) {
-	/*object*/ Array.prototype.shift = function() {
-		return this.splice(0, 1)[0];
-	};
-}
-
-if ("undefined" === typeof Array.prototype.unshift) {
-	/*void*/ Array.prototype.unshift = function () {
-		var a = arguments;
-		if (a && a.length) {
-			var i, l = this.length, al = a.length;
-
-			// move this array items onto end of arguments list
-			for (i=0; i<l; i++) {
-				a[al] = a[i];
-				al++;
-			}
-
-			// copy concat'ed arguments list back into this array
-			for (i=0; i<al; i++) {
-				this[i] = a[i];
-			}
-		}
-    };
-}
-
-if ("undefined" === typeof String.prototype.charCodeAt) {
-	/*int*/ String.prototype.charCodeAt = function (/*int*/ i) {
-		if (isNaN(i) || i<0 || i>=this.length) {
-			return NaN;
-		}
-		return Number(this[i]-"A")+65;
-	};
-}
-
-if ("undefined" === typeof Number.prototype.toPrecision) {
-	/*string*/ Number.prototype.toPrecision = function(/*int*/ digits) {
-		var str = this.toString();
-		if (isNaN(digits) || digits < 1 || digits > 21) {
-			return str;
-		}
-		digits += str.indexOf(".")+1;
-
-		// note: doesn't handle scientific notation
-		return str.substring(0, digits);
-	};
-}
-
-if ("undefined" === typeof Object.prototype.isPrototypeOf) {
-	/*bool*/ Object.prototype.isPrototypeOf = function (/*object*/ obj) {
-		while ("undefined" !== typeof(obj.prototype)) {
-			if (this === obj.prototype) {
-				return true;
-			}
-			obj = obj.prototype;
-		}
-		return false;
-	};
-}
-
-if ("undefined" === typeof window.encodeURI) {
-	/*string*/ window.encodeURI = function (/*string*/ str) {
-		// placeholder method, not yet implemented
-		return str;
-	};
-}
-
-if ("undefined" === typeof window.encodeURIComponent) {
-	/*string*/ window.encodeURIComponent = function (/*string*/ str) {
-		// placeholder method, not yet implemented
-		return str;
-	};
-}
-
-if ("undefined" === typeof window.decodeURI) {
-	/*string*/ window.decodeURI = function (/*string*/ str) {
-		// placeholder method, not yet implemented
-		return str;
-	};
-}
-
-if ("undefined" === typeof window.decodeURIComponent) {
-	/*string*/ window.decodeURIComponent = function (/*string*/ str) {
-		// placeholder method, not yet implemented
-		return str;
-	};
-}
-
-(function () {
-	// wrapping in anonymous function so that the XHR ID list
-	// will be only available as a closure, as this will not
-	// modify the global namespace, and it will be shared
-
-	if ("undefined" === typeof window.XMLHttpRequest) {
-
-		// these IDs are as per MSDN documentation (including case)
-		/*string[]*/ var xhrOCXs = !window.ActiveXObject ? [] :
-			[
-				"Msxml2.XMLHTTP.6.0",
-				"Msxml2.XMLHttp.5.0",
-				"Msxml2.XMLHttp.4.0",
-				"MSXML2.XMLHTTP.3.0",
-				"MSXML2.XMLHTTP",
-				"Microsoft.XMLHTTP"
-			];
-
-		// XMLHttpRequest: augment browser to have "native" XHR
-		/*XMLHttpRequest*/ window.XMLHttpRequest = function() {
-			while (xhrOCXs.length) {
-				try {
-					return new window.ActiveXObject(xhrOCXs[0]);
-				} catch (ex) {
-					// remove the failed xhrOCXs for all future requests
-					xhrOCXs.shift();
-				}
-			}
-
-			// all xhrOCXs failed		
-			return null;
-		};
-	}
-})();
-
-/* ----------------------------------------------------*/
-
-if ("undefined" === typeof String.prototype.trim) {
-	/*string*/ String.prototype.trim = function () {
-		return this.replace(/^\s*|\s*$/g, "");
-	};
-}
-
-if ("undefined" === typeof String.prototype.contains) {
-	/*bool*/ String.prototype.contains = function (/*string*/ str) {
-		return (this.indexOf(str) >= 0);
-	};
-}
-
-/* ----------------------------------------------------*/
-
-JsonFx.Timer = function() {
-	/*object*/ var s = {};
-	/*object*/ var t = {};
-
-	/*void*/ JsonFx.Timer.prototype.clear = function(/*string*/ key) {
-		if (key) {
-			if (t[key]) {
-				delete t[key];
-			}
-			if (s[key]) {
-				delete s[key];
-			}
-		} else {
-			t = {};
-			s = {};
-		}
-	};
-
-	/*void*/ JsonFx.Timer.prototype.start = function(/*string*/ key) {
-		s[key] = (new Date()).valueOf();
-	};
-
-	/*void*/ JsonFx.Timer.prototype.stop = function(/*string*/ key, /*bool*/ append) {
-		append = append && isFinite(t[key]);
-		var time = ((new Date()).valueOf() - s[key]);
-		t[key] = append ? (t[key]+time) : time;
-	};
-
-	/*int*/ JsonFx.Timer.prototype.getTime = function(/*string*/ key) {
-		if (key && isFinite(t[key])) {
-			return t[key];
-		}
-		return NaN;
-	};
-
-	/*object*/ JsonFx.Timer.prototype.getTimes = function() {
-		var c = {};
-		for (var key in t) {
-			if (t.hasOwnProperty(key) && isFinite(t[key])) {
-				c[key] = t[key];
-			}
-		}
-		return c;
-	};
-};
-
-// instantiate only one, destroying the constructor
-JsonFx.Timer = new JsonFx.Timer();
 /*
-    json.js
-    2007-03-06
+    http://www.JSON.org/json2.js
+    2008-05-25
 
-    Public Domain
+    Public Domain.
 
-    This file adds these methods to JavaScript:
+    NO WARRANTY EXPRESSED OR IMPLIED. USE AT YOUR OWN RISK.
 
-        array.toJSONString()
-        boolean.toJSONString()
-        date.toJSONString()
-        number.toJSONString()
-        object.toJSONString()
-        string.toJSONString()
-            These methods produce a JSON text from a JavaScript value.
-            It must not contain any cyclical references. Illegal values
-            will be excluded.
+    See http://www.JSON.org/js.html
 
-            The default conversion for dates is to an ISO string. You can
-            add a toJSONString method to any date object to get a different
-            representation.
+    This file creates a global JSON object containing two methods: stringify
+    and parse.
 
-        string.parseJSON(filter)
-            This method parses a JSON text to produce an object or
-            array. It can throw a SyntaxError exception.
+        JSON.stringify(value, replacer, space)
+            value       any JavaScript value, usually an object or array.
 
-            The optional filter parameter is a function which can filter and
-            transform the results. It receives each of the keys and values, and
-            its return value is used instead of the original value. If it
-            returns what it received, then structure is not modified. If it
-            returns undefined then the member is deleted.
+            replacer    an optional parameter that determines how object
+                        values are stringified for objects without a toJSON
+                        method. It can be a function or an array.
+
+            space       an optional parameter that specifies the indentation
+                        of nested structures. If it is omitted, the text will
+                        be packed without extra whitespace. If it is a number,
+                        it will specify the number of spaces to indent at each
+                        level. If it is a string (such as '\t' or '&nbsp;'),
+                        it contains the characters used to indent at each level.
+
+            This method produces a JSON text from a JavaScript value.
+
+            When an object value is found, if the object contains a toJSON
+            method, its toJSON method will be called and the result will be
+            stringified. A toJSON method does not serialize: it returns the
+            value represented by the name/value pair that should be serialized,
+            or undefined if nothing should be serialized. The toJSON method
+            will be passed the key associated with the value, and this will be
+            bound to the object holding the key.
+
+            For example, this would serialize Dates as ISO strings.
+
+                Date.prototype.toJSON = function (key) {
+                    function f(n) {
+                        // Format integers to have at least two digits.
+                        return n < 10 ? '0' + n : n;
+                    }
+
+                    return this.getUTCFullYear()   + '-' +
+                         f(this.getUTCMonth() + 1) + '-' +
+                         f(this.getUTCDate())      + 'T' +
+                         f(this.getUTCHours())     + ':' +
+                         f(this.getUTCMinutes())   + ':' +
+                         f(this.getUTCSeconds())   + 'Z';
+                };
+
+            You can provide an optional replacer method. It will be passed the
+            key and value of each member, with this bound to the containing
+            object. The value that is returned from your method will be
+            serialized. If your method returns undefined, then the member will
+            be excluded from the serialization.
+
+            If the replacer parameter is an array, then it will be used to
+            select the members to be serialized. It filters the results such
+            that only members with keys listed in the replacer array are
+            stringified.
+
+            Values that do not have JSON representations, such as undefined or
+            functions, will not be serialized. Such values in objects will be
+            dropped; in arrays they will be replaced with null. You can use
+            a replacer function to replace those with JSON values.
+            JSON.stringify(undefined) returns undefined.
+
+            The optional space parameter produces a stringification of the
+            value that is filled with line breaks and indentation to make it
+            easier to read.
+
+            If the space parameter is a non-empty string, then that string will
+            be used for indentation. If the space parameter is a number, then
+            the indentation will be that many spaces.
 
             Example:
 
-            // Parse the text. If a key contains the string 'date' then
-            // convert the value to a date.
+            text = JSON.stringify(['e', {pluribus: 'unum'}]);
+            // text is '["e",{"pluribus":"unum"}]'
 
-            myData = text.parseJSON(function (key, value) {
-                return key.indexOf('date') >= 0 ? new Date(value) : value;
+
+            text = JSON.stringify(['e', {pluribus: 'unum'}], null, '\t');
+            // text is '[\n\t"e",\n\t{\n\t\t"pluribus": "unum"\n\t}\n]'
+
+            text = JSON.stringify([new Date()], function (key, value) {
+                return this[key] instanceof Date ?
+                    'Date(' + this[key] + ')' : value;
+            });
+            // text is '["Date(---current time---)"]'
+
+
+        JSON.parse(text, reviver)
+            This method parses a JSON text to produce an object or array.
+            It can throw a SyntaxError exception.
+
+            The optional reviver parameter is a function that can filter and
+            transform the results. It receives each of the keys and values,
+            and its return value is used instead of the original value.
+            If it returns what it received, then the structure is not modified.
+            If it returns undefined then the member is deleted.
+
+            Example:
+
+            // Parse the text. Values that look like ISO date strings will
+            // be converted to Date objects.
+
+            myData = JSON.parse(text, function (key, value) {
+                var a;
+                if (typeof value === 'string') {
+                    a =
+/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2}(?:\.\d*)?)Z$/.exec(value);
+                    if (a) {
+                        return new Date(Date.UTC(+a[1], +a[2] - 1, +a[3], +a[4],
+                            +a[5], +a[6]));
+                    }
+                }
+                return value;
             });
 
-    It is expected that these methods will formally become part of the
-    JavaScript Programming Language in the Fourth Edition of the
-    ECMAScript standard in 2008.
+            myData = JSON.parse('["Date(09/09/2001)"]', function (key, value) {
+                var d;
+                if (typeof value === 'string' &&
+                        value.slice(0, 5) === 'Date(' &&
+                        value.slice(-1) === ')') {
+                    d = new Date(value.slice(5, -1));
+                    if (d) {
+                        return d;
+                    }
+                }
+                return value;
+            });
+
+
+    This is a reference implementation. You are free to copy, modify, or
+    redistribute.
+
+    This code should be minified before deployment.
+    See http://javascript.crockford.com/jsmin.html
+
+    USE YOUR OWN COPY. IT IS EXTREMELY UNWISE TO LOAD CODE FROM SERVERS YOU DO
+    NOT CONTROL.
 */
 
-// Augment the basic prototypes if they have not already been augmented.
+/*jslint evil: true */
 
-if (!Object.prototype.toJSONString) {
+/*global JSON */
 
-    Array.prototype.toJSONString = function () {
-        var a = ['['],  // The array holding the text fragments.
-            b,          // A boolean indicating that a comma is required.
-            i,          // Loop counter.
-            l = this.length,
-            v;          // The value to be stringified.
+if (!this.JSON) {
 
-        function p(s) {
+// Create a JSON object only if one does not already exist. We create the
+// object in a closure to avoid creating global variables.
 
-// p accumulates text fragments in an array. It inserts a comma before all
-// except the first fragment.
-
-            if (b) {
-                a.push(',');
-            }
-            a.push(s);
-            b = true;
-        }
-
-// For each value in this array...
-
-        for (i = 0; i < l; i += 1) {
-            v = this[i];
-            switch (typeof v) {
-
-// Values without a JSON representation are ignored.
-
-            case 'undefined':
-            case 'function':
-            case 'unknown':
-                break;
-
-// Serialize a JavaScript object value. Ignore objects thats lack the
-// toJSONString method. Due to a specification error in ECMAScript,
-// typeof null is 'object', so watch out for that case.
-
-            case 'object':
-                if (v) {
-                    if (typeof v.toJSONString === 'function') {
-                        p(v.toJSONString());
-                    }
-                } else {
-                    p("null");
-                }
-                break;
-
-// Otherwise, serialize the value.
-
-            default:
-                p(v.toJSONString());
-            }
-        }
-
-// Join all of the fragments together and return.
-
-        a.push(']');
-        return a.join('');
-    };
-
-
-    Boolean.prototype.toJSONString = function () {
-        return String(this);
-    };
-
-
-    Date.prototype.toJSONString = function () {
-
-// Ultimately, this method will be equivalent to the date.toISOString method.
+    JSON = function () {
 
         function f(n) {
-
-// Format integers to have at least two digits.
-
+            // Format integers to have at least two digits.
             return n < 10 ? '0' + n : n;
         }
 
-        return '"' + this.getFullYear() + '-' +
-                f(this.getMonth() + 1) + '-' +
-                f(this.getDate()) + 'T' +
-                f(this.getHours()) + ':' +
-                f(this.getMinutes()) + ':' +
-                f(this.getSeconds()) + '"';
-    };
+        Date.prototype.toJSON = function (key) {
+
+            return this.getUTCFullYear()   + '-' +
+                 f(this.getUTCMonth() + 1) + '-' +
+                 f(this.getUTCDate())      + 'T' +
+                 f(this.getUTCHours())     + ':' +
+                 f(this.getUTCMinutes())   + ':' +
+                 f(this.getUTCSeconds())   + 'Z';
+        };
+
+        var cx = /[\u0000\u00ad\u0600-\u0604\u070f\u17b4\u17b5\u200c-\u200f\u2028-\u202f\u2060-\u206f\ufeff\ufff0-\uffff]/g,
+            escapeable = /[\\\"\x00-\x1f\x7f-\x9f\u00ad\u0600-\u0604\u070f\u17b4\u17b5\u200c-\u200f\u2028-\u202f\u2060-\u206f\ufeff\ufff0-\uffff]/g,
+            gap,
+            indent,
+            meta = {    // table of character substitutions
+                '\b': '\\b',
+                '\t': '\\t',
+                '\n': '\\n',
+                '\f': '\\f',
+                '\r': '\\r',
+                '"' : '\\"',
+                '\\': '\\\\'
+            },
+            rep;
 
 
-    Number.prototype.toJSONString = function () {
+        function quote(string) {
+
+// If the string contains no control characters, no quote characters, and no
+// backslash characters, then we can safely slap some quotes around it.
+// Otherwise we must also replace the offending characters with safe escape
+// sequences.
+
+            escapeable.lastIndex = 0;
+            return escapeable.test(string) ?
+                '"' + string.replace(escapeable, function (a) {
+                    var c = meta[a];
+                    if (typeof c === 'string') {
+                        return c;
+                    }
+                    return '\\u' + ('0000' +
+                            (+(a.charCodeAt(0))).toString(16)).slice(-4);
+                }) + '"' :
+                '"' + string + '"';
+        }
+
+
+        function str(key, holder) {
+
+// Produce a string from holder[key].
+
+            var i,          // The loop counter.
+                k,          // The member key.
+                v,          // The member value.
+                length,
+                mind = gap,
+                partial,
+                value = holder[key];
+
+// If the value has a toJSON method, call it to obtain a replacement value.
+
+            if (value && typeof value === 'object' &&
+                    typeof value.toJSON === 'function') {
+                value = value.toJSON(key);
+            }
+
+// If we were called with a replacer function, then call the replacer to
+// obtain a replacement value.
+
+            if (typeof rep === 'function') {
+                value = rep.call(holder, key, value);
+            }
+
+// What happens next depends on the value's type.
+
+            switch (typeof value) {
+            case 'string':
+                return quote(value);
+
+            case 'number':
 
 // JSON numbers must be finite. Encode non-finite numbers as null.
 
-        return isFinite(this) ? String(this) : "null";
-    };
+                return isFinite(value) ? String(value) : 'null';
 
+            case 'boolean':
+            case 'null':
 
-    Object.prototype.toJSONString = function () {
-        var a = ['{'],  // The array holding the text fragments.
-            b,          // A boolean indicating that a comma is required.
-            k,          // The current key.
-            v;          // The current value.
+// If the value is a boolean or null, convert it to a string. Note:
+// typeof null does not produce 'null'. The case is included here in
+// the remote chance that this gets fixed someday.
 
-        function p(s) {
+                return String(value);
 
-// p accumulates text fragment pairs in an array. It inserts a comma before all
-// except the first fragment pair.
+// If the type is 'object', we might be dealing with an object or an array or
+// null.
 
-            if (b) {
-                a.push(',');
-            }
-            a.push(k.toJSONString(), ':', s);
-            b = true;
-        }
+            case 'object':
 
-// Iterate through all of the keys in the object, ignoring the proto chain.
+// Due to a specification blunder in ECMAScript, typeof null is 'object',
+// so watch out for that case.
 
-        for (k in this) {
-            if (this.hasOwnProperty(k)) {
-                v = this[k];
-                switch (typeof v) {
-
-// Values without a JSON representation are ignored.
-
-                case 'undefined':
-                case 'function':
-                case 'unknown':
-                    break;
-
-// Serialize a JavaScript object value. Ignore objects that lack the
-// toJSONString method. Due to a specification error in ECMAScript,
-// typeof null is 'object', so watch out for that case.
-
-                case 'object':
-                    if (v) {
-                        if (typeof v.toJSONString === 'function') {
-                            p(v.toJSONString());
-                        }
-                    } else {
-                        p("null");
-                    }
-                    break;
-                default:
-                    p(v.toJSONString());
+                if (!value) {
+                    return 'null';
                 }
+
+// Make an array to hold the partial results of stringifying this object value.
+
+                gap += indent;
+                partial = [];
+
+// If the object has a dontEnum length property, we'll treat it as an array.
+
+                if (typeof value.length === 'number' &&
+                        !(value.propertyIsEnumerable('length'))) {
+
+// The object is an array. Stringify every element. Use null as a placeholder
+// for non-JSON values.
+
+                    length = value.length;
+                    for (i = 0; i < length; i += 1) {
+                        partial[i] = str(i, value) || 'null';
+                    }
+
+// Join all of the elements together, separated with commas, and wrap them in
+// brackets.
+
+                    v = partial.length === 0 ? '[]' :
+                        gap ? '[\n' + gap +
+                                partial.join(',\n' + gap) + '\n' +
+                                    mind + ']' :
+                              '[' + partial.join(',') + ']';
+                    gap = mind;
+                    return v;
+                }
+
+// If the replacer is an array, use it to select the members to be stringified.
+
+                if (rep && typeof rep === 'object') {
+                    length = rep.length;
+                    for (i = 0; i < length; i += 1) {
+                        k = rep[i];
+                        if (typeof k === 'string') {
+                            v = str(k, value, rep);
+                            if (v) {
+                                partial.push(quote(k) + (gap ? ': ' : ':') + v);
+                            }
+                        }
+                    }
+                } else {
+
+// Otherwise, iterate through all of the keys in the object.
+
+                    for (k in value) {
+                        if (Object.hasOwnProperty.call(value, k)) {
+                            v = str(k, value, rep);
+                            if (v) {
+                                partial.push(quote(k) + (gap ? ': ' : ':') + v);
+                            }
+                        }
+                    }
+                }
+
+// Join all of the member texts together, separated with commas,
+// and wrap them in braces.
+
+                v = partial.length === 0 ? '{}' :
+                    gap ? '{\n' + gap + partial.join(',\n' + gap) + '\n' +
+                            mind + '}' : '{' + partial.join(',') + '}';
+                gap = mind;
+                return v;
             }
         }
 
-// Join all of the fragments together and return.
+// Return the JSON object containing the stringify and parse methods.
 
-        a.push('}');
-        return a.join('');
-    };
+        return {
+            stringify: function (value, replacer, space) {
+
+// The stringify method takes a value and an optional replacer, and an optional
+// space parameter, and returns a JSON text. The replacer can be a function
+// that can replace values, or an array of strings that will select the keys.
+// A default replacer method can be provided. Use of the space parameter can
+// produce text that is more easily readable.
+
+                var i;
+                gap = '';
+                indent = '';
+
+// If the space parameter is a number, make an indent string containing that
+// many spaces.
+
+                if (typeof space === 'number') {
+                    for (i = 0; i < space; i += 1) {
+                        indent += ' ';
+                    }
+
+// If the space parameter is a string, it will be used as the indent string.
+
+                } else if (typeof space === 'string') {
+                    indent = space;
+                }
+
+// If there is a replacer, it must be a function or an array.
+// Otherwise, throw an error.
+
+                rep = replacer;
+                if (replacer && typeof replacer !== 'function' &&
+                        (typeof replacer !== 'object' ||
+                         typeof replacer.length !== 'number')) {
+                    throw new Error('JSON.stringify');
+                }
+
+// Make a fake root object containing our value under the key of ''.
+// Return the result of stringifying the value.
+
+                return str('', {'': value});
+            },
 
 
-    (function (s) {
+            parse: function (text, reviver) {
 
-// Augment String.prototype. We do this in an immediate anonymous function to
-// avoid defining global variables.
+// The parse method takes a text and an optional reviver function, and returns
+// a JavaScript value if the text is a valid JSON text.
 
-// m is a table of character substitutions.
+                var j;
 
-        var m = {
-            '\b': '\\b',
-            '\t': '\\t',
-            '\n': '\\n',
-            '\f': '\\f',
-            '\r': '\\r',
-            '"' : '\\"',
-            '\\': '\\\\'
-        };
+                function walk(holder, key) {
+
+// The walk method is used to recursively walk the resulting structure so
+// that modifications can be made.
+
+                    var k, v, value = holder[key];
+                    if (value && typeof value === 'object') {
+                        for (k in value) {
+                            if (Object.hasOwnProperty.call(value, k)) {
+                                v = walk(value, k);
+                                if (v !== undefined) {
+                                    value[k] = v;
+                                } else {
+                                    delete value[k];
+                                }
+                            }
+                        }
+                    }
+                    return reviver.call(holder, key, value);
+                }
 
 
-        s.parseJSON = function (filter) {
+// Parsing happens in four stages. In the first stage, we replace certain
+// Unicode characters with escape sequences. JavaScript handles many characters
+// incorrectly, either silently deleting them, or treating them as line endings.
 
-// Parsing happens in three stages. In the first stage, we run the text against
-// a regular expression which looks for non-JSON characters. We are especially
-// concerned with '()' and 'new' because they can cause invocation, and '='
-// because it can cause mutation. But just to be safe, we will reject all
-// unexpected characters.
+                cx.lastIndex = 0;
+                if (cx.test(text)) {
+                    text = text.replace(cx, function (a) {
+                        return '\\u' + ('0000' +
+                                (+(a.charCodeAt(0))).toString(16)).slice(-4);
+                    });
+                }
 
-            try {
-                if (/^("(\\.|[^"\\\n\r])*?"|[,:{}\[\]0-9.\-+Eaeflnr-u \n\r\t])+?$/.
-                        test(this)) {
+// In the second stage, we run the text against regular expressions that look
+// for non-JSON patterns. We are especially concerned with '()' and 'new'
+// because they can cause invocation, and '=' because it can cause mutation.
+// But just to be safe, we want to reject all unexpected forms.
 
-// In the second stage we use the eval function to compile the text into a
+// We split the second stage into 4 regexp operations in order to work around
+// crippling inefficiencies in IE's and Safari's regexp engines. First we
+// replace the JSON backslash pairs with '@' (a non-JSON character). Second, we
+// replace all simple value tokens with ']' characters. Third, we delete all
+// open brackets that follow a colon or comma or that begin the text. Finally,
+// we look to see that the remaining characters are only whitespace or ']' or
+// ',' or ':' or '{' or '}'. If that is so, then the text is safe for eval.
+
+                if (/^[\],:{}\s]*$/.
+test(text.replace(/\\(?:["\\\/bfnrt]|u[0-9a-fA-F]{4})/g, '@').
+replace(/"[^"\\\n\r]*"|true|false|null|-?\d+(?:\.\d*)?(?:[eE][+\-]?\d+)?/g, ']').
+replace(/(?:^|:|,)(?:\s*\[)+/g, ''))) {
+
+// In the third stage we use the eval function to compile the text into a
 // JavaScript structure. The '{' operator is subject to a syntactic ambiguity
 // in JavaScript: it can begin a block or an object literal. We wrap the text
 // in parens to eliminate the ambiguity.
 
-                    var j = eval('(' + this + ')');
+                    j = eval('(' + text + ')');
 
-// In the optional third stage, we recursively walk the new structure, passing
-// each name/value pair to a filter function for possible transformation.
+// In the optional fourth stage, we recursively walk the new structure, passing
+// each name/value pair to a reviver function for possible transformation.
 
-                    if (typeof filter === 'function') {
-
-                        function walk(k, v) {
-                            if (v && typeof v === 'object') {
-                                for (var i in v) {
-                                    if (v.hasOwnProperty(i)) {
-                                        v[i] = walk(i, v[i]);
-                                    }
-                                }
-                            }
-                            return filter(k, v);
-                        }
-
-                        j = walk('', j);
-                    }
-                    return j;
+                    return typeof reviver === 'function' ?
+                        walk({'': j}, '') : j;
                 }
-            } catch (e) {
 
-// Fall through if the regexp test fails.
+// If the text is not JSON parseable, then a SyntaxError is thrown.
 
+                throw new SyntaxError('JSON.parse');
             }
-            throw new SyntaxError("parseJSON");
         };
-
-
-        s.toJSONString = function () {
-
-// If the string contains no control characters, no quote characters, and no
-// backslash characters, then we can simply slap some quotes around it.
-// Otherwise we must also replace the offending characters with safe
-// sequences.
-
-            if (/["\\\x00-\x1f]/.test(this)) {
-                return '"' + this.replace(/([\x00-\x1f\\"])/g, function(a, b) {
-                    var c = m[b];
-                    if (c) {
-                        return c;
-                    }
-                    c = b.charCodeAt();
-                    return '\\u00' +
-                        Math.floor(c / 16).toString(16) +
-                        (c % 16).toString(16);
-                }) + '"';
-            }
-            return '"' + this + '"';
-        };
-    })(String.prototype);
+    }();
 }
+
+/*extern JSON, JsonML */
 /*
-	JsonML.js
+	JsonML2.js
 
 	Created: 2006-11-09-0116
-	Modified: 2007-02-15-2226
+	Modified: 2008-05-25-2326
 
 	Released under an open-source license:
 	http://jsonml.org/License.htm
 
     This file adds these methods to JavaScript:
 
-        string.parseJsonML(filter)
-
-            This method produces a tree of DOM elements from a (JSON text) JsonML tree.
-
-        array.parseJsonML(filter)
+        JsonML.parse(string|array, filter)
 
             This method produces a tree of DOM elements from a JsonML tree. The
             array must not contain any cyclical references.
@@ -623,7 +493,7 @@ if (!Object.prototype.toJSONString) {
             // takes appropriate action: Remove from results, add special event
             // handlers, or bind to a custom component.
 
-            var myUI = myUITemplate.parseJsonML(function (elem) {
+            var myUI = JsonML.parse(myUITemplate, function (elem) {
 				if (elem.className.indexOf("Remove-Me") >= 0) {
 					// this will remove from resulting DOM tree
 					return undefined;
@@ -645,47 +515,60 @@ if (!Object.prototype.toJSONString) {
 
 */
 
-/*element*/ Array.prototype.parseJsonML = function (/*element function(element)*/ filter) {
+if ("undefined" === typeof JsonML) {
+	window.JsonML = {};
+}
+
+JsonML.parse = function(/*JsonML*/ jml, /*element function(element)*/ filter) {
 
 	//attribute name mapping
 	var am = {
-		"tabindex" : "tabIndex",
-		"accesskey" : "accessKey",
-		"hidefocus" : "hideFocus"
+		rowspan : "rowSpan",
+		colspan : "colSpan",
+		cellpadding : "cellPadding",
+		cellspacing : "cellSpacing",
+		tabindex : "tabIndex",
+		accesskey : "accessKey",
+		hidefocus : "hideFocus",
+		usemap : "useMap",
+		maxlength : "maxLength",
+		readonly : "readOnly",
+		contenteditable : "contentEditable"
+		// can add more attributes here as needed
 	};
 
 	//addAttributes
 	/*void*/ function aa(/*element*/ el, /*Object*/ a) {
 		// for each attributeName
 		for (var an in a) {
-			if (!an || typeof(a[an]) !== "string") {
-				continue;
-			}
-			if (an.toLowerCase() === "style") {
-				if ("undefined" !== typeof el.style.cssText) {
-					el.style.cssText = a[an];
+			if (an && "string" === typeof a[an]) {
+				if (an.toLowerCase() === "style") {
+					if ("undefined" !== typeof el.style.cssText) {
+						el.style.cssText = a[an];
+					} else {
+						el.style = a[an];
+					}
+				} else if (an.toLowerCase() === "class") {
+					el.className = a[an];
+				} else if (am[an.toLowerCase()]) {
+					el.setAttribute(am[an.toLowerCase()], a[an]);
 				} else {
-					el.style = a[an];
+					el.setAttribute(an, a[an]);
 				}
-			} else if (an.toLowerCase() === "class") {
-				el.className = a[an];
-			} else if (am[an.toLowerCase()]) {
-				el.setAttribute(am[an.toLowerCase()], a[an]);
-			} else {
-				el.setAttribute(an, a[an]);
 			}
 		}
 	}
 
 	//appendChild
 	/*void*/ function ac(/*element*/ el, /*Array or String*/ c) {
+		var ct, tb;
 		if (c) {
 			if (el.tagName.toLowerCase() === "table" && el.tBodies) {
 				// in IE must explicitly nest TDs in TBODY
-				var ct = c.tagName ? c.tagName.toLowerCase() : null;// child tagName
+				ct = c.tagName ? c.tagName.toLowerCase() : null;// child tagName
 				if (ct && ct!=="tbody" && ct!=="thead") {
 					// insert in last tbody
-					var tb = el.tBodies.length>0 ? el.tBodies[el.tBodies.length-1] : null;// tBody
+					tb = el.tBodies.length>0 ? el.tBodies[el.tBodies.length-1] : null;// tBody
 					if (!tb) {
 						tb = document.createElement("tbody");
 						el.appendChild(tb);
@@ -698,7 +581,7 @@ if (!Object.prototype.toJSONString) {
 		}
 	}
 
-	//parseJsonML
+	//JsonML.parse
 	/*element*/ function p(/*JsonML*/ jml) {
 		if (!jml) {
 			return null;
@@ -707,8 +590,8 @@ if (!Object.prototype.toJSONString) {
 			return document.createTextNode(jml);
 		}
 
-		if (!(jml instanceof Array) || jml.length < 1 || typeof(jml[0]) !== "string") {
-			throw new Error("parseJsonML");
+		if (!(jml instanceof Array) || jml.length < 1 || "string" !== typeof jml[0]) {
+			throw new Error("JsonML.parse");
 		}
 
 		var t = jml[0]; // tagName
@@ -717,10 +600,10 @@ if (!Object.prototype.toJSONString) {
 
 		for (var i=1; i<jml.length; i++) {
 			if (!x) {
-				if (jml[i] instanceof Array || typeof(jml[i]) === "string") {
+				if (jml[i] instanceof Array || "string" === typeof jml[i]) {
 					// append children
 					ac(el, p(jml[i]));
-				} else if (typeof(jml[i]) === "object") {
+				} else if ("object" === typeof jml[i]) {
 					// add attributes
 					aa(el, jml[i]);
 				}
@@ -734,16 +617,21 @@ if (!Object.prototype.toJSONString) {
 		return (el && "function" === typeof filter) ? filter(el) : el;
 	}
 
-	return p(this);
-};
+	if (jml instanceof Array) {
+		return p(jml);
+	} else if ("string" === typeof jml) {
 
-/*element*/ String.prototype.parseJsonML = function (/*function(element)*/ filter) {
-	try {
-		var jml = this.parseJSON();
-	} catch (ex) {
-		return null;
+		try {
+			jml = JSON.parse(jml);
+		} catch (ex) {
+			return null;
+		}
+
+		if (jml instanceof Array) {
+			return JsonML.parse(jml, filter);
+		}
 	}
-	return (jml instanceof Array) ? jml.parseJsonML(filter) : null;
+	return null;
 };
 
 /*extern JsonFx */
@@ -752,7 +640,7 @@ if (!Object.prototype.toJSONString) {
 
 	Copyright (c)2006-2007 Stephen M. McKamey
 	Created: 2006-06-10-1635
-	Modified: 2007-03-16-0123
+	Modified: 2007-06-17-1302
 \*---------------------------------------------------------------------------*/
 
 /* namespace JsonFx */
@@ -765,132 +653,116 @@ if ("undefined" === typeof JsonFx.UI) {
 	JsonFx.UI = {};
 }
 
-/*string*/ JsonFx.userAgent = "JsonFx/1.0";
+/*Hastable*/ JsonFx.userAgent = {
+		jsonfx : "1.0"
+	};
+
+/*Hastable*/ JsonFx.parseUserAgent = function(/*string*/ ua) {
+	/*Hastable*/ var fxua = {};
+
+	if (!ua) {
+		return fxua;
+	}
+	ua = ua.toLowerCase();
+
+	// RegExp tested against (2007-06-17 @ 1235):
+	// http://www.useragentstring.com/pages/useragentstring.php
+	// http://www.user-agents.org
+	// http://en.wikipedia.org/wiki/User_agent
+	var R_All = /\S+[\/][v]?\d+(\.\d+)*/g;
+	var R_AOL = /\b(america online browser|aol)[\s\/]*(\d+(\.\d+)*)/;
+	var R_MSIE = /(\bmsie|microsoft internet explorer)[\s\/]*(\d+(\.\d+)*)/;
+	var R_Gecko = /rv[:](\d+(\.\d+)*).*?gecko[\/]\d+/;
+	var R_Opera = /\bopera[\s\/]*(\d+(\.\d+)*)/;
+	var R_MSPIE = /\b(mspie|microsoft pocket internet explorer)[\s\/]*(\d+(\.\d+)*)/;
+	var R_iCab = /\bicab[\s\/]*(\d+(\.\d+)*)/;
+
+	// do this first for all (covers most browser types)
+	var i, s, b, raw = ua.match(R_All);
+	if (raw) {
+		for (i=0; i<raw.length; i++) {
+			s = raw[i].indexOf('/');
+			b = raw[i].substring(0, s);
+			if (b && b !== "mozilla") {
+				// shorten this common browser
+				if (b === "applewebkit") {
+					b = "webkit";
+				}
+				fxua[b] = raw[i].substr(s+1);
+			}
+		}
+	}
+
+	// aol uses multiple engines so continue checking
+	if (R_AOL.exec(ua)) {
+		fxua.aol = RegExp.$2;
+	}
+
+	// order is important as user-agents spoof each other	
+	if (R_Opera.exec(ua)) {
+		fxua.opera = RegExp.$1;
+	} else if (R_iCab.exec(ua)) {
+		fxua.icab = RegExp.$1;
+	} else if (R_MSIE.exec(ua)) {
+		fxua.ie = RegExp.$2;
+	} else if (R_MSPIE.exec(ua)) {
+		fxua.mspie = RegExp.$2;
+	} else if (R_Gecko.exec(ua)) {
+		fxua.gecko = RegExp.$1;
+	}
+	return fxua;
+};
+
+/*void*/ JsonFx.formatCssUserAgent = function (/*Hastable*/ fxua) {
+	/*string*/ function format(/*string*/ b, /*string*/ v) {
+		/*const string*/ var PREFIX = " ua-", i;
+
+		/*string*/ var css = PREFIX+b;
+		if (v) {
+			v = v.replace(/\./g, '-');
+			i = v.indexOf('-');
+			while (i > 0) {
+				// loop through chopping last '-' to end off
+				// concat result onto return string
+				css += PREFIX+b+'-'+v.substring(0, i);
+				i = v.indexOf('-', i+1);
+			}
+			css += PREFIX+b+'-'+v;
+		}
+		return css;
+	}
+
+	var uaCss = "";
+
+	for (var b in fxua) {
+		if (b && fxua.hasOwnProperty(b)) {
+			JsonFx.userAgent[b] = fxua[b];
+			uaCss += format(b, fxua[b]);
+		}
+	}
+
+	// assign user-agent classes
+	return uaCss;
+};
 
 (function() {
 	// anonymous function doesn't affect global namespace and can't be called externally
 	// variables and helper functions only available via JavaScript closures
 
-	/*string*/ function parse() {
-		/*{b,v}[]*/ var details = [];
-
-		// Regex tested against (2006-06-11 @ 1600): http://en.wikipedia.org/wiki/User_agent
-		var R_MSIE = /(msie|microsoft internet explorer)[\s\/]*([0-9]+[\.]?[0-9]*)/;
-		var R_Gecko = /rv[:]([0-9]+[\.]?[0-9]*).*?gecko[\/][0-9]+(\s+(\S+)[\/]([0-9]+[\.]?[0-9]*))?/;
-		var R_AppleWebKit = /applewebkit[\/]([0-9]+[\.]?[0-9]*).*?(\S+)[\/][v]?([0-9]+[\.]?[0-9]*)/;
-		var R_Opera = /opera[\s\/]*([0-9]+[\.]?[0-9]*)/;
-		var R_MSPIE = /(mspie|microsoft pocket internet explorer)[\s\/]*([0-9]+[\.]?[0-9]*)/;
-		var R_MozCompat = /[(].*?(\S+)[\/]([0-9]+[\.]?[0-9]*).*?[)]/;
-		var R_Other = /^([^\/]+)[\/]([0-9]+[\.]?[0-9]*)/;
-		var R_AOL = /(america online browser|aol)[\s\/]*([0-9]+[\.]?[0-9]*)/;
-
-		var ua = navigator.userAgent.toLowerCase();
-		var name = null;// browser name
-		var ver = null;// browser version
-
-		// aol uses multiple browsers so don't stop
-		if (R_AOL.exec(ua)) {
-			details.push( { b : "aol", v : RegExp.$2 } );
-		}
-
-		// order is important as user-agents spoof each other	
-		if (R_Opera.exec(ua)) {
-			name = "opera";
-			ver = RegExp.$1;
-		} else if (R_MSIE.exec(ua)) {
-			name = "msie";
-			ver = RegExp.$2;
-		} else if (R_MSPIE.exec(ua)) {
-			name = "mspie";
-			ver = RegExp.$2;
-		} else if (R_AppleWebKit.exec(ua)) {
-			name = "applewebkit";
-			ver = RegExp.$1;
-
-			// also add AppleWebKit-brand version
-			details.push( { b : RegExp.$2, v : RegExp.$3 } );
-		} else if (R_Gecko.exec(ua)) {
-			name = "gecko";
-			ver = RegExp.$1;
-
-			// also add Gecko-brand version
-			details.push( { b : RegExp.$3, v : RegExp.$4 } );
-		} else if (R_MozCompat.exec(ua)) {
-			name = RegExp.$1;
-			ver = RegExp.$2;
-		} else if (R_Other.exec(ua)) {
-			name = RegExp.$1;
-			ver = RegExp.$2;
-		}
-
-		// name = browser, ver = parsed version string
-		details.push( { b : name, v : ver } );
-		
-		return details;
-	}
-
-	// calculate styles immediately, loop until can apply them
-	/*string*/ var uaDetails = parse();
-	if (uaDetails.length) {
-		JsonFx.userAgent += " (";
-		for (var i=0; i<uaDetails.length;i ++) {
-			if (i>0) {
-				JsonFx.userAgent += "; ";
-			}
-			JsonFx.userAgent += uaDetails[i].b+"/"+uaDetails[i].v;
-		}
-		JsonFx.userAgent += ")";
-	}
+	// calculate userAgent immediately, poll until can apply them
+	/*Hastable*/ var fxua = JsonFx.parseUserAgent(navigator.userAgent);
 
 	/*	Dynamically appends CSS classes to document.body based upon user-agent.*/
 	/*void*/ JsonFx.UI.setCssUserAgent = function() {
 
-		/*string*/ function formatCss(/*string*/ b, /*string*/ v) {
-			/*const string*/ var PREFIX = " ua-";
-
-			if (!b) {
-				return "";
-			}
-
-			b = b.replace(/\s+/g, '-');
-			var vi = parseInt(v, 10);
-			var vf = parseFloat(v);
-			vf = (vf === vi && vf.toFixed) ?
-				vf.toFixed(1) : vf.toString();
-			vf = vf.replace(/\./g, '-');
-			if (!isFinite(vi)) {
-				return PREFIX+b;
-			}
-			return PREFIX+b+PREFIX+b+vi+PREFIX+b+vf;
-		}
-
 		// using JavaScript closures to access the parsed UA
-		/*void*/ function appendCss(/*{b,v}[]*/ d) {
-			var uaCss = "";
-
-			while (d.length) {
-				ua = d.pop();
-				uaCss += formatCss(ua.b, ua.v);
-			}
-
-			// assign user-agent classes
-			if (document.body.className) {
-				document.body.className += uaCss;
-			} else {
-				document.body.className += uaCss.substring(1);
-			}
-
-			// DEBUG
-			//alert("\""+document.body.className+"\"");
-		}
-
 		// using setTimeout to poll until body exists
 		/*void*/ function appendCssPoll() {
 
 			if (!document.body) {
-				setTimeout(appendCssPoll, 100);
+				setTimeout(appendCssPoll, 10);
 			} else {
-				appendCss(uaDetails);
+				document.body.className += JsonFx.formatCssUserAgent(fxua);
 			}
 		}
 
@@ -898,13 +770,58 @@ if ("undefined" === typeof JsonFx.UI) {
 	};
 })();
 
-/*extern JsonFx */
+/*extern JsonFx, JSON */
 /*---------------------------------------------------------*\
 	JsonFx IO
 	Copyright (c)2006-2007 Stephen M. McKamey
 	Created: 2006-11-09-0120
-	Modified: 2007-03-12-2349
+	Modified: 2008-05-25-2253
 \*---------------------------------------------------------*/
+
+// dependency checks
+if ("undefined" === typeof JSON) {
+	throw new Error("JsonFx.IO requires json2.js");
+}
+
+/* ----------------------------------------------------*/
+
+(function () {
+	// wrapping in anonymous function so that the XHR ID list
+	// will be only available as a closure, as this will not
+	// modify the global namespace, and it will be shared
+	var XHR_OCXs;
+
+	if ("undefined" === typeof window.XMLHttpRequest) {
+
+		// these IDs are as per MSDN documentation (including case)
+		/*string[]*/ XHR_OCXs = !window.ActiveXObject ? [] :
+			[
+				"Msxml2.XMLHTTP.6.0",
+				"Msxml2.XMLHttp.5.0",
+				"Msxml2.XMLHttp.4.0",
+				"MSXML2.XMLHTTP.3.0",
+				"MSXML2.XMLHTTP",
+				"Microsoft.XMLHTTP"
+			];
+
+		// XMLHttpRequest: augment browser to have "native" XHR
+		/*XMLHttpRequest*/ window.XMLHttpRequest = function() {
+			while (XHR_OCXs.length) {
+				try {
+					return new window.ActiveXObject(XHR_OCXs[0]);
+				} catch (ex) {
+					// remove the failed XHR_OCXs for all future requests
+					XHR_OCXs.shift();
+				}
+			}
+
+			// all XHR_OCXs failed		
+			return null;
+		};
+	}
+})();
+
+/* ----------------------------------------------------*/
 
 /* namespace JsonFx */
 if ("undefined" === typeof JsonFx) {
@@ -938,16 +855,17 @@ JsonFx.IO = {};
 */
 
 /*RequestOptions*/ JsonFx.IO.onFailure = function(/*XMLHttpRequest|JSON*/ obj, /*object*/ cx, /*error*/ ex) {
+	var name, msg, code;
 	if (ex) {
-		var name = ex.name ? ex.name : "Error";
-		var msg = ex.message ? ex.message : "";
-		var code = isFinite(ex.code) ? Number(ex.code) : Number(ex.number);
+		name = ex.name ? ex.name : "Error";
+		msg = ex.message ? ex.message : "";
+		code = isFinite(ex.code) ? Number(ex.code) : Number(ex.number);
 
 		if (isFinite(code)) {
 			name += " ("+code+")";
 		}
 
-		window.alert("Request Failed - "+name+":\n\""+msg+"\"");
+		window.alert("Request Failed - "+name+":\r\n\""+msg+"\"\r\n"+obj);
 	}
 };
 
@@ -961,6 +879,8 @@ JsonFx.IO = {};
 	}
 	if ("string" !== typeof options.method) {
 		options.method = "POST";
+	} else {
+		options.method = options.method.toUpperCase();
 	}
 	if ("string" !== typeof options.params) {
 		options.params = null;
@@ -978,7 +898,7 @@ JsonFx.IO = {};
 	options.headers.Pragma = "no-cache";
 
 	if ("number" !== typeof options.timeout) {
-		options.timeout = 10000;// 10 seconds
+		options.timeout = 60000;// 60 seconds
 	}
 	if ("function" !== typeof options.onCreate) {
 		options.onCreate = null;
@@ -1060,16 +980,17 @@ JsonFx.IO = {};
 
 			try { document.body.appendChild(document.createTextNode((xhr?readyStates[xhr.readyState]:"null")+";")); } catch (ex) {}
 		*/
+		var status, ex;
 		if (xhr && xhr.readyState === 4 /*complete*/) {
 
 			// stop the timeout
 			window.clearTimeout(cancel);
 
 			// check the status
-			var status = 0;
+			status = 0;
 			try {
 				status = Number(xhr.status);
-			} catch (ex) {
+			} catch (ex2) {
 				// Firefox doesn't allow status to be accessed after xhr.abort()
 			}
 
@@ -1090,7 +1011,7 @@ JsonFx.IO = {};
 
 			} else if (options.onFailure) { // status not 200-299
 				// failure
-				var ex = new Error(xhr.statusText);
+				ex = new Error(xhr.statusText);
 				ex.code = status;
 				options.onFailure(xhr, options.context, ex);
 			}
@@ -1108,22 +1029,24 @@ JsonFx.IO = {};
 		xhr.open(options.method, url, options.async);
 
 		if (options.headers) {
-			try {// Opera 8.0 doesn't have xhr.setRequestHeader
-				for (var h in options.headers) {
-					if (options.headers.hasOwnProperty(h)) {
+			for (var h in options.headers) {
+				if (options.headers.hasOwnProperty(h) && options.headers[h]) {
+					try {// Opera 8.0.0 doesn't have xhr.setRequestHeader
 						xhr.setRequestHeader(h, options.headers[h]);
-					}
+					} catch (ex) { }
 				}
-			} catch (ex) {
-				alert("xhr.setRequestHeader: "+(ex.message?ex.message:ex));
 			}
+		}
+
+		if (options.method === "POST" && !options.params) {
+			options.params = "";
 		}
 		xhr.send(options.params);
 
-	} catch (ex) {
+	} catch (ex2) {
 		// immediate failure: exception thrown
 		if (options.onFailure) {
-			options.onFailure(xhr, options.context, ex);
+			options.onFailure(xhr, options.context, ex2);
 		}
 
 	} finally {
@@ -1141,8 +1064,7 @@ JsonFx.IO = {};
 	// ensure defaults
 	options = JsonFx.IO.validateOptions(options);
 
-	options.headers["User-Agent"] = JsonFx.userAgent;
-	options.headers.Accept = "application/json";
+	options.headers.Accept = "application/json, application/jsonml+json";
 
 	var onSuccess = options.onSuccess;
 	options.onSuccess = function(/*XMLHttpRequest*/ xhr, /*object*/ context) {
@@ -1150,7 +1072,7 @@ JsonFx.IO = {};
 		// decode response as JSON
 		var json = xhr ? xhr.responseText : null;
 		try {
-			json = ("string" === typeof json) ? json.parseJSON() : null;
+			json = ("string" === typeof json) ? JSON.parse(json) : null;
 
 			if ("function" === typeof onSuccess) {
 				onSuccess(json, context);
@@ -1165,11 +1087,12 @@ JsonFx.IO = {};
 		}
 	};
 
+	var onFailure = null;
 	if (options.onFailure) {
-		var onFailure = options.onFailure;
+		onFailure = options.onFailure;
 		options.onFailure = function (/*XMLHttpRequest*/ xhr, /*object*/ context, /*Error*/ ex) {
 
-			onFailure((xhr ? xhr.responseText : null), context, ex);
+			onFailure((xhr&&xhr.responseText), context, ex);
 
 			// free closure references
 			onFailure = null;
@@ -1182,15 +1105,14 @@ JsonFx.IO = {};
 /* JSON-RPC ----------------------------------------------------*/
 
 /*string*/ JsonFx.IO.jsonRpcPathEncode = function (/*string*/ rpcMethod, /*object|array*/ rpcParams) {
-	var enc = encodeURIComponent;
-	var rpcUrl = "/";
-	if (rpcMethod) {
+	var i, enc = encodeURIComponent, rpcUrl = "/";
+	if (rpcMethod && rpcMethod !== "system.describe") {
 		rpcUrl += enc(rpcMethod);
 	}
 	if ("object" === typeof rpcParams) {
 		rpcUrl += "?";
 		if (rpcParams instanceof Array) {
-			for (var i=0; i<rpcParams.length; i++) {
+			for (i=0; i<rpcParams.length; i++) {
 				if (i > 0) {
 					rpcUrl += "&";
 				}
@@ -1200,9 +1122,11 @@ JsonFx.IO = {};
 			}
 		} else {
 			for (var p in rpcParams) {
-				rpcUrl += enc(p);
-				rpcUrl += "=";
-				rpcUrl += enc(rpcParams[p]);
+				if (rpcParams.hasOwnProperty(p)) {
+					rpcUrl += enc(p);
+					rpcUrl += "=";
+					rpcUrl += enc(rpcParams[p]);
+				}
 			}
 		}
 	}
@@ -1217,8 +1141,7 @@ JsonFx.IO = {};
 	// ensure defaults
 	options = JsonFx.IO.validateOptions(options);
 
-	options.headers["User-Agent"] = JsonFx.userAgent;
-	options.headers.Accept = "application/json";
+	options.headers.Accept = "application/json, application/jsonml+json";
 
 	// wrap callbacks with RPC layer
 	var onSuccess = options.onSuccess;
@@ -1230,7 +1153,7 @@ JsonFx.IO = {};
 
 		var json = xhr ? xhr.responseText : null;
 		try {
-			json = ("string" === typeof json) ? json.parseJSON() : null;
+			json = ("string" === typeof json) ? JSON.parse(json) : null;
 
 			if (json.error) {
 				if (onFailure) {
@@ -1257,7 +1180,7 @@ JsonFx.IO = {};
 
 		var json = xhr ? xhr.responseText : null;
 		try {
-			json = ("string" === typeof json) ? json.parseJSON() : null;
+			json = ("string" === typeof json) ? JSON.parse(json) : null;
 
 			if (onFailure) {
 				onFailure(json, cx, ex);
@@ -1276,24 +1199,28 @@ JsonFx.IO = {};
 		rpcParams = [ rpcParams ];
 	}
 
+	var rpcRequest;
 	if (options.method === "GET") {
 		// GET RPC is encoded as part the URL
 		rpcUrl += JsonFx.IO.jsonRpcPathEncode(rpcMethod, rpcParams);
 
 	} else {
 		// POST RPC is encoded as a JSON body
-		var rpcRequest = {
-				"version" : "1.1",
-				"method" : rpcMethod,
-				"params" : rpcParams
+		rpcRequest = {
+				version : "1.1",
+				method : rpcMethod,
+				params : rpcParams
 			};
 
 		try {
 			// JSON encode request object
-			rpcRequest = rpcRequest.toJSONString();
+			rpcRequest = JSON.stringify(rpcRequest);
 		} catch (ex) {
 			// if violates JSON, then fail
-			return false;
+			if (onFailure) {
+				onFailure(rpcRequest, options.context, ex);
+			}
+			return;
 		}
 
 		options.params = rpcRequest;
@@ -1323,11 +1250,10 @@ if ("undefined" === typeof JsonFx.IO.JsonRpcService) {
 		// ensure defaults
 		options = JsonFx.IO.validateOptions(options);
 
+		var self = this, onComplete = null;
 		if ("function" === typeof this.onEndRequest) {
-			var self = this;
-
 			// intercept onComplete to call onEndRequest
-			var onComplete = options.onComplete;
+			onComplete = options.onComplete;
 			options.onComplete = function(/*JSON*/ json, /*object*/ cx) {
 				self.onEndRequest(cx);
 
@@ -1355,13 +1281,23 @@ if ("undefined" === typeof JsonFx.IO.JsonRpcService) {
 	};
 }
 
-/*extern JsonFx */
+/*extern JsonFx, JSON, JsonML */
 /*---------------------------------------------------------*\
 	JsonFx UI
 	Copyright (c)2006-2007 Stephen M. McKamey
 	Created: 2006-11-11-1759
-	Modified: 2007-03-12-2349
+	Modified: 2008-05-25-2253
 \*---------------------------------------------------------*/
+
+// dependency checks
+if ("undefined" === typeof JSON) {
+	throw new Error("JsonFx.UI requires json2.js");
+}
+if ("undefined" === typeof JsonML) {
+	throw new Error("JsonFx.UI requires JsonML2.js");
+}
+
+/* Utilities ----------------------------------------------------*/
 
 /* namespace JsonFx */
 if ("undefined" === typeof JsonFx) {
@@ -1375,7 +1311,7 @@ if ("undefined" === typeof JsonFx.UI) {
 
 /* Utilities ----------------------------------------------------*/
 
-/*string*/ JsonFx.UI.getStyle = function(/*element*/ elem, /*string*/ style) {
+/*string*/ JsonFx.UI.getStyle = function(/*DOM*/ elem, /*string*/ style) {
 	if ("string" === typeof elem) {
 		elem = document.getElementById(elem);
 	}
@@ -1383,6 +1319,7 @@ if ("undefined" === typeof JsonFx.UI) {
 		// W3C DOM equivalent to currentStyle:
 		return document.defaultView.getComputedStyle(elem, null).getPropertyValue(style);
 	}
+	var i;
 	if (elem.currentStyle) {
 		// IE only
 		if (style === "float") {
@@ -1391,7 +1328,7 @@ if ("undefined" === typeof JsonFx.UI) {
 			// convert property name to camelCase
 			style = style.split('-');
 			style[0] = style[0].toLowerCase();
-			for (var i=1; i<style.length; i++) {
+			for (i=1; i<style.length; i++) {
 				style[i] = style[i].charAt(0).toUpperCase()+style[i].substr(1).toLowerCase();
 			}
 			style = style.join("");
@@ -1401,20 +1338,177 @@ if ("undefined" === typeof JsonFx.UI) {
 	return null;
 };
 
-/*{left,top}*/ JsonFx.UI.getOffset = function(/*element*/ elem) {
-	var top=0, left=0;
+/*bool*/ JsonFx.UI.hasClassName = function(/*DOM*/ elem, /*string*/ cssClass) {
+	return !!cssClass &&
+		!!elem &&
+		!!elem.className &&
+		!!elem.className.match("\\b"+cssClass+"\\b");
+};
+
+/*DOM*/ JsonFx.UI.debugPoint = function (/*int*/ x, /*int*/ y, /*{delay,color,size,className}*/ options) {
+	if (isNaN(x)) {
+		x = 0;
+	}
+	if (isNaN(y)) {
+		y = 0;
+	}
+	options = options || {};
+	options.delay = options.delay || 1500;
+	if (!options.className) {
+		options.size = options.size || "4px";
+		options.color = options.color || "magenta";
+	}
+
+	var pt = document.createElement("div");
+	pt.style.position = "absolute";
+	pt.style.left = (x-pt.offsetWidth)+"px";
+	pt.style.top = (y-pt.offsetHeight)+"px";
+	pt.title = "("+x+","+y+")";
+	pt.className = options.className;
+	if (options.size) {
+		pt.style.height = pt.style.width = options.size;
+		pt.style.overflow = "hidden";
+	}
+	document.body.appendChild(pt);
+
+	if (options.delay > 0) {
+		window.setTimeout(
+			function() {
+				if (pt) {
+					pt.parentNode.removeChild(pt);
+					pt = null;
+				}
+			},
+			options.delay);
+	}
+	options = null;
+	return pt;
+};
+
+/*{x,y}*/ JsonFx.UI.getScroll = function(/*element*/ elem) {
+	if ("string" === typeof elem) {
+		elem = document.getElementById(elem);
+	}
+	var pt = {x:0, y:0};
+	elem = elem && elem.parentNode;
 	while (elem) {
-		top += elem.offsetTop;
-		left += elem.offsetLeft;
+		if (!isNaN(elem.scrollTop)) {
+			pt.y += elem.scrollTop;
+		}
+		if (!isNaN(elem.scrollLeft)) {
+			pt.x += elem.scrollLeft;
+		}
+		elem = elem.parentNode;
+	}
+	return pt;
+};
+
+/*{x,y}*/ JsonFx.UI.getOffset = function(/*element*/ elem, /*bool*/ skipScroll) {
+	if ("string" === typeof elem) {
+		elem = document.getElementById(elem);
+	}
+
+	var pos,
+		pt = skipScroll ? {x:0,y:0} : JsonFx.UI.getScroll(elem);
+
+	while (elem) {
+		pt.y += elem.offsetTop;
+		pt.x += elem.offsetLeft;
 		elem = elem.offsetParent;
-		if (elem) {
-			var pos = JsonFx.UI.getStyle(elem, "position");
-			if (pos && pos !== "static") {
-				elem = null;
+//		if (elem) {
+//			pos = JsonFx.UI.getStyle(elem, "position");
+//			if (pos !== "static") {
+//				elem = null;
+//			}
+//		}
+	}
+	return pt;
+};
+
+/*{x,y}*/ JsonFx.UI.getMidPoint = function(/*element*/ elem) {
+	if (!elem) {
+		return null;
+	}
+	var pt = JsonFx.UI.getOffset(elem, true);
+	pt.x += Math.floor(0.5+elem.offsetWidth/2);
+	pt.y += Math.floor(0.5+elem.offsetHeight/2);
+	return pt;
+};
+
+/*{x,y}*/ JsonFx.UI.pointAdd = function(/*{x,y}*/ a, /*{x,y}*/ b) {
+	if (!b) {
+		return a;
+	}
+	if (!a) {
+		return b;
+	}
+	return { x:(a.x+b.x), y:(a.y+b.y) };
+};
+
+/*{x,y}*/ JsonFx.UI.pointSubtract = function(/*{x,y}*/ a, /*{x,y}*/ b) {
+	if (!b) {
+		return a;
+	}
+	if (!a) {
+		return b;
+	}
+	return { x:(a.x-b.x), y:(a.y-b.y) };
+};
+
+/*element*/ JsonFx.UI.getEventTarget = function(/*Event*/ evt) {
+	evt = evt || window.event || {};
+	return (evt.currentTarget || evt.srcElement || null);
+};
+
+/*{x,y}*/ JsonFx.UI.getEventPoint = function(/*Event*/ evt) {
+	evt = evt || window.event || { clientX:-Infinity, clientY:-Infinity };
+	if (typeof evt.pageX !== "undefined") {
+		return { x:evt.pageX, y:evt.pageY };
+	}
+	var pt = JsonFx.UI.getScroll(JsonFx.UI.getEventTarget(evt));
+	return JsonFx.UI.pointAdd(pt, { x:evt.clientX, y:evt.clientY });
+};
+
+/*{left,middle,right}*/ JsonFx.UI.getMouseButton = function(/*Event*/ evt) {
+	evt = evt || window.event;
+	var b, btn = {left:false,middle:false,right:false};
+
+	if (evt) {
+		if (isNaN(evt.which)) {
+			// IE (can be multiple)
+			b = evt.button;
+			if ((b&1)!==0) {
+				btn.left = true;
+			}
+			if ((b&2)!==0) {
+				btn.right = true;
+			}
+			if ((b&4)!==0) {
+				btn.middle = true;
+			}
+		} else {
+			// Firefox, Opera, Safari
+			switch (evt.which){
+				case 1:
+					btn.left = true;
+					break;
+				case 2:
+					btn.middle = true;
+					break;
+				case 3:
+					btn.right = true;
+					break;
 			}
 		}
 	}
-	return { "left":left, "top":top };
+	return btn;
+};
+
+/*void*/ JsonFx.UI.cancelEvent = function(/*Event*/ evt) {
+	evt = evt || window.event || {};
+	if (evt) {
+		evt.cancelBubble = true;
+	}
 };
 
 /*void*/ JsonFx.UI.clearTextSelection = function() {
@@ -1427,25 +1521,44 @@ if ("undefined" === typeof JsonFx.UI) {
 	}
 };
 
-/*function*/ JsonFx.UI.combineHandlers = function (/*function*/ handlerA, /*function*/ handlerB) {
-	if ("function" === typeof handlerA) {
-		if ("function" === typeof handlerB) {
-			return function(/*Event*/ evt) { handlerA(evt); return handlerB(evt); };
-		} else {
-			return handlerA;
-		}
+/*function*/ JsonFx.UI.combineHandlers = function (/*function*/ a, /*function*/ b) {
+	if ("function" !== typeof b) {
+		return a;
+	}
+
+	if ("function" !== typeof a) {
+		return b;
+	}
+
+	return function(/*Event*/ evt) { a(evt); return b(evt); };
+};
+
+/*void*/ JsonFx.UI.attachHandler = function (/*DOM*/ obj, /*string*/ evtName, /*function*/ handler) {
+	if (obj.addEventListener) {
+		//DOM method for binding an event
+		obj.addEventListener(evtName, handler, false);
+	} else if (obj.attachEvent) {
+		//IE exclusive method for binding an event
+		obj.attachEvent("on"+evtName, handler);
+	} else if ("function" === typeof obj["on"+evtName]) {
+		obj["on"+evtName] = JsonFx.UI.combineHandlers(handler, obj["on"+evtName]);
 	} else {
-		return handlerB;
+		obj["on"+evtName] = handler;
 	}
 };
 
-/*element*/ JsonFx.UI.getIFrameDocument = function(/*element*/ elem) {
-	if (!elem) {
-		return null;
+/*void*/ JsonFx.UI.detachHandler = function (/*DOM*/ obj, /*string*/ evtName, /*function*/ handler) {
+	if (obj.removeEventListener) {
+		//DOM method for unbinding an event
+		obj.removeEventListener(evtName, handler, false);
+	} else if (obj.detachEvent) {
+		//IE exclusive method for binding an event
+		obj.detachEvent("on"+evtName, handler);
+	} else if (handler === obj["on"+evtName]) {
+		obj["on"+evtName] = null;
+	} else {
+		// not sure how to remove this kind...
 	}
-
-	return ("undefined" !== typeof elem.contentDocument) ?
-		elem.contentDocument : elem.contentWindow.document;
 };
 
 /*string*/ JsonFx.UI.toHtmlColor = function(/*int*/ r, /*int*/ g, /*int*/ b) {
@@ -1472,36 +1585,67 @@ if ("undefined" === typeof JsonFx.UI) {
 			if (hex.length === 7) {
 				// e.g. "#336699"
 				return {
-						"r":Number("0x"+RegExp.$1),
-						"g":Number("0x"+RegExp.$2),
-						"b":Number("0x"+RegExp.$3)
+						r:Number("0x"+RegExp.$1),
+						g:Number("0x"+RegExp.$2),
+						b:Number("0x"+RegExp.$3)
 					};
 			} else if (hex.length === 4) {
 				// e.g. "#369" === "#336699"
 				return {
-						"r":Number("0x"+RegExp.$1+RegExp.$1),
-						"g":Number("0x"+RegExp.$2+RegExp.$2),
-						"b":Number("0x"+RegExp.$3+RegExp.$3)
+						r:Number("0x"+RegExp.$1+RegExp.$1),
+						g:Number("0x"+RegExp.$2+RegExp.$2),
+						b:Number("0x"+RegExp.$3+RegExp.$3)
 					};
 			}
 		}
 		if (hex.match(/rgb[\(](\d+),\s*(\d+),\s*(\d+)[\)]/)) {// Firefox colors
 			return {
-					"r":Number(RegExp.$1),
-					"g":Number(RegExp.$2),
-					"b":Number(RegExp.$3)
+					r:Number(RegExp.$1),
+					g:Number(RegExp.$2),
+					b:Number(RegExp.$3)
 				};
 		}
 	}
-	return {"r":NaN, "g":NaN, "b":NaN};
+	return {r:NaN, g:NaN, b:NaN};
 };
 
-/*float*/ JsonFx.UI.lerp = function (/*float*/ start, /*float*/ end, /*float*/ t) {
-	return (start * (1-t)) + (end * t);
+/*float*/ JsonFx.UI.bound = function (/*float*/ start, /*float*/ end, /*float*/ val) {
+	// don't allow val to exceed bounds
+	if (start < end) {
+		val = Math.min(val, end);
+		val = Math.max(val, start);
+	} else {
+		val = Math.min(val, start);
+		val = Math.max(val, end);
+	}
+	return val;
 };
 
-/*int*/ JsonFx.UI.lerpInt = function (/*int*/ start, /*int*/ end, /*float*/ t) {
-	return Math.floor( JsonFx.UI.lerp(start, end, t) + 0.5 );
+/* Linear Interpolate */
+/*float*/ JsonFx.UI.lerp = function (/*float*/ a, /*float*/ b, /*float*/ t, /*bool*/ bounded) {
+	var val = (a * (1-t)) + (b * t);
+	return bounded ? JsonFx.UI.bound(a, b, val) : val;
+};
+
+/* Integer Linear Interpolation */
+/*int*/ JsonFx.UI.lerpInt = function (/*int*/ a, /*int*/ b, /*float*/ t, /*bool*/ bounded) {
+	return Math.floor( 0.5 + JsonFx.UI.lerp(a, b, t, bounded) );
+};
+
+/* Reverse Linear Interpolate */
+/*float*/ JsonFx.UI.revLerp = function (/*float*/ a, /*float*/ b, /*float*/ t, /*bool*/ bounded) {
+	var val = (t-a)/(b-a);
+	return bounded ? JsonFx.UI.bound(0, 1, val) : val;
+};
+
+/* Cubic Bezier Curve */
+/*float*/ JsonFx.UI.bezier = function (/*float*/ a, /*float*/ b, /*float*/ c, /*float*/ d, /*float*/ t) {
+	return a*Math.pow(1-t,3) + b*3*t*Math.pow(1-t,2) + c*3*Math.pow(t,2)*(1-t) + d*Math.pow(t,3);
+};
+
+/* Cubic Bezier Curve */
+/*{x,y}*/ JsonFx.UI.bezierPoint = function (/*{x,y}*/ p0, /*{x,y}*/ p1, /*{x,y}*/ p2, /*{x,y}*/ p3, /*float*/ t) {
+	return {x:JsonFx.UI.bezier(p0.x, p1.x, p2.x, p3.x, t), y:JsonFx.UI.bezier(p0.y, p1.y, p2.y, p3.y, t)};
 };
 
 /*-------------------*\
@@ -1516,7 +1660,10 @@ JsonFx.UI.Bindings = function() {
 
 	/*hashtable[tag] of object*/ var bindings = {};
 
-	/*void*/ b.register = function(/*string*/ tag, /*string*/ css, /*function(elem)*/ bind, /*function(elem)*/ unbind) {
+	/*void*/ b.register = function(/*string*/ tag, /*string*/ css, /*function(elem,options)*/ bind, /*function(elem,options)*/ unbind, /*bool*/ overwrite) {
+
+//		alert(tag+"."+css+":\n"+bind+"\n"+unbind);
+
 		if (typeof css !== "string") {
 			throw new Error("Binding CSS is not a string.");
 		}
@@ -1534,32 +1681,47 @@ JsonFx.UI.Bindings = function() {
 			tag = tag.toLowerCase();
 			if ("undefined" === typeof bindings[tag]) {
 				/*object*/ bindings[tag] = {};
-			} else if (bindings[tag][css]) {
-				throw new Error("Binding for tag=\""+tag+"\" css=\""+css+"\" has already been registered.");
+			} else if (!overwrite && bindings[tag][css]) {
+				throw new Error("Binding for "+tag+"."+css+" has already been registered.");
 			}
 
 			/*object*/ bindings[tag][css] = {};
-			bindings[tag][css][BIND] = bind ? bind : null;
-			bindings[tag][css][UNBIND] = unbind ? unbind : null;
+			bindings[tag][css][BIND] = bind || null;
+			bindings[tag][css][UNBIND] = unbind || null;
 		}
 	};
 
 	/*element*/ var performOne = function(/*element*/ elem, /*actionKey*/ a) {
+		var tag, tagBindings, classes, i, css, options, replace;
 		if (elem && elem.tagName && elem.className) {
 
 			// only perform on registered tags
-			var tag = elem.tagName.toLowerCase();
+			tag = elem.tagName.toLowerCase();
 			if (bindings[tag]) {
-				var tagBindings = bindings[tag];
-				var classes = elem.className.split(/\s+/);
+				tagBindings = bindings[tag];
+				classes = elem.className.split(/\s+/);
 
 				// for each css class in elem
-				for (var i=0; i<classes.length; i++) {
-					var css = classes[i];
+				for (i=0; i<classes.length; i++) {
+					css = classes[i];
 					if (css && tagBindings[css] && tagBindings[css][a]) {
 
-						// perform action on element							
-						tagBindings[css][a](elem);
+						// allow element to provide parameters for bindings
+						options = elem.getAttribute("jsonfx:options");
+						if (options) {
+							try {
+								// treat string as JSON
+								options = JSON.parse(options);
+							} catch (ex) { }
+						}
+
+						try {
+							// perform action on element and
+							// allow binding to replace element
+							elem = tagBindings[css][a](elem, options) || elem;
+						} catch (ex2) {
+							window.alert("Error binding "+tag+"."+css+":\n\n\""+ex2.message+"\"");
+						}
 					}
 				}
 			}
@@ -1569,6 +1731,7 @@ JsonFx.UI.Bindings = function() {
 
 	// perform a binding action on child elements
 	/*void*/ var perform = function(/*element*/ root, /*actionKey*/ a) {
+		var elems, i, replace;
 		if (root && root.getElementsByTagName) {
 
 			// for each registered tag
@@ -1576,9 +1739,14 @@ JsonFx.UI.Bindings = function() {
 				if (bindings.hasOwnProperty(tag)) {
 
 					// for each element in root with tagName
-					var elems = root.getElementsByTagName(tag);
-					for (var i=0; i<elems.length; i++) {
-						performOne(elems[i], a);
+					elems = root.getElementsByTagName(tag);
+					for (i=0; i<elems.length; i++) {
+						// perform action on element and
+						// allow binding to replace element
+						replace = performOne(elems[i], a);
+						if (replace !== elems[i] && elems[i].parentNode) {
+							elems[i].parentNode.replaceChild(replace, elems[i]);
+						}
 					}
 				}
 			}
@@ -1588,6 +1756,16 @@ JsonFx.UI.Bindings = function() {
 	// used as JsonML filter
 	/*element*/ b.bindOne = function(/*element*/ elem) {
 		return performOne(elem, BIND);
+	};
+
+	// bind
+	/*void*/ b.bind = function(/*element*/ root) {
+		perform(root, BIND);
+	};
+
+	// unbind
+	/*void*/ b.unbind = function(/*element*/ root) {
+		perform(root, UNBIND);
 	};
 
 	// bind
@@ -1604,12 +1782,12 @@ JsonFx.UI.Bindings = function() {
 		}
 
 		try {
-			perform(document, BIND);
+			b.bind(document);
 		} finally {
 			if (document.body && document.body.style) {
 				// restore previous values
-				document.body.title = ttl ? ttl : "";
-				document.body.style.cursor = crsr ? crsr : "";
+				document.body.title = ttl || "";
+				document.body.style.cursor = crsr || "";
 			}
 		}
 	};
@@ -1628,79 +1806,37 @@ JsonFx.UI.Bindings = function() {
 		}
 
 		try {
-			perform(document, UNBIND);
+			b.unbind(document);
 		} finally {
 			if (document.body && document.body.style) {
 				// restore previous values
-				document.body.title = ttl ? ttl : "";
-				document.body.style.cursor = crsr ? crsr : "";
+				document.body.title = ttl || "";
+				document.body.style.cursor = crsr || "";
 			}
 		}
 	};
 
-	// bind
-	/*void*/ b.bind = function(/*element*/ root) {
-		perform(root, BIND);
-	};
+	window.setTimeout(function() {
+			/* NOTE: using JsonFx.UI.attachHandler makes it hard to control handler order */
 
-	// unbind
-	/*void*/ b.unbind = function(/*element*/ root) {
-		perform(root, UNBIND);
-	};
+			// wire up binding
+			if ("function" === typeof window.onload) {
+				window.onload = JsonFx.UI.combineHandlers(b.bindAll, window.onload);
+			} else {
+				window.onload = b.bindAll;
+			}
 
-	// wire up binding
-	if ("function" === typeof window.onload) {
-		window.onload = JsonFx.UI.combineHandlers(b.bindAll, window.onload);
-	} else {
-		window.onload = b.bindAll;
-	}
-
-	// wire up unbinding
-	if ("function" === typeof window.onunload) {
-		window.onunload = JsonFx.UI.combineHandlers(b.unbindAll, window.onload);
-	} else {
-		window.onunload = b.unbindAll;
-	}
+			// wire up unbinding
+			if ("function" === typeof window.onunload) {
+				window.onunload = JsonFx.UI.combineHandlers(b.unbindAll, window.onunload);
+			} else {
+				window.onunload = b.unbindAll;
+			}
+		}, 0);
 };
 
 // instantiate only one, destroying the constructor
 JsonFx.UI.Bindings = new JsonFx.UI.Bindings();
-
-/*------------------*\
-	History Methods
-\*------------------*/
-
-/* singleton JsonFx.UI.History */
-JsonFx.UI.History = {};
-
-JsonFx.UI.History.h = null;
-JsonFx.UI.History.onchange = null;
-
-/*void*/ JsonFx.UI.History.add = function(/*object*/ info) {
-	var h = JsonFx.UI.getIFrameDocument(JsonFx.UI.History.h);
-	if (h) {
-		h.location.search = encodeURIComponent(info.toJSONString());
-	}
-};
-
-/*void*/ JsonFx.UI.History.changed = function(/*element*/ elem) {
-	if (!JsonFx.UI.History.h) {
-		JsonFx.UI.History.h = elem;
-	}
-	var h = JsonFx.UI.getIFrameDocument(elem);
-	if (h) {
-		var info = h.location.search;
-		if (info) {
-			if (info.charAt(0) === '?') {
-				info = info.substring(1);
-			}
-			info = decodeURIComponent(info).parseJSON();
-			if ("function" === typeof JsonFx.UI.History.onchange) {
-				JsonFx.UI.History.onchange(info);
-			}
-		}
-	}
-};
 
 /*------------------*\
 	JsonML Methods
@@ -1717,6 +1853,15 @@ JsonFx.UI.History.onchange = null;
 	}
 };
 
+/*	creates DOM elements from JsonML and binds them accordingly */
+/*element*/ JsonFx.UI.bindJsonML = function(/*JsonML*/ jml) {
+	if (jml) {
+		return JsonML.parse(jml, JsonFx.UI.Bindings.bindOne);
+	} else {
+		return null;
+	}
+};
+
 /*	if container is null then uses ID(s) to replace page elements
 	returns the container element if one was specified */
 /*element*/ JsonFx.UI.displayJsonML = function(/*JsonML*/ jml, /*element|string*/ container) {
@@ -1725,44 +1870,42 @@ JsonFx.UI.History.onchange = null;
 	container = ("string" === typeof container) ?
 		document.getElementById(container) : container;
 
-	if (jml && ("function" === typeof jml.parseJsonML)) {
-		jml = jml.parseJsonML(JsonFx.UI.Bindings.bindOne);
-		if (jml) {
-			if (container) {
-				JsonFx.UI.clear(container);
-				container.appendChild(jml);
-			} else if (jml.id) {
-				container = document.getElementById(jml.id);
+	jml = JsonFx.UI.bindJsonML(jml);
+	if (jml) {
+		if (container) {
+			JsonFx.UI.clear(container);
+			container.appendChild(jml);
+		} else if (jml.id) {
+			container = document.getElementById(jml.id);
+			if (container && container.parentNode) {
+				// unbind to prevent memory leaks
+				JsonFx.UI.Bindings.unbind(container);
+				container.parentNode.replaceChild(jml, container);
+			} else {
+				// can't add to document, so unbind
+				JsonFx.UI.Bindings.unbind(jml);
+				jml = null;
+			}
+		} else if (jml.childNodes) {
+			while (jml.firstChild) {
+				if (!jml.firstChild.id) {
+					// unbind to prevent memory leaks
+					JsonFx.UI.Bindings.unbind(jml.firstChild);
+					jml.removeChild(jml.firstChild);
+					continue;
+				}
+				container = document.getElementById(jml.firstChild.id);
 				if (container && container.parentNode) {
 					// unbind to prevent memory leaks
 					JsonFx.UI.Bindings.unbind(container);
-					container.parentNode.replaceChild(jml, container);
+					container.parentNode.replaceChild(jml.firstChild, container);
 				} else {
-					// can't add to document, so unbind
-					JsonFx.UI.Bindings.unbind(jml);
-					jml = null;
+					// unbind to prevent memory leaks
+					JsonFx.UI.Bindings.unbind(jml.firstChild);
+					jml.removeChild(jml.firstChild);
 				}
-			} else if (jml.childNodes) {
-				while (jml.firstChild) {
-					if (!jml.firstChild.id) {
-						// unbind to prevent memory leaks
-						JsonFx.UI.Bindings.unbind(jml.firstChild);
-						jml.removeChild(jml.firstChild);
-						continue;
-					}
-					container = document.getElementById(jml.firstChild.id);
-					if (container && container.parentNode) {
-						// unbind to prevent memory leaks
-						JsonFx.UI.Bindings.unbind(container);
-						container.parentNode.replaceChild(jml.firstChild, container);
-					} else {
-						// unbind to prevent memory leaks
-						JsonFx.UI.Bindings.unbind(jml.firstChild);
-						jml.removeChild(jml.firstChild);
-					}
-				}
-				container = null;
 			}
+			container = null;
 		}
 	}
 	return container;
@@ -1774,10 +1917,10 @@ JsonFx.UI.History.onchange = null;
 	/*RequestOptions*/ options) {
 
 	options = JsonFx.IO.validateOptions(options);
-	options.method = "GET";
 
+	var onCreate;
 	if (options.onCreate) {
-		var onCreate = options.onCreate;
+		onCreate = options.onCreate;
 		options.onCreate = function (/*JSON*/ jml, /*object*/ cx) {
 			// create callback
 			onCreate(cx);
@@ -1799,9 +1942,12 @@ JsonFx.UI.History.onchange = null;
 		onSuccess = container = null;
 	};
 
+	var onFailure;
 	if (options.onFailure) {
-		var onFailure = options.onFailure;
+		onFailure = options.onFailure;
 		options.onFailure = function (/*JSON*/ jml, /*object*/ cx, /*Error*/ ex) {
+			ex.$error = jml;
+		
 			// failure callback
 			onFailure(cx, ex);
 
@@ -1810,8 +1956,9 @@ JsonFx.UI.History.onchange = null;
 		};
 	}
 
+	var onTimeout;
 	if (options.onTimeout) {
-		var onTimeout = options.onTimeout;
+		onTimeout = options.onTimeout;
 		options.onTimeout = function (/*JSON*/ jml, /*object*/ cx, /*Error*/ ex) {
 			// timeout callback
 			onTimeout(cx, ex);
@@ -1821,8 +1968,9 @@ JsonFx.UI.History.onchange = null;
 		};
 	}
 
+	var onComplete;
 	if (options.onComplete) {
-		var onComplete = options.onComplete;
+		onComplete = options.onComplete;
 		options.onComplete = function (/*JSON*/ jml, /*object*/ cx) {
 			// complete callback
 			onComplete(cx);
@@ -1833,118 +1981,6 @@ JsonFx.UI.History.onchange = null;
 	}
 
 	JsonFx.IO.sendJsonRequest(url, options);
-};
-
-/* DataDump ----------------------------------------------------*/
-
-/*bool*/ JsonFx.UI.expando = function (/*element*/ elem, /*string*/ target) {
-	var expando = elem.expando;
-	if (!expando) {
-		if ("string" === typeof target) {
-			target = document.getElementById(target);
-		}
-		if (!target) {
-			return false;
-		}
-		elem.expando = expando = new JsonFx.UI.Animate.Engine(target);
-	}
-	if (expando.hasAppliedOp()) {
-		if (elem.value) {// hacky swap out for buttons
-			elem.value = " \u2212 ";
-			//elem.replaceChild(document.createTextNode("\u2212"), elem.firstChild);
-		}
-		expando.apply(null, false);
-		return false;
-	} else {
-		var op = new JsonFx.UI.Animate.Op();
-		op.fade(0);
-		op.height(0);
-		op.speed(0.65);
-		if (elem.value) {// hacky swap out for buttons
-			elem.value = " + ";
-			//elem.replaceChild(document.createTextNode("+"), elem.firstChild);
-		}
-		expando.apply(op, false);
-		return true;
-	}
-};
-
-/*void*/ JsonFx.UI.expandoBind = function(/*element*/ elem) {
-	// call after elements have been added to document
-	window.setTimeout(
-		function() {
-			var target = document.getElementById(elem.getAttribute("for"));
-			if (!target) {
-				target = elem.nextSibling;
-				while (target && !target.tagName) {
-					target = target.nextSibling;
-				}
-			}
-			if (target) {
-				try {
-					elem.style.cursor = "pointer";
-				} catch (ex) {
-					elem.style.cursor = "hand";
-				}
-				elem.className += " jsonfx-expanded";
-
-				elem.onclick = function (/*event*/ evt) {
-					if (JsonFx.UI.expando(elem, target)) {
-						elem.className = elem.className.replace(/\s*jsonfx-expanded/g, " jsonfx-collapsed");
-					} else {
-						elem.className = elem.className.replace(/\s*jsonfx-collapsed/g, " jsonfx-expanded");
-					}
-					return false;
-				};
-				elem.ondblclick = function (/*event*/ evt) {
-					if (elem.click) {
-						elem.click();
-					}
-					window.setTimeout( function(){JsonFx.UI.clearTextSelection();}, 0);
-					return false;
-				};
-			}
-		}, 0);
-};
-/*void*/ JsonFx.UI.expandoUnbind = function(/*element*/ elem) {
-	if ("undefined" !== typeof elem.expando) {
-		elem.expando = null;
-	}
-	elem.onclick = null;
-	elem.ondblclick = null;
-};
-
-/*int*/ JsonFx.UI.dumpDataID = 0;
-/*JsonML*/ JsonFx.UI.dumpData = function(/*string*/ name, /*json*/ val) {
-	var c = ["span"];
-	var type = typeof val;
-
-	var a = false;
-	if ("object" === type && val) {
-		a = ["label", {"class":"jsonfx-expando"}];
-		c.push(a);
-	}
-	(a?a:c).push(["span", {"class":"jsonfx-type"}, (val instanceof Array) ? "array" : type]);
-	(a?a:c).push(["span", {"class":"jsonfx-name"}, name]);
-
-	if ("object" === type && val) {
-		var ul = ["ul", {"id":"JsonFx_UI_Dump_"+(JsonFx.UI.dumpDataID++),"class":"jsonfx-object"}];
-		for (var pn in val) {
-			if (!val.hasOwnProperty(pn)) {
-				continue;
-			}
-			ul.push(["li", JsonFx.UI.dumpData(pn, val[pn])]);
-		}
-
-		if (a) {
-			a[1]["for"] = ul[1].id;
-		}
-		c.push(ul);
-	} else {
-		c.push(["span", {"class":"jsonfx-value"}, String(val)]);
-	}
-
-	return c;
 };
 
 /*---------------------*\
@@ -2002,8 +2038,8 @@ JsonFx.UI.Animate.Op = function() {
 	this.z = this.t = this.r = this.b = this.l = 
 	this.cL = this.cR = this.cT = this.cB =
 	this.f = this.bl = NaN;
-	this.c = { "r":NaN, "g":NaN, "b":NaN };
-	this.bc = { "r":NaN, "g":NaN, "b":NaN };
+	this.c = { r:NaN, g:NaN, b:NaN };
+	this.bc = { r:NaN, g:NaN, b:NaN };
 	this.s = 0.05;// 20 steps
 };
 
@@ -2235,31 +2271,31 @@ JsonFx.UI.Animate.Op = function() {
 };
 
 /*JsonFx.UI.Animate.Op*/ JsonFx.UI.Animate.Op.save = function(/*element*/ elem) {
-	var op = new JsonFx.UI.Animate.Op();
+	var op = new JsonFx.UI.Animate.Op(), es, esPos, top, right, bottom, left, width, height, color, clip;
 
 	if (elem && elem.style) {
-		var es = elem.style;
-		var esPos = JsonFx.UI.getStyle(elem, "position");
+		es = elem.style;
+		esPos = JsonFx.UI.getStyle(elem, "position");
 
-		var top = parseFloat(JsonFx.UI.getStyle(elem, "top"));
+		top = parseFloat(JsonFx.UI.getStyle(elem, "top"));
 		if (isFinite(top)) {
 			op.top(top);
 		} else if (esPos === "static") {
 			op.top(0);
 		}
-		var right = parseFloat(JsonFx.UI.getStyle(elem, "right"));
+		right = parseFloat(JsonFx.UI.getStyle(elem, "right"));
 		if (isFinite(right)) {
 			op.right(right);
 		} else if (esPos === "static") {
 			op.right(0);
 		}
-		var bottom = parseFloat(JsonFx.UI.getStyle(elem, "bottom"));
+		bottom = parseFloat(JsonFx.UI.getStyle(elem, "bottom"));
 		if (isFinite(bottom)) {
 			op.right(bottom);
 		} else if (esPos === "static") {
 			op.bottom(0);
 		}
-		var left = parseFloat(JsonFx.UI.getStyle(elem, "left"));
+		left = parseFloat(JsonFx.UI.getStyle(elem, "left"));
 		if (isFinite(left)) {
 			op.left(left);
 		} else if (esPos === "static") {
@@ -2270,7 +2306,7 @@ JsonFx.UI.Animate.Op = function() {
 		if (isFinite(elem.offsetWidth)) {
 			op.width(elem.offsetWidth);
 		} else {
-			var width = parseFloat(JsonFx.UI.getStyle(elem, "width"));
+			width = parseFloat(JsonFx.UI.getStyle(elem, "width"));
 			if (isFinite(width)) {
 				op.width(width);
 			}
@@ -2279,7 +2315,7 @@ JsonFx.UI.Animate.Op = function() {
 		if (isFinite(elem.offsetHeight)) {
 			op.height(elem.offsetHeight);
 		} else {
-			var height = parseFloat(JsonFx.UI.getStyle(elem, "height"));
+			height = parseFloat(JsonFx.UI.getStyle(elem, "height"));
 			if (isFinite(height)) {
 				op.height(height);
 			}
@@ -2307,7 +2343,7 @@ JsonFx.UI.Animate.Op = function() {
 		}
 
 		// color
-		var color = JsonFx.UI.fromHtmlColor(JsonFx.UI.getStyle(elem, "color"));
+		color = JsonFx.UI.fromHtmlColor(JsonFx.UI.getStyle(elem, "color"));
 		if (isFinite(color.r) && isFinite(color.g) && isFinite(color.b)) {
 			op.color(color.r, color.g, color.b);
 		} else {
@@ -2462,7 +2498,7 @@ JsonFx.UI.Animate.Engine = function(/*element*/ elem) {
 	/*bool*/ state = false,
 	/*const float*/ STEP_MIN = 0, // start
 	/*const float*/ STEP_MAX = 1, // end
-	/*Dictionary<string,bool>*/ filerable = JsonFx.UI.Animate.filterable;
+	/*Dictionary<string,bool>*/ filterable = JsonFx.UI.Animate.filterable;
 
 	var userHeight = "",
 		userWidth = "",
@@ -2534,17 +2570,17 @@ JsonFx.UI.Animate.Engine = function(/*element*/ elem) {
 			es["-moz-opacity"] = userMoz;
 			es.opacity = userOpacity;
 			try {
-				if (userFilter) {
+				if (es.filter) {
 					es.filter = userFilter;
 				}
 			} catch (ex) {}
 		}
 		if (op.hasBlur()) {
 			try {
-				if (userFilter) {
+				if (es.filter) {
 					es.filter = userFilter;
 				}
-			} catch (ex) {}
+			} catch (ex2) {}
 		}
 		if (op.hasZoom()) {
 			es.zoom = userZoom;
@@ -2561,10 +2597,10 @@ JsonFx.UI.Animate.Engine = function(/*element*/ elem) {
 	}
 
 	/*void*/ function showElem() {
-		if (!!JsonFx.UI.getStyle(elem, "display")) {
+		if (JsonFx.UI.getStyle(elem, "display") === "none") {
 			es.display = "block";
 		}
-		if (!!JsonFx.UI.getStyle(elem, "visibility")) {
+		if (JsonFx.UI.getStyle(elem, "visibility") === "hidden") {
 			es.visibility = "visible";
 		}
 	}
@@ -2574,7 +2610,7 @@ JsonFx.UI.Animate.Engine = function(/*element*/ elem) {
 			// first look up tagName to determine if
 			// element can even have filters applied
 			// to prevent incurring calculation cost
-			if (filerable[tn] &&
+			if (filterable[tn] &&
 				elem.filters) {
 				if (op.hasFade() && !alpha) {
 					if (elem.filters.length > 0) {
@@ -2586,7 +2622,7 @@ JsonFx.UI.Animate.Engine = function(/*element*/ elem) {
 							try {
 								// check IE4.0+
 								alpha = elem.filters.item("alpha");
-							} catch (ex) { alpha = null; }
+							} catch (ex2) { alpha = null; }
 						}
 					}
 					if (!alpha) {
@@ -2594,13 +2630,13 @@ JsonFx.UI.Animate.Engine = function(/*element*/ elem) {
 						es.filter += " progid:DXImageTransform.Microsoft.Alpha(enabled=false)";
 						try {
 							alpha = elem.filters.item("DXImageTransform.Microsoft.Alpha");
-						} catch (ex) { alpha = null; }
+						} catch (ex3) { alpha = null; }
 						if (!alpha) {
 							// try IE4.0+
 							es.filter += " alpha(enabled=false)";
 							try {
 								alpha = elem.filters.item("alpha");
-							} catch (ex) { alpha = null; }
+							} catch (ex4) { alpha = null; }
 						}
 					}
 				}
@@ -2609,12 +2645,12 @@ JsonFx.UI.Animate.Engine = function(/*element*/ elem) {
 						try {
 							// check IE5.5+
 							blur = elem.filters.item("DXImageTransform.Microsoft.Blur");
-						} catch (ex) { blur = null; }
+						} catch (ex5) { blur = null; }
 						if (!blur) {
 							try {
 								// check IE4.0+
 								blur = elem.filters.item("blur");
-							} catch (ex) { blur = null; }
+							} catch (ex6) { blur = null; }
 						}
 					}
 					if (!blur) {
@@ -2622,18 +2658,18 @@ JsonFx.UI.Animate.Engine = function(/*element*/ elem) {
 						es.filter += " progid:DXImageTransform.Microsoft.Blur(enabled=false)";
 						try {
 							blur = elem.filters.item("DXImageTransform.Microsoft.Blur");
-						} catch (ex) { blur = null; }
+						} catch (ex7) { blur = null; }
 						if (!blur) {
 							// try IE4.0+
 							es.filter += " blur(enabled=false)";
 							try {
 								blur = elem.filters.item("blur");
-							} catch (ex) { blur = null; }
+							} catch (ex8) { blur = null; }
 						}
 					}
 				}
 			}
-		} catch (ex) {}
+		} catch (ex9) {}
 	}
 
 	/*bool*/ this.hasAppliedOp = function() {
@@ -2727,7 +2763,7 @@ JsonFx.UI.Animate.Engine = function(/*element*/ elem) {
 						}
 						blur.pixelRadius = JsonFx.UI.lerpInt(start.bl, op.bl, step);
 						blur.enabled = true;
-					} catch (ex) {
+					} catch (ex2) {
 						blur = null;
 					}
 				}
@@ -2749,8 +2785,9 @@ JsonFx.UI.Animate.Engine = function(/*element*/ elem) {
 					JsonFx.UI.lerpInt(start.c.b, op.c.b, step)
 				);
 			}
+			var clip;
 			if (op.hasClip()) {
-				var clip = ["auto","auto","auto","auto"];
+				clip = ["auto","auto","auto","auto"];
 				if (op.hasClipT() && start.hasClipT()) {
 					clip[0] = Math.ceil(JsonFx.UI.lerp(start.cT, op.cT, step)*100)+"%";
 				}
@@ -2819,7 +2856,7 @@ JsonFx.UI.Animate.Engine = function(/*element*/ elem) {
 					function() {
 						t(state ? (step+op.s) : (step-op.s));
 					},
-					0);
+					40);// ~25Hz baseline, in case fast machine
 			}
 		}
 
@@ -2827,4 +2864,275 @@ JsonFx.UI.Animate.Engine = function(/*element*/ elem) {
 		// immediate forces to far end of step
 		t(state^immediate ? STEP_MIN : STEP_MAX);
 	};
+};
+
+/*extern JSON, JsonFx */
+/*
+	JsonFx.History.js
+
+	Copyright (c)2006-2008 Stephen M. McKamey
+	Created: 2006-11-11-1759
+	Modified: 2008-05-21-2244
+
+	Distributed under the terms of an MIT-style license:
+	http://jsonfx.net/BuildTools/License.txt
+*/
+
+/* namespace JsonFx */
+if ("undefined" === typeof JsonFx) {
+	window.JsonFx = {};
+}
+
+/* namespace JsonFx.UI */
+if ("undefined" === typeof JsonFx.UI) {
+	JsonFx.UI = {};
+}
+
+/* check dependencies */
+if ("undefined" === typeof JSON) {
+	throw new Error("JsonFx.History requires json2.js");
+}
+
+/* Utilities ----------------------------------------------------*/
+
+/*DOM*/ JsonFx.UI.getIFrameDocument = function(/*DOM*/ elem) {
+	if (!elem) {
+		return null;
+	}
+
+	if ("undefined" !== typeof elem.contentDocument) {
+		// W3C
+		return elem.contentDocument;
+	} else if ("undefined" !== typeof elem.contentWindow) {
+		// Microsoft
+		return elem.contentWindow.document;
+	} else if ("undefined" !== typeof elem.document) {
+		// deprecated
+		return elem.document;
+	}
+	// not available
+	return elem;
+};
+
+/* JsonFx.History -----------------------------------------------*/
+
+/* singleton JsonFx.History */
+JsonFx.History = {
+
+	/*DOM*/ h: null,
+	/*function(object)*/ onchange: null,
+
+	/*void*/ push: function(/*object*/ info) {
+		if (!JsonFx.History.h) {
+			// doesn't support history or no binding
+			if ("function" === typeof JsonFx.History.onchange) {
+				JsonFx.History.onchange(info);
+			}
+			return;
+		}
+		var h = JsonFx.UI.getIFrameDocument(JsonFx.History.h);
+		if (h && h.location) {
+			h.location.search = '?'+encodeURIComponent(JSON.stringify(info));
+		} else {
+			// Opera 8 doesn't trigger onload so no history
+			JsonFx.History.h = null;
+		}
+	},
+
+	/*void*/ changed: function(/*DOM*/ elem) {
+		if (!JsonFx.History.h) {
+			// first time through is just for binding
+			JsonFx.History.h = elem;
+			return;
+		}
+		var h, info;
+		if ("function" === typeof JsonFx.History.onchange) {
+			h = JsonFx.UI.getIFrameDocument(elem);
+			if (h) {
+				info = h.location.search;
+				if (info) {
+					info = info.substring(info.indexOf('?')+1);
+					info = decodeURIComponent(info);
+					if (info) {
+						info = JSON.parse(info);
+					}
+					JsonFx.History.onchange(info);
+				}
+			}
+		}
+	}
+};
+
+/*extern JsonFx */
+/*---------------------------------------------------------*\
+	JsonFx UI Controls
+	Copyright (c)2006-2007 Stephen M. McKamey
+	Created: 2007-06-03-1028
+	Modified: 2007-06-03-1028
+\*---------------------------------------------------------*/
+
+/* namespace JsonFx */
+if ("undefined" === typeof JsonFx) {
+	window.JsonFx = {};
+}
+
+/* namespace JsonFx.UI */
+if ("undefined" === typeof JsonFx.UI) {
+	JsonFx.UI = {};
+}
+
+/*--------------------*\
+	Expando-Collapso
+\*--------------------*/
+
+/*bool*/ JsonFx.UI.expando = function (/*element*/ elem, /*string*/ target) {
+	var expando = elem.expando;
+	if (!expando) {
+		if ("string" === typeof target) {
+			target = document.getElementById(target);
+		}
+		if (!target) {
+			return false;
+		}
+		elem.expando = expando = new JsonFx.UI.Animate.Engine(target);
+	}
+	var op;
+	if (expando.hasAppliedOp()) {
+		if (elem.value) {// hacky swap out for buttons
+			elem.value = " \u2212 ";
+			//elem.replaceChild(document.createTextNode("\u2212"), elem.firstChild);
+		}
+		expando.apply(null, false);
+		return false;
+	} else {
+		op = new JsonFx.UI.Animate.Op();
+		op.fade(0);
+		op.height(0);
+		op.speed(0.65);
+		if (elem.value) {// hacky swap out for buttons
+			elem.value = " + ";
+			//elem.replaceChild(document.createTextNode("+"), elem.firstChild);
+		}
+		expando.apply(op, false);
+		return true;
+	}
+};
+
+/*void*/ JsonFx.UI.expando_bind = function(/*element*/ elem) {
+	// call after elements have been added to document
+	var target = null;
+	try {
+		elem.style.cursor = "pointer";
+	} catch (ex) {
+		// IE 5.x
+		elem.style.cursor = "hand";
+	}
+	elem.className += " jsonfx-expanded";
+
+	elem.onclick = function (/*event*/ evt) {
+		if (!target) {
+			// using a closure so only lookup once
+			target = document.getElementById(elem.getAttribute("for"));
+			if (!target) {
+				target = elem.nextSibling;
+				while (target && !target.tagName) {
+					target = target.nextSibling;
+				}
+			}
+		}
+
+		if (JsonFx.UI.expando(elem, target)) {
+			elem.className = elem.className.replace(/\s*jsonfx-expanded/g, " jsonfx-collapsed");
+		} else {
+			elem.className = elem.className.replace(/\s*jsonfx-collapsed/g, " jsonfx-expanded");
+		}
+		return false;
+	};
+	elem.ondblclick = function (/*event*/ evt) {
+		if (elem.click) {
+			elem.click();
+		}
+		window.setTimeout( function(){JsonFx.UI.clearTextSelection();}, 0);
+		return false;
+	};
+};
+
+/*void*/ JsonFx.UI.expando_unbind = function(/*element*/ elem) {
+	if ("undefined" !== typeof elem.expando) {
+		elem.expando = null;
+	}
+	elem.onclick = null;
+	elem.ondblclick = null;
+};
+
+/*---------------*\
+	Alpha Image
+\*---------------*/
+
+/*void*/ JsonFx.UI.alphaImg_bind = function(/*DOM*/ elem, /*object*/ options) {
+	
+//	try {
+//		// IE7 doesn't like this with async loads
+//		if (!elem.filters) {
+//			return;
+//		}
+//	} catch (ex) {
+//		alert(ex.message);
+//		return;
+//	}
+
+	var filter, src;
+	// only IE 5.x-6.0	
+	if (JsonFx.UI.hasClassName(document.body, "ua-ie-6") || JsonFx.UI.hasClassName(document.body, "ua-ie-5")) {
+
+		options = options || {};
+		options.src = options.src || "about:blank";
+
+		// add AlphaImageLoader filter
+		elem.style.filter = "progid:DXImageTransform.Microsoft.AlphaImageLoader(sizingMethod='scale')";
+		src = elem.src;
+
+		// set to blank img
+		elem.src = options.src;
+		// copy back so can compare later
+		options.src = elem.src;
+
+		// set it back
+		elem.src = src;
+
+		// add dispose method
+		elem.dispose = function() {
+			elem.onpropertychange = null;
+			elem.src = filter && filter.src;
+			elem.style.filter = "";
+			elem = filter = options = null;
+		};
+
+		// monitor changes to elem so can update filter
+		elem.onpropertychange = function(/*Event*/ evt) {
+			evt = evt||window.event;
+
+			if (evt.propertyName === "src" &&
+				elem.src !== options.src) {
+
+				// can't populate until after added to document
+				filter = filter || elem.filters.item("DXImageTransform.Microsoft.AlphaImageLoader");
+
+				filter.src = elem.src;
+				elem.src = options.src;
+			}
+		};
+
+		// trigger filter call when done loading
+		window.setTimeout(
+			function() {
+				elem.src = elem.src;
+			}, 0);
+	}
+};
+
+/*void*/ JsonFx.UI.alphaImg_unbind = function(/*DOM*/ elem, /*object*/ options) {
+	if (elem.dispose) {
+		elem.dispose();
+	}
 };
