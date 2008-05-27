@@ -32,8 +32,8 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
-[assembly: AssemblyTitle("JsonFx.Json")]
-[assembly: AssemblyDescription("JsonFx.NET JSON Serializer")]
+[assembly: AssemblyTitle("JsonFx.JsonRpc")]
+[assembly: AssemblyDescription("JsonFx.NET JSON-RPC Services")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
 [assembly: AssemblyProduct("JsonFx.NET")]
@@ -43,6 +43,6 @@ using System.Runtime.InteropServices;
 
 [assembly: ComVisible(false)]
 
-[assembly: Guid("D98A5EF8-4709-4FF8-B162-8EA04B281400")]
+[assembly: Guid("FA689363-65D4-4411-BC8D-9C0F2573DBEB")]
 
 [assembly: AssemblyFileVersion("1.0.0.0")]
