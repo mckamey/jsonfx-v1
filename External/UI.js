@@ -14,7 +14,7 @@ if ("undefined" === typeof JsonML) {
 	throw new Error("JsonFx.UI requires JsonML2.js");
 }
 
-/* Utilities ----------------------------------------------------*/
+/* Namespace JsonFx.UI ----------------------------------------------------*/
 
 /* namespace JsonFx */
 if ("undefined" === typeof JsonFx) {
