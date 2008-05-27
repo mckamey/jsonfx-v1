@@ -44,6 +44,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Handlers\ETag.cs" />
     <Compile Include="Handlers\JsonServiceHandler.cs">
       <SubType>Code</SubType>
     </Compile>
