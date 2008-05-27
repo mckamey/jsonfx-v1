@@ -91,10 +91,10 @@
     <EmbeddedResource Include="Scripts\Compacted\JsonML.js" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Scripts\JsonFx.UI.js" />
+    <EmbeddedResource Include="Scripts\JsonFx.Effects.js" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Scripts\Compacted\JsonFx.UI.js" />
+    <EmbeddedResource Include="Scripts\Compacted\JsonFx.Effects.js" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Scripts\String.js" />
@@ -108,10 +108,10 @@
     <None Include="JsonFx.pfx" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Scripts\Compacted\JsonFx.js" />
+    <EmbeddedResource Include="Scripts\Compacted\JsonFx.Core.js" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Scripts\JsonFx.js" />
+    <EmbeddedResource Include="Scripts\JsonFx.Core.js" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Scripts\JsonFx.UA.js" />
