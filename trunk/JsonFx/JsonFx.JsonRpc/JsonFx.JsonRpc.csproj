@@ -114,8 +114,6 @@
     </Compile>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Scripts\Compacted\IO.js" />
-    <EmbeddedResource Include="Scripts\Compacted\json2.js" />
     <EmbeddedResource Include="Scripts\IO.js" />
     <EmbeddedResource Include="Scripts\json2.js" />
   </ItemGroup>
