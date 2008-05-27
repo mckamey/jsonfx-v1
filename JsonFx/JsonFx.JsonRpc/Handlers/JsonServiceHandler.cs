@@ -8,10 +8,16 @@ using JsonFx.Json;
 using JsonFx.JsonRpc;
 using JsonFx.JsonRpc.Discovery;
 using JsonFx.JsonRpc.Proxy;
-using JsonFx.UI;
 
 namespace JsonFx.Handlers
 {
+	/// <summary>
+	/// Marker interface which lets JSON-RPC Services
+	/// </summary>
+	public interface IJsonFxBrowser
+	{
+	}
+
 	internal class JsonServiceHandler : System.Web.IHttpHandler
 	{
 		#region Constants
@@ -65,7 +71,7 @@ namespace JsonFx.Handlers
 
 		#region Methods
 
-		private JsonRequest BuildRequestFromGet(System.Web.HttpContext context)
+		private JsonRequest BuildRequestFromGet(HttpContext context)
 		{
 			JsonRequest request = new JsonRequest();
 
@@ -93,22 +99,22 @@ namespace JsonFx.Handlers
 			return request;
 		}
 
-		private JsonRequest BuildRequestFromPost(System.Web.HttpContext context)
+		private JsonRequest BuildRequestFromPost(HttpContext context)
 		{
 			JsonReader reader = new JsonReader(context.Request.InputStream);
 			return (JsonRequest)reader.Deserialize(typeof(JsonRequest));
 		}
 
-		private void HandleRequest(System.Web.HttpContext context, JsonRequest request, ref JsonResponse response)
+		private void HandleRequest(HttpContext context, JsonRequest request, ref JsonResponse response)
 		{
 			context.Response.Clear();
-			if (context.Request.Browser is JsonFxBrowserCapabilities)
+			if (context.Request.Browser is IJsonFxBrowser)
 			{
 				context.Response.ContentType = context.Request.Browser.PreferredRenderingMime;
 			}
 			else
 			{
-				context.Response.ContentType = JsonFxBrowserCapabilities.JsonContentType;
+				context.Response.ContentType = JsonWriter.JsonMimeType;
 			}
 			context.Response.ContentEncoding = System.Text.Encoding.UTF8;
 			context.Response.AddHeader("Content-Disposition", "inline;filename=JsonResponse"+JsonServiceHandler.JsonFileExtension);
