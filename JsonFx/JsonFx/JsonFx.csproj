@@ -67,7 +67,6 @@
     <Compile Include="Handlers\EchoHandler.cs" />
     <Compile Include="Handlers\ClientScriptHandler.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="UI\HtmlScriptControl.cs" />
     <Compile Include="UI\JsonFxBrowserCapabilities.cs" />
     <Compile Include="UI\JsonML\IJsonControl.cs" />
     <Compile Include="UI\JsonML\JsonControl.cs" />
