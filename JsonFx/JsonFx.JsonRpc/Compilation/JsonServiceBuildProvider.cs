@@ -22,6 +22,8 @@ namespace JsonFx.Compilation
 	{
 		#region Constants
 
+		protected internal const string GeneratedNamespace = "JsonFx.JsonRpc._Generated";
+
 		protected const string DefaultDirectiveName = "JsonService";
 		protected const string ErrorMissingDirective = "The page must have a <%@ {0} class=\"MyNamespace.MyClass\" ... %> directive.";
 		protected const string ErrorDuplicateAttrib = "The directive contains duplicate \"{0}\" attributes.";
@@ -117,7 +119,7 @@ namespace JsonFx.Compilation
 
 			// generate a service factory
 			CodeCompileUnit generatedUnit = new CodeCompileUnit();
-			CodeNamespace ns = new CodeNamespace(ResourceHandlerInfo.GeneratedNamespace);
+			CodeNamespace ns = new CodeNamespace(JsonServiceBuildProvider.GeneratedNamespace);
 			generatedUnit.Namespaces.Add(ns);
 			CodeTypeDeclaration descriptorType = new CodeTypeDeclaration();
 			descriptorType.IsClass = true;
@@ -269,7 +271,7 @@ namespace JsonFx.Compilation
 
 			assemblyBuilder.AddCodeCompileUnit(this, generatedUnit);
 
-			this.descriptorTypeName = ResourceHandlerInfo.GeneratedNamespace+"."+descriptorType.Name;
+			this.descriptorTypeName = JsonServiceBuildProvider.GeneratedNamespace+"."+descriptorType.Name;
 		}
 
 		public override CompilerType CodeCompilerType
