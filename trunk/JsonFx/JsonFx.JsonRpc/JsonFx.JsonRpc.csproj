@@ -7,7 +7,7 @@
     <ProjectGuid>{6DC125A3-2C11-4FEA-B948-1C563B0FAE52}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>JsonFx.JsonRpc</RootNamespace>
+    <RootNamespace>JsonFx</RootNamespace>
     <AssemblyName>JsonFx.JsonRpc</AssemblyName>
     <SccProjectName>SAK</SccProjectName>
     <SccLocalPath>SAK</SccLocalPath>
@@ -22,6 +22,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <UseVSHostingProcess>false</UseVSHostingProcess>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -43,7 +44,78 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <Folder Include="Properties\" />
+    <Compile Include="Handlers\JsonServiceHandler.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Handlers\JsonServiceHandlerFactory.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Handlers\JsonServiceProxyHandler.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="JsonRpc\Discovery\JsonDescriptionBase.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="JsonRpc\Discovery\JsonMethodDescription.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="JsonRpc\Discovery\JsonNamedParameterDescription.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="JsonRpc\Discovery\JsonParameterDescription.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="JsonRpc\Discovery\JsonParameterType.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="JsonRpc\Discovery\JsonServiceDescription.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="JsonRpc\IJsonService.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="JsonRpc\JsonDocsAttribute.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="JsonRpc\JsonError.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="JsonRpc\JsonMessage.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="JsonRpc\JsonMethodAttribute.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="JsonRpc\JsonRequest.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="JsonRpc\JsonResponse.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="JsonRpc\JsonServiceAttribute.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="JsonRpc\JsonServiceException.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="JsonRpc\JsonServiceInfo.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="JsonRpc\Proxy\JsonServiceProxy.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Properties\AssemblyInfo.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Properties\AssemblyVersion.cs">
+      <SubType>Code</SubType>
+    </Compile>
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Scripts\Compacted\IO.js" />
+    <EmbeddedResource Include="Scripts\Compacted\json2.js" />
+    <EmbeddedResource Include="Scripts\IO.js" />
+    <EmbeddedResource Include="Scripts\json2.js" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
@@ -53,4 +125,7 @@
   <Target Name="AfterBuild">
   </Target>
   -->
+  <PropertyGroup>
+    <PreBuildEvent>IF EXIST "$(SolutionDir)SolnItems\AutoVersioning\AutoVersioning.exe" "$(SolutionDir)SolnItems\AutoVersioning\AutoVersioning.exe" "$(ProjectDir)Properties\AssemblyVersion.cs"</PreBuildEvent>
+  </PropertyGroup>
 </Project>
