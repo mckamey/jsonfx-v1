@@ -3,5 +3,6 @@ JsonML2.js
 JsonFx.UA.js
 JsonFx.IO.js
 JsonFx.Bindings.js
+JsonFx.JsonML.js
 JsonFx.UI.js
 JsonFx.History.js
