@@ -238,19 +238,11 @@ if ("undefined" === typeof JsonFx.UI) {
 	}
 };
 
-/*function*/ JsonFx.UI.combineHandlers = function (/*function*/ a, /*function*/ b) {
-	if ("function" !== typeof b) {
-		return a;
-	}
-
-	if ("function" !== typeof a) {
-		return b;
-	}
-
-	return function(/*Event*/ evt) { a(evt); return b(evt); };
-};
-
 /*void*/ JsonFx.UI.attachHandler = function (/*DOM*/ obj, /*string*/ evtName, /*function*/ handler) {
+	if (!obj || !evtName || !handler) {
+		return;
+	}
+
 	if (obj.addEventListener) {
 		//DOM method for binding an event
 		obj.addEventListener(evtName, handler, false);
@@ -258,7 +250,10 @@ if ("undefined" === typeof JsonFx.UI) {
 		//IE exclusive method for binding an event
 		obj.attachEvent("on"+evtName, handler);
 	} else if ("function" === typeof obj["on"+evtName]) {
-		obj["on"+evtName] = JsonFx.UI.combineHandlers(handler, obj["on"+evtName]);
+		var old = obj["on"+evtName];
+		obj["on"+evtName] = old ?
+			function(/*Event*/ evt) { handler(evt); return old(evt); } :
+			handler;
 	} else {
 		obj["on"+evtName] = handler;
 	}
@@ -274,7 +269,7 @@ if ("undefined" === typeof JsonFx.UI) {
 	} else if (handler === obj["on"+evtName]) {
 		obj["on"+evtName] = null;
 	} else {
-		// not sure how to remove this kind...
+		// cannot remove combined unless we stored original...
 	}
 };
 
