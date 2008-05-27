@@ -2,6 +2,7 @@ json.js
 json2.js
 JsonML.js
 JsonML2.js
+JsonFx.Browser.js
 Core.js
 UA.js
 IO.js
