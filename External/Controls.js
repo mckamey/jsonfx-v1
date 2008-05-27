@@ -29,7 +29,7 @@ if ("undefined" === typeof JsonFx.UI) {
 		if (!target) {
 			return false;
 		}
-		elem.expando = expando = new JsonFx.UI.Animate.Engine(target);
+		elem.expando = expando = new JsonFx.Effects.Engine(target);
 	}
 	var op;
 	if (expando.hasAppliedOp()) {
@@ -40,7 +40,7 @@ if ("undefined" === typeof JsonFx.UI) {
 		expando.apply(null, false);
 		return false;
 	} else {
-		op = new JsonFx.UI.Animate.Op();
+		op = new JsonFx.Effects.Op();
 		op.fade(0);
 		op.height(0);
 		op.speed(0.65);

@@ -1,6 +1,6 @@
 /*extern JsonFx, JSON, JsonML */
 /*---------------------------------------------------------*\
-	JsonFx UI
+	JsonFx.Effects
 	Copyright (c)2006-2007 Stephen M. McKamey
 	Created: 2006-11-11-1759
 	Modified: 2008-05-25-2253
@@ -360,160 +360,15 @@ if ("undefined" === typeof JsonFx.UI) {
 	return {x:JsonFx.UI.bezier(p0.x, p1.x, p2.x, p3.x, t), y:JsonFx.UI.bezier(p0.y, p1.y, p2.y, p3.y, t)};
 };
 
-/*------------------*\
-	JsonML Methods
-\*------------------*/
-
-/*void*/ JsonFx.UI.clear = function(/*element*/ elem) {
-	if (elem) {
-		// unbind to prevent memory leaks
-		JsonFx.Bindings.unbind(elem);
-
-		while (elem.lastChild) {
-			elem.removeChild(elem.lastChild);
-		}
-	}
-};
-
-/*	creates DOM elements from JsonML and binds them accordingly */
-/*element*/ JsonFx.UI.bindJsonML = function(/*JsonML*/ jml) {
-	if (jml) {
-		return JsonML.parse(jml, JsonFx.Bindings.bindOne);
-	} else {
-		return null;
-	}
-};
-
-/*	if container is null then uses ID(s) to replace page elements
-	returns the container element if one was specified */
-/*element*/ JsonFx.UI.displayJsonML = function(/*JsonML*/ jml, /*element|string*/ container) {
-
-	// either DOM element or id
-	container = ("string" === typeof container) ?
-		document.getElementById(container) : container;
-
-	jml = JsonFx.UI.bindJsonML(jml);
-	if (jml) {
-		if (container) {
-			JsonFx.UI.clear(container);
-			container.appendChild(jml);
-		} else if (jml.id) {
-			container = document.getElementById(jml.id);
-			if (container && container.parentNode) {
-				// unbind to prevent memory leaks
-				JsonFx.Bindings.unbind(container);
-				container.parentNode.replaceChild(jml, container);
-			} else {
-				// can't add to document, so unbind
-				JsonFx.Bindings.unbind(jml);
-				jml = null;
-			}
-		} else if (jml.childNodes) {
-			while (jml.firstChild) {
-				if (!jml.firstChild.id) {
-					// unbind to prevent memory leaks
-					JsonFx.Bindings.unbind(jml.firstChild);
-					jml.removeChild(jml.firstChild);
-					continue;
-				}
-				container = document.getElementById(jml.firstChild.id);
-				if (container && container.parentNode) {
-					// unbind to prevent memory leaks
-					JsonFx.Bindings.unbind(container);
-					container.parentNode.replaceChild(jml.firstChild, container);
-				} else {
-					// unbind to prevent memory leaks
-					JsonFx.Bindings.unbind(jml.firstChild);
-					jml.removeChild(jml.firstChild);
-				}
-			}
-			container = null;
-		}
-	}
-	return container;
-};
-
-/*void*/ JsonFx.UI.loadJsonML = function (
-	/*string*/ url,
-	/*element|string*/ container,
-	/*RequestOptions*/ options) {
-
-	options = JsonFx.IO.validateOptions(options);
-
-	var onCreate;
-	if (options.onCreate) {
-		onCreate = options.onCreate;
-		options.onCreate = function (/*JSON*/ jml, /*object*/ cx) {
-			// create callback
-			onCreate(cx);
-
-			// free closure references
-			onCreate = null;
-		};
-	}
-
-	var onSuccess = options.onSuccess;
-	options.onSuccess = function (/*JSON*/ jml, /*object*/ cx) {
-		// display UI
-		JsonFx.UI.displayJsonML(jml, container);
-
-		// success callback
-		if (onSuccess) { onSuccess(cx); }
-
-		// free closure references
-		onSuccess = container = null;
-	};
-
-	var onFailure;
-	if (options.onFailure) {
-		onFailure = options.onFailure;
-		options.onFailure = function (/*JSON*/ jml, /*object*/ cx, /*Error*/ ex) {
-			ex.$error = jml;
-		
-			// failure callback
-			onFailure(cx, ex);
-
-			// free closure references
-			onFailure = null;
-		};
-	}
-
-	var onTimeout;
-	if (options.onTimeout) {
-		onTimeout = options.onTimeout;
-		options.onTimeout = function (/*JSON*/ jml, /*object*/ cx, /*Error*/ ex) {
-			// timeout callback
-			onTimeout(cx, ex);
-
-			// free closure references
-			onTimeout = null;
-		};
-	}
-
-	var onComplete;
-	if (options.onComplete) {
-		onComplete = options.onComplete;
-		options.onComplete = function (/*JSON*/ jml, /*object*/ cx) {
-			// complete callback
-			onComplete(cx);
-
-			// free closure references
-			onComplete = 1;
-		};
-	}
-
-	JsonFx.IO.sendJsonRequest(url, options);
-};
-
 /*---------------------*\
 	Animation Classes
 \*---------------------*/
 
-/* namespace JsonFx.UI.Animate */
-JsonFx.UI.Animate = {};
+/* namespace JsonFx.Effects */
+JsonFx.Effects = {};
 
-/* class JsonFx.UI.Animate.Unit -------------------------------------------- */
-JsonFx.UI.Animate.Unit = function(/*int*/ size, /*string*/ unit) {
+/* class JsonFx.Effects.Unit -------------------------------------------- */
+JsonFx.Effects.Unit = function(/*int*/ size, /*string*/ unit) {
 	if (unit) {
 		switch (unit) {
 			case "px" :
@@ -542,20 +397,20 @@ JsonFx.UI.Animate.Unit = function(/*int*/ size, /*string*/ unit) {
 		this.unit = "";
 	}
 };
-JsonFx.UI.Animate.Unit.prototype.toString = function() {
+JsonFx.Effects.Unit.prototype.toString = function() {
 	return this.unit ? (this.size+this.unit) : "auto";
 };
-/*JsonFx.UI.Animate.Unit*/ JsonFx.UI.Animate.Unit.parse = function(/*string*/ str) {
+/*JsonFx.Effects.Unit*/ JsonFx.Effects.Unit.parse = function(/*string*/ str) {
 	var size = parseFloat(str);
 	var unit = null;
 	if (isFinite(size) && str.match(/(px|%|em|pt|in|cm|mm|pc|ex)/)) {
 		unit = RegExp.$1;
 	}
-	return new JsonFx.UI.Animate.Unit(size, unit);
+	return new JsonFx.Effects.Unit(size, unit);
 };
 
-/* class JsonFx.UI.Animate.Op -------------------------------------------- */
-JsonFx.UI.Animate.Op = function() {
+/* class JsonFx.Effects.Op -------------------------------------------- */
+JsonFx.Effects.Op = function() {
 	this.x = this.y = this.w = this.h =
 	this.z = this.t = this.r = this.b = this.l = 
 	this.cL = this.cR = this.cT = this.cB =
@@ -565,29 +420,29 @@ JsonFx.UI.Animate.Op = function() {
 	this.s = 0.05;// 20 steps
 };
 
-/*Regex*/ JsonFx.UI.Animate.Op.clipRE = /^rect[\(]([0-9\.]*)(auto|px|%)\s*([0-9\.]*)(auto|px|%)\s*([0-9\.]*)(auto|px|%)\s*([0-9\.]*)(auto|px|%)[\)]$/;
+/*Regex*/ JsonFx.Effects.Op.clipRE = /^rect[\(]([0-9\.]*)(auto|px|%)\s*([0-9\.]*)(auto|px|%)\s*([0-9\.]*)(auto|px|%)\s*([0-9\.]*)(auto|px|%)[\)]$/;
 
-/*void*/ JsonFx.UI.Animate.Op.prototype.fade = function(/*float*/ f) {
+/*void*/ JsonFx.Effects.Op.prototype.fade = function(/*float*/ f) {
 	if (!isFinite(f) || f<0 || f>1) {
 		throw new Error("Fade is a number from 0.0 to 1.0");
 	}
 	this.f = Number(f);
 };
-/*bool*/ JsonFx.UI.Animate.Op.prototype.hasFade = function() {
+/*bool*/ JsonFx.Effects.Op.prototype.hasFade = function() {
 	return isFinite(this.f);
 };
 
-/*void*/ JsonFx.UI.Animate.Op.prototype.blur = function(/*float*/ b) {
+/*void*/ JsonFx.Effects.Op.prototype.blur = function(/*float*/ b) {
 	if (!isFinite(b) || b<0) {
 		throw new Error("Blur is a number greater than 0");
 	}
 	this.bl = Number(b);
 };
-/*bool*/ JsonFx.UI.Animate.Op.prototype.hasBlur = function() {
+/*bool*/ JsonFx.Effects.Op.prototype.hasBlur = function() {
 	return isFinite(this.bl);
 };
 
-/*void*/ JsonFx.UI.Animate.Op.prototype.color = function(/*int*/ r, /*int*/ g, /*int*/ b) {
+/*void*/ JsonFx.Effects.Op.prototype.color = function(/*int*/ r, /*int*/ g, /*int*/ b) {
 	if (!isFinite(r) || r<0x00 || r>0xFF ||
 		!isFinite(g) || g<0x00 || g>0xFF ||
 		!isFinite(b) || b<0x00 || b>0xFF) {
@@ -597,18 +452,18 @@ JsonFx.UI.Animate.Op = function() {
 	this.c.g = Number(g);
 	this.c.b = Number(b);
 };
-/*void*/ JsonFx.UI.Animate.Op.prototype.colorHtml = function(/*string*/ c) {
+/*void*/ JsonFx.Effects.Op.prototype.colorHtml = function(/*string*/ c) {
 	c = JsonFx.UI.fromHtmlColor(c);
 	this.color(c.r, c.g, c.b);
 };
-/*bool*/ JsonFx.UI.Animate.Op.prototype.hasColor = function() {
+/*bool*/ JsonFx.Effects.Op.prototype.hasColor = function() {
 	return !!this.c &&
 		isFinite(this.c.r) &&
 		isFinite(this.c.g) &&
 		isFinite(this.c.b);
 };
 
-/*void*/ JsonFx.UI.Animate.Op.prototype.backgroundColor = function(/*int*/ r, /*int*/ g, /*int*/ b) {
+/*void*/ JsonFx.Effects.Op.prototype.backgroundColor = function(/*int*/ r, /*int*/ g, /*int*/ b) {
 	if (!isFinite(r) || r<0x00 || r>0xFF ||
 		!isFinite(g) || g<0x00 || g>0xFF ||
 		!isFinite(b) || b<0x00 || b>0xFF) {
@@ -618,18 +473,18 @@ JsonFx.UI.Animate.Op = function() {
 	this.bc.g = Number(g);
 	this.bc.b = Number(b);
 };
-/*void*/ JsonFx.UI.Animate.Op.prototype.backgroundColorHtml = function(/*string*/ c) {
+/*void*/ JsonFx.Effects.Op.prototype.backgroundColorHtml = function(/*string*/ c) {
 	c = JsonFx.UI.fromHtmlColor(c);
 	this.backgroundColor(c.r, c.g, c.b);
 };
-/*bool*/ JsonFx.UI.Animate.Op.prototype.hasBackgroundColor = function() {
+/*bool*/ JsonFx.Effects.Op.prototype.hasBackgroundColor = function() {
 	return !!this.bc &&
 		isFinite(this.bc.r) &&
 		isFinite(this.bc.g) &&
 		isFinite(this.bc.b);
 };
 
-/*void*/ JsonFx.UI.Animate.Op.prototype.zoom = function(/*float*/ z) {
+/*void*/ JsonFx.Effects.Op.prototype.zoom = function(/*float*/ z) {
 	if (!isFinite(z)) {
 		throw new Error("Zoom is a number >= 0.01 with 1.0 being normal");
 	}
@@ -638,162 +493,162 @@ JsonFx.UI.Animate.Op = function() {
 	}
 	this.z = Number(z);
 };
-/*bool*/ JsonFx.UI.Animate.Op.prototype.hasZoom = function() {
+/*bool*/ JsonFx.Effects.Op.prototype.hasZoom = function() {
 	return isFinite(this.z);
 };
 
-/*void*/ JsonFx.UI.Animate.Op.prototype.move = function(/*int*/ left, /*int*/ top) {
+/*void*/ JsonFx.Effects.Op.prototype.move = function(/*int*/ left, /*int*/ top) {
 	this.top(top);
 	this.left(left);
 };
-/*void*/ JsonFx.UI.Animate.Op.prototype.top = function(/*int*/ top) {
+/*void*/ JsonFx.Effects.Op.prototype.top = function(/*int*/ top) {
 	if (!isFinite(top)) {
 		throw new Error("Top is a pixel position");
 	}
 	this.t = Number(top);
 };
-/*void*/ JsonFx.UI.Animate.Op.prototype.right = function(/*int*/ right) {
+/*void*/ JsonFx.Effects.Op.prototype.right = function(/*int*/ right) {
 	if (!isFinite(right)) {
 		throw new Error("Right is a pixel position");
 	}
 	this.r = Number(right);
 };
-/*void*/ JsonFx.UI.Animate.Op.prototype.bottom = function(/*int*/ bottom) {
+/*void*/ JsonFx.Effects.Op.prototype.bottom = function(/*int*/ bottom) {
 	if (!isFinite(bottom)) {
 		throw new Error("Bottom is a pixel position");
 	}
 	this.b = Number(bottom);
 };
-/*void*/ JsonFx.UI.Animate.Op.prototype.left = function(/*int*/ left) {
+/*void*/ JsonFx.Effects.Op.prototype.left = function(/*int*/ left) {
 	if (!isFinite(left)) {
 		throw new Error("Left is a pixel position");
 	}
 	this.l = Number(left);
 };
-/*bool*/ JsonFx.UI.Animate.Op.prototype.hasMove = function() {
+/*bool*/ JsonFx.Effects.Op.prototype.hasMove = function() {
 	return isFinite(this.t)||isFinite(this.r)||isFinite(this.b)||isFinite(this.l);
 };
-/*bool*/ JsonFx.UI.Animate.Op.prototype.hasTop = function() {
+/*bool*/ JsonFx.Effects.Op.prototype.hasTop = function() {
 	return isFinite(this.t);
 };
-/*bool*/ JsonFx.UI.Animate.Op.prototype.hasRight = function() {
+/*bool*/ JsonFx.Effects.Op.prototype.hasRight = function() {
 	return isFinite(this.r);
 };
-/*bool*/ JsonFx.UI.Animate.Op.prototype.hasBottom = function() {
+/*bool*/ JsonFx.Effects.Op.prototype.hasBottom = function() {
 	return isFinite(this.b);
 };
-/*bool*/ JsonFx.UI.Animate.Op.prototype.hasLeft = function() {
+/*bool*/ JsonFx.Effects.Op.prototype.hasLeft = function() {
 	return isFinite(this.l);
 };
 
-/*void*/ JsonFx.UI.Animate.Op.prototype.scaleX = function(/*int*/ x) {
+/*void*/ JsonFx.Effects.Op.prototype.scaleX = function(/*int*/ x) {
 	if (!isFinite(x) || x<0) {
 		throw new Error("Scale X is a number >= 0.0 with 1.0 being normal");
 	}
 	this.x = Number(x);
 };
-/*void*/ JsonFx.UI.Animate.Op.prototype.scaleY = function(/*int*/ y) {
+/*void*/ JsonFx.Effects.Op.prototype.scaleY = function(/*int*/ y) {
 	if (!isFinite(y) || y<0) {
 		throw new Error("Scale Y is a number >= 0.0 with 1.0 being normal");
 	}
 	this.y = Number(y);
 };
-/*void*/ JsonFx.UI.Animate.Op.prototype.scale = function(/*int*/ x, /*int*/ y) {
+/*void*/ JsonFx.Effects.Op.prototype.scale = function(/*int*/ x, /*int*/ y) {
 	this.scaleX(x);
 	this.scaleY(y);
 };
-/*void*/ JsonFx.UI.Animate.Op.prototype.width = function(/*int*/ width) {
+/*void*/ JsonFx.Effects.Op.prototype.width = function(/*int*/ width) {
 	if (!isFinite(width) || width<0) {
 		throw new Error("Width is a non-negative pixel size");
 	}
 	this.w = Number(width);
 };
-/*void*/ JsonFx.UI.Animate.Op.prototype.height = function(/*int*/ height) {
+/*void*/ JsonFx.Effects.Op.prototype.height = function(/*int*/ height) {
 	if (!isFinite(height) || height<0.0) {
 		throw new Error("Height is a non-negative pixel size");
 	}
 	this.h = Number(height);
 };
-/*bool*/ JsonFx.UI.Animate.Op.prototype.hasScaleX = function() {
+/*bool*/ JsonFx.Effects.Op.prototype.hasScaleX = function() {
 	return isFinite(this.x)||isFinite(this.w);
 };
-/*bool*/ JsonFx.UI.Animate.Op.prototype.hasScaleY = function() {
+/*bool*/ JsonFx.Effects.Op.prototype.hasScaleY = function() {
 	return isFinite(this.y)||isFinite(this.h);
 };
-/*bool*/ JsonFx.UI.Animate.Op.prototype.hasScale = function() {
+/*bool*/ JsonFx.Effects.Op.prototype.hasScale = function() {
 	return this.hasScaleX()||this.hasScaleY();
 };
 
-/*void*/ JsonFx.UI.Animate.Op.prototype.resize = function(/*int*/ width, /*int*/ height) {
+/*void*/ JsonFx.Effects.Op.prototype.resize = function(/*int*/ width, /*int*/ height) {
 	this.width(width);
 	this.height(height);
 };
-/*bool*/ JsonFx.UI.Animate.Op.prototype.hasResize = function() {
+/*bool*/ JsonFx.Effects.Op.prototype.hasResize = function() {
 	return isFinite(this.w)||isFinite(this.h);
 };
-/*bool*/ JsonFx.UI.Animate.Op.prototype.hasWidth = function() {
+/*bool*/ JsonFx.Effects.Op.prototype.hasWidth = function() {
 	return isFinite(this.w);
 };
-/*bool*/ JsonFx.UI.Animate.Op.prototype.hasHeight = function() {
+/*bool*/ JsonFx.Effects.Op.prototype.hasHeight = function() {
 	return isFinite(this.h);
 };
 
-/*void*/ JsonFx.UI.Animate.Op.prototype.clipTop = function(/*float*/ clip) {
+/*void*/ JsonFx.Effects.Op.prototype.clipTop = function(/*float*/ clip) {
 	if (!isFinite(clip)) {
 		throw new Error("Clip Top is a number from 0.0 to 1.0");
 	}
 	this.cT = Number(clip);
 };
-/*void*/ JsonFx.UI.Animate.Op.prototype.clipRight = function(/*float*/ clip) {
+/*void*/ JsonFx.Effects.Op.prototype.clipRight = function(/*float*/ clip) {
 	if (!isFinite(clip)) {
 		throw new Error("Clip Right is a number from 0.0 to 1.0");
 	}
 	this.cR = Number(clip);
 };
-/*void*/ JsonFx.UI.Animate.Op.prototype.clipBottom = function(/*float*/ clip) {
+/*void*/ JsonFx.Effects.Op.prototype.clipBottom = function(/*float*/ clip) {
 	if (!isFinite(clip)) {
 		throw new Error("Clip Bottom is a number from 0.0 to 1.0");
 	}
 	this.cB = Number(clip);
 };
-/*void*/ JsonFx.UI.Animate.Op.prototype.clipLeft = function(/*float*/ clip) {
+/*void*/ JsonFx.Effects.Op.prototype.clipLeft = function(/*float*/ clip) {
 	if (!isFinite(clip)) {
 		throw new Error("Clip Left is a number from 0.0 to 1.0");
 	}
 	this.cL = Number(clip);
 };
-/*bool*/ JsonFx.UI.Animate.Op.prototype.hasClip = function() {
+/*bool*/ JsonFx.Effects.Op.prototype.hasClip = function() {
 	return isFinite(this.cT)||isFinite(this.cR)||isFinite(this.cB)||isFinite(this.cL);
 };
-/*bool*/ JsonFx.UI.Animate.Op.prototype.hasClipT = function() {
+/*bool*/ JsonFx.Effects.Op.prototype.hasClipT = function() {
 	return isFinite(this.cT);
 };
-/*bool*/ JsonFx.UI.Animate.Op.prototype.hasClipR = function() {
+/*bool*/ JsonFx.Effects.Op.prototype.hasClipR = function() {
 	return isFinite(this.cR);
 };
-/*bool*/ JsonFx.UI.Animate.Op.prototype.hasClipB = function() {
+/*bool*/ JsonFx.Effects.Op.prototype.hasClipB = function() {
 	return isFinite(this.cB);
 };
-/*bool*/ JsonFx.UI.Animate.Op.prototype.hasClipL = function() {
+/*bool*/ JsonFx.Effects.Op.prototype.hasClipL = function() {
 	return isFinite(this.cL);
 };
 
-/*bool*/ JsonFx.UI.Animate.Op.prototype.isHidden = function() {
+/*bool*/ JsonFx.Effects.Op.prototype.isHidden = function() {
 	return (this.f<=0)||(this.w<=0)||(this.h<=0)||(this.x<=0)||(this.y<=0)||(this.z<=0.01);
 };
-/*bool*/ JsonFx.UI.Animate.Op.prototype.isRemoved = function() {
+/*bool*/ JsonFx.Effects.Op.prototype.isRemoved = function() {
 	return (this.h<=0)||(this.y<=0);
 };
 
-/*void*/ JsonFx.UI.Animate.Op.prototype.speed = function(/*int*/ s) {
+/*void*/ JsonFx.Effects.Op.prototype.speed = function(/*int*/ s) {
 	if (!isFinite(s) || s<=0 || s>1) {
 		throw new Error("Speed is a number from 0.0 to 1.0");
 	}
 	this.s = Math.pow(s,4.5);
 };
 
-/*JsonFx.UI.Animate.Op*/ JsonFx.UI.Animate.Op.save = function(/*element*/ elem) {
-	var op = new JsonFx.UI.Animate.Op(), es, esPos, top, right, bottom, left, width, height, color, clip;
+/*JsonFx.Effects.Op*/ JsonFx.Effects.Op.save = function(/*element*/ elem) {
+	var op = new JsonFx.Effects.Op(), es, esPos, top, right, bottom, left, width, height, color, clip;
 
 	if (elem && elem.style) {
 		es = elem.style;
@@ -881,7 +736,7 @@ JsonFx.UI.Animate.Op = function() {
 		}
 
 		// clip
-		if (es.clip && es.clip.match(JsonFx.UI.Animate.Op.clipRE)) {
+		if (es.clip && es.clip.match(JsonFx.Effects.Op.clipRE)) {
 			if ("%" === RegExp.$2) {
 				op.clipTop(RegExp.$1/100);
 			} else if ("px" === RegExp.$2) {
@@ -926,10 +781,10 @@ JsonFx.UI.Animate.Op = function() {
 	return op;
 };
 
-/* class JsonFx.UI.Animate.Engine -------------------------------------------- */
+/* class JsonFx.Effects.Engine -------------------------------------------- */
 
 
-/*Dictionary<string,bool>*/ JsonFx.UI.Animate.filterable =
+/*Dictionary<string,bool>*/ JsonFx.Effects.filterable =
 	{
 		a : true,
 		abbr : true,
@@ -998,7 +853,7 @@ JsonFx.UI.Animate.Op = function() {
 		xmp : true
 	};
 
-JsonFx.UI.Animate.Engine = function(/*element*/ elem) {
+JsonFx.Effects.Engine = function(/*element*/ elem) {
 
 	if ("string" === typeof elem) {
 		// either DOM element or id
@@ -1014,13 +869,13 @@ JsonFx.UI.Animate.Engine = function(/*element*/ elem) {
 	tn = tn.toLowerCase();
 
 	var es = elem.style,
-	/*JsonFx.UI.Animate.Op*/ start = null,
-	/*JsonFx.UI.Animate.Op*/ op = new JsonFx.UI.Animate.Op(),
+	/*JsonFx.Effects.Op*/ start = null,
+	/*JsonFx.Effects.Op*/ op = new JsonFx.Effects.Op(),
 	/*bool*/ mutex = false,
 	/*bool*/ state = false,
 	/*const float*/ STEP_MIN = 0, // start
 	/*const float*/ STEP_MAX = 1, // end
-	/*Dictionary<string,bool>*/ filterable = JsonFx.UI.Animate.filterable;
+	/*Dictionary<string,bool>*/ filterable = JsonFx.Effects.filterable;
 
 	var userHeight = "",
 		userWidth = "",
@@ -1201,7 +1056,7 @@ JsonFx.UI.Animate.Engine = function(/*element*/ elem) {
 	// if newOp is null, the previous operation is reversed
 	// immediate doesn't animate but applies operation
 	/*void*/ this.apply = function(
-		/*JsonFx.UI.Animate.Op*/ newOp,
+		/*JsonFx.Effects.Op*/ newOp,
 		/*bool*/ immediate,
 		/*function(cx)*/ callback,
 		/*object*/ context) {
@@ -1221,7 +1076,7 @@ JsonFx.UI.Animate.Engine = function(/*element*/ elem) {
 			op = newOp;
 		}
 		if (!start) {
-			start = JsonFx.UI.Animate.Op.save(elem);
+			start = JsonFx.Effects.Op.save(elem);
 		}
 		showElem();
 
@@ -1350,7 +1205,7 @@ JsonFx.UI.Animate.Engine = function(/*element*/ elem) {
 					function() {
 						restore();
 						start = null;
-						op = new JsonFx.UI.Animate.Op();
+						op = new JsonFx.Effects.Op();
 						mutex = false;
 
 						if ("function" === typeof callback) {
