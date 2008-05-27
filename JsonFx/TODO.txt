@@ -1,5 +1,9 @@
 2007-03-20 @ 08:18
 
+- split up JavaScript more modularly
+
+- define mechanism for loading scripts with dependencies
+
 - Move History & Animation to Options object (onChange? onComplete)
 
 - Check out competition (http://www.daniel-zeiss.de/AJAXComparison/Results.htm)
@@ -13,11 +17,11 @@
 - Add <script> tag hack support for cross-domain? (http://domscripting.com/presentations/fowa07/slides/03_data_formats.html)
 - Add messaging framework
 
-- Implement class hinting
 - Implement centralized error handling
 
 - Implement arrays for arguments in JSON-RPC for server-side HTTP GET.
 - Convert reader so can read from stream rather than from complete string
+- add SAX-style parsing option
 - Fix intelisense & syntax coloring in JsonService
 
 ____________________________
