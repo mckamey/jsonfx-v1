@@ -1,6 +1,7 @@
 using System;
 using System.Collections;
 using System.Web;
+using System.Net.Mime;
 
 using JsonFx.Handlers;
 using JsonFx.UI.JsonML;
@@ -15,16 +16,8 @@ namespace JsonFx.UI
 	/// inconsistencies and tighter control make this a preferred solution.
 	/// The user only needs a web.config setting, instead of content files too.
 	/// </remarks>
-	public class JsonFxBrowserCapabilities : HttpBrowserCapabilities
+	public class JsonFxBrowserCapabilities : HttpBrowserCapabilities, IJsonFxBrowser
 	{
-		#region Constants
-
-		public const string JsonMLContentType = "application/jsonml+json";
-		public const string JsonContentType = "application/json";
-		public const string TextContentType = "text/plain";
-
-		#endregion Constants
-
 		#region Fields
 
 		private bool haveSupportsJSON = false;
@@ -112,7 +105,7 @@ namespace JsonFx.UI
 
 			string accept = request.Headers["Accept"];
 			return !String.IsNullOrEmpty(accept) &&
-				(accept.IndexOf(JsonFxBrowserCapabilities.JsonMLContentType, StringComparison.OrdinalIgnoreCase) >= 0);
+				(accept.IndexOf(JsonMLTextWriter.JsonMLMimeType, StringComparison.OrdinalIgnoreCase) >= 0);
 		}
 
 		#endregion Static Methods
@@ -141,7 +134,7 @@ namespace JsonFx.UI
 			bool isOpera8 = this.IsBrowser("opera") && (this.MajorVersion == 8);
 
 			this.Capabilities["preferredRenderingMime"] =
-				(isOpera8) ? JsonFxBrowserCapabilities.TextContentType : JsonFxBrowserCapabilities.JsonContentType;
+				(isOpera8) ? MediaTypeNames.Text.Plain : JsonFx.Json.JsonWriter.JsonMimeType;
 		}
 
 		/// <summary>

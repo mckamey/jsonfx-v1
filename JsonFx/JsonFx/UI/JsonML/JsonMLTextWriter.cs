@@ -10,6 +10,12 @@ namespace JsonFx.UI.JsonML
 	/// </summary>
 	public class JsonMLTextWriter : XhtmlTextWriter
 	{
+		#region Constants
+
+		public const string JsonMLMimeType = "application/jsonml+json";
+
+		#endregion Constants
+
 		#region Fields
 
 		private readonly JsonControlBuilder builder;
