@@ -77,18 +77,10 @@
     <Compile Include="UI\JsonML\NullTextWriter.cs" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Scripts\Compacted\json.js" />
     <EmbeddedResource Include="Scripts\Compacted\JsonFx.Trace.js" />
     <EmbeddedResource Include="Scripts\Compacted\JsonFx.Utility.js" />
-    <EmbeddedResource Include="Scripts\json.js" />
     <EmbeddedResource Include="Scripts\JsonFx.Trace.js" />
     <EmbeddedResource Include="Scripts\JsonFx.Utility.js" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="Scripts\JsonML.js" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="Scripts\Compacted\JsonML.js" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Scripts\JsonFx.Effects.js" />
@@ -132,12 +124,12 @@
     <EmbeddedResource Include="Scripts\Compacted\JsonFx.Controls.js" />
     <EmbeddedResource Include="Scripts\Compacted\JsonFx.History.js" />
     <EmbeddedResource Include="Scripts\Compacted\JsonFx.Timer.js" />
-    <EmbeddedResource Include="Scripts\Compacted\json2.js" />
     <EmbeddedResource Include="Scripts\Compacted\JsonML2.js" />
     <EmbeddedResource Include="Scripts\Compacted\ECMAScript.js" />
     <EmbeddedResource Include="Scripts\Compacted\JsonFx.IO.js" />
     <EmbeddedResource Include="Scripts\Compacted\JsonFx.Bindings.js" />
     <EmbeddedResource Include="Scripts\Compacted\JsonFx.JsonML.js" />
+    <EmbeddedResource Include="Scripts\Compacted\json2.js" />
     <Content Include="Scripts\Concat.txt" />
     <EmbeddedResource Include="Scripts\JsonFx.JsonML.js" />
     <EmbeddedResource Include="Scripts\JsonFx.Bindings.js" />
