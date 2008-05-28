@@ -10,7 +10,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyTitle("JsonFx")]
 [assembly: AssemblyDescription("The JSON-Savvy Ajax Framework")]
 [assembly: AssemblyProduct("JsonFx.NET")]
-[assembly: AssemblyCopyright("Copyright ©2006-2008 Stephen M. McKamey")]
+[assembly: AssemblyCopyright("Copyright © 2006-2008 Stephen M. McKamey. All rights reserved.")]
 [assembly: AssemblyCompany("http://jsonfx.net")]
 #if DEBUG
 [assembly: AssemblyConfiguration("Debug")]
@@ -24,5 +24,5 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
-[assembly: Guid("1e6a05d1-48c6-414d-a317-e2a7eca81b96")]
+[assembly: Guid("1E6A05D1-48C6-414D-A317-E2A7ECA81B96")]
 
