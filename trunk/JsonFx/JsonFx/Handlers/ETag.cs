@@ -321,8 +321,13 @@ namespace JsonFx.Handlers
 		/// <returns></returns>
 		protected static string MD5Hash(Stream value)
 		{
-			// generate MD5 hash
-			byte[] hash = MD5HashProvider.ComputeHash(value);
+			byte[] hash;
+
+			lock (MD5HashProvider)
+			{
+				// generate MD5 hash
+				hash = MD5HashProvider.ComputeHash(value);
+			}
 
 			// convert hash to Base64 string
 			return ETag.EncodeToString(hash);
@@ -335,8 +340,12 @@ namespace JsonFx.Handlers
 		/// <returns></returns>
 		protected static string MD5Hash(byte[] value)
 		{
-			// generate MD5 hash
-			byte[] hash = MD5HashProvider.ComputeHash(value);
+			byte[] hash;
+			lock (MD5HashProvider)
+			{
+				// generate MD5 hash
+				hash = MD5HashProvider.ComputeHash(value);
+			}
 
 			// convert hash to Base64 string
 			return ETag.EncodeToString(hash);
