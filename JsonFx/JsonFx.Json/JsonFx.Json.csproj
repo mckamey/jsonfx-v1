@@ -36,6 +36,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="About.cs" />
     <Compile Include="IJsonSerializable.cs" />
     <Compile Include="JsonIgnoreAttribute.cs" />
     <Compile Include="JsonNameAttribute.cs" />
