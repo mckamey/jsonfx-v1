@@ -3,7 +3,6 @@ using System.Collections;
 using System.Web;
 using System.Net.Mime;
 
-using JsonFx.Handlers;
 using JsonFx.UI.JsonML;
 
 namespace JsonFx.UI
@@ -16,7 +15,7 @@ namespace JsonFx.UI
 	/// inconsistencies and tighter control make this a preferred solution.
 	/// The user only needs a web.config setting, instead of content files too.
 	/// </remarks>
-	public class JsonFxBrowserCapabilities : HttpBrowserCapabilities, IJsonFxBrowser
+	public class JsonFxBrowserCapabilities : HttpBrowserCapabilities
 	{
 		#region Fields
 
@@ -30,10 +29,10 @@ namespace JsonFx.UI
 		#region Init
 
 		/// <summary>
-		/// Ctor.
+		/// Ctor
 		/// </summary>
 		/// <param name="browser"></param>
-		public JsonFxBrowserCapabilities(HttpBrowserCapabilities browser)
+		protected internal JsonFxBrowserCapabilities(HttpBrowserCapabilities browser)
 		{
 			// clone current caps so as to not taint HttpBrowserCapabilities cached
 			this.Capabilities = new Hashtable(browser.Capabilities, StringComparer.OrdinalIgnoreCase);
@@ -96,7 +95,7 @@ namespace JsonFx.UI
 		/// </summary>
 		/// <param name="request"></param>
 		/// <returns></returns>
-		protected internal static bool IsJsonFx(HttpRequest request)
+		protected internal static bool IsJsonFxRequest(HttpRequest request)
 		{
 			if (request == null)
 			{
@@ -131,10 +130,12 @@ namespace JsonFx.UI
 			// this is a specific fix for Opera 8.x
 			// Opera 8 requires "text/plain" or "text/html"
 			// otherwise the content encoding is mangled
-			bool isOpera8 = this.IsBrowser("opera") && (this.MajorVersion == 8);
+			bool isOpera8 = this.IsBrowser("opera") && (this.MajorVersion <= 8);
 
 			this.Capabilities["preferredRenderingMime"] =
-				(isOpera8) ? MediaTypeNames.Text.Plain : JsonFx.Json.JsonWriter.JsonMimeType;
+				(isOpera8) ?
+				MediaTypeNames.Text.Plain :
+				JsonFx.Json.JsonWriter.JsonMimeType;
 		}
 
 		/// <summary>

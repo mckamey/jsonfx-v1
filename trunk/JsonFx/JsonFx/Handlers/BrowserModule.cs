@@ -52,7 +52,7 @@ namespace JsonFx.Handlers
 				return;
 			}
 
-			if (JsonFxBrowserCapabilities.IsJsonFx(application.Request))
+			if (JsonFxBrowserCapabilities.IsJsonFxRequest(application.Request))
 			{
 				application.Request.Browser = new JsonFxBrowserCapabilities(application.Request.Browser);
 			}
