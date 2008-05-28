@@ -20,7 +20,7 @@ namespace JsonFx.Handlers
 	/// http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.25
 	/// http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html#sec14.29
 	/// </remarks>
-	public abstract class ETag
+	internal abstract class ETag
 	{
 		#region Constants
 
@@ -392,7 +392,7 @@ namespace JsonFx.Handlers
 	/// <summary>
 	/// Generates an ETag for an arbitrary string.
 	/// </summary>
-	public class StringETag : ETag
+	internal class StringETag : ETag
 	{
 		#region Fields
 
@@ -434,7 +434,7 @@ namespace JsonFx.Handlers
 	/// <remarks>
 	/// Generates a unique ETag which changes when the file changes
 	/// </remarks>
-	public class FileETag : ETag
+	internal class FileETag : ETag
 	{
 		#region Fields
 
@@ -494,7 +494,7 @@ namespace JsonFx.Handlers
 	/// <remarks>
 	/// Generates a unique ETag which changes when the file changes
 	/// </remarks>
-	public class EmbeddedResourceETag : ETag
+	internal class EmbeddedResourceETag : ETag
 	{
 		#region Fields
 
