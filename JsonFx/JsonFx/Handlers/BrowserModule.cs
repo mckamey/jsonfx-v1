@@ -20,7 +20,7 @@ namespace JsonFx.Handlers
 		#region IHttpModule Members
 
 		/// <summary>
-		/// 
+		/// Dispose
 		/// </summary>
 		void IHttpModule.Dispose()
 		{
