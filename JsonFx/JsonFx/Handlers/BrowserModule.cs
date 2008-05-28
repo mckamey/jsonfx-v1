@@ -11,22 +11,39 @@ namespace JsonFx.Handlers
 	/// </summary>
 	public class BrowserModule : IHttpModule
 	{
+		#region Constants
+
+		private const string JsonFxHeader = "X-JsonFx-Version";
+
+		#endregion Constants
+
 		#region IHttpModule Members
 
+		/// <summary>
+		/// 
+		/// </summary>
 		void IHttpModule.Dispose()
 		{
 		}
 
+		/// <summary>
+		/// Attaches event handlers
+		/// </summary>
+		/// <param name="application"></param>
 		void IHttpModule.Init(HttpApplication application)
 		{
-			application.BeginRequest += new EventHandler(application_BeginRequest);
-			application.PostRequestHandlerExecute += new EventHandler(application_PostRequestHandlerExecute);
+			application.BeginRequest += new EventHandler(this.application_BeginRequest);
 		}
 
 		#endregion IHttpModule Members
 
 		#region Application Events
 
+		/// <summary>
+		/// Checks for JsonFx asynchronous calls
+		/// </summary>
+		/// <param name="sender"></param>
+		/// <param name="e"></param>
 		private void application_BeginRequest(object sender, EventArgs e)
 		{
 			HttpApplication application = sender as HttpApplication;
@@ -39,17 +56,8 @@ namespace JsonFx.Handlers
 			{
 				application.Request.Browser = new JsonFxBrowserCapabilities(application.Request.Browser);
 			}
-		}
 
-		private void application_PostRequestHandlerExecute(object sender, EventArgs e)
-		{
-			HttpApplication application = sender as HttpApplication;
-			if (application == null || application.Request == null)
-			{
-				return;
-			}
-
-			application.Response.AddHeader("X-JsonFx-Version", JsonFx.About.Version.ToString());
+			application.Response.AddHeader(JsonFxHeader, JsonFx.About.Version.ToString());
 		}
 
 		#endregion Application Events
