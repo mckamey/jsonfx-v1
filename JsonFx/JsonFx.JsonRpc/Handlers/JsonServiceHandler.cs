@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Reflection;
+using System.Net.Mime;
 using System.Web;
 using System.Web.Compilation;
 
@@ -11,13 +12,6 @@ using JsonFx.JsonRpc.Proxy;
 
 namespace JsonFx.Handlers
 {
-	/// <summary>
-	/// Marker interface which lets JSON-RPC Services
-	/// </summary>
-	public interface IJsonFxBrowser
-	{
-	}
-
 	internal class JsonServiceHandler : System.Web.IHttpHandler
 	{
 		#region Constants
@@ -108,14 +102,17 @@ namespace JsonFx.Handlers
 		private void HandleRequest(HttpContext context, JsonRequest request, ref JsonResponse response)
 		{
 			context.Response.Clear();
-			if (context.Request.Browser is IJsonFxBrowser)
-			{
-				context.Response.ContentType = context.Request.Browser.PreferredRenderingMime;
-			}
-			else
-			{
-				context.Response.ContentType = JsonWriter.JsonMimeType;
-			}
+			HttpBrowserCapabilities browser = context.Request.Browser;
+
+			// this is a specific fix for Opera 8.x
+			// Opera 8 requires "text/plain" or "text/html"
+			// otherwise the content encoding is mangled
+			bool isOpera8 = browser.IsBrowser("opera") && (browser.MajorVersion <= 8);
+			context.Response.ContentType =
+					(isOpera8) ?
+					MediaTypeNames.Text.Plain :
+					JsonFx.Json.JsonWriter.JsonMimeType;
+
 			context.Response.ContentEncoding = System.Text.Encoding.UTF8;
 			context.Response.AddHeader("Content-Disposition", "inline;filename=JsonResponse"+JsonServiceHandler.JsonFileExtension);
 
