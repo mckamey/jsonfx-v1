@@ -9,8 +9,8 @@ using System.Runtime.InteropServices;
 // associated with an assembly.
 [assembly: AssemblyTitle("JsonFx")]
 [assembly: AssemblyDescription("The JSON-Savvy Ajax Framework")]
-[assembly: AssemblyProduct("JsonFx")]
-[assembly: AssemblyCopyright("Copyright ©2006-2007 Stephen M. McKamey")]
+[assembly: AssemblyProduct("JsonFx.NET")]
+[assembly: AssemblyCopyright("Copyright ©2006-2008 Stephen M. McKamey")]
 [assembly: AssemblyCompany("http://jsonfx.net")]
 #if DEBUG
 [assembly: AssemblyConfiguration("Debug")]
