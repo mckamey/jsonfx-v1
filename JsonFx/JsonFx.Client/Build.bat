@@ -20,23 +20,29 @@ ECHO.
 :: Compact each individual file
 ECHO.
 
-SET INFO="Copyright (c) 2006-2007 Stephen M. McKamey, http://JsonFx.net"
+SET INFO="Copyright (c)2006-2008 Stephen M. McKamey, http://JsonFx.net"
 SET TIME="'Version 1.0.'yyMM'.'ddHH"
-SET JSONML=..\JsonML
 SET ROOT=Scripts
 SET OUTDIR=%ROOT%\Compacted
 SET CONCAT="..\SolnItems\FileConcat\FileConcat.exe"
 SET COMPACTLITE="..\SolnItems\ScriptCompactor\ScriptCompactor.exe"
 SET COMPACT=%COMPACTLITE% /INFO:%INFO% /TIME:%TIME%
 
-%COMPACTLITE% /IN:"%ROOT%\JSON.js" /OUT:"%OUTDIR%\JSON.js"
-%COMPACTLITE% /IN:"%ROOT%\JsonML.js" /OUT:"%OUTDIR%\JsonML.js"
+IF NOT EXIST %COMPACTLITE% (
+	GOTO DONE
+)
+IF NOT EXIST %CONCAT% (
+	GOTO DONE
+)
+
+%COMPACTLITE% /IN:"%ROOT%\json2.js" /OUT:"%OUTDIR%\json2.js"
+%COMPACTLITE% /IN:"%ROOT%\JsonML2.js" /OUT:"%OUTDIR%\JsonML2.js"
 FOR /F %%F IN (%ROOT%\Compact.txt) DO (
 	%COMPACT% /IN:"%ROOT%\%%F" /OUT:"%OUTDIR%\%%F"
 )
 
 :: -------------------------------------------------------------------
-:: Concat and compact the core set of files
+:: Concat and compact the core library
 ECHO.
 SET CONCATLIST="%ROOT%\JsonFx.Core.js"
 FOR /F %%F IN (%ROOT%\Concat.txt) DO (
@@ -44,13 +50,7 @@ FOR /F %%F IN (%ROOT%\Concat.txt) DO (
 )
 
 %CONCAT% %CONCATLIST%
-%COMPACT% /IN:"%ROOT%\JsonFx.Core.js" /OUT:"%OUTDIR%\JsonFx.Core.js" /WARNING
-
-:: -------------------------------------------------------------------
-:: Copy JsonML scripts over to JsonML project
-ECHO.
-XCOPY "JsonML.js" "%JSONML%\JsonML.js" /Y /R
-XCOPY "Compacted\JsonML.js" "%JSONML%\JsonML_min.js" /Y /R
+%COMPACT% /IN:"%ROOT%\JsonFx.Core.js" /OUT:"%OUTDIR%\JsonFx.Core.js" /WARNING > nul
 
 POPD
 ENDLOCAL

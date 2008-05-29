@@ -1,5 +1,3 @@
-json2.js
-JsonML2.js
 ECMAScript.js
 String.js
 JsonFx.UA.js
