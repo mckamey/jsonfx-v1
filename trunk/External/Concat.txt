@@ -1,5 +1,6 @@
-json2.js
-JsonML2.js
+JSLint.Options.js
+Compacted\json2.js
+Compacted\JsonML2.js
 JsonFx.UA.js
 JsonFx.History.js
 JsonFx.IO.js

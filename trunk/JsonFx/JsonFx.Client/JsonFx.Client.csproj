@@ -120,6 +120,7 @@
     <EmbeddedResource Include="Scripts\Compacted\JsonFx.JsonML.js" />
     <EmbeddedResource Include="Scripts\Compacted\json2.js" />
     <Content Include="Scripts\Concat.txt" />
+    <Content Include="Scripts\JSLint.Options.js" />
     <EmbeddedResource Include="Scripts\JsonFx.JsonML.js" />
     <EmbeddedResource Include="Scripts\JsonFx.Bindings.js" />
     <EmbeddedResource Include="Scripts\JsonFx.IO.js" />
