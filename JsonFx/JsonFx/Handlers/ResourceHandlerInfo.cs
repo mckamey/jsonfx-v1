@@ -5,7 +5,7 @@ using System.Web.Compilation;
 
 namespace JsonFx.Handlers
 {
-	public abstract class ResourceHandlerInfo
+	internal abstract class ResourceHandlerInfo
 	{
 		#region Constants
 
