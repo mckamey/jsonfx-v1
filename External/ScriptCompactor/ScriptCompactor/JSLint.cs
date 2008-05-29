@@ -132,6 +132,12 @@ namespace BuildTools.ScriptCompactor
 			public bool fragment = false;
 
 			/// <summary>
+			/// true if var should not be allowed to declare global variables
+			/// </summary>
+			[Description("DisallowGlobalVariables")]
+			public bool glovar = false;
+
+			/// <summary>
 			/// true if line breaks should not be checked
 			/// </summary>
 			[Description("AllowLaxNewLines")]
