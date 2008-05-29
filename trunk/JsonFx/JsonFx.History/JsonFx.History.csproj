@@ -7,7 +7,7 @@
     <ProjectGuid>{241E7122-64CA-43B8-B3F0-5BC776FC37BC}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>JsonFx.UI</RootNamespace>
+    <RootNamespace>JsonFx</RootNamespace>
     <AssemblyName>JsonFx.History</AssemblyName>
     <SccProjectName>SAK</SccProjectName>
     <SccLocalPath>SAK</SccLocalPath>
@@ -37,7 +37,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="HistoryManager.cs" />
+    <Compile Include="Handlers\EchoHandler.cs" />
+    <Compile Include="History\HistoryManager.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Properties\AssemblyVersion.cs" />
   </ItemGroup>
