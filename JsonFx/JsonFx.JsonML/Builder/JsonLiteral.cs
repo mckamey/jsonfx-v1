@@ -1,12 +1,17 @@
 using System;
 
-namespace JsonFx.JsonML
+using JsonFx.Json;
+
+namespace JsonFx.JsonML.Builder
 {
-	internal class JsonLiteral : JsonFx.JsonML.IJsonControl, JsonFx.Json.IJsonSerializable
+	/// <summary>
+	/// Represents literal text in a JsonML document
+	/// </summary>
+	internal class JsonLiteral : IJsonControl, IJsonSerializable
 	{
 		#region Fields
 
-		string text;
+		private string text;
 
 		#endregion Fields
 		
@@ -21,6 +26,9 @@ namespace JsonFx.JsonML
 
 		#region Properties
 
+		/// <summary>
+		/// Gets and sets the text of this literal
+		/// </summary>
 		public string Text
 		{
 			get { return this.text; }
@@ -31,12 +39,12 @@ namespace JsonFx.JsonML
 
 		#region IJsonSerializable Members
 
-		void JsonFx.Json.IJsonSerializable.ReadJson(JsonFx.Json.JsonReader reader)
+		void IJsonSerializable.ReadJson(JsonReader reader)
 		{
 			throw new NotImplementedException("IJsonSerializable.ReadJson is not implemented.");
 		}
 
-		void JsonFx.Json.IJsonSerializable.WriteJson(JsonFx.Json.JsonWriter writer)
+		void IJsonSerializable.WriteJson(JsonWriter writer)
 		{
 			writer.Write(this.Text);
 		}

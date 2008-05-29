@@ -45,15 +45,14 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="IJsonControl.cs" />
-    <Compile Include="JsonControl.cs" />
-    <Compile Include="JsonControlBuilder.cs" />
-    <Compile Include="JsonControlCollection.cs" />
+    <Compile Include="Builder\IJsonControl.cs" />
+    <Compile Include="Builder\JsonControl.cs" />
+    <Compile Include="Builder\JsonControlBuilder.cs" />
+    <Compile Include="Builder\JsonControlCollection.cs" />
+    <Compile Include="Builder\JsonLiteral.cs" />
     <Compile Include="JsonFxBrowserCapabilities.cs" />
-    <Compile Include="JsonLiteral.cs" />
     <Compile Include="JsonMLBrowserModule.cs" />
     <Compile Include="JsonMLTextWriter.cs" />
-    <Compile Include="NullTextWriter.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Properties\AssemblyVersion.cs" />
   </ItemGroup>

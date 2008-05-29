@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace JsonFx.JsonML
+namespace JsonFx.JsonML.Builder
 {
 	internal class JsonControlCollection : ICollection<IJsonControl>
 	{
