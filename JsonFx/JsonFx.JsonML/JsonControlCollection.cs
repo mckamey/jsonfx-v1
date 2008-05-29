@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace JsonFx.JsonML
 {
-	public class JsonControlCollection : ICollection<IJsonControl>
+	internal class JsonControlCollection : ICollection<IJsonControl>
 	{
 		#region Fields
 

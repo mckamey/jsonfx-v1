@@ -2,7 +2,7 @@ using System;
 
 namespace JsonFx.JsonML
 {
-	public class JsonLiteral : JsonFx.JsonML.IJsonControl, JsonFx.Json.IJsonSerializable
+	internal class JsonLiteral : JsonFx.JsonML.IJsonControl, JsonFx.Json.IJsonSerializable
 	{
 		#region Fields
 
