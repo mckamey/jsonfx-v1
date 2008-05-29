@@ -1,4 +1,4 @@
-/*extern JsonFx, JSON, JsonML */
+/*global JsonFx, JSON, JsonML */
 
 // dependency checks
 if ("undefined" === typeof JSON) {

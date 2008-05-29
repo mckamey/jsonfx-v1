@@ -1,4 +1,4 @@
-/*extern JSON, JsonFx */
+/*global JSON, JsonFx */
 /*
 	JsonFx.History.js
 

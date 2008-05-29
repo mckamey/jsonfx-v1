@@ -1,4 +1,4 @@
-﻿/*extern JsonFx */
+﻿/*global JsonFx */
 /*---------------------------------------------------------------------------*\
 	JsonFx.UI.setCssUserAgent
 
