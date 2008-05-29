@@ -467,7 +467,15 @@ namespace BuildTools.ScriptCompactor
 			this.NoUndefVars = true;
 
 			object[] p = new object[] { script, this.options };
-			bool result = (bool)sc.Run("JSLINT", ref p);
+			bool result = false;
+			try
+			{
+				result = (bool)sc.Run("JSLINT", ref p);
+			}
+			catch (Exception ex)
+			{
+				this.errors.Add(new ParseError(ex.Message, filename, -1, -1, ex));
+			}
 			if (!result)
 			{
 				// Alternatively this could also import JSON.js
