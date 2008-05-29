@@ -37,7 +37,7 @@ using System.Web.UI.WebControls;
 
 using JsonFx.Json;
 
-namespace JsonFx.UI
+namespace JsonFx.History
 {
 	[ToolboxData("<{0}:HistoryManager runat=\"server\" />")]
 	public class HistoryManager : System.Web.UI.WebControls.WebControl

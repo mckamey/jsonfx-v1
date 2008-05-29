@@ -1,15 +1,13 @@
 using System;
 using System.Web;
 
-using JsonFx.UI;
-
-namespace JsonFx.Handlers
+namespace JsonFx.JsonML
 {
 	/// <summary>
-	/// HttpModule which augments HttpRequest.Browser object to show
+	/// HttpModule which augments the HttpRequest.Browser object to signal
 	/// Request is being made from asynchronous JsonFx call.
 	/// </summary>
-	public class BrowserModule : IHttpModule
+	public class JsonMLBrowserModule : IHttpModule
 	{
 		#region Constants
 

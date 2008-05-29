@@ -5,9 +5,9 @@ using System.Web;
 
 using JsonFx.Json;
 
-namespace JsonFx.UI.JsonML
+namespace JsonFx.JsonML
 {
-	public class JsonControl : JsonFx.UI.JsonML.IJsonControl, System.Collections.IEnumerable
+	public class JsonControl : JsonFx.JsonML.IJsonControl, System.Collections.IEnumerable
 	{
 		#region Fields
 

@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace JsonFx.UI.JsonML
+namespace JsonFx.JsonML
 {
 	public interface IJsonControl
 	{

@@ -3,7 +3,7 @@ using System.IO;
 using System.Web.UI;
 using System.Text.RegularExpressions;
 
-namespace JsonFx.UI.JsonML
+namespace JsonFx.JsonML
 {
 	/// <summary>
 	/// Adapter between HtmlTextWriter interface and JsonControlBuilder internals
