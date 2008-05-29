@@ -3,9 +3,9 @@ using System.Collections;
 using System.Web;
 using System.Net.Mime;
 
-using JsonFx.UI.JsonML;
+using JsonFx.JsonML;
 
-namespace JsonFx.UI
+namespace JsonFx.JsonML
 {
 	/// <summary>
 	/// Manually augments Browser object to produce strongly-typed HttpBrowserCapabilities
@@ -13,7 +13,7 @@ namespace JsonFx.UI
 	/// <remarks>
 	/// Originally JsonFx used ASP.NET .browser files to perform this, but
 	/// inconsistencies and tighter control make this a preferred solution.
-	/// The user only needs a web.config setting, instead of content files too.
+	/// The user only needs to add a web.config setting, instead of content files too.
 	/// </remarks>
 	public class JsonFxBrowserCapabilities : HttpBrowserCapabilities
 	{

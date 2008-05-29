@@ -1,7 +1,7 @@
 using System;
 using System.Text;
 
-namespace JsonFx.UI.JsonML
+namespace JsonFx.JsonML
 {
 	internal class NullTextWriter : System.IO.TextWriter
 	{
