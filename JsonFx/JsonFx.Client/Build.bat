@@ -50,7 +50,7 @@ FOR /F %%F IN (%ROOT%\Concat.txt) DO (
 )
 
 %CONCAT% %CONCATLIST%
-%COMPACT% /IN:"%ROOT%\JsonFx.Core.js" /OUT:"%OUTDIR%\JsonFx.Core.js" /WARNING > nul
+%COMPACT% /IN:"%ROOT%\JsonFx.Core.js" /OUT:"%OUTDIR%\JsonFx.Core.js" /WARNING
 
 POPD
 ENDLOCAL

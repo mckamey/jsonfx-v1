@@ -32,10 +32,6 @@ if ("undefined" === typeof JsonFx.UI) {
 	JsonFx.UI = {};
 }
 
-/*------------------*\
-	JsonML Methods
-\*------------------*/
-
 /*void*/ JsonFx.UI.clear = function(/*element*/ elem) {
 	if (elem) {
 		// unbind to prevent memory leaks
@@ -151,4 +147,28 @@ if ("undefined" === typeof JsonFx.UI) {
 	}
 
 	var onTimeout;
-	if (options.onTim
+	if (options.onTimeout) {
+		onTimeout = options.onTimeout;
+		options.onTimeout = function (/*JSON*/ jml, /*object*/ cx, /*Error*/ ex) {
+			// timeout callback
+			onTimeout(cx, ex);
+
+			// free closure references
+			onTimeout = null;
+		};
+	}
+
+	var onComplete;
+	if (options.onComplete) {
+		onComplete = options.onComplete;
+		options.onComplete = function (/*JSON*/ jml, /*object*/ cx) {
+			// complete callback
+			onComplete(cx);
+
+			// free closure references
+			onComplete = 1;
+		};
+	}
+
+	JsonFx.IO.sendJsonRequest(url, options);
+};
