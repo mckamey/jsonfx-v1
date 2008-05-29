@@ -315,7 +315,7 @@ namespace BuildTools.ScriptCompactor
 		public bool DisallowGlobalVariables
 		{
 			get { return this.options.glovar; }
-			set { this.glovar.fragment = value; }
+			set { this.options.glovar = value; }
 		}
 
 		/// <summary>
