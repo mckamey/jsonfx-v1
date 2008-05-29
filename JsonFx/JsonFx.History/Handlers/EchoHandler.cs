@@ -16,21 +16,16 @@ namespace JsonFx.Handlers
 
 			context.Response.Clear();
 
-			// check if client has cached copy
-			ETag etag = new StringETag(response);
-			if (!etag.HandleETag(context))
+			context.Response.ContentType = "text/plain";
+			context.Response.AddHeader("Content-Disposition", "inline;filename=Echo.txt");
+			if (!String.IsNullOrEmpty(response))
 			{
-				context.Response.ContentType = "text/plain";
-				context.Response.AddHeader("Content-Disposition", "inline;filename=Echo.txt");
-				if (!String.IsNullOrEmpty(response))
-				{
-					context.Response.Write(HttpUtility.UrlDecode(context.Request.Url.Query.Substring(1)));
-				}
-				else
-				{
-					// this is needed for Firefox
-					context.Response.Write("\0");
-				}
+				context.Response.Write(HttpUtility.UrlDecode(context.Request.Url.Query.Substring(1)));
+			}
+			else
+			{
+				// this is needed for Firefox
+				context.Response.Write("\0");
 			}
 		}
 
