@@ -1,7 +1,10 @@
 using System;
 using System.IO;
 using System.Web.UI;
+using System.Text;
 using System.Text.RegularExpressions;
+
+using JsonFx.JsonML.Builder;
 
 namespace JsonFx.JsonML
 {
@@ -481,5 +484,17 @@ namespace JsonFx.JsonML
 		}
 
 		#endregion Methods
+
+		#region NullTextWriter
+
+		private class NullTextWriter : System.IO.TextWriter
+		{
+			public override Encoding Encoding
+			{
+				get { return Encoding.UTF8; }
+			}
+		}
+
+		#endregion NullTextWriter
 	}
 }
