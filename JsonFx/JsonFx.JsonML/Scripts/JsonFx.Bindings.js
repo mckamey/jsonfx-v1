@@ -1,4 +1,4 @@
-/*extern JsonFx, JSON */
+/*global JsonFx, JSON */
 /*---------------------------------------------------------*\
 	JsonFx.Bindings
 	Copyright (c)2006-2007 Stephen M. McKamey

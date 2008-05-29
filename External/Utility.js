@@ -1,4 +1,4 @@
-/*extern JsonFx */
+/*global JsonFx */
 /*---------------------------------------------------------*\
 	JsonFx Utils
 	Copyright (c)2006-2007 Stephen M. McKamey

@@ -1,4 +1,4 @@
-/*extern JsonFx, JSON, JsonML */
+/*global JsonFx, JSON, JsonML */
 /*---------------------------------------------------------*\
 	JsonFx.Effects
 	Copyright (c)2006-2007 Stephen M. McKamey
