@@ -86,6 +86,7 @@
   <ItemGroup>
     <None Include="App_Browsers\Fixes.browser" />
     <None Include="Build.bat" />
+    <None Include="Web.Config" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Scripts\Compacted\JsonFx.Core.js" />
