@@ -310,6 +310,15 @@ namespace BuildTools.ScriptCompactor
 		}
 
 		/// <summary>
+		/// true if var should not be allowed to declare global variables
+		/// </summary>
+		public bool DisallowGlobalVariables
+		{
+			get { return this.options.glovar; }
+			set { this.glovar.fragment = value; }
+		}
+
+		/// <summary>
 		/// true if line breaks should not be checked
 		/// </summary>
 		public bool AllowLaxNewLines
