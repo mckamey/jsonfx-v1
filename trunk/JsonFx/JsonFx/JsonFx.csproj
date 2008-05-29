@@ -61,7 +61,6 @@
     <Compile Include="Compilation\ScriptCompactorCodeProvider.cs">
       <SubType>Component</SubType>
     </Compile>
-    <Compile Include="Handlers\EchoHandler.cs" />
     <Compile Include="Handlers\ClientScriptHandler.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
