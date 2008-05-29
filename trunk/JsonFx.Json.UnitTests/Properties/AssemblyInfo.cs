@@ -34,15 +34,15 @@ using System.Runtime.InteropServices;
 
 [assembly: AssemblyTitle("JsonFx.Json")]
 [assembly: AssemblyDescription("JsonFx.NET JSON Serializer")]
-[assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("")]
 [assembly: AssemblyProduct("JsonFx.NET")]
 [assembly: AssemblyCopyright("Copyright © 2006-2008 Stephen M. McKamey. All rights reserved.")]
-[assembly: AssemblyTrademark("")]
-[assembly: AssemblyCulture("")]
-
+[assembly: AssemblyCompany("http://jsonfx.net")]
+#if DEBUG
+[assembly: AssemblyConfiguration("Debug")]
+#else
+[assembly: AssemblyConfiguration("Release")]
+#endif
 [assembly: ComVisible(false)]
-
 [assembly: Guid("D98A5EF8-4709-4FF8-B162-8EA04B281400")]
-
 [assembly: AssemblyFileVersion("1.0.0.0")]
+[assembly: ObfuscateAssembly(false, StripAfterObfuscation=false)]
