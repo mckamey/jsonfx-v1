@@ -7,7 +7,7 @@ using JsonFx.Json;
 
 namespace JsonFx.JsonML
 {
-	public class JsonControl : JsonFx.JsonML.IJsonControl, System.Collections.IEnumerable
+	internal class JsonControl : JsonFx.JsonML.IJsonControl, System.Collections.IEnumerable
 	{
 		#region Fields
 

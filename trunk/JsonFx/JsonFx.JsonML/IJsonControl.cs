@@ -2,7 +2,7 @@
 
 namespace JsonFx.JsonML
 {
-	public interface IJsonControl
+	internal interface IJsonControl
 	{
 	}
 }

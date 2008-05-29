@@ -8,7 +8,7 @@ using BuildTools.HtmlDistiller.Filters;
 
 namespace JsonFx.JsonML
 {
-	public class JsonControlBuilder : IDisposable, IHtmlFilter
+	internal class JsonControlBuilder : IDisposable, IHtmlFilter
 	{
 		#region Constants
 

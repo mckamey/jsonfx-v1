@@ -45,17 +45,17 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="IJsonControl.cs" />
+    <Compile Include="JsonControl.cs" />
+    <Compile Include="JsonControlBuilder.cs" />
+    <Compile Include="JsonControlCollection.cs" />
+    <Compile Include="JsonFxBrowserCapabilities.cs" />
+    <Compile Include="JsonLiteral.cs" />
+    <Compile Include="JsonMLBrowserModule.cs" />
+    <Compile Include="JsonMLTextWriter.cs" />
+    <Compile Include="NullTextWriter.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Properties\AssemblyVersion.cs" />
-    <Compile Include="UI\JsonMLBrowserModule.cs" />
-    <Compile Include="UI\JsonFxBrowserCapabilities.cs" />
-    <Compile Include="UI\JsonML\IJsonControl.cs" />
-    <Compile Include="UI\JsonML\JsonControl.cs" />
-    <Compile Include="UI\JsonML\JsonControlBuilder.cs" />
-    <Compile Include="UI\JsonML\JsonControlCollection.cs" />
-    <Compile Include="UI\JsonML\JsonLiteral.cs" />
-    <Compile Include="UI\JsonML\JsonMLTextWriter.cs" />
-    <Compile Include="UI\JsonML\NullTextWriter.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\JsonFx.Json\JsonFx.Json.csproj">
