@@ -54,7 +54,10 @@ if ("undefined" === typeof JsonFx.UI) {
 
 /*	if container is null then uses ID(s) to replace page elements
 	returns the container element if one was specified */
-/*element*/ JsonFx.UI.displayJsonML = function(/*JsonML*/ jml, /*element|string*/ container) {
+/*element*/ JsonFx.UI.displayJsonML = function(
+	/*JsonML*/ jml,
+	/*element|string*/ container,
+	/*bool*/ append) {
 
 	// either DOM element or id
 	container = ("string" === typeof container) ?
@@ -63,7 +66,9 @@ if ("undefined" === typeof JsonFx.UI) {
 	jml = JsonFx.UI.bindJsonML(jml);
 	if (jml) {
 		if (container) {
-			JsonFx.UI.clear(container);
+			if (!append) {
+				JsonFx.UI.clear(container);
+			}
 			container.appendChild(jml);
 		} else if (jml.id) {
 			container = document.getElementById(jml.id);
