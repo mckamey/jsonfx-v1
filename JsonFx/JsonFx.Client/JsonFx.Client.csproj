@@ -35,11 +35,11 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="BuildTools, Version=1.0.805.2818, Culture=neutral, PublicKeyToken=e190355fca396765, processorArchitecture=MSIL">
+    <Reference Include="BuildTools, Version=1.0.805.2908, Culture=neutral, PublicKeyToken=e190355fca396765, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\SolnItems\BuildTools\BuildTools.dll</HintPath>
     </Reference>
-    <Reference Include="Interop.MSScriptControl, Version=1.0.0.0, Culture=neutral, PublicKeyToken=e190355fca396765, processorArchitecture=MSIL">
+    <Reference Include="Interop.MSScriptControl, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\SolnItems\BuildTools\Interop.MSScriptControl.dll</HintPath>
     </Reference>
