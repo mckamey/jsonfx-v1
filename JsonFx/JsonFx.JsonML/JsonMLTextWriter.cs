@@ -52,6 +52,7 @@ namespace JsonFx.JsonML
 		#region Fields
 
 		private readonly JsonControlBuilder builder;
+		private bool renderingIncompleteTag = false;
 
 		#endregion Fields
 
@@ -329,30 +330,39 @@ namespace JsonFx.JsonML
 
 		public override void Write(string format, object arg0)
 		{
-			this.builder.AddLiteral(String.Format(format, arg0));
+			this.Write(String.Format(format, arg0));
 		}
 
 		public override void Write(string format, object arg0, object arg1)
 		{
-			this.builder.AddLiteral(String.Format(format, arg0, arg1));
+			this.Write(String.Format(format, arg0, arg1));
 		}
 
 		public override void Write(string format, object arg0, object arg1, object arg2)
 		{
-			this.builder.AddLiteral(String.Format(format, arg0, arg1, arg2));
+			this.Write(String.Format(format, arg0, arg1, arg2));
 		}
 
 		public override void Write(string format, params object[] arg)
 		{
-			this.builder.AddLiteral(String.Format(format, arg));
+			this.Write(String.Format(format, arg));
 		}
 
 		public override void Write(string value)
 		{
-			if (!String.IsNullOrEmpty(value))
+			if (String.IsNullOrEmpty(value))
 			{
-				this.builder.AddLiteral(value);
+				return;
 			}
+
+			if (this.renderingIncompleteTag &&
+				value.Equals(HtmlTextWriter.TagRightChar.ToString(), StringComparison.InvariantCultureIgnoreCase))
+			{
+				this.renderingIncompleteTag = false;
+				return;
+			}
+
+			this.builder.AddLiteral(value);
 		}
 
 		public override void Write(uint value)
@@ -377,6 +387,7 @@ namespace JsonFx.JsonML
 
 		public override void WriteBeginTag(string tagName)
 		{
+			this.renderingIncompleteTag = true;
 			this.builder.PushTag(tagName);
 		}
 
