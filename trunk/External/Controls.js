@@ -148,6 +148,7 @@ if ("undefined" === typeof JsonFx.UI) {
 			evt = evt||window.event;
 
 			if (evt.propertyName === "src" &&
+				elem &&
 				elem.src !== options.src) {
 
 				// can't populate until after added to document

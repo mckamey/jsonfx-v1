@@ -40,28 +40,29 @@ using JsonFx.Json;
 namespace JsonFx.History
 {
 	[ToolboxData("<{0}:HistoryManager runat=\"server\" />")]
-	public class HistoryManager : System.Web.UI.WebControls.WebControl
+	public class HistoryManager : WebControl
 	{
-		#region Constants
-
-		private const string DefaultHistoryUrl = "/robots.txt";
-
-		#endregion Constants
-
 		#region Fields
 
 		private object startState = null;
-		private string historyUrl = null;
+		private string callback = null;
+		private string historyKey = null;
 		private bool isDebugMode = false;
+		private bool bookmark = false;
 
 		#endregion Fields
 		
 		#region Init
 
 		/// <summary>
-		/// Ctor.  Uses iframe as tag name.
+		/// Ctor
 		/// </summary>
-		public HistoryManager() : base(System.Web.UI.HtmlTextWriterTag.Iframe) { }
+		/// <remarks>
+		/// Uses iframe as tag name.
+		/// </remarks>
+		public HistoryManager() : base(HtmlTextWriterTag.Iframe)
+		{
+		}
 
 		#endregion Init
 
@@ -77,26 +78,12 @@ namespace JsonFx.History
 		}
 
 		/// <summary>
-		/// Gets and sets the URL used for storing information in the browser history.
+		/// Gets and sets the function name to be used as a callback when the history changes
 		/// </summary>
-		/// <remarks>
-		/// When debugging history, it is often useful to point the HistoryUrl at a handler which
-		/// simply echos back the query string. e.g. JsonFx.Handlers.EchoHandler
-		/// </remarks>
-		[Browsable(true)]
-		[DefaultValue(DefaultHistoryUrl)]
-		[Description("Gets and sets the URL used for storing information in the browser history.")]
-		public virtual string HistoryUrl
+		public string Callback
 		{
-			get
-			{
-				if (String.IsNullOrEmpty(this.historyUrl))
-				{
-					return DefaultHistoryUrl;
-				}
-				return this.historyUrl;
-			}
-			set { this.historyUrl = value; }
+			get { return String.IsNullOrEmpty(this.callback) ? "null" : this.callback; }
+			set { this.callback = value; }
 		}
 
 		/// <summary>
@@ -119,37 +106,48 @@ namespace JsonFx.History
 		{
 			base.AddAttributesToRender(writer);
 
-			string url = this.ResolveUrl(this.HistoryUrl);
+			// serialize the start state onto JSON string URL
+			// this builds a document which is the serialized JSON
+			string url = "javascript:"+DoubleJsonEncode(this.StartState);
 
-			if (this.StartState != null)
-			{
-				int query = url.IndexOf('?');
-				if (query >= 0)
-				{
-					url = url.Substring(0, query);
-				}
+			writer.AddAttribute(HtmlTextWriterAttribute.Src, url, true);
 
-				// serialize the start state onto URL query string
-				StringBuilder builder = new StringBuilder();
-				using (JsonWriter jsonWriter = new JsonWriter(builder))
-				{
-					jsonWriter.Write(this.StartState);
-				}
-				url += "?"+HttpUtility.UrlEncode(builder.ToString());
-			}
-
-			writer.AddAttribute(HtmlTextWriterAttribute.Src, this.ResolveUrl(url));
-
-			writer.AddAttribute("onload", "JsonFx.History.changed(this)");
+			string onload = String.Format(
+				"JsonFx.History.init(this,{0})",
+				this.Callback);
+			writer.AddAttribute("onload", onload, true);
 
 			if (!this.IsDebugMode)
 			{
 				writer.AddStyleAttribute(HtmlTextWriterStyle.Display, "none");
 
-				// it is rhumored that display:none breaks some browsers but I haven't seen it
+				// it is rumored that "display:none" breaks some browsers but I haven't seen it
 				// this could be used instead to not affect the layout
 				//writer.AddStyleAttribute(HtmlTextWriterStyle.Position, "absolute");
 				//writer.AddStyleAttribute(HtmlTextWriterStyle.Visibility, "hidden");
+			}
+		}
+
+		private static string DoubleJsonEncode(object state)
+		{
+			StringBuilder builder = new StringBuilder();
+			using (JsonWriter jsonWriter = new JsonWriter(builder))
+			{
+				jsonWriter.Write(state);
+				string firstEncoding = builder.ToString();
+				builder.Length = 0;
+				jsonWriter.Write(firstEncoding);
+			}
+			return builder.ToString();
+		}
+
+		private static string JsonEncode(object state)
+		{
+			StringBuilder builder = new StringBuilder();
+			using (JsonWriter jsonWriter = new JsonWriter(builder))
+			{
+				jsonWriter.Write(state);
+				return builder.ToString();
 			}
 		}
 

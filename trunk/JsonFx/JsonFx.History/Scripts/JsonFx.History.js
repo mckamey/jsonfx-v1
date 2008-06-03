@@ -4,7 +4,7 @@
 
 	Copyright (c)2006-2008 Stephen M. McKamey
 	Created: 2006-11-11-1759
-	Modified: 2008-05-21-2244
+	Modified: 2008-06-03-0834
 
 	Distributed under the terms of an MIT-style license:
 	http://jsonfx.net/BuildTools/License.txt
@@ -15,17 +15,17 @@ if ("undefined" === typeof JsonFx) {
 	window.JsonFx = {};
 }
 
-/* namespace JsonFx.UI */
-if ("undefined" === typeof JsonFx.UI) {
-	JsonFx.UI = {};
-}
-
 /* check dependencies */
 if ("undefined" === typeof JSON) {
 	throw new Error("JsonFx.History requires json2.js");
 }
 
 /* Utilities ----------------------------------------------------*/
+
+/* namespace JsonFx.UI */
+if ("undefined" === typeof JsonFx.UI) {
+	JsonFx.UI = {};
+}
 
 /*DOM*/ JsonFx.UI.getIFrameDocument = function(/*DOM*/ elem) {
 	if (!elem) {
@@ -48,49 +48,115 @@ if ("undefined" === typeof JSON) {
 
 /* JsonFx.History -----------------------------------------------*/
 
-/* singleton JsonFx.History */
 JsonFx.History = {
+	/*Dictionary<string, JsonFx.History>*/ history: null,
 
-	/*DOM*/ h: null,
-	/*function(object)*/ onchange: null,
+	init: function(/*DOM*/ elem, /*function*/ callback) {
 
-	/*void*/ push: function(/*object*/ info) {
-		if (!JsonFx.History.h) {
-			// doesn't support history or no binding
-			if ("function" === typeof JsonFx.History.onchange) {
-				JsonFx.History.onchange(info);
-			}
+		if (JsonFx.History.h) {
+			// IE doesn't let us change the original onload
+			JsonFx.History.changed();
 			return;
 		}
-		var h = JsonFx.UI.getIFrameDocument(JsonFx.History.h);
-		if (h && h.location) {
-			h.location.search = '?'+encodeURIComponent(JSON.stringify(info));
+
+		// store the history for easy lookup, first init wins
+		JsonFx.History.h =
+			{
+				elem: elem,
+				callback: elem.onload ? callback : null
+			};
+
+		if (elem.onload) {
+			// IE doesn't let us change the original onload
+			elem.onload = JsonFx.History.changed;
 		} else {
-			// Opera 8 doesn't trigger onload so no history
-			JsonFx.History.h = null;
+			// IE doesn't store the first state, so we re-save
+			var info = JsonFx.History.getCurrent();
+			if (info) {
+				JsonFx.History.save(info);
+			}
+
+			// now hook up callback
+			JsonFx.History.h.callback = callback;
 		}
 	},
 
-	/*void*/ changed: function(/*DOM*/ elem) {
-		if (!JsonFx.History.h) {
-			// first time through is just for binding
-			JsonFx.History.h = elem;
+	/*object*/ getCurrent: function() {
+
+		var h = JsonFx.History.h;
+		if (!h || !h.elem) {
+			return null;
+		}
+
+		var doc = JsonFx.UI.getIFrameDocument(h.elem);
+		if (!doc || !doc.body) {
+			return null;
+		}
+
+		var info = doc.body.innerHTML;
+		if (!info) {
+			return null;
+		}
+
+		return JSON.parse(info);
+	},
+
+	/*void*/ changed: function() {
+
+		var h = JsonFx.History.h;
+		if (!h || "function" !== typeof h.callback) {
 			return;
 		}
-		var h, info;
-		if ("function" === typeof JsonFx.History.onchange) {
-			h = JsonFx.UI.getIFrameDocument(elem);
-			if (h) {
-				info = h.location.search;
-				if (info) {
-					info = info.substring(info.indexOf('?')+1);
-					info = decodeURIComponent(info);
-					if (info) {
-						info = JSON.parse(info);
-					}
-					JsonFx.History.onchange(info);
-				}
+
+		var info = JsonFx.History.getCurrent();
+		if (info) {
+			h.callback(info);
+		}
+	},
+
+	/*void*/ save: function(/*object*/ info, /*string*/ bookmark) {
+
+		var h = JsonFx.History.h;
+		if (!h) {
+			return;
+		}
+
+		if (!h.elem) {
+			// doesn't support history or no binding
+			if ("function" === typeof h.callback) {
+				h.callback(info);
 			}
+			return;
+		}
+
+		var doc = JsonFx.UI.getIFrameDocument(h.elem);
+		if (!doc || !doc.write) {
+			// Opera 8 doesn't trigger onload so no history
+			h.elem = null;
+			if ("function" === typeof h.callback) {
+				h.callback(info);
+			}
+			return;
+		}
+
+		// create a new document containing the serialized object
+		info = JSON.stringify(info);
+		doc.open();
+		try {
+			doc.write(info);
+		} finally {
+			doc.close();
+		}
+
+		// optionally replace the document fragment
+		bookmark = String(bookmark||"");
+		if (bookmark) {
+			var loc = window.top.location.href;
+			var hash = loc.indexOf('#');
+			if (hash >= 0) {
+				loc = loc.substr(0, hash);
+			}
+			window.top.location.replace(loc+'#'+bookmark);
 		}
 	}
 };
