@@ -46,9 +46,7 @@ namespace JsonFx.History
 
 		private object startState = null;
 		private string callback = null;
-		private string historyKey = null;
 		private bool isDebugMode = false;
-		private bool bookmark = false;
 
 		#endregion Fields
 		
