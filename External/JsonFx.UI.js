@@ -238,41 +238,6 @@ if ("undefined" === typeof JsonFx.UI) {
 	}
 };
 
-/*void*/ JsonFx.UI.attachHandler = function (/*DOM*/ obj, /*string*/ evtName, /*function*/ handler) {
-	if (!obj || !evtName || !handler) {
-		return;
-	}
-
-	if (obj.addEventListener) {
-		//DOM method for binding an event
-		obj.addEventListener(evtName, handler, false);
-	} else if (obj.attachEvent) {
-		//IE exclusive method for binding an event
-		obj.attachEvent("on"+evtName, handler);
-	} else if ("function" === typeof obj["on"+evtName]) {
-		var old = obj["on"+evtName];
-		obj["on"+evtName] = old ?
-			function(/*Event*/ evt) { handler(evt); return old(evt); } :
-			handler;
-	} else {
-		obj["on"+evtName] = handler;
-	}
-};
-
-/*void*/ JsonFx.UI.detachHandler = function (/*DOM*/ obj, /*string*/ evtName, /*function*/ handler) {
-	if (obj.removeEventListener) {
-		//DOM method for unbinding an event
-		obj.removeEventListener(evtName, handler, false);
-	} else if (obj.detachEvent) {
-		//IE exclusive method for binding an event
-		obj.detachEvent("on"+evtName, handler);
-	} else if (handler === obj["on"+evtName]) {
-		obj["on"+evtName] = null;
-	} else {
-		// cannot remove combined unless we stored original...
-	}
-};
-
 /*string*/ JsonFx.UI.toHtmlColor = function(/*int*/ r, /*int*/ g, /*int*/ b) {
 	if (!isFinite(r) || r<0x00 || r>0xFF ||
 		!isFinite(g) || g<0x00 || g>0xFF ||

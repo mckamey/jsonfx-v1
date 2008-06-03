@@ -15,6 +15,45 @@ if ("undefined" === typeof JSON) {
 if ("undefined" === typeof JsonFx) {
 	window.JsonFx = {};
 }
+/* namespace JsonFx.UI */
+if ("undefined" === typeof JsonFx.UI) {
+	JsonFx.UI = {};
+}
+
+/*void*/ JsonFx.UI.attachHandler = function (/*DOM*/ obj, /*string*/ evtName, /*function*/ handler) {
+	if (!obj || !evtName || !handler) {
+		return;
+	}
+
+	if (obj.addEventListener) {
+		//DOM method for binding an event
+		obj.addEventListener(evtName, handler, false);
+	} else if (obj.attachEvent) {
+		//IE exclusive method for binding an event
+		obj.attachEvent("on"+evtName, handler);
+	} else if ("function" === typeof obj["on"+evtName]) {
+		var old = obj["on"+evtName];
+		obj["on"+evtName] = old ?
+			function(/*Event*/ evt) { handler(evt); return old(evt); } :
+			handler;
+	} else {
+		obj["on"+evtName] = handler;
+	}
+};
+
+/*void*/ JsonFx.UI.detachHandler = function (/*DOM*/ obj, /*string*/ evtName, /*function*/ handler) {
+	if (obj.removeEventListener) {
+		//DOM method for unbinding an event
+		obj.removeEventListener(evtName, handler, false);
+	} else if (obj.detachEvent) {
+		//IE exclusive method for binding an event
+		obj.detachEvent("on"+evtName, handler);
+	} else if (handler === obj["on"+evtName]) {
+		obj["on"+evtName] = null;
+	} else {
+		// cannot remove combined unless we stored original...
+	}
+};
 
 /* singleton JsonFx.Bindings */
 JsonFx.Bindings = function() {
@@ -180,23 +219,25 @@ JsonFx.Bindings = function() {
 		}
 	};
 
-	window.setTimeout(function() {
-			/* it is important to control the handler order */
+//	window.setTimeout(function() {
+//		/* it is important to control the handler order */
 
-			// wire up binding
-			if ("function" === typeof window.onload) {
-				window.onload = function(/*Event*/ evt) { b.bindAll(evt); return window.onload(evt); };
-			} else {
-				window.onload = b.bindAll;
-			}
+//		// wire up binding
+//		if ("function" === typeof window.onload) {
+//			window.onload = function(/*Event*/ evt) { b.bindAll(evt); return window.onload(evt); };
+//		} else {
+//			window.onload = b.bindAll;
+//		}
 
-			// wire up unbinding
-			if ("function" === typeof window.onunload) {
-				window.onunload = function(/*Event*/ evt) { b.unbindAll(evt); return window.onunload(evt); };
-			} else {
-				window.onunload = b.unbindAll;
-			}
-		}, 0);
+//		// wire up unbinding
+//		if ("function" === typeof window.onunload) {
+//			window.onunload = function(/*Event*/ evt) { b.unbindAll(evt); return window.onunload(evt); };
+//		} else {
+//			window.onunload = b.unbindAll;
+//		}
+//	}, 0);
+	JsonFx.UI.attachHandler(window, "load", b.bindAll);
+	JsonFx.UI.attachHandler(window, "unload", b.unbindAll);
 };
 
 // instantiate only one, destroying the constructor
