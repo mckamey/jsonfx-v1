@@ -67,8 +67,10 @@ JsonFx.History = {
 			};
 
 		if (elem.onload) {
-			// IE doesn't let us change the original onload
+			// change the onload to onchange
 			elem.onload = JsonFx.History.changed;
+			// check if a history exists
+			JsonFx.History.ensureState();
 		} else {
 			// IE doesn't store the first state, so we re-save
 			var info = JsonFx.History.getCurrent();
@@ -78,6 +80,32 @@ JsonFx.History = {
 
 			// now hook up callback
 			JsonFx.History.h.callback = callback;
+		}
+	},
+
+	/*void*/ ensureState: function() {
+		var h = JsonFx.History.h;
+		if (!h || !h.elem || !h.callback) {
+			return;
+		}
+
+		// grab the input, assume rendered just before
+		var fld = h.elem.previousSibling;
+		var tag = fld && fld.tagName && fld.tagName.toLowerCase();
+		var type = fld && fld.type && fld.type.toLowerCase();
+		if (tag !== "input" || type !== "hidden") {
+			return;
+		}
+
+		if (fld.value) {
+			// reloaded page
+			var info = JsonFx.History.getCurrent();
+			if (info) {
+				h.callback(info);
+			}
+		} else {
+			// first time through, set value
+			fld.value = "true";
 		}
 	},
 

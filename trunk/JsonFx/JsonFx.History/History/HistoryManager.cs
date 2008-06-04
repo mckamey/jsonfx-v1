@@ -49,7 +49,7 @@ namespace JsonFx.History
 		private bool isDebugMode = false;
 
 		#endregion Fields
-		
+
 		#region Init
 
 		/// <summary>
@@ -126,6 +126,21 @@ namespace JsonFx.History
 			}
 		}
 
+		protected override void Render(HtmlTextWriter writer)
+		{
+			writer.AddAttribute(HtmlTextWriterAttribute.Type, "hidden");
+			writer.RenderBeginTag(HtmlTextWriterTag.Input);
+
+			this.AddAttributesToRender(writer);
+			this.RenderBeginTag(writer);
+			this.RenderContents(writer);
+			this.RenderEndTag(writer);
+		}
+
+		#endregion Page Events
+
+		#region Utility Methods
+
 		private static string DoubleJsonEncode(object state)
 		{
 			StringBuilder builder = new StringBuilder();
@@ -149,6 +164,6 @@ namespace JsonFx.History
 			}
 		}
 
-		#endregion Page Events
+		#endregion Utility Methods
 	}
 }
