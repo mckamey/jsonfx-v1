@@ -63,27 +63,20 @@ JsonFx.History = {
 		JsonFx.History.h =
 			{
 				elem: elem,
-				callback: elem.onload ? callback : null
+				callback: callback
 			};
 
 		if (elem.onload) {
 			// change the onload to onchange
 			elem.onload = JsonFx.History.changed;
-			// check if a history exists
-			JsonFx.History.ensureState();
-		} else {
-			// IE doesn't store the first state, so we re-save
-			var info = JsonFx.History.getCurrent();
-			if (info) {
-				JsonFx.History.save(info);
-			}
-
-			// now hook up callback
-			JsonFx.History.h.callback = callback;
 		}
+
+		// check if a history exists
+		JsonFx.History.ensureState();
 	},
 
 	/*void*/ ensureState: function() {
+
 		var h = JsonFx.History.h;
 		if (!h || !h.elem || !h.callback) {
 			return;
@@ -97,15 +90,32 @@ JsonFx.History = {
 			return;
 		}
 
+		var info;
 		if (fld.value) {
-			// reloaded page
-			var info = JsonFx.History.getCurrent();
-			if (info) {
-				h.callback(info);
+			if (h.elem.onload) {
+				// reloaded page
+				info = JsonFx.History.getCurrent();
+				if (info) {
+					h.callback(info);
+				}
 			}
 		} else {
 			// first time through, set value
-			fld.value = "true";
+			fld.value = "*";
+
+			if (!h.elem.onload) {
+				var callback = JsonFx.History.h.callback;
+				JsonFx.History.h.callback = null;
+
+				// IE doesn't store the first state, so we re-save
+				info = JsonFx.History.getCurrent();
+				if (info) {
+					JsonFx.History.save(info);
+				}
+
+				// now hook up callback
+				JsonFx.History.h.callback = callback;
+			}
 		}
 	},
 
