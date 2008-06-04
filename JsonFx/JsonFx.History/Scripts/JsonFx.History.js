@@ -114,7 +114,7 @@ JsonFx.History = {
 		}
 	},
 
-	/*void*/ save: function(/*object*/ info, /*string*/ bookmark) {
+	/*void*/ save: function(/*object*/ info) {
 
 		var h = JsonFx.History.h;
 		if (!h) {
@@ -146,17 +146,6 @@ JsonFx.History = {
 			doc.write(info);
 		} finally {
 			doc.close();
-		}
-
-		// optionally replace the document fragment
-		bookmark = String(bookmark||"");
-		if (bookmark) {
-			var loc = window.top.location.href;
-			var hash = loc.indexOf('#');
-			if (hash >= 0) {
-				loc = loc.substr(0, hash);
-			}
-			window.top.location.replace(loc+'#'+bookmark);
 		}
 	}
 };
