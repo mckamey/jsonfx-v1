@@ -49,7 +49,7 @@ if ("undefined" === typeof JsonFx.UI) {
 /* JsonFx.History -----------------------------------------------*/
 
 JsonFx.History = {
-	/*Dictionary<string, JsonFx.History>*/ history: null,
+	/*object*/ h: null,
 
 	init: function(/*DOM*/ elem, /*function*/ callback) {
 
