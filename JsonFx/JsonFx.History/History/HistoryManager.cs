@@ -131,9 +131,7 @@ namespace JsonFx.History
 			writer.AddAttribute(HtmlTextWriterAttribute.Type, "hidden");
 			writer.RenderBeginTag(HtmlTextWriterTag.Input);
 
-			this.AddAttributesToRender(writer);
 			this.RenderBeginTag(writer);
-			this.RenderContents(writer);
 			this.RenderEndTag(writer);
 		}
 
