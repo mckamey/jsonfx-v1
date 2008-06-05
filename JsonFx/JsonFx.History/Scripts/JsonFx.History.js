@@ -93,12 +93,10 @@ JsonFx.History = {
 
 		var info;
 		if (fld.value) {
-			if (h.elem.onload) {
-				// reloaded page
-				info = JsonFx.History.getState();
-				if (info) {
-					h.callback(info);
-				}
+			// reloaded page
+			info = JsonFx.History.getState();
+			if (info) {
+				h.callback(info);
 			}
 		} else {
 			// first time through, set value
