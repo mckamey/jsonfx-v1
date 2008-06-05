@@ -1,5 +1,5 @@
 // jslint.js
-// 2008-05-27
+// 2008-06-04
 /*
 Copyright (c) 2002 Douglas Crockford  (www.JSLint.com)
 
@@ -72,73 +72,74 @@ SOFTWARE.
 
 /*members "\b", "\t", "\n", "\f", "\r", "\"", "(begin)", "(breakage)",
     "(context)", "(end)", "(global)", "(identifier)", "(line)", "(loopage)",
-    "(name)", "(params)", "(scope)", "(verb)", ")", "++", "--", "\/", Array,
-    Boolean, COM, Canvas, CustomAnimation, Date, Debug, E, Error, EvalError,
-    FadeAnimation, FormField, Frame, Function, HotKey, Image, JSON, LN10,
-    LN2, LOG10E, LOG2E, MAX_VALUE, MIN_VALUE, Math, MenuItem, MoveAnimation,
-    NEGATIVE_INFINITY, Number, Object, Option, PI, POSITIVE_INFINITY, Point,
-    RangeError, ReferenceError, RegExp, RotateAnimation, SQRT1_2, SQRT2,
-    ScrollBar, String, SyntaxError, System, Text, TextArea, TypeError,
-    URIError, URL, Window, XMLDOM, XMLHttpRequest, "\\", "]", a, abbr,
-    "about-box", "about-image", "about-text", "about-version", acronym,
-    action, address, adsafe, alert, alignment, anchorstyle, animator,
-    appleScript, applet, apply, area, arguments, author, autohide, b,
-    background, base, bdo, beep, beget, bgcolor, bgcolour, bgopacity, big,
-    bitwise, block, blockquote, blur, body, br, browser, button,
-    bytesToUIString, c, call, callee, caller, canvas, cap, caption, cases,
-    center, charAt, charCodeAt, character, charset, checked, chooseColor,
-    chooseFile, chooseFolder, cite, clearInterval, clearTimeout, cliprect,
-    close, closeWidget, closed, code, col, colgroup, color, colorize,
-    colour, columns, comment, company, condition, confirm, console,
-    constructor, content, contextmenuitems, convertPathToHFS,
-    convertPathToPlatform, copyright, d, data, dd, debug, decodeURI,
-    decodeURIComponent, defaultStatus, defaulttracking, defaultvalue,
-    defineClass, del, description, deserialize, dfn, dir, directory, div,
-    dl, doAttribute, doBegin, doIt, doTagName, document, dt, dynsrc,
-    editable, em, embed, empty, enabled, encodeURI, encodeURIComponent,
-    entityify, eqeqeq, errors, escape, eval, event, evidence, evil, exec,
-    exps, extension, fieldset, file, filesystem, fillmode, floor, focus,
-    focusWidget, font, fontstyle, forin, form, fragment, frame, frames,
-    frameset, from, fromCharCode, fud, function, g, gc, getComputedStyle,
-    glovar, group, h1, h2, h3, h4, h5, h6, halign, handlelinks,
-    hasOwnProperty, head, height, help, hidden, history, hlinesize, hoffset,
-    hotkey, hr, href, hregistrationpoint, hscrollbar, hsladjustment,
-    hsltinting, html, i, iTunes, icon, id, identifier, iframe, image, img,
-    include, indent, indexOf, init, input, ins, interval, isAlpha,
-    isApplicationRunning, isDigit, isFinite, isNaN, join, kbd, key, kind,
-    konfabulatorVersion, label, labelled, laxbreak, lbp, led, left, legend,
-    length, level, li, line, lines, link, load, loadClass, loadingsrc,
-    location, locked, log, lowsrc, m, map, match, max, maxlength, menu,
-    menuitem, message, meta, min, minimumversion, minlength, missingsrc,
-    modifier, moveBy, moveTo, name, navigator, new, noframes, nomen,
-    noscript, notsaved, nud, object, ol, on, onblur, onclick, oncontextmenu,
-    ondragdrop, ondragenter, ondragexit, onerror, onfirstdisplay, onfocus,
-    ongainfocus, onimageloaded, onkeydown, onkeypress, onkeyup, onload,
-    onlosefocus, onmousedown, onmousedrag, onmouseenter, onmouseexit,
-    onmousemove, onmouseup, onmousewheel, onmulticlick, onresize, onselect,
-    ontextinput, ontimerfired, onunload, onvaluechanged, opacity, open,
-    openURL, opener, opera, optgroup, option, optionvalue, order,
-    orientation, p, pagesize, param, parent, parseFloat, parseInt, passfail,
-    play, plusplus, pop, popupMenu, pre, predef, preference,
-    preferenceGroups, preferencegroup, preferences, print, prompt,
-    prototype, push, q, quit, random, raw, reach, readFile, readUrl, reason,
-    regexp, reloadWidget, remoteasync, replace, report, requiredplatform,
-    reserved, resizeBy, resizeTo, resolvePath, resumeUpdates, rhino, right,
-    root, rotation, runCommand, runCommandInBg, samp, saveAs,
-    savePreferences, screen, script, scroll, scrollBy, scrollTo, scrollbar,
-    scrolling, scrollx, scrolly, seal, search, secure, select, self,
-    serialize, setInterval, setTimeout, setting, settings, shadow, shift,
-    showWidgetPreferences, sidebar, size, skip, sleep, slice, small, sort,
-    span, spawn, speak, special, spellcheck, split, src, srcheight,
-    srcwidth, status, strong, style, sub, substr, subviews, sup, superview,
-    supplant, suppressUpdates, sync, system, table, tag, tbody, td,
-    tellWidget, test, text, textarea, tfoot, th, thead, thumbcolor, ticking,
-    ticklabel, ticks, tileorigin, timer, title, toLowerCase, toString,
-    toint32, token, tooltip, top, tr, tracking, trigger, truncation, tt,
-    type, u, ul, undef, unescape, union, unwatch, updateNow, url,
-    usefileicon, valign, value, valueOf, var, version, visible, vlinesize,
-    voffset, vregistrationpoint, vscrollbar, watch, white, widget, width,
-    window, wrap, yahooCheckLogin, yahooLogin, yahooLogout, zorder
+    "(name)", "(params)", "(scope)", "(verb)", ")", "++", "--", "\/",
+    ADSAFE, Array, Boolean, COM, Canvas, CustomAnimation, Date, Debug, E,
+    Error, EvalError, FadeAnimation, FormField, Frame, Function, HotKey,
+    Image, JSON, LN10, LN2, LOG10E, LOG2E, MAX_VALUE, MIN_VALUE, Math,
+    MenuItem, MoveAnimation, NEGATIVE_INFINITY, Number, Object, Option, PI,
+    POSITIVE_INFINITY, Point, RangeError, ReferenceError, RegExp,
+    RotateAnimation, SQRT1_2, SQRT2, ScrollBar, String, SyntaxError, System,
+    Text, TextArea, Timer, TypeError, URIError, URL, Window, XMLDOM,
+    XMLHttpRequest, "\\", "]", a, abbr, "about-box", "about-image",
+    "about-text", "about-version", acronym, action, address, adsafe, alert,
+    alignment, anchorstyle, animator, appleScript, applet, apply, approved,
+    area, arguments, author, autohide, b, background, base, bdo, beep,
+    beget, bgcolor, bgcolour, bgopacity, big, bitwise, block, blockquote,
+    blur, body, br, browser, button, bytesToUIString, c, call, callee,
+    caller, canvas, cap, caption, cases, center, charAt, charCodeAt,
+    character, charset, checked, chooseColor, chooseFile, chooseFolder,
+    cite, clearInterval, clearTimeout, cliprect, close, closeWidget, closed,
+    code, col, colgroup, color, colorize, colour, columns, comment, company,
+    condition, confirm, console, constructor, content, contextmenuitems,
+    convertPathToHFS, convertPathToPlatform, copyright, d, data, dd, debug,
+    decodeURI, decodeURIComponent, defaultStatus, defaulttracking,
+    defaultvalue, defineClass, del, description, deserialize, dfn, dir,
+    directory, div, dl, doAttribute, doBegin, doIt, doTagName, document, dt,
+    dynsrc, editable, em, embed, empty, enabled, encodeURI,
+    encodeURIComponent, entityify, eqeqeq, errors, escape, eval, event,
+    evidence, evil, exec, exps, extension, fieldset, file, filesystem,
+    fillmode, first, floor, focus, focusWidget, font, fontstyle, forin,
+    form, fragment, frame, frames, frameset, from, fromCharCode, fud,
+    function, g, gc, getComputedStyle, glovar, group, h1, h2, h3, h4, h5,
+    h6, halign, handlelinks, hasOwnProperty, head, height, help, hidden,
+    history, hlinesize, hoffset, hotkey, hr, href, hregistrationpoint,
+    hscrollbar, hsladjustment, hsltinting, html, i, iTunes, icon, id,
+    identifier, iframe, image, img, include, indent, indexOf, init, input,
+    ins, interval, isAlpha, isApplicationRunning, isDigit, isFinite, isNaN,
+    join, kbd, key, kind, konfabulatorVersion, label, labelled, laxbreak,
+    lbp, led, left, legend, length, level, li, line, lines, link, load,
+    loadClass, loadingsrc, location, locked, log, lowsrc, m, map, match,
+    max, maxlength, menu, menuitem, message, meta, min, minimumversion,
+    minlength, missingsrc, modifier, moveBy, moveTo, name, navigator, new,
+    noframes, nomen, noscript, notsaved, nud, object, ol, on, onblur,
+    onclick, oncontextmenu, ondragdrop, ondragenter, ondragexit, onerror,
+    onfirstdisplay, onfocus, ongainfocus, onimageloaded, onkeydown,
+    onkeypress, onkeyup, onload, onlosefocus, onmousedown, onmousedrag,
+    onmouseenter, onmouseexit, onmousemove, onmouseup, onmousewheel,
+    onmulticlick, onresize, onselect, ontextinput, ontimerfired, onunload,
+    onvaluechanged, opacity, open, openURL, opener, opera, optgroup, option,
+    optionvalue, order, orientation, p, pagesize, param, parent, parseFloat,
+    parseInt, passfail, play, plusplus, pop, popupMenu, pre, predef,
+    preference, preferenceGroups, preferencegroup, preferences, print,
+    prompt, prototype, push, q, quit, random, raw, reach, readFile, readUrl,
+    reason, regexp, reloadWidget, remoteasync, replace, report,
+    requiredplatform, reserved, resizeBy, resizeTo, resolvePath,
+    resumeUpdates, rhino, right, root, rotation, runCommand, runCommandInBg,
+    samp, saveAs, savePreferences, screen, script, scroll, scrollBy,
+    scrollTo, scrollbar, scrolling, scrollx, scrolly, seal, search, secure,
+    select, self, serialize, setInterval, setTimeout, setting, settings,
+    shadow, shift, showWidgetPreferences, sidebar, size, skip, sleep, slice,
+    small, sort, span, spawn, speak, special, spellcheck, split, src,
+    srcheight, srcwidth, status, strong, style, sub, substr, subviews, sup,
+    superview, supplant, suppressUpdates, sync, system, table, tag, tbody,
+    td, tellWidget, test, text, textarea, tfoot, th, thead, thumbcolor,
+    ticking, ticklabel, ticks, tileorigin, timer, title, toLowerCase,
+    toString, toint32, token, tooltip, top, tr, tracking, trigger,
+    truncation, tt, type, u, ul, undef, unescape, union, unwatch, updateNow,
+    url, usefileicon, valign, value, valueOf, var, version, visible,
+    vlinesize, voffset, vregistrationpoint, vscrollbar, watch, white,
+    widget, width, window, wrap, yahooCheckLogin, yahooLogin, yahooLogout,
+    zorder
 */
 
 /*global JSLINT*/
@@ -150,7 +151,11 @@ SOFTWARE.
 "use strict";
 
 JSLINT = function () {
-    var anonname,   // The guessed name for anonymous functions.
+    var adsafe_id,  // The widget's ADsafe id.
+        adsafe_may, // The widget may load approved scripts.
+        adsafe_went,// ADSAFE.go has been called.
+        anonname,   // The guessed name for anonymous functions.
+        approved,   // ADsafe approved urls
 
 // These are members that should not be permitted in third party ads.
 
@@ -271,12 +276,11 @@ JSLINT = function () {
             dynsrc      : true,
             href        : true,
             lowsrc      : true,
-            value       : true,
-            src         : true,
-            style       : true
+            src         : true
         },
 
         global,         // The global scope
+        ids,            // HTML ids
         implied,        // Implied globals
         inblock,
         indent,
@@ -369,7 +373,9 @@ JSLINT = function () {
         },
 
         syntax = {},
+        tab,
         token,
+        urls,
         warnings,
 
 // widget contains the global names which are provided to a Yahoo
@@ -434,6 +440,7 @@ JSLINT = function () {
             tellWidget              : true,
             Text                    : true,
             TextArea                : true,
+            Timer                   : true,
             unescape                : true,
             updateNow               : true,
             URL                     : true,
@@ -643,7 +650,7 @@ JSLINT = function () {
                 return false;
             }
             character = 0;
-            s = lines[line].replace(/\t/g, '    ');
+            s = lines[line].replace(/\t/g, tab);
             at = s.search(cx);
             if (at >= 0) {
                 warningAt("Unsafe character.", line, at);
@@ -1341,7 +1348,8 @@ klass:                              for (;;) {
                     warning("Expected '{a}' to match '{b}' from line {c} and instead saw '{d}'.",
                             nexttoken, id, t.id, t.line + 1, nexttoken.value);
                 }
-            } else {
+            } else if (nexttoken.type !== '(identifier)' ||
+                            nexttoken.value !== id) {
                 warning("Expected '{a}' and instead saw '{b}'.",
                         nexttoken, id, nexttoken.value);
             }
@@ -1397,6 +1405,7 @@ klass:                              for (;;) {
             case '{':
             case '}':
             case ']':
+            case '.':
                 break;
             case ')':
                 switch (token.id) {
@@ -1499,7 +1508,7 @@ klass:                              for (;;) {
         left = left || token;
         right = right || nexttoken;
         if (option.white) {
-            if (left.character !== right.from) {
+            if (left.character !== right.from && left.line === right.line) {
                 warning("Unexpected space after '{a}'.",
                         nexttoken, left.value);
             }
@@ -1667,7 +1676,8 @@ klass:                              for (;;) {
 
 
     function isPoorRelation(node) {
-        return (node.type === '(number)' && !+node.value) ||
+        var n = +node.value; // Safari workaround
+        return (node.type === '(number)' && !n) ||
                (node.type === '(string)' && !node.value) ||
                 node.type === 'true' ||
                 node.type === 'false' ||
@@ -1680,6 +1690,7 @@ klass:                              for (;;) {
         symbol(s, 20).exps = true;
         return infix(s, function (left) {
             var l;
+            this.left = left;
             nonadjacent(prevtoken, token);
             nonadjacent(token, nexttoken);
             if (option.adsafe) {
@@ -1696,11 +1707,11 @@ klass:                              for (;;) {
                     if (left.left.value === 'arguments') {
                         warning('Bad assignment.', this);
                     }
-                    parse(19);
-                    return left;
+                    this.right = parse(19);
+                    return this;
                 } else if (left.identifier && !left.reserved) {
-                    parse(19);
-                    return left;
+                    this.right = parse(19);
+                    return this;
                 }
                 if (left === syntax['function']) {
                     warning(
@@ -1875,10 +1886,62 @@ klass:                              for (;;) {
 
     function statements(begin) {
         var a = [];
-        if (begin && nexttoken.type === '(string)' &&
-                nexttoken.value.slice(0, 10) === 'use strict') {
-            advance();
-            advance(';');
+        if (begin) {
+            if (option.adsafe && nexttoken.type !== '(string)') {
+                warning('ADsafe violation: Missing "use strict" statement.', nexttoken);
+            }
+            if (nexttoken.type === '(string)' &&
+                    nexttoken.value.slice(0, 10) === 'use strict') {
+                advance();
+                advance(';');
+            }
+        }
+        if (option.adsafe) {
+            switch (begin) {
+            case 'script':
+                if (!adsafe_may) {
+                    if (nexttoken.value !== 'ADSAFE' ||
+                            peek(0).id !== '.' ||
+                            (peek(1).value !== 'id' &&
+                            peek(1).value !== 'go')) {
+                        error('ADsafe violation: Missing ADSAFE.id or ADSAFE.go.', nexttoken);
+                    }
+                }
+                if (nexttoken.value === 'ADSAFE' &&
+                        peek(0).id === '.' &&
+                        peek(1).value === 'id') {
+                    if (adsafe_may) {
+                        error('ADsafe violation.', nexttoken);
+                    }
+                    advance('ADSAFE');
+                    advance('.');
+                    advance('id');
+                    advance('(');
+                    if (nexttoken.value !== adsafe_id) {
+                        error('ADsafe violation: id does not match.', nexttoken);
+                    }
+                    advance('(string)');
+                    advance(')');
+                    advance(';');
+                    adsafe_may = true;
+                }
+                break;
+            case 'lib':
+                if (nexttoken.value === 'ADSAFE') {
+                    advance('ADSAFE');
+                    advance('.');
+                    advance('lib');
+                    advance('(');
+                    advance('(string)');
+                    advance(',');
+                    parse(0);
+                    advance(')');
+                    advance(';');
+                    return a;
+                } else {
+                    error("ADsafe lib violation.");
+                }
+            }
         }
         while (!nexttoken.reach && nexttoken.id !== '(end)') {
             if (nexttoken.id === ';') {
@@ -1974,7 +2037,10 @@ klass:                              for (;;) {
                                 n + ' (capitalization error)');
                 }
                 x = t.parent;
-                if (!option.fragment || stack.length !== 1 || !stack[0].fragment) {
+                if (option.adsafe && n === 'script' && stack.length !== 1) {
+                    warning("ADsafe violation: Misplaced script");
+                }
+                if (!option.fragment || stack.length !== 1) {
                     if (x) {
                         if (x.indexOf(' ' + p + ' ') < 0) {
                             error("A '<{a}>' must be within '<{b}>'.",
@@ -1998,6 +2064,9 @@ klass:                              for (;;) {
                     warning("Missing attribute name.", token);
                 }
                 a = a.toLowerCase();
+                if (a === 'id' || a === 'name') {
+                    return a;
+                }
                 if (n === 'script') {
                     if (a === 'src') {
                         src = true;
@@ -2014,6 +2083,9 @@ klass:                              for (;;) {
                 }
                 if (href[a] === true) {
                     return 'href';
+                }
+                if (a === 'value' || a === 'style') {
+                    return 'dangerous';
                 }
                 if (a.slice(0, 2) === 'on') {
                     if (!option.on) {
@@ -2349,7 +2421,7 @@ klass:                              for (;;) {
     }
 
     function xml() {
-        var a, e, n, q, t, wmode;
+        var a, e, n, q, t, url, wmode;
         xmode = 'xml';
         stack = null;
         for (;;) {
@@ -2363,9 +2435,8 @@ klass:                              for (;;) {
                 n = xmlword(true);
                 t.name = n;
                 if (!xtype) {
-                    if (option.fragment && option.adsafe &&
-                            n !== 'div' && n !== 'iframe') {
-                        error("ADsafe HTML fragment violation.", token);
+                    if (option.adsafe && (!option.fragment || n !== 'div')) {
+                        error("ADsafe violation: Wrap the widget in a div.", token);
                     }
                     if (xmltype[n]) {
                         xmltype[n].doBegin();
@@ -2412,7 +2483,7 @@ klass:                              for (;;) {
                         wmode = option.white;
                         option.white = false;
                         advance(q);
-                        statements(true);
+                        statements('on');
                         option.white = wmode;
                         if (nexttoken.id !== q) {
                             error("Missing close quote on script attribute.");
@@ -2430,6 +2501,38 @@ klass:                              for (;;) {
                         }
                         advance();
                         break;
+                    case 'id':
+                        advance('=');
+                        if (nexttoken.type !== '(string)' || !nexttoken.value) {
+                            warning("Bad id '{a}'.",
+                                    nexttoken, nexttoken.value);
+                        }
+                        t.id = nexttoken.value.toLowerCase();
+                        if (ids[t.id] === true) {
+                            warning("Duplicate id='{a}'.",
+                                    nexttoken, nexttoken.value);
+                        } else if (option.adsafe) {
+                            if ((adsafe_id || stack.level > 1)) {
+                                warning("ADsafe violation: A widget can have only one id.",
+                                        nexttoken);
+                            } else {
+                                adsafe_id = t.id;
+                                if (!/^[a-z][a-z0-9]*$/.test(adsafe_id)) {
+                                    warning("ADSAFE violation: bad id.", t);
+                                }
+                            }
+                        }
+                        ids[t.id] = true;
+                        advance();
+                        break;
+                    case 'name':
+                        advance('=');
+                        if (nexttoken.type !== '(string)' || !nexttoken.value ||
+                                nexttoken.value === adsafe_id) {
+                            warning("Bad name attribute.", nexttoken);
+                        }
+                        advance();
+                        break;
                     case 'string':
                         advance('=');
                         if (nexttoken.type !== '(string)') {
@@ -2439,6 +2542,19 @@ klass:                              for (;;) {
                         advance();
                         break;
                     case 'href':
+                        advance('=');
+                        if (nexttoken.type !== '(string)') {
+                            error("Bad value '{a}'.",
+                                    nexttoken, nexttoken.value);
+                        }
+                        if (option.adsafe && ux.test(nexttoken.value)) {
+                            error("ADsafe URL violation.");
+                        }
+                        url = nexttoken.value;
+                        urls.push(url);
+                        advance();
+                        break;
+                    case 'dangerous':
                         advance('=');
                         if (nexttoken.type !== '(string)') {
                             error("Bad value '{a}'.",
@@ -2477,11 +2593,14 @@ klass:                              for (;;) {
                     advance('>');
                     indent = nexttoken.from;
                     if (src) {
-                        if (option.fragment && option.adsafe) {
-                            warning("ADsafe script violation.", token);
+                        if (option.adsafe && (!adsafe_may || !approved[url])) {
+                            error("ADsafe script violation.", token);
                         }
                     } else {
-                        statements(true);
+                        if (adsafe_went) {
+                            error("ADsafe script violation.", token);
+                        }
+                        statements('script');
                     }
                     if (nexttoken.id !== '</' && nexttoken.id !== '(end)') {
                         warning("Expected '{a}' and instead saw '{b}'.",
@@ -2498,6 +2617,9 @@ klass:                              for (;;) {
                     break;
                 default:
                     lex.skip('>');
+                }
+                if (option.adsafe && stack.length === 0 && !adsafe_id) {
+                    warning("ADSAFE violation: missing id.", t);
                 }
                 if (!e) {
                     stack.push(t);
@@ -2885,24 +3007,11 @@ klass:                              for (;;) {
             warning("Weird construction. Delete 'new'.", this);
         }
         adjacent(token, nexttoken);
-        if (nexttoken.id === '(') {
-            advance('(');
-            nospace();
-            if (nexttoken.id !== ')') {
-                for (;;) {
-                    parse(10);
-                    if (nexttoken.id !== ',') {
-                        break;
-                    }
-                    advance(',');
-                }
-            }
-            advance(')');
-            nospace(prevtoken, token);
-        } else {
+        if (nexttoken.id !== '(') {
             warning("Missing '()' invoking a constructor.");
         }
-        return syntax['function'];
+        this.first = c;
+        return this;
     });
     syntax['new'].exps = true;
 
@@ -2919,6 +3028,22 @@ klass:                              for (;;) {
             warning("document.write can be a form of eval.", left);
         }
         if (option.adsafe) {
+            if (left && left.value === 'ADSAFE') {
+                if (m === 'id' || m === 'lib') {
+                    warning("ADsafe violation.", this);
+                } else if (m === 'go') {
+                    if (xmode !== 'script') {
+                        warning("ADsafe violation.", this);
+                    } else if (adsafe_went || nexttoken.id !== '(' ||
+                            peek(0).id !== '(string)' ||
+                            peek(0).value !== adsafe_id ||
+                            peek(1).id !== ',') {
+                        error("ADsafe violation: go.", this);
+                    }
+                    adsafe_went = true;
+                    adsafe_may = false;
+                }
+            }
             for (;;) {
                 if (banned[m] === true) {
                     warning("ADsafe restricted word '{a}'.", token, m);
@@ -3017,8 +3142,8 @@ klass:                              for (;;) {
         var v = parse(0);
         advance(')', this);
         nospace(prevtoken, token);
-        if (v && (v.id === 'function' || v.id === '.' || v.id === '[' ||
-                (v.id === '(' && v.left && v.left.id === 'function'))) {
+        if (v && (v.id === 'function' || v.id === 'new' || v.id === '.' ||
+                v.id === '[' || v.id === '(')) {
             warning("Parens are not needed here.", this);
         }
         return v;
@@ -3026,9 +3151,13 @@ klass:                              for (;;) {
         nospace();
         var v = parse(0);
         advance(')', this);
-        if (v && v.id === 'function') {
-            advance('(');
-            return token.led(v);
+        if (v) {
+            if (v.id === 'function') {
+                advance('(');
+                return token.led(v);
+            } else {
+                warning("Awkward use of 'new'.", v);
+            }
         }
         nospace(prevtoken, token);
         return v;
@@ -3081,8 +3210,11 @@ klass:                              for (;;) {
             if (nexttoken.id === ',') {
                 adjacent(token, nexttoken);
                 advance(',');
-                if (nexttoken.id === ',' || nexttoken.id === ']') {
+                if (nexttoken.id === ',') {
                     warning("Extra comma.", token);
+                } else if (nexttoken.id === ']') {
+                    warning("Extra comma.", token);
+                    break;
                 }
                 nonadjacent(token, nexttoken);
             } else {
@@ -3090,10 +3222,11 @@ klass:                              for (;;) {
                     indent -= option.indent;
                     indentation();
                 }
-                advance(']', this);
-                return;
+                break;
             }
         }
+        advance(']', this);
+        return;
     }, 160);
 
     (function (x) {
@@ -3724,12 +3857,28 @@ klass:                              for (;;) {
                 predefined['eval'] = false;
                 predefined.Function = false;
                 predefined.Object = false;
+                predefined.ADSAFE = true;
             }
             option = o;
         } else {
             option = {};
         }
         option.indent = option.indent || 4;
+        adsafe_id = '';
+        adsafe_may = false;
+        adsafe_went = false;
+        approved = {};
+        if (option.approved) {
+            for (i = 0; i < option.approved.length; i += 1) {
+                approved[option.approved[i]] = option.approved[i];
+            }
+        }
+        approved.test = 'test'; ///////////////////////////////////////
+        tab = '';
+        for (i = 0; i < option.indent; i += 1) {
+            tab += ' ';
+        }
+        indent = 0;
         global = Object.beget(predefined);
         scope = global;
         funct = {
@@ -3740,6 +3889,8 @@ klass:                              for (;;) {
             '(loopage)': 0
         };
         functions = [];
+        ids = {};
+        urls = [];
         src = false;
         xmode = false;
         xtype = '';
@@ -3749,7 +3900,6 @@ klass:                              for (;;) {
         implied = {};
         inblock = false;
         lookahead = [];
-        indent = 0;
         jsonmode = false;
         warnings = 0;
         lex.init(s);
@@ -3762,12 +3912,18 @@ klass:                              for (;;) {
             advance();
             if (nexttoken.value.charAt(0) === '<') {
                 xml();
+                if (option.adsafe && !adsafe_went) {
+                    warning("ADsafe violation: Missing ADSAFE.go.", this);
+                }
             } else if (nexttoken.id === '{' || nexttoken.id === '[') {
                 option.laxbreak = true;
                 jsonmode = true;
                 jsonValue();
             } else {
-                statements(true);
+                if (option.adsafe && option.fragment) {
+                    warning("ADsafe violation.", this);
+                }
+                statements('lib');
             }
             advance('(end)');
         } catch (e) {
@@ -3792,13 +3948,13 @@ klass:                              for (;;) {
 
 // Report generator.
 
-    itself.report = function (option) {
+    itself.report = function (option, sep) {
         var a = [], c, e, f, i, k, l, m = '', n, o = [], s, v, cl, va, un, ou, gl, la;
 
-        function detail(h, s) {
+        function detail(h, s, sep) {
             if (s.length) {
                 o.push('<div><i>' + h + '</i> ' +
-                        s.sort().join(', ') + '</div>');
+                        s.sort().join(sep || ', ') + '</div>');
             }
         }
 
@@ -3837,7 +3993,11 @@ klass:                              for (;;) {
 
         if (!option) {
 
-            o.push('<div id=functions>');
+            o.push('<br><div id=functions>');
+
+            if (urls.length > 0) {
+                detail("URLs<br>", urls, '<br>');
+            }
 
             s = to_array(scope);
             if (s.length === 0) {
