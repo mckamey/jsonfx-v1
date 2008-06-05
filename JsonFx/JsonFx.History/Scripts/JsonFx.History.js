@@ -4,7 +4,7 @@
 
 	Copyright (c)2006-2008 Stephen M. McKamey
 	Created: 2006-11-11-1759
-	Modified: 2008-06-03-0834
+	Modified: 2008-06-05-0808
 
 	Distributed under the terms of an MIT-style license:
 	http://jsonfx.net/BuildTools/License.txt
