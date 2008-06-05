@@ -51,7 +51,7 @@ if ("undefined" === typeof JsonFx.UI) {
 JsonFx.History = {
 	/*object*/ h: null,
 
-	init: function(/*DOM*/ elem, /*function*/ callback) {
+	init: function(/*DOM*/ elem, /*function*/ callback, /*bool*/ mode) {
 
 		if (JsonFx.History.h) {
 			// IE doesn't let us change the original onload
@@ -59,14 +59,12 @@ JsonFx.History = {
 			return;
 		}
 
-		var doc = JsonFx.UI.getIFrameDocument(elem);
-
 		// store the history for easy lookup, first init wins
 		JsonFx.History.h =
 			{
 				elem: elem,
 				callback: callback,
-				virtual: !(doc && doc.location && doc.location.search)
+				virtual: !mode
 			};
 
 		if (elem.onload) {
