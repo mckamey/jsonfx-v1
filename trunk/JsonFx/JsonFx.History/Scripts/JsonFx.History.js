@@ -59,11 +59,14 @@ JsonFx.History = {
 			return;
 		}
 
+		var doc = JsonFx.UI.getIFrameDocument(elem);
+
 		// store the history for easy lookup, first init wins
 		JsonFx.History.h =
 			{
 				elem: elem,
-				callback: callback
+				callback: callback,
+				virtual: !(doc && doc.location && doc.location.search)
 			};
 
 		if (elem.onload) {
@@ -131,15 +134,18 @@ JsonFx.History = {
 			return null;
 		}
 
-		var info = doc.location.search;
-		if (info && info.length) {
-			info = info.substr(1);
-			info = decodeURIComponent(info);
-		} else {
-			info = doc.body.innerHTML;
-		}
+		var info =
+			h.virtual ?
+			doc.body.innerHTML :
+			doc.location.search;
+
 		if (!info) {
 			return null;
+		}
+
+		if (!h.virtual && info.length) {
+			info = info.substr(1);
+			info = decodeURIComponent(info);
 		}
 
 		return JSON.parse(info);
@@ -184,7 +190,7 @@ JsonFx.History = {
 		}
 
 		info = JSON.stringify(info);
-		if (doc.location.search) {
+		if (!h.virtual) {
 			// encode the serialized object into the query string
 			doc.location.search = '?'+encodeURIComponent(info);
 		} else {
