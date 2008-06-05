@@ -94,7 +94,7 @@ JsonFx.History = {
 		if (fld.value) {
 			if (h.elem.onload) {
 				// reloaded page
-				info = JsonFx.History.getCurrent();
+				info = JsonFx.History.getState();
 				if (info) {
 					h.callback(info);
 				}
@@ -108,7 +108,7 @@ JsonFx.History = {
 				JsonFx.History.h.callback = null;
 
 				// IE doesn't store the first state, so we re-save
-				info = JsonFx.History.getCurrent();
+				info = JsonFx.History.getState();
 				if (info) {
 					JsonFx.History.save(info);
 				}
@@ -119,7 +119,7 @@ JsonFx.History = {
 		}
 	},
 
-	/*object*/ getCurrent: function() {
+	/*object*/ getState: function() {
 
 		var h = JsonFx.History.h;
 		if (!h || !h.elem) {
@@ -127,11 +127,17 @@ JsonFx.History = {
 		}
 
 		var doc = JsonFx.UI.getIFrameDocument(h.elem);
-		if (!doc || !doc.body) {
+		if (!doc || !doc.location || !doc.body) {
 			return null;
 		}
 
-		var info = doc.body.innerHTML;
+		var info = doc.location.search;
+		if (info && info.length) {
+			info = info.substr(1);
+			info = decodeURIComponent(info);
+		} else {
+			info = doc.body.innerHTML;
+		}
 		if (!info) {
 			return null;
 		}
@@ -146,7 +152,7 @@ JsonFx.History = {
 			return;
 		}
 
-		var info = JsonFx.History.getCurrent();
+		var info = JsonFx.History.getState();
 		if (info) {
 			h.callback(info);
 		}
@@ -168,7 +174,7 @@ JsonFx.History = {
 		}
 
 		var doc = JsonFx.UI.getIFrameDocument(h.elem);
-		if (!doc || !doc.write) {
+		if (!doc || !doc.location || !doc.write) {
 			// Opera 8 doesn't trigger onload so no history
 			h.elem = null;
 			if ("function" === typeof h.callback) {
@@ -177,13 +183,18 @@ JsonFx.History = {
 			return;
 		}
 
-		// create a new document containing the serialized object
 		info = JSON.stringify(info);
-		doc.open();
-		try {
-			doc.write(info);
-		} finally {
-			doc.close();
+		if (doc.location.search) {
+			// encode the serialized object into the query string
+			doc.location.search = '?'+encodeURIComponent(info);
+		} else {
+			// create a new document containing the serialized object
+			doc.open();
+			try {
+				doc.write(info);
+			} finally {
+				doc.close();
+			}
 		}
 	}
 };

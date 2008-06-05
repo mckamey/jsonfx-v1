@@ -46,6 +46,7 @@ namespace JsonFx.History
 
 		private object startState = null;
 		private string callback = null;
+		private string historyUrl = null;
 		private bool isDebugMode = false;
 
 		#endregion Fields
@@ -85,6 +86,16 @@ namespace JsonFx.History
 		}
 
 		/// <summary>
+		/// Gets and sets the URL to be used in Safari when the history changes
+		/// </summary>
+		/// <remarks>Defaults to "~/robots.txt"</remarks>
+		public string HistoryUrl
+		{
+			get { return String.IsNullOrEmpty(this.historyUrl) ? "~/robots.txt" : this.historyUrl; }
+			set { this.historyUrl = value; }
+		}
+
+		/// <summary>
 		/// Gets and sets a value which shows or hides the history iframe.
 		/// </summary>
 		[Browsable(true)]
@@ -96,6 +107,21 @@ namespace JsonFx.History
 			set { this.isDebugMode = value; }
 		}
 
+		private bool UsePhysicalUrl
+		{
+			get
+			{
+				HttpBrowserCapabilities browser = this.Page.Request.Browser;
+				if (browser.Browser == null ||
+					browser.Browser.IndexOf("safari", StringComparison.InvariantCultureIgnoreCase) < 0)
+				{
+					return false;
+				}
+
+				return true;
+			}
+		}
+
 		#endregion Properties
 
 		#region Page Events
@@ -104,9 +130,8 @@ namespace JsonFx.History
 		{
 			base.AddAttributesToRender(writer);
 
-			// serialize the start state onto JSON string URL
-			// this builds a document which is the serialized JSON
-			string url = "javascript:"+DoubleJsonEncode(this.StartState);
+			// serializes the start state into URL
+			string url = this.BuildHistoryUrl();
 
 			writer.AddAttribute(HtmlTextWriterAttribute.Src, url, true);
 
@@ -139,6 +164,25 @@ namespace JsonFx.History
 
 		#region Utility Methods
 
+		private string BuildHistoryUrl()
+		{
+			string url;
+			if (this.UsePhysicalUrl)
+			{
+				// serializes and encodes the start state into the query string
+				url = this.ResolveUrl(this.HistoryUrl);
+				url += "?";
+				url += HttpUtility.UrlEncode(JsonEncode(this.StartState));
+			}
+			else
+			{
+				// serialize the start state onto JSON string URL
+				// this builds a document which contains the serialized JSON
+				url = "javascript:"+DoubleJsonEncode(this.StartState);
+			}
+			return url;
+		}
+
 		private static string DoubleJsonEncode(object state)
 		{
 			StringBuilder builder = new StringBuilder();
@@ -158,8 +202,8 @@ namespace JsonFx.History
 			using (JsonWriter jsonWriter = new JsonWriter(builder))
 			{
 				jsonWriter.Write(state);
-				return builder.ToString();
 			}
+			return builder.ToString();
 		}
 
 		#endregion Utility Methods
