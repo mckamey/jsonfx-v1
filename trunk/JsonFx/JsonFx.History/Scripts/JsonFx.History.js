@@ -83,39 +83,66 @@ JsonFx.History = {
 			return;
 		}
 
-		// grab the input, assume rendered just before
-		var box = h.elem.previousSibling;
-		var tag = box && box.tagName && box.tagName.toLowerCase();
-		var type = box && box.type && box.type.toLowerCase();
-		if (tag !== "input" || type !== "checkbox") {
-			return;
-		}
-
 		var info;
-		if (box.checked) {
+		if (JsonFx.History.isCached()) {
+alert("Cached page");
 			// reloaded page
 			info = JsonFx.History.getState();
 			if (info) {
 				h.callback(info);
 			}
-		} else {
-			// first time through, set value
-			box.checked = true;
+		} else if (!h.elem.onload) {
+alert("IE Non-Cached page");
+			// IE needs a little help ensuring that
+			// initial state is stored in history
+			var callback = JsonFx.History.h.callback;
+			JsonFx.History.h.callback = null;
 
-			if (!h.elem.onload) {
-				var callback = JsonFx.History.h.callback;
-				JsonFx.History.h.callback = null;
-
-				// IE doesn't store the first state, so we re-save
-				info = JsonFx.History.getState();
-				if (info) {
-					JsonFx.History.save(info);
-				}
-
-				// now hook up callback
-				JsonFx.History.h.callback = callback;
+			// IE doesn't store the first state, so we re-save
+			info = JsonFx.History.getState();
+			if (info) {
+				JsonFx.History.save(info);
 			}
+
+			// now hook up callback
+			JsonFx.History.h.callback = callback;
+		} else {
+alert("Non-Cached page");
 		}
+	},
+
+	/*bool*/ isCached: function() {
+		var h = JsonFx.History.h;
+		if (!h || !h.elem) {
+			return false;
+		}
+
+		if (h.virtual) {
+			var doc = JsonFx.UI.getIFrameDocument(h.elem);
+			if (!doc || !doc.location) {
+				return false;
+			}
+debugger;
+
+			var protocol = "javascript";
+			protocol += ":";
+			return (doc.location.protocol !== protocol);
+		}
+
+		// grab the input, assume rendered just before
+		var box = h.elem.previousSibling;
+		var tag = box && box.tagName && box.tagName.toLowerCase();
+		var type = box && box.type && box.type.toLowerCase();
+		if (tag !== "input" || type !== "checkbox") {
+			return false;
+		}
+
+		var value = !!box.checked;
+
+		// first time through set value
+		box.checked = true;
+
+		return value;
 	},
 
 	/*object*/ getState: function() {
