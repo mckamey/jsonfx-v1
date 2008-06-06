@@ -84,15 +84,15 @@ JsonFx.History = {
 		}
 
 		// grab the input, assume rendered just before
-		var fld = h.elem.previousSibling;
-		var tag = fld && fld.tagName && fld.tagName.toLowerCase();
-		var type = fld && fld.type && fld.type.toLowerCase();
-		if (tag !== "input" || type !== "hidden") {
+		var box = h.elem.previousSibling;
+		var tag = box && box.tagName && box.tagName.toLowerCase();
+		var type = box && box.type && box.type.toLowerCase();
+		if (tag !== "input" || type !== "checkbox") {
 			return;
 		}
 
 		var info;
-		if (fld.value) {
+		if (box.checked) {
 			// reloaded page
 			info = JsonFx.History.getState();
 			if (info) {
@@ -100,7 +100,7 @@ JsonFx.History = {
 			}
 		} else {
 			// first time through, set value
-			fld.value = "*";
+			box.checked = true;
 
 			if (!h.elem.onload) {
 				var callback = JsonFx.History.h.callback;
