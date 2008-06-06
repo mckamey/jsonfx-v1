@@ -137,7 +137,7 @@ namespace JsonFx.History
 			writer.AddAttribute(HtmlTextWriterAttribute.Src, url, true);
 
 			string onload = String.Format(
-				"JsonFx.History.init(this,{0},{1})",
+				"JsonFx.History.init(this,{0},{1});",
 				this.Callback,
 				usePhysicalUrl ? "true" : "false");
 			writer.AddAttribute("onload", onload, true);
@@ -155,7 +155,8 @@ namespace JsonFx.History
 
 		protected override void Render(HtmlTextWriter writer)
 		{
-			writer.AddAttribute(HtmlTextWriterAttribute.Type, "hidden");
+			writer.AddStyleAttribute(HtmlTextWriterStyle.Display, "none");
+			writer.AddAttribute(HtmlTextWriterAttribute.Type, "checkbox");
 			writer.RenderBeginTag(HtmlTextWriterTag.Input);
 
 			this.RenderBeginTag(writer);
