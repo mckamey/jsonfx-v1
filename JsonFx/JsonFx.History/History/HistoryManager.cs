@@ -48,6 +48,7 @@ namespace JsonFx.History
 		private string callback = null;
 		private string historyUrl = null;
 		private bool isDebugMode = false;
+		private bool? usePhysicalUrl = null;
 
 		#endregion Fields
 
@@ -111,14 +112,21 @@ namespace JsonFx.History
 		{
 			get
 			{
-				HttpBrowserCapabilities browser = this.Page.Request.Browser;
-				if (browser.Browser == null ||
-					browser.Browser.IndexOf("safari", StringComparison.InvariantCultureIgnoreCase) < 0)
+				if (!this.usePhysicalUrl.HasValue)
 				{
-					return false;
+					HttpBrowserCapabilities browser = this.Page.Request.Browser;
+					if (browser.Browser == null ||
+						browser.Browser.IndexOf("safari", StringComparison.InvariantCultureIgnoreCase) < 0)
+					{
+						this.usePhysicalUrl = false;
+					}
+					else
+					{
+						this.usePhysicalUrl = true;
+					}
 				}
 
-				return true;
+				return this.usePhysicalUrl.Value;
 			}
 		}
 
@@ -131,15 +139,14 @@ namespace JsonFx.History
 			base.AddAttributesToRender(writer);
 
 			// serializes the start state into URL
-			bool usePhysicalUrl = this.UsePhysicalUrl;
-			string url = this.BuildHistoryUrl(usePhysicalUrl);
+			string url = this.BuildHistoryUrl();
 
 			writer.AddAttribute(HtmlTextWriterAttribute.Src, url, true);
 
 			string onload = String.Format(
 				"JsonFx.History.init(this,{0},{1});",
 				this.Callback,
-				usePhysicalUrl ? "true" : "false");
+				this.UsePhysicalUrl ? "true" : "false");
 			writer.AddAttribute("onload", onload, true);
 
 			if (!this.IsDebugMode)
@@ -155,9 +162,12 @@ namespace JsonFx.History
 
 		protected override void Render(HtmlTextWriter writer)
 		{
-			writer.AddStyleAttribute(HtmlTextWriterStyle.Display, "none");
-			writer.AddAttribute(HtmlTextWriterAttribute.Type, "checkbox");
-			writer.RenderBeginTag(HtmlTextWriterTag.Input);
+			if (this.UsePhysicalUrl)
+			{
+				writer.AddStyleAttribute(HtmlTextWriterStyle.Display, "none");
+				writer.AddAttribute(HtmlTextWriterAttribute.Type, "checkbox");
+				writer.RenderBeginTag(HtmlTextWriterTag.Input);
+			}
 
 			this.RenderBeginTag(writer);
 			this.RenderEndTag(writer);
@@ -167,10 +177,10 @@ namespace JsonFx.History
 
 		#region Utility Methods
 
-		private string BuildHistoryUrl(bool usePhysicalUrl)
+		private string BuildHistoryUrl()
 		{
 			string url;
-			if (usePhysicalUrl)
+			if (this.UsePhysicalUrl)
 			{
 				// serializes and encodes the start state into the query string
 				url = this.ResolveUrl(this.HistoryUrl);
