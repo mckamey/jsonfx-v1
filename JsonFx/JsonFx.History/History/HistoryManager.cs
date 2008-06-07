@@ -45,6 +45,7 @@ namespace JsonFx.History
 		#region Constants
 
 		private const string DefaultHistoryUrl = "~/robots.txt";
+		private const string DefaultCallback = "null";
 
 		#endregion Constants
 
@@ -77,6 +78,7 @@ namespace JsonFx.History
 		/// <summary>
 		/// Gets and sets the initial state object which represents this page request
 		/// </summary>
+		[DefaultValue(null)]
 		public object StartState
 		{
 			get { return this.startState; }
@@ -86,9 +88,10 @@ namespace JsonFx.History
 		/// <summary>
 		/// Gets and sets the function name to be used as a callback when the history changes
 		/// </summary>
+		[DefaultValue(DefaultCallback)]
 		public string Callback
 		{
-			get { return String.IsNullOrEmpty(this.callback) ? "null" : this.callback; }
+			get { return String.IsNullOrEmpty(this.callback) ? DefaultCallback : this.callback; }
 			set { this.callback = value; }
 		}
 
@@ -108,7 +111,19 @@ namespace JsonFx.History
 				}
 				return this.historyUrl;
 			}
-			set { this.historyUrl = value; }
+			set
+			{
+				if (!String.IsNullOrEmpty(value))
+				{
+					int query = value.IndexOf('?');
+					if (query >= 0)
+					{
+						value = value.Substring(0, query);
+					}
+				}
+
+				this.historyUrl = value;
+			}
 		}
 
 		/// <summary>
@@ -157,15 +172,11 @@ namespace JsonFx.History
 		{
 			base.AddAttributesToRender(writer);
 
-			// serializes the start state into URL
-			string url = this.BuildHistoryUrl();
-
-			writer.AddAttribute(HtmlTextWriterAttribute.Src, url, true);
-
 			string onload = String.Format(
-				"JsonFx.History.init(this,{0},{1});",
+				"JsonFx.History.load(this,{0},{1},\"{2}\");",
 				this.Callback,
-				this.UsePhysicalUrl ? "true" : "false");
+				JsonEncode(this.StartState),
+				this.UsePhysicalUrl ? this.ResolveUrl(this.HistoryUrl) : "");
 			writer.AddAttribute("onload", onload, true);
 
 			if (this.IsDebugMode)
@@ -187,43 +198,6 @@ namespace JsonFx.History
 		#endregion Page Events
 
 		#region Utility Methods
-
-		private string BuildHistoryUrl()
-		{
-			string url;
-			if (this.UsePhysicalUrl)
-			{
-				// serializes and encodes the start state into the query string
-				url = this.ResolveUrl(this.HistoryUrl);
-				int query = url.IndexOf('?');
-				if (query >= 0)
-				{
-					url = url.Substring(0, query);
-				}
-				url += '?';
-				url += HttpUtility.UrlEncode(JsonEncode(this.StartState));
-			}
-			else
-			{
-				// serialize the start state onto JSON string URL
-				// this builds a document which contains the serialized JSON
-				url = "javascript:"+DoubleJsonEncode(this.StartState);
-			}
-			return url;
-		}
-
-		private static string DoubleJsonEncode(object state)
-		{
-			StringBuilder builder = new StringBuilder();
-			using (JsonWriter jsonWriter = new JsonWriter(builder))
-			{
-				jsonWriter.Write(state);
-				string firstEncoding = builder.ToString();
-				builder.Length = 0;
-				jsonWriter.Write(firstEncoding);
-			}
-			return builder.ToString();
-		}
 
 		private static string JsonEncode(object state)
 		{
