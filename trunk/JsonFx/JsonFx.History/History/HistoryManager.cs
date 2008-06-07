@@ -42,6 +42,12 @@ namespace JsonFx.History
 	[ToolboxData("<{0}:HistoryManager runat=\"server\" />")]
 	public class HistoryManager : WebControl
 	{
+		#region Constants
+
+		private const string DefaultHistoryUrl = "~/robots.txt";
+
+		#endregion Constants
+
 		#region Fields
 
 		private object startState = null;
@@ -87,12 +93,21 @@ namespace JsonFx.History
 		}
 
 		/// <summary>
-		/// Gets and sets the URL to be used in Safari when the history changes
+		/// Gets and sets the URL to be used when the history changes
+		/// for browsers that do not accept virtually built documents
 		/// </summary>
 		/// <remarks>Defaults to "~/robots.txt"</remarks>
-		public string HistoryUrl
+		[DefaultValue(DefaultHistoryUrl)]
+		public virtual string HistoryUrl
 		{
-			get { return String.IsNullOrEmpty(this.historyUrl) ? "~/robots.txt" : this.historyUrl; }
+			get
+			{
+				if (String.IsNullOrEmpty(this.historyUrl))
+				{
+					return DefaultHistoryUrl;
+				}
+				return this.historyUrl;
+			}
 			set { this.historyUrl = value; }
 		}
 
@@ -108,6 +123,9 @@ namespace JsonFx.History
 			set { this.isDebugMode = value; }
 		}
 
+		/// <summary>
+		/// Gets a value which indicates if should use physical or virtual documents
+		/// </summary>
 		private bool UsePhysicalUrl
 		{
 			get
@@ -118,6 +136,7 @@ namespace JsonFx.History
 					if (browser.Browser == null ||
 						browser.Browser.IndexOf("safari", StringComparison.InvariantCultureIgnoreCase) < 0)
 					{
+						// currently Safari seems to be the browser with virtual document issues
 						this.usePhysicalUrl = false;
 					}
 					else
@@ -149,7 +168,12 @@ namespace JsonFx.History
 				this.UsePhysicalUrl ? "true" : "false");
 			writer.AddAttribute("onload", onload, true);
 
-			if (!this.IsDebugMode)
+			if (this.IsDebugMode)
+			{
+				writer.AddStyleAttribute(HtmlTextWriterStyle.Position, "absolute");
+				writer.AddStyleAttribute(HtmlTextWriterStyle.BackgroundColor, "white");
+			}
+			else
 			{
 				writer.AddStyleAttribute(HtmlTextWriterStyle.Display, "none");
 
@@ -171,7 +195,12 @@ namespace JsonFx.History
 			{
 				// serializes and encodes the start state into the query string
 				url = this.ResolveUrl(this.HistoryUrl);
-				url += "?";
+				int query = url.IndexOf('?');
+				if (query >= 0)
+				{
+					url = url.Substring(0, query);
+				}
+				url += '?';
 				url += HttpUtility.UrlEncode(JsonEncode(this.StartState));
 			}
 			else
