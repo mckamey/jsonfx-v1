@@ -4,7 +4,7 @@
 
 	Copyright (c)2006-2008 Stephen M. McKamey
 	Created: 2006-11-11-1759
-	Modified: 2008-06-05-0808
+	Modified: 2008-06-07-0827
 
 	Distributed under the terms of an MIT-style license:
 	http://jsonfx.net/BuildTools/License.txt
@@ -50,6 +50,7 @@ if ("undefined" === typeof JsonFx.UI) {
 
 JsonFx.History = {
 	/*object*/ h: null,
+	/*string*/ flag: "*",
 
 	init: function(/*DOM*/ elem, /*function*/ callback, /*bool*/ mode) {
 
@@ -84,15 +85,13 @@ JsonFx.History = {
 		}
 
 		var info;
-		if (JsonFx.History.isCached()) {
-alert("Cached page");
+		if (JsonFx.History.isFlagged()) {
 			// reloaded page
 			info = JsonFx.History.getState();
 			if (info) {
 				h.callback(info);
 			}
 		} else if (!h.elem.onload) {
-alert("IE Non-Cached page");
 			// IE needs a little help ensuring that
 			// initial state is stored in history
 			var callback = JsonFx.History.h.callback;
@@ -104,45 +103,34 @@ alert("IE Non-Cached page");
 				JsonFx.History.save(info);
 			}
 
-			// now hook up callback
+			// reconnect callback
 			JsonFx.History.h.callback = callback;
-		} else {
-alert("Non-Cached page");
 		}
 	},
 
-	/*bool*/ isCached: function() {
+	/*bool*/ isFlagged: function() {
+
 		var h = JsonFx.History.h;
 		if (!h || !h.elem) {
 			return false;
 		}
 
-		if (h.virtual) {
-			var doc = JsonFx.UI.getIFrameDocument(h.elem);
-			if (!doc || !doc.location) {
-				return false;
-			}
-debugger;
-
-			var protocol = "javascript";
-			protocol += ":";
-			return (doc.location.protocol !== protocol);
-		}
-
-		// grab the input, assume rendered just before
-		var box = h.elem.previousSibling;
-		var tag = box && box.tagName && box.tagName.toLowerCase();
-		var type = box && box.type && box.type.toLowerCase();
-		if (tag !== "input" || type !== "checkbox") {
+		var doc = JsonFx.UI.getIFrameDocument(h.elem);
+		if (!doc || !doc.location || !doc.body) {
 			return false;
 		}
 
-		var value = !!box.checked;
+		var info = h.virtual ?
+			doc.body.innerHTML :
+			doc.location.search;
 
-		// first time through set value
-		box.checked = true;
+		if (info && !h.virtual) {
+			// strip query char and decode
+			info = info.substr(1);
+			info = decodeURIComponent(info);
+		}
 
-		return value;
+		return info && (info.charAt(0) === JsonFx.History.flag);
 	},
 
 	/*object*/ getState: function() {
@@ -157,18 +145,21 @@ debugger;
 			return null;
 		}
 
-		var info =
-			h.virtual ?
+		var info = h.virtual ?
 			doc.body.innerHTML :
 			doc.location.search;
 
-		if (!info) {
-			return null;
-		}
-
-		if (!h.virtual && info.length) {
+		if (info && !h.virtual) {
+			// strip query char and decode
 			info = info.substr(1);
 			info = decodeURIComponent(info);
+		}
+		if (info && info.charAt(0) === JsonFx.History.flag) {
+			// strip cache flag
+			info = info.substr(1);
+		}
+		if (!info) {
+			return null;
 		}
 
 		return JSON.parse(info);
@@ -212,7 +203,7 @@ debugger;
 			return;
 		}
 
-		info = JSON.stringify(info);
+		info = JsonFx.History.flag+JSON.stringify(info);
 		if (!h.virtual) {
 			// encode the serialized object into the query string
 			doc.location.search = '?'+encodeURIComponent(info);
