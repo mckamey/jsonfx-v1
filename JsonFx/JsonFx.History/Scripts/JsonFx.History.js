@@ -89,8 +89,8 @@ JsonFx.History = {
 			// onchange
 
 			info = JsonFx.History.getState(JsonFx.History.h) || start;
-			if (info) {
-				callback(info);
+			if (info && JsonFx.History.h.callback) {
+				JsonFx.History.h.callback(info);
 			}
 		}
 	},
