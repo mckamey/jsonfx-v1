@@ -160,19 +160,6 @@ namespace JsonFx.History
 			}
 		}
 
-		protected override void Render(HtmlTextWriter writer)
-		{
-			if (this.UsePhysicalUrl)
-			{
-				writer.AddStyleAttribute(HtmlTextWriterStyle.Display, "none");
-				writer.AddAttribute(HtmlTextWriterAttribute.Type, "checkbox");
-				writer.RenderBeginTag(HtmlTextWriterTag.Input);
-			}
-
-			this.RenderBeginTag(writer);
-			this.RenderEndTag(writer);
-		}
-
 		#endregion Page Events
 
 		#region Utility Methods
