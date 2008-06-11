@@ -747,13 +747,15 @@ namespace BuildTools.HtmlDistiller.Filters
 		/// </remarks>
 		public override bool FilterStyle(string tag, string style, ref string value)
 		{
-			if (value != null &&
-				value.IndexOf("expression", StringComparison.InvariantCultureIgnoreCase) >= 0 &&
-				value.IndexOf("javascript:", StringComparison.InvariantCultureIgnoreCase) >= 0)
+			if (value != null)
 			{
-				// IE CSS expressions are JavaScript
-				// JavaScript URLs are JavaScript
-				return false;
+				if (value.IndexOf("expression", StringComparison.InvariantCultureIgnoreCase) >= 0 ||
+					value.IndexOf("javascript:", StringComparison.InvariantCultureIgnoreCase) >= 0)
+				{
+					// IE CSS expressions are JavaScript
+					// JavaScript URLs are JavaScript
+					return false;
+				}
 			}
 
 			// blacklist of unsafe styles
