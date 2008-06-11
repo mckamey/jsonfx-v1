@@ -654,6 +654,25 @@ namespace BuildTools.HtmlDistiller.Filters
 					}
 					return false;
 				}
+				case "marquee":
+				{
+					switch (attribute)
+					{
+						case "align":
+						case "behavior":
+						case "bgcolor":
+						case "direction":
+						case "height":
+						case "loop":
+						case "scrollamount":
+						case "scrolldelay":
+						case "width":
+						{
+							return true;
+						}
+					}
+					return false;
+				}
 				case "p":
 				{
 					switch (attribute)
