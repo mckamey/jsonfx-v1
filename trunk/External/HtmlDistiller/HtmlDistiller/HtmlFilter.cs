@@ -195,6 +195,41 @@ namespace BuildTools.HtmlDistiller.Filters
 		}
 
 		#endregion IHtmlFilter Members
+
+		#region Utility Methods
+
+		/// <summary>
+		/// Filters URLs based upon protocol
+		/// </summary>
+		/// <param name="value"></param>
+		/// <returns></returns>
+		protected virtual bool FilterUrl(ref string value)
+		{
+			if (String.IsNullOrEmpty(value))
+			{
+				return false;
+			}
+
+			// TODO: see http://ha.ckers.org/xss.html for other attacks
+			value = value.Trim();
+			string protocol = value.Substring(0, value.IndexOf(':')+1);
+			switch (protocol.ToLowerInvariant())
+			{
+				case "http:":
+				case "https:":
+				case "mailto:":
+				case "":
+				{
+					return true;
+				}
+				default:
+				{
+					return false;
+				}
+			}
+		}
+
+		#endregion Utility Methods
 	}
 
 	/// <summary>
@@ -338,6 +373,9 @@ namespace BuildTools.HtmlDistiller.Filters
 					switch (attribute)
 					{
 						case "href":
+						{
+							return this.FilterUrl(ref value);
+						}
 						case "target":
 						{
 							return true;
@@ -350,10 +388,13 @@ namespace BuildTools.HtmlDistiller.Filters
 					switch (attribute)
 					{
 						case "alt":
-						case "src":
 						case "title":
 						{
 							return true;
+						}
+						case "src":
+						{
+							return this.FilterUrl(ref value);
 						}
 					}
 					return false;
@@ -533,27 +574,7 @@ namespace BuildTools.HtmlDistiller.Filters
 					{
 						case "href":
 						{
-							if (String.IsNullOrEmpty(value))
-							{
-								return false;
-							}
-
-							value = value.Trim();
-							string protocol = value.Substring(0, value.IndexOf(':')+1);
-							switch (protocol.ToLowerInvariant())
-							{
-								case "http:":
-								case "https:":
-								case "mailto:":
-								case "":
-								{
-									return true;
-								}
-								default:
-								{
-									return false;
-								}
-							}
+							return this.FilterUrl(ref value);
 						}
 						case "target":
 						{
@@ -568,11 +589,14 @@ namespace BuildTools.HtmlDistiller.Filters
 					switch (attribute)
 					{
 						case "balance":
-						case "src":
 						case "loop":
 						case "volume":
 						{
 							return true;
+						}
+						case "src":
+						{
+							return this.FilterUrl(ref value);
 						}
 					}
 					return false;
@@ -628,11 +652,14 @@ namespace BuildTools.HtmlDistiller.Filters
 						case "marginheight":
 						case "marginwidth":
 						case "scrolling":
-						case "src":
 						case "width":
 						case "z-index":
 						{
 							return true;
+						}
+						case "src":
+						{
+							return this.FilterUrl(ref value);
 						}
 					}
 					return false;
@@ -644,12 +671,16 @@ namespace BuildTools.HtmlDistiller.Filters
 						case "alt":
 						case "border":
 						case "height":
-						case "lowsrc":
-						case "src":
 						case "title":
 						case "width":
 						{
 							return true;
+						}
+						case "lowsrc":
+						case "dynsrc":
+						case "src":
+						{
+							return this.FilterUrl(ref value);
 						}
 					}
 					return false;
