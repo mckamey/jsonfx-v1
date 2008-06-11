@@ -748,9 +748,11 @@ namespace BuildTools.HtmlDistiller.Filters
 		public override bool FilterStyle(string tag, string style, ref string value)
 		{
 			if (value != null &&
-				value.IndexOf("expression", StringComparison.InvariantCultureIgnoreCase) >= 0)
+				value.IndexOf("expression", StringComparison.InvariantCultureIgnoreCase) >= 0 &&
+				value.IndexOf("javascript:", StringComparison.InvariantCultureIgnoreCase) >= 0)
 			{
 				// IE CSS expressions are JavaScript
+				// JavaScript URLs are JavaScript
 				return false;
 			}
 
