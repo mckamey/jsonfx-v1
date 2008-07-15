@@ -83,12 +83,12 @@ namespace JsonFx.Json
 		private const string ErrorExpectedPropertyName = "Expected JSON object property name.";
 		private const string ErrorExpectedPropertyNameDelim = "Expected JSON object property name delimiter.";
 		private const string ErrorNullValueType = "{0} does not accept null as a value";
-		private const string ErrorDefaultCtor = "Only objects with default constructors can be deserialized.";
-		private const string ErrorCannotInstantiate = "Interfaces, Abstract classes, and unsupported ValueTypes cannot be deserialized.";
-		private const string ErrorGenericIDictionary = "Types which implement Generic IDictionary<TKey, TValue> also need to implement IDictionary to be deserialized.";
+		private const string ErrorDefaultCtor = "Only objects with default constructors can be deserialized. ({0})";
+		private const string ErrorCannotInstantiate = "Interfaces, Abstract classes, and unsupported ValueTypes cannot be deserialized. ({0})";
+		private const string ErrorGenericIDictionary = "Types which implement Generic IDictionary<TKey, TValue> also need to implement IDictionary to be deserialized. ({0})";
 
 		#endregion Constants
-		
+
 		#region Fields
 
 		private Dictionary<Type, Dictionary<string, MemberInfo>> MemberMapCache = null;
@@ -814,13 +814,17 @@ namespace JsonFx.Json
 		{
 			if (objectType.IsInterface || objectType.IsAbstract || objectType.IsValueType)
 			{
-				throw new JsonDeserializationException(JsonReader.ErrorCannotInstantiate, this.index);
+				throw new JsonDeserializationException(
+					String.Format(JsonReader.ErrorCannotInstantiate, objectType.FullName),
+					this.index);
 			}
 
 			ConstructorInfo ctor = objectType.GetConstructor(Type.EmptyTypes);
 			if (ctor == null)
 			{
-				throw new JsonDeserializationException(JsonReader.ErrorDefaultCtor, this.index);
+				throw new JsonDeserializationException(
+					String.Format(JsonReader.ErrorDefaultCtor, objectType.FullName),
+					this.index);
 			}
 			Object result = ctor.Invoke(null);
 
@@ -1103,7 +1107,9 @@ namespace JsonFx.Json
 			ConstructorInfo ctor = targetType.GetConstructor(Type.EmptyTypes);
 			if (ctor == null)
 			{
-				throw new JsonDeserializationException(JsonReader.ErrorDefaultCtor, index);
+				throw new JsonDeserializationException(
+					String.Format(JsonReader.ErrorDefaultCtor, targetType.FullName),
+					index);
 			}
 			object collection = ctor.Invoke(null);
 
