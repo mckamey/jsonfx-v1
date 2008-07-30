@@ -940,17 +940,14 @@ namespace BuildTools.HtmlDistiller
 				(quot == SingleQuoteChar) ||
 				(quot == DoubleQuoteChar);
 
+			HtmlTag tag;
 			if (isQuoted)
 			{
 				// consume open quote
 				this.EmptyBuffer(1);
 
-				HtmlTag tag = this.ParseComment("<%", "%>");
-				if (tag != null)
-				{
-					// common ASP/JSP script found
-					//return tag;
-				}
+				// parse for common inline script
+				tag = this.ParseComment("<%", "%>");
 
 				while (!this.IsEOF)
 				{
@@ -969,12 +966,8 @@ namespace BuildTools.HtmlDistiller
 			}
 			else
 			{
-				HtmlTag tag = this.ParseComment("<%", "%>");
-				if (tag != null)
-				{
-					// common ASP/JSP script found
-					//return tag;
-				}
+				// parse for common inline script
+				tag = this.ParseComment("<%", "%>");
 
 				while (!this.IsEOF)
 				{
@@ -998,6 +991,12 @@ namespace BuildTools.HtmlDistiller
 				// consume close quote
 				this.EmptyBuffer(1);
 			}
+
+			if (tag != null && this.HtmlFilter.FilterTag(tag))
+			{
+				return tag.ToString();
+			}
+
 			return value;
 		}
 
