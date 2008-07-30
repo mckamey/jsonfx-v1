@@ -717,7 +717,13 @@ namespace BuildTools.HtmlDistiller
 		/// <returns>null if no tag was found (e.g. just LessThan char)</returns>
 		private HtmlTag ParseTag()
 		{
-			HtmlTag tag = this.ParseComment("<!--", "-->");
+			HtmlTag tag = this.ParseComment("<%", "%>");
+			if (tag != null)
+			{
+				// common ASP/JSP script found
+				return tag;
+			}
+			tag = this.ParseComment("<!--", "-->");
 			if (tag != null)
 			{
 				// standard HTML/XML/SGML comment found
@@ -939,6 +945,13 @@ namespace BuildTools.HtmlDistiller
 				// consume open quote
 				this.EmptyBuffer(1);
 
+				HtmlTag tag = this.ParseComment("<%", "%>");
+				if (tag != null)
+				{
+					// common ASP/JSP script found
+					//return tag;
+				}
+
 				while (!this.IsEOF)
 				{
 					ch = this.Current;
@@ -956,6 +969,13 @@ namespace BuildTools.HtmlDistiller
 			}
 			else
 			{
+				HtmlTag tag = this.ParseComment("<%", "%>");
+				if (tag != null)
+				{
+					// common ASP/JSP script found
+					//return tag;
+				}
+
 				while (!this.IsEOF)
 				{
 					ch = this.Current;

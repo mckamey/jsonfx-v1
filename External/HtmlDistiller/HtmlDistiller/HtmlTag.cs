@@ -230,7 +230,9 @@ namespace BuildTools.HtmlDistiller
 				this.tagType = HtmlTagType.EndTag;
 				this.rawName = this.rawName.Substring(1);
 			}
-			else if (this.rawName.StartsWith("!") || this.rawName.StartsWith("?"))
+			else if (this.rawName.StartsWith("!") ||
+				this.rawName.StartsWith("?") ||
+				this.rawName.StartsWith("%"))
 			{
 				this.tagType = HtmlTagType.Comment;
 			}
@@ -597,6 +599,11 @@ namespace BuildTools.HtmlDistiller
 				case "th":
 				case "thead":
 				case "tr":
+				case "!--":
+				case "![CDATA[":
+				case "!":
+				case "?":
+				case "%":
 				{
 					return false;
 				}
@@ -742,6 +749,7 @@ namespace BuildTools.HtmlDistiller
 					return HtmlTaxonomy.Style|HtmlTaxonomy.Document;
 				}
 
+				case "%":
 				case "noscript":
 				case "script":
 				{
