@@ -33,6 +33,7 @@ using System.Text;
 using System.Collections.Generic;
 
 using BuildTools.HtmlDistiller.Filters;
+using BuildTools.HtmlDistiller.Writers;
 
 namespace BuildTools.HtmlDistiller
 {
@@ -200,7 +201,6 @@ namespace BuildTools.HtmlDistiller
 
 		private readonly HtmlTagType tagType = HtmlTagType.Unknown;
 		private HtmlTaxonomy taxonomy = HtmlTaxonomy.None;
-		private readonly IHtmlFilter HtmlFilter;
 		private readonly string rawName;
 		private string tagName;
 		private Dictionary<string, string> attributes;
@@ -214,11 +214,8 @@ namespace BuildTools.HtmlDistiller
 		/// Ctor.
 		/// </summary>
 		/// <param name="name"></param>
-		/// <param name="filter"></param>
-		public HtmlTag(string name, IHtmlFilter filter)
+		public HtmlTag(string name)
 		{
-			this.HtmlFilter = filter;
-
 			if (name == null)
 			{
 				name = String.Empty;
@@ -292,6 +289,14 @@ namespace BuildTools.HtmlDistiller
 		}
 
 		/// <summary>
+		/// Gets the tag name in its original case
+		/// </summary>
+		public string RawName
+		{
+			get { return this.rawName; }
+		}
+
+		/// <summary>
 		/// Gets the collection of HTML attributes
 		/// </summary>
 		/// <remarks>
@@ -353,113 +358,6 @@ namespace BuildTools.HtmlDistiller
 
 		#region Methods
 
-		public bool WriteTag(StringBuilder output)
-		{
-			return this.WriteTag(output, true);
-		}
-
-		/// <summary>
-		/// Renders the tag to the output
-		/// </summary>
-		/// <param name="output"></param>
-		/// <returns>true if rendered, false if not</returns>
-		protected bool WriteTag(StringBuilder output, bool filter)
-		{
-			if (this.TagType == HtmlTagType.Unknown)
-			{
-				return false;
-			}
-			if (filter && !this.HtmlFilter.FilterTag(this))
-			{
-				return false;
-			}
-
-			output.Append('<');
-			if (this.TagType == HtmlTagType.EndTag)
-			{
-				output.Append('/');
-			}
-
-			output.Append(this.rawName);
-
-			this.WriteAttributes(output);
-			this.WriteStyles(output);
-
-			if (this.TagType == HtmlTagType.Comment)
-			{
-				output.Append(this.Attributes[HtmlTag.Key_EndDelim]);
-			}
-			else if (this.TagType == HtmlTagType.FullTag)
-			{
-				output.Append(" /");
-			}
-			output.Append('>');
-
-			return true;
-		}
-
-		/// <summary>
-		/// Renders the attributes to the output
-		/// </summary>
-		/// <param name="output"></param>
-		protected void WriteAttributes(StringBuilder output)
-		{
-			if (this.HasAttributes)
-			{
-				if (this.TagType == HtmlTagType.Comment)
-				{
-					output.Append(this.Attributes[HtmlTag.Key_Contents]);
-					return;
-				}
-
-				foreach (string key in this.Attributes.Keys)
-				{
-					string val =
-							/*(key == null) ? null :*/
-							this.attributes[key];
-
-					if (this.HtmlFilter.FilterAttribute(this.TagName, key, ref val))
-					{
-						if (String.IsNullOrEmpty(key) || String.IsNullOrEmpty(val))
-						{
-							output.AppendFormat(" {0}{1}", key, val);
-						}
-						else
-						{
-							output.AppendFormat(" {0}=\"{1}\"", key, val);
-						}
-					}
-				}
-			}
-		}
-
-		/// <summary>
-		/// Renders the style property to the output
-		/// </summary>
-		/// <param name="output"></param>
-		protected void WriteStyles(StringBuilder output)
-		{
-			if (this.HasStyles)
-			{
-				output.Append(" style=\"");
-
-				foreach (string key in this.Styles.Keys)
-				{
-					string val = this.styles[key];
-
-					if (this.HtmlFilter.FilterStyle(this.TagName, key, ref val))
-					{
-						if (!String.IsNullOrEmpty(key) && !String.IsNullOrEmpty(val))
-						{
-							output.AppendFormat("{0}:{1};", key, val);
-						}
-					}
-				}
-
-				output.Append('\"');
-			}
-		}
-
 		/// <summary>
 		/// Generates a closing tag which matches this tag
 		/// </summary>
@@ -472,7 +370,7 @@ namespace BuildTools.HtmlDistiller
 				return null;
 			}
 
-			return new HtmlTag('/'+this.rawName, this.HtmlFilter);
+			return new HtmlTag('/'+this.rawName);
 		}
 
 		/// <summary>
@@ -487,7 +385,7 @@ namespace BuildTools.HtmlDistiller
 				return null;
 			}
 
-			return new HtmlTag(this.rawName, this.HtmlFilter);
+			return new HtmlTag(this.rawName);
 		}
 
 		#endregion Methods
@@ -500,9 +398,11 @@ namespace BuildTools.HtmlDistiller
 		/// <returns></returns>
 		public override string ToString()
 		{
-			StringBuilder builder = new StringBuilder();
-			this.WriteTag(builder, false);
-			return builder.ToString();
+			//StringBuilder builder = new StringBuilder();
+			//this.WriteTag(builder, false);
+			//return builder.ToString();
+
+			return base.ToString();
 		}
 
 		public override bool Equals(object obj)

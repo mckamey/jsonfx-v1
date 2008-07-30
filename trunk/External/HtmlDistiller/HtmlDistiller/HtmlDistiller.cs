@@ -34,6 +34,7 @@ using System.Globalization;
 using System.Text;
 
 using BuildTools.HtmlDistiller.Filters;
+using BuildTools.HtmlDistiller.Writers;
 
 namespace BuildTools.HtmlDistiller
 {
@@ -58,7 +59,7 @@ namespace BuildTools.HtmlDistiller
 
 		#region Constants
 
-		private const char NullChar = '\0';
+		public const char NullChar = '\0';
 		private const char CRChar = '\r';
 		private const char LFChar = '\n';
 		private const char OpenTagChar = '<';
@@ -93,15 +94,15 @@ namespace BuildTools.HtmlDistiller
 
 		private readonly object SyncLock = new object();
 
-		private string source;
+		private string source = String.Empty;
 		private IHtmlFilter htmlFilter;
+		private IHtmlWriter htmlWriter;
 		private int maxLength = 0;
 		private bool normalizeWhitespace = false;
 		private bool balanceTags = true;
 		private bool encodeNonAscii = true;
 		private bool incrementalParsing = false;
 
-		private StringBuilder output;
 		private int index;		// current char in source
 		private int start;		// last written char in source
 		private int textSize;	// length of plain text processed
@@ -117,7 +118,7 @@ namespace BuildTools.HtmlDistiller
 		/// Ctor.
 		/// </summary>
 		public HtmlDistiller()
-			: this(null, 0, null)
+			: this(0, null)
 		{
 		}
 
@@ -125,8 +126,8 @@ namespace BuildTools.HtmlDistiller
 		/// Ctor.
 		/// </summary>
 		/// <param name="text">the text to parse</param>
-		public HtmlDistiller(string text, int maxLength)
-			: this(text, maxLength, null)
+		public HtmlDistiller(int maxLength)
+			: this(maxLength, null)
 		{
 		}
 
@@ -135,9 +136,8 @@ namespace BuildTools.HtmlDistiller
 		/// </summary>
 		/// <param name="text">the text to parse</param>
 		/// <param name="filter"></param>
-		public HtmlDistiller(string text, int maxLength, IHtmlFilter filter)
+		public HtmlDistiller(int maxLength, IHtmlFilter filter)
 		{
-			this.source = (text == null) ? String.Empty : text;
 			this.maxLength = maxLength;
 			this.htmlFilter = filter;
 		}
@@ -157,6 +157,21 @@ namespace BuildTools.HtmlDistiller
 				lock (this.SyncLock)
 				{
 					this.htmlFilter = value;
+				}
+			}
+		}
+
+		/// <summary>
+		/// Gets and sets the IHtmlWriter used for output
+		/// </summary>
+		public IHtmlWriter HtmlWriter
+		{
+			get { return this.htmlWriter; }
+			set
+			{
+				lock (this.SyncLock)
+				{
+					this.htmlWriter = value;
 				}
 			}
 		}
@@ -229,6 +244,11 @@ namespace BuildTools.HtmlDistiller
 			get { return this.source; }
 			set
 			{
+				if (value == null)
+				{
+					value = String.Empty;
+				}
+
 				lock (this.SyncLock)
 				{
 					if (this.incrementalParsing)
@@ -241,28 +261,11 @@ namespace BuildTools.HtmlDistiller
 					}
 					else
 					{
-						this.output = null;
+						this.HtmlWriter.Reset();
 					}
 
-					this.source = (value == null) ?
-						String.Empty :
-						value;
+					this.source = value;
 				}
-			}
-		}
-
-		/// <summary>
-		/// Gets the output text
-		/// </summary>
-		public string Output
-		{
-			get
-			{
-				if (this.output == null)
-				{
-					this.Parse();
-				}
-				return this.output.ToString();
 			}
 		}
 
@@ -273,7 +276,7 @@ namespace BuildTools.HtmlDistiller
 		{
 			get
 			{
-				if (this.output == null)
+				if (!this.HtmlWriter.Initialized)
 				{
 					this.Parse();
 				}
@@ -340,13 +343,13 @@ namespace BuildTools.HtmlDistiller
 		/// Stops incremental parsing and completes tag balancing, etc.
 		/// </summary>
 		/// <returns>the output text</returns>
-		public string EndIncrementalParsing()
+		public void EndIncrementalParsing()
 		{
 			lock (this.SyncLock)
 			{
 				this.Source = null;
 				this.incrementalParsing = false;
-				return this.Parse(false);
+				this.Parse(false);
 			}
 		}
 
@@ -355,26 +358,26 @@ namespace BuildTools.HtmlDistiller
 		/// </summary>
 		/// <param name="source"></param>
 		/// <returns>the output text</returns>
-		public string Parse(string source)
+		public void Parse(string source)
 		{
 			this.Source = source;
-			return this.Parse();
+			this.Parse();
 		}
 
 		/// <summary>
 		/// Parses the source using the current settings.
 		/// </summary>
 		/// <returns>the output text</returns>
-		public string Parse()
+		public void Parse()
 		{
-			return this.Parse(!this.incrementalParsing);
+			this.Parse(!this.incrementalParsing);
 		}
 
 		/// <summary>
 		/// Parses the source using the current settings.
 		/// </summary>
 		/// <param name="fullReset">clears incremental state as well</param>
-		private string Parse(bool fullReset)
+		private void Parse(bool fullReset)
 		{
 			lock (this.SyncLock)
 			{
@@ -502,7 +505,7 @@ namespace BuildTools.HtmlDistiller
 								if (this.EncodeNonAscii)
 								{
 									// encode LessThan char
-									this.output.Append(LessThanEntity);
+									this.HtmlWriter.WriteLiteral(LessThanEntity);
 
 									// remove from stream
 									this.EmptyBuffer(1);
@@ -536,7 +539,7 @@ namespace BuildTools.HtmlDistiller
 									if (this.Peek(1) != LFChar)
 									{
 										// just CR so replace CR with LF
-										this.output.Append(LFChar);
+										this.HtmlWriter.WriteLiteral(LFChar);
 
 										// count toward total text length
 										this.IncTextCount();
@@ -623,7 +626,7 @@ namespace BuildTools.HtmlDistiller
 
 							// encode the non-ASCII char
 							string entity = HtmlDistiller.EncodeHtmlEntity(ch);
-							this.output.Append(entity);
+							this.HtmlWriter.WriteLiteral(entity);
 
 							// remove char from stream
 							this.EmptyBuffer(1);
@@ -646,7 +649,7 @@ namespace BuildTools.HtmlDistiller
 								this.WriteBuffer();
 
 								// output decoded char
-								this.output.Append(entityChar);
+								this.HtmlWriter.WriteLiteral(entityChar);
 
 								// remove char from stream
 								this.EmptyBuffer(entityLength);
@@ -704,10 +707,8 @@ namespace BuildTools.HtmlDistiller
 				if (this.MaxLength > 0 && this.textSize >= this.MaxLength)
 				{
 					// source was cut off so add ellipsis
-					this.output.Append(this.EncodeNonAscii ? EllipsisEntity : Ellipsis);
+					this.HtmlWriter.WriteLiteral(this.EncodeNonAscii ? EllipsisEntity : Ellipsis);
 				}
-
-				return this.output.ToString();
 			}
 		}
 
@@ -772,7 +773,7 @@ namespace BuildTools.HtmlDistiller
 				}
 			}
 
-			tag = new HtmlTag(this.FlushBuffer(), this.htmlFilter);
+			tag = new HtmlTag(this.FlushBuffer());
 
 			this.ParseSyncPoint();
 
@@ -840,7 +841,7 @@ namespace BuildTools.HtmlDistiller
 				this.EmptyBuffer(endDelim.Length);
 			}
 
-			HtmlTag comment = new HtmlTag(commentName, this.htmlFilter);
+			HtmlTag comment = new HtmlTag(commentName);
 			if (!String.IsNullOrEmpty(contents))
 			{
 				comment.Attributes[HtmlTag.Key_Contents] = contents;
@@ -992,7 +993,7 @@ namespace BuildTools.HtmlDistiller
 				this.EmptyBuffer(1);
 			}
 
-			if (tag != null && this.HtmlFilter.FilterTag(tag))
+			if (tag != null && this.htmlFilter.FilterTag(tag))
 			{
 				return tag.ToString();
 			}
@@ -1070,7 +1071,7 @@ namespace BuildTools.HtmlDistiller
 
 		private void RenderTag(HtmlTag tag)
 		{
-			if (tag.WriteTag(this.output))
+			if (this.htmlWriter.WriteTag(tag, this.htmlFilter))
 			{
 				this.taxonomy |= tag.Taxonomy;
 			}
@@ -1108,16 +1109,20 @@ namespace BuildTools.HtmlDistiller
 			{
 				this.htmlFilter = new SafeHtmlFilter();
 			}
+			if (this.htmlWriter == null)
+			{
+				this.htmlWriter = new HtmlWriter();
+			}
 			this.index = this.start = 0;
 
-			if (fullReset || this.output == null)
+			if (fullReset || !this.HtmlWriter.Initialized)
 			{
 				// in incremental parse mode, continue as if same document
 				this.textSize = 0;
 				this.syncPoint = -1;
 				this.openTags = new Stack<HtmlTag>(10);
 				this.taxonomy = HtmlTaxonomy.None;
-				this.output = new StringBuilder(this.source.Length);
+				this.HtmlWriter.Init(this.source.Length);
 			}
 		}
 
@@ -1164,12 +1169,7 @@ namespace BuildTools.HtmlDistiller
 				return this.source[pos];
 			}
 
-			if (this.output.Length < peek)
-			{
-				return NullChar;
-			}
-
-			return this.output[this.output.Length-peek];
+			return this.HtmlWriter.PrevChar(peek);
 		}
 
 		private char Peek(int peek)
@@ -1191,12 +1191,12 @@ namespace BuildTools.HtmlDistiller
 				if (this.htmlFilter.FilterLiteral(this.source, this.start, this.index, out replacement))
 				{
 					// filter has altered the literal
-					this.output.Append(replacement);
+					this.HtmlWriter.WriteLiteral(replacement);
 				}
 				else
 				{
 					// use the original
-					this.output.Append(this.source, this.start, this.index-this.start);
+					this.HtmlWriter.WriteLiteral(this.source, this.start, this.index-this.start);
 				}
 			}
 			this.start = this.index;
