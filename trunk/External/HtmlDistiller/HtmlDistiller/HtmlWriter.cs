@@ -39,86 +39,49 @@ namespace BuildTools.HtmlDistiller.Writers
 {
 	public interface IHtmlWriter
 	{
-		#region Properties
-
-		bool Initialized { get; }
-
-		#endregion Properties
-
 		#region Methods
 
-		void Reset();
-
-		void Init(int capacity);
+		char PrevChar(int peek);
 
 		void WriteLiteral(char literal);
 
 		void WriteLiteral(string literal);
 
-		void WriteLiteral(string source, int start, int count);
-
 		bool WriteTag(HtmlTag tag, IHtmlFilter filter);
 
 		#endregion Methods
-
-		char PrevChar(int peek);
 	}
 
 	public class HtmlWriter : IHtmlWriter
 	{
 		#region Fields
 
-		private StringBuilder output = null;
+		private TextWriter writer = null;
 
 		#endregion Fields
 
 		#region Properties
 
-		public string Output
+		/// <summary>
+		/// Gets the underlying TextWriter.
+		/// </summary>
+		public TextWriter TextWriter
 		{
-			get
-			{
-				if (this.output == null)
-				{
-					return null;
-				}
-
-				return this.output.ToString();
-			}
+			get { return this.writer; }
 		}
 
 		#endregion Properties
 
 		#region IHtmlWriter Members
 
-		bool IHtmlWriter.Initialized
-		{
-			get { return (this.output != null); }
-		}
-
-		void IHtmlWriter.Reset()
-		{
-			this.output = null;
-		}
-
-		void IHtmlWriter.Init(int capacity)
-		{
-			this.output = new StringBuilder(capacity);
-		}
-
 		void IHtmlWriter.WriteLiteral(char literal)
 		{
-			this.output.Append(literal);
+			this.writer.Write(literal);
 		}
 
 		public void WriteLiteral(string literal)
 		{
-			this.output.Append(literal);
-		}
-
-		void IHtmlWriter.WriteLiteral(string source, int start, int count)
-		{
-			this.output.Append(source, start, count);
+			this.writer.Write(literal);
 		}
 
 		/// <summary>
@@ -138,13 +101,13 @@ namespace BuildTools.HtmlDistiller.Writers
 				return false;
 			}
 
-			this.output.Append('<');
+			this.writer.Write('<');
 			if (tag.TagType == HtmlTagType.EndTag)
 			{
-				this.output.Append('/');
+				this.writer.Write('/');
 			}
 
-			this.output.Append(tag.RawName);
+			this.writer.Write(tag.RawName);
 
 			if (tag.HasAttributes)
 			{
@@ -157,25 +120,25 @@ namespace BuildTools.HtmlDistiller.Writers
 
 			if (tag.TagType == HtmlTagType.Comment)
 			{
-				this.output.Append(tag.Attributes[HtmlTag.Key_EndDelim]);
+				this.writer.Write(tag.Attributes[HtmlTag.Key_EndDelim]);
 			}
 			else if (tag.TagType == HtmlTagType.FullTag)
 			{
-				this.output.Append(" /");
+				this.writer.Write(" /");
 			}
-			this.output.Append('>');
+			this.writer.Write('>');
 
 			return true;
 		}
 
 		char IHtmlWriter.PrevChar(int peek)
 		{
-			if (this.output.Length < peek)
+			//if (this.writer.Length < peek)
 			{
 				return HtmlDistiller.NullChar;
 			}
 
-			return this.output[this.output.Length-peek];
+			//return this.writer[this.writer.Length-peek];
 		}
 
 		#endregion IHtmlWriter Members
@@ -190,7 +153,7 @@ namespace BuildTools.HtmlDistiller.Writers
 		{
 			if (tag.TagType == HtmlTagType.Comment)
 			{
-				this.output.Append(tag.Attributes[HtmlTag.Key_Contents]);
+				this.writer.Write(tag.Attributes[HtmlTag.Key_Contents]);
 				return;
 			}
 
@@ -202,11 +165,11 @@ namespace BuildTools.HtmlDistiller.Writers
 				{
 					if (String.IsNullOrEmpty(key) || String.IsNullOrEmpty(val))
 					{
-						this.output.AppendFormat(" {0}{1}", key, val);
+						this.writer.Write(" {0}{1}", key, val);
 					}
 					else
 					{
-						this.output.AppendFormat(" {0}=\"{1}\"", key, val);
+						this.writer.Write(" {0}=\"{1}\"", key, val);
 					}
 				}
 			}
@@ -218,7 +181,7 @@ namespace BuildTools.HtmlDistiller.Writers
 		/// <param name="output"></param>
 		protected void WriteStyles(HtmlTag tag, IHtmlFilter filter)
 		{
-			this.output.Append(" style=\"");
+			this.writer.Write(" style=\"");
 
 			foreach (string key in tag.Styles.Keys)
 			{
@@ -228,12 +191,12 @@ namespace BuildTools.HtmlDistiller.Writers
 				{
 					if (!String.IsNullOrEmpty(key) && !String.IsNullOrEmpty(val))
 					{
-						this.output.AppendFormat("{0}:{1};", key, val);
+						this.writer.Write("{0}:{1};", key, val);
 					}
 				}
 			}
 
-			this.output.Append('\"');
+			this.writer.Write('\"');
 		}
 
 		#endregion Methods

@@ -97,6 +97,7 @@ namespace BuildTools.HtmlDistiller
 		private string source = String.Empty;
 		private IHtmlFilter htmlFilter;
 		private IHtmlWriter htmlWriter;
+		private bool isInitialized = false;
 		private int maxLength = 0;
 		private bool normalizeWhitespace = false;
 		private bool balanceTags = true;
@@ -108,7 +109,7 @@ namespace BuildTools.HtmlDistiller
 		private int textSize;	// length of plain text processed
 		private int syncPoint;	// last sync point (for incremental parsing)
 		private Stack<HtmlTag> openTags;
-		private HtmlTaxonomy taxonomy;
+		private HtmlTaxonomy taxonomy = HtmlTaxonomy.None;
 
 		#endregion Fields
 
@@ -242,31 +243,6 @@ namespace BuildTools.HtmlDistiller
 		public string Source
 		{
 			get { return this.source; }
-			set
-			{
-				if (value == null)
-				{
-					value = String.Empty;
-				}
-
-				lock (this.SyncLock)
-				{
-					if (this.incrementalParsing)
-					{
-						if (this.syncPoint >= 0)
-						{
-							// prepend remaining unparsed source
-							value = this.source.Substring(this.syncPoint) + value;
-						}
-					}
-					else
-					{
-						this.HtmlWriter.Reset();
-					}
-
-					this.source = value;
-				}
-			}
 		}
 
 		/// <summary>
@@ -274,14 +250,7 @@ namespace BuildTools.HtmlDistiller
 		/// </summary>
 		public HtmlTaxonomy Taxonomy
 		{
-			get
-			{
-				if (!this.HtmlWriter.Initialized)
-				{
-					this.Parse();
-				}
-				return this.taxonomy;
-			}
+			get { return this.taxonomy; }
 		}
 
 		#endregion Properties
@@ -334,7 +303,7 @@ namespace BuildTools.HtmlDistiller
 		{
 			lock (this.SyncLock)
 			{
-				this.Reset();
+				this.isInitialized = false;
 				this.incrementalParsing = true;
 			}
 		}
@@ -347,43 +316,22 @@ namespace BuildTools.HtmlDistiller
 		{
 			lock (this.SyncLock)
 			{
-				this.Source = null;
 				this.incrementalParsing = false;
-				this.Parse(false);
+				this.Parse(null);
 			}
 		}
 
 		/// <summary>
-		/// Parses the provided source using the current settings.
-		/// </summary>
-		/// <param name="source"></param>
-		/// <returns>the output text</returns>
-		public void Parse(string source)
-		{
-			this.Source = source;
-			this.Parse();
-		}
-
-		/// <summary>
 		/// Parses the source using the current settings.
 		/// </summary>
-		/// <returns>the output text</returns>
-		public void Parse()
-		{
-			this.Parse(!this.incrementalParsing);
-		}
-
-		/// <summary>
-		/// Parses the source using the current settings.
-		/// </summary>
-		/// <param name="fullReset">clears incremental state as well</param>
-		private void Parse(bool fullReset)
+		/// <param name="source">the source to be parsed</param>
+		public void Parse(string sourceText)
 		{
 			lock (this.SyncLock)
 			{
 				try
 				{
-					this.Reset(fullReset);
+					this.Init(sourceText);
 
 					while (!this.IsEOF)
 					{
@@ -395,7 +343,7 @@ namespace BuildTools.HtmlDistiller
 						{
 							#region found potential tag
 
-							// write out all before CR
+							// write out all before LessThan
 							this.WriteBuffer();
 
 							HtmlTag tag = this.ParseTag();
@@ -708,6 +656,11 @@ namespace BuildTools.HtmlDistiller
 				{
 					// source was cut off so add ellipsis
 					this.HtmlWriter.WriteLiteral(this.EncodeNonAscii ? EllipsisEntity : Ellipsis);
+				}
+
+				if (!this.incrementalParsing)
+				{
+					this.isInitialized = false;
 				}
 			}
 		}
@@ -1088,22 +1041,11 @@ namespace BuildTools.HtmlDistiller
 		}
 
 		/// <summary>
-		/// Resets state used for parsing
-		/// </summary>
-		public void Reset()
-		{
-			lock (this.SyncLock)
-			{
-				this.Reset(true);
-			}
-		}
-
-		/// <summary>
 		/// Reset state used for parsing
 		/// </summary>
 		/// <param name="fullReset">clears incremental state as well</param>
 		/// <remarks>Does not SyncLock, call inside lock</remarks>
-		private void Reset(bool fullReset)
+		private void Init(string sourceText)
 		{
 			if (this.htmlFilter == null)
 			{
@@ -1113,16 +1055,26 @@ namespace BuildTools.HtmlDistiller
 			{
 				this.htmlWriter = new HtmlWriter();
 			}
+
+			// set up the source
+			if (this.incrementalParsing && this.syncPoint >= 0)
+			{
+				// prepend remaining unparsed source
+				sourceText = this.source.Substring(this.syncPoint) + sourceText;
+			}
+			this.source = (sourceText == null) ? String.Empty : sourceText;
+
+			// reset indexes
 			this.index = this.start = 0;
 
-			if (fullReset || !this.HtmlWriter.Initialized)
+			if (!this.isInitialized)
 			{
 				// in incremental parse mode, continue as if same document
 				this.textSize = 0;
 				this.syncPoint = -1;
 				this.openTags = new Stack<HtmlTag>(10);
 				this.taxonomy = HtmlTaxonomy.None;
-				this.HtmlWriter.Init(this.source.Length);
+				this.isInitialized = true;
 			}
 		}
 
@@ -1195,8 +1147,8 @@ namespace BuildTools.HtmlDistiller
 				}
 				else
 				{
-					// use the original
-					this.HtmlWriter.WriteLiteral(this.source, this.start, this.index-this.start);
+					// use the original literal
+					this.HtmlWriter.WriteLiteral(this.source.Substring(this.start, this.index-this.start));
 				}
 			}
 			this.start = this.index;
