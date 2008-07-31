@@ -1122,7 +1122,9 @@ namespace BuildTools.HtmlDistiller
 				return this.source[pos];
 			}
 
-			return this.HtmlWriter.PrevChar(peek);
+			// check the previous output if possible
+			IReversePeek revPeek = this.HtmlWriter as IReversePeek;
+			return (revPeek == null) ? NullChar : revPeek.PrevChar(peek);
 		}
 
 		private char Peek(int peek)

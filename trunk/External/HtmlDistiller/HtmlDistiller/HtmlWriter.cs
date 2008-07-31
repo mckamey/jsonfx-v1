@@ -41,8 +41,6 @@ namespace BuildTools.HtmlDistiller.Writers
 	{
 		#region Methods
 
-		char PrevChar(int peek);
-
 		void WriteLiteral(char literal);
 
 		void WriteLiteral(string literal);
@@ -52,7 +50,12 @@ namespace BuildTools.HtmlDistiller.Writers
 		#endregion Methods
 	}
 
-	public class HtmlWriter : IHtmlWriter, IDisposable
+	public interface IReversePeek
+	{
+		char PrevChar(int peek);
+	}
+
+	public class HtmlWriter : IHtmlWriter, IReversePeek, IDisposable
 	{
 		#region Fields
 
@@ -162,25 +165,6 @@ namespace BuildTools.HtmlDistiller.Writers
 			return true;
 		}
 
-		char IHtmlWriter.PrevChar(int peek)
-		{
-			// TODO: determine if this is really needed
-
-			if (!(this.writer is StringWriter))
-			{
-				return HtmlDistiller.NullChar;
-			}
-
-			StringBuilder builder = ((StringWriter)this.writer).GetStringBuilder();
-
-			if (builder.Length < peek)
-			{
-				return HtmlDistiller.NullChar;
-			}
-
-			return builder[builder.Length-peek];
-		}
-
 		#endregion IHtmlWriter Members
 
 		#region Methods
@@ -267,5 +251,28 @@ namespace BuildTools.HtmlDistiller.Writers
 		}
 
 		#endregion IDisposable Members
+
+		#region IReversePeek Members
+
+		char IReversePeek.PrevChar(int peek)
+		{
+			// TODO: determine if there is a better way for this
+
+			if (!(this.writer is StringWriter))
+			{
+				return HtmlDistiller.NullChar;
+			}
+
+			StringBuilder builder = ((StringWriter)this.writer).GetStringBuilder();
+
+			if (builder.Length < peek)
+			{
+				return HtmlDistiller.NullChar;
+			}
+
+			return builder[builder.Length-peek];
+		}
+
+		#endregion IReversePeek Members
 	}
 }
