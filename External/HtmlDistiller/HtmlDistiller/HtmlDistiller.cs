@@ -29,6 +29,7 @@
 #endregion BuildTools License
 
 using System;
+using System.IO;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Text;
@@ -325,13 +326,13 @@ namespace BuildTools.HtmlDistiller
 		/// Parses the source using the current settings.
 		/// </summary>
 		/// <param name="source">the source to be parsed</param>
-		public void Parse(string sourceText)
+		public void Parse(string html)
 		{
 			lock (this.SyncLock)
 			{
 				try
 				{
-					this.Init(sourceText);
+					this.Init(html);
 
 					while (!this.IsEOF)
 					{
@@ -1045,7 +1046,7 @@ namespace BuildTools.HtmlDistiller
 		/// </summary>
 		/// <param name="fullReset">clears incremental state as well</param>
 		/// <remarks>Does not SyncLock, call inside lock</remarks>
-		private void Init(string sourceText)
+		private void Init(string html)
 		{
 			if (this.htmlFilter == null)
 			{
@@ -1060,9 +1061,9 @@ namespace BuildTools.HtmlDistiller
 			if (this.incrementalParsing && this.syncPoint >= 0)
 			{
 				// prepend remaining unparsed source
-				sourceText = this.source.Substring(this.syncPoint) + sourceText;
+				html = this.source.Substring(this.syncPoint) + html;
 			}
-			this.source = (sourceText == null) ? String.Empty : sourceText;
+			this.source = (html == null) ? String.Empty : html;
 
 			// reset indexes
 			this.index = this.start = 0;
@@ -1567,5 +1568,38 @@ namespace BuildTools.HtmlDistiller
 		}
 
 		#endregion Methods
+
+		#region Static Methods
+
+		/// <summary>
+		/// Quick parsing utility for common usage.
+		/// </summary>
+		/// <param name="html">the source text</param>
+		/// <param name="filter">a custom HtmlFilter</param>
+		/// <returns>the filtered text</returns>
+		public static string Parse(string html, IHtmlFilter filter)
+		{
+			return HtmlDistiller.Parse(html, filter);
+		}
+
+		/// <summary>
+		/// Quick parsing utility for common usage.
+		/// </summary>
+		/// <param name="html">the source text</param>
+		/// <param name="filter">a custom HtmlFilter</param>
+		/// <param name="maxLength">the maximum text length</param>
+		/// <returns>the filtered text</returns>
+		public static string Parse(string html, IHtmlFilter filter, int maxLength)
+		{
+			StringWriter writer = new StringWriter();
+
+			HtmlDistiller parser = new HtmlDistiller(maxLength, filter);
+			parser.HtmlWriter = new HtmlWriter(writer);
+			parser.Parse(html);
+
+			return writer.ToString();
+		}
+
+		#endregion Static Methods
 	}
 }
