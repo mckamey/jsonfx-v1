@@ -398,11 +398,11 @@ namespace BuildTools.HtmlDistiller
 		/// <returns></returns>
 		public override string ToString()
 		{
-			//StringBuilder builder = new StringBuilder();
-			//this.WriteTag(builder, false);
-			//return builder.ToString();
-
-			return base.ToString();
+			using (HtmlWriter writer = new HtmlWriter())
+			{
+				writer.WriteTag(this, null);
+				return writer.ToString();
+			}
 		}
 
 		public override bool Equals(object obj)
