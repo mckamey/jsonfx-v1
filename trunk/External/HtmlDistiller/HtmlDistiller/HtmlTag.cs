@@ -195,6 +195,8 @@ namespace BuildTools.HtmlDistiller
 		private const string Key_Content = "";
 		private const string Key_EndDelim = ">";
 
+		internal const string StyleAttrib = "style";
+
 		#endregion Constants
 
 		#region Fields
@@ -351,7 +353,14 @@ namespace BuildTools.HtmlDistiller
 		/// </remarks>
 		public bool HasStyles
 		{
-			get { return (this.styles != null && this.styles.Count > 0); }
+			get
+			{
+				if (this.HasAttributes && this.Attributes.ContainsKey(StyleAttrib))
+				{
+					return false;
+				}
+				return (this.styles != null && this.styles.Count > 0);
+			}
 		}
 
 		/// <summary>
