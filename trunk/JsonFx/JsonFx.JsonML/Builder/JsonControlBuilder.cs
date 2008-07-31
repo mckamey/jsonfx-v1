@@ -105,7 +105,7 @@ namespace JsonFx.JsonML.Builder
 		/// Adds literal text to the output
 		/// </summary>
 		/// <param name="literal"></param>
-		public void AddLiteral(string literal)
+		public void Parse(string literal)
 		{
 			try
 			{
@@ -145,7 +145,7 @@ namespace JsonFx.JsonML.Builder
 			}
 		}
 
-		protected void OutputLiteral(string text)
+		public void AppendChild(string text)
 		{
 			if (String.IsNullOrEmpty(text))
 			{
@@ -176,6 +176,24 @@ namespace JsonFx.JsonML.Builder
 
 			// normalize whitespace
 			jsonLiteral.Text = RegexWhitespace.Replace(jsonLiteral.Text, " ");
+		}
+
+		internal void AppendChild(IJsonControl child)
+		{
+			if (child == null)
+			{
+				return;
+			}
+
+			if (this.current == null && !this.AllowLiteralsInRoot)
+			{
+				return;
+			}
+
+			JsonControlCollection childControls = (this.current == null) ?
+				this.controls : this.current.ChildControls;
+
+			childControls.Add(child);
 		}
 
 		public void PushTag(string tagName)
@@ -263,6 +281,16 @@ namespace JsonFx.JsonML.Builder
 			{
 				target.Attributes[name] = value;
 			}
+		}
+
+		internal void AddAttribute(string name, IJsonControl value)
+		{
+			if (this.current == null)
+			{
+				throw new InvalidOperationException("Unexpected attribute");
+			}
+
+			this.current.Attributes[name] = value;
 		}
 
 		public void StoreStyle(string name, string value)
@@ -357,12 +385,12 @@ namespace JsonFx.JsonML.Builder
 
 		void IHtmlWriter.WriteLiteral(string literal)
 		{
-			this.OutputLiteral(literal);
+			this.AppendChild(literal);
 		}
 
 		void IHtmlWriter.WriteLiteral(char literal)
 		{
-			this.OutputLiteral(literal.ToString());
+			this.AppendChild(literal.ToString());
 		}
 
 		bool IHtmlWriter.WriteTag(HtmlTag tag, IHtmlFilter filter)
@@ -378,7 +406,15 @@ namespace JsonFx.JsonML.Builder
 					{
 						foreach (string key in tag.Attributes.Keys)
 						{
-							this.AddAttribute(key, tag.Attributes[key]);
+							string value = tag.Attributes[key];
+							if (value.StartsWith("<%") && value.EndsWith("%>"))
+							{
+								this.AddAttribute(key, new JbstCodeBlock(value.Trim('<', '%', '>')));
+							}
+							else
+							{
+								this.AddAttribute(key, value);
+							}
 						}
 					}
 
@@ -401,7 +437,15 @@ namespace JsonFx.JsonML.Builder
 					this.PopTag();
 					break;
 				}
-				case HtmlTagType.Comment:
+				case HtmlTagType.Unparsed:
+				{
+					if (tag.TagName == "%")
+					{
+						JbstCodeBlock code = new JbstCodeBlock(tag.Content);
+						this.AppendChild(code);
+					}
+					break;
+				}
 				default:
 				{
 					break;

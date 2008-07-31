@@ -362,7 +362,7 @@ namespace JsonFx.JsonML
 				return;
 			}
 
-			this.builder.AddLiteral(value);
+			this.builder.Parse(value);
 		}
 
 		public override void Write(uint value)
