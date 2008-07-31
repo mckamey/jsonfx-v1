@@ -52,7 +52,7 @@ namespace BuildTools.HtmlDistiller.Writers
 		#endregion Methods
 	}
 
-	public class HtmlWriter : IHtmlWriter
+	public class HtmlWriter : IHtmlWriter, IDisposable
 	{
 		#region Fields
 
@@ -243,5 +243,17 @@ namespace BuildTools.HtmlDistiller.Writers
 		}
 
 		#endregion Object Overrides
+
+		#region IDisposable Members
+
+		/// <summary>
+		/// Releases all resources used by the System.IO.TextWriter object.
+		/// </summary>
+		void IDisposable.Dispose()
+		{
+			this.writer.Dispose();
+		}
+
+		#endregion IDisposable Members
 	}
 }
