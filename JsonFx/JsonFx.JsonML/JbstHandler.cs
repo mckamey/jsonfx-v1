@@ -35,7 +35,7 @@ namespace JsonFx.JsonML
 				// TODO: secure this!
 				builder.Parse(File.ReadAllText(context.Request.MapPath(context.Request.FilePath)));
 
-				context.Response.Output.Write(')');
+				context.Response.Output.Write(");");
 
 				builder.Flush();
 			}
