@@ -42,15 +42,6 @@ namespace BuildTools.HtmlDistiller.Writers
 
 		#endregion Fields
 
-		#region Init
-
-		//public HtmlWriter(TextWriter writer)
-		//{
-
-		//}
-
-		#endregion Init
-
 		#region Properties
 
 		public string Output
