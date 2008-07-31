@@ -411,11 +411,6 @@ namespace JsonFx.JsonML.Builder
 			return true;
 		}
 
-		char IHtmlWriter.PrevChar(int peek)
-		{
-			return HtmlDistiller.NullChar;
-		}
-
 		#endregion IHtmlWriter Members
 
 		#region IDisposable Members
