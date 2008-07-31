@@ -65,7 +65,17 @@ namespace BuildTools.HtmlDistiller.Writers
 		/// <summary>
 		/// Ctor.
 		/// </summary>
-		public HtmlWriter() : this(null)
+		public HtmlWriter()
+			: this((TextWriter)null)
+		{
+		}
+
+		/// <summary>
+		/// Ctor.
+		/// </summary>
+		/// <param name="writer">the underlying Stream</param>
+		public HtmlWriter(Stream stream)
+			: this((stream != null) ? new StreamWriter(stream) : null)
 		{
 		}
 
@@ -251,6 +261,8 @@ namespace BuildTools.HtmlDistiller.Writers
 		/// </summary>
 		void IDisposable.Dispose()
 		{
+			this.writer.Flush();
+			this.writer.Close();
 			this.writer.Dispose();
 		}
 
