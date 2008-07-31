@@ -366,7 +366,7 @@ namespace BuildTools.HtmlDistiller
 		/// <summary>
 		/// Gets the end delimiter of unparsed blocks (e.g. comments)
 		/// </summary>
-		internal string EndDelim
+		public string EndDelim
 		{
 			get { return this.Attributes[HtmlTag.Key_EndDelim]; }
 			set { this.Attributes[HtmlTag.Key_EndDelim] = value; }
