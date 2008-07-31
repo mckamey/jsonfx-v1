@@ -95,7 +95,7 @@ namespace BuildTools.HtmlDistiller.Writers
 
 		#region IHtmlWriter Members
 
-		void IHtmlWriter.WriteLiteral(char literal)
+		public void WriteLiteral(char literal)
 		{
 			this.writer.Write(literal);
 		}
@@ -111,7 +111,7 @@ namespace BuildTools.HtmlDistiller.Writers
 		/// <param name="tag"></param>
 		/// <param name="filter"></param>
 		/// <returns>true if rendered, false if not</returns>
-		bool IHtmlWriter.WriteTag(HtmlTag tag, IHtmlFilter filter)
+		public bool WriteTag(HtmlTag tag, IHtmlFilter filter)
 		{
 			if (tag.TagType == HtmlTagType.Unknown)
 			{
@@ -154,12 +154,21 @@ namespace BuildTools.HtmlDistiller.Writers
 
 		char IHtmlWriter.PrevChar(int peek)
 		{
-			//if (this.writer.Length < peek)
+			// TODO: determine if this is really needed
+
+			if (!(this.writer is StringWriter))
 			{
 				return HtmlDistiller.NullChar;
 			}
 
-			//return this.writer[this.writer.Length-peek];
+			StringBuilder builder = ((StringWriter)this.writer).GetStringBuilder();
+
+			if (builder.Length < peek)
+			{
+				return HtmlDistiller.NullChar;
+			}
+
+			return builder[builder.Length-peek];
 		}
 
 		#endregion IHtmlWriter Members
