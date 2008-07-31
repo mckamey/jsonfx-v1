@@ -83,8 +83,9 @@ namespace BuildTools.HtmlDistiller
 		private const char EntityHexChar = 'x';
 		private const char HexStartChar = 'A';
 		private const char HexEndChar = 'F';
+		private const string CodeBlockStart = "<%";
+		private const string CodeBlockEnd = "%>";
 
-		private const string StyleAttrib = "style";
 		private const string EllipsisEntity = "&hellip;";
 		private const string Ellipsis = "...";
 		private const string LessThanEntity = "&lt;";
@@ -672,7 +673,7 @@ namespace BuildTools.HtmlDistiller
 		/// <returns>null if no tag was found (e.g. just LessThan char)</returns>
 		private HtmlTag ParseTag()
 		{
-			HtmlTag tag = this.ParseComment("<%", "%>");
+			HtmlTag tag = this.ParseComment(CodeBlockStart, CodeBlockEnd);
 			if (tag != null)
 			{
 				// common ASP/JSP script found
@@ -817,7 +818,7 @@ namespace BuildTools.HtmlDistiller
 
 				this.ParseSyncPoint();
 
-				string value = String.Empty;
+				object value = String.Empty;
 
 				ch = this.Current;
 				if (ch != CloseTagChar &&
@@ -831,13 +832,14 @@ namespace BuildTools.HtmlDistiller
 
 				if (!String.IsNullOrEmpty(name))
 				{
-					if (StyleAttrib.Equals(name, StringComparison.InvariantCultureIgnoreCase))
+					if (value is String &&
+						HtmlTag.StyleAttrib.Equals(name, StringComparison.InvariantCultureIgnoreCase))
 					{
-						this.ParseStyles(tag, value);
+						this.ParseStyles(tag, value.ToString());
 					}
 					else
 					{
-						tag.Attributes[name] = value;
+						tag.Attributes[name] = (value != null) ? value.ToString() : null;
 					}
 				}
 
@@ -877,7 +879,7 @@ namespace BuildTools.HtmlDistiller
 			return this.FlushBuffer();
 		}
 
-		private string ParseAttributeValue()
+		private object ParseAttributeValue()
 		{
 			this.SkipWhiteSpace();
 
@@ -902,7 +904,7 @@ namespace BuildTools.HtmlDistiller
 				this.EmptyBuffer(1);
 
 				// parse for common inline script
-				tag = this.ParseComment("<%", "%>");
+				tag = this.ParseComment(CodeBlockStart, CodeBlockEnd);
 
 				while (!this.IsEOF)
 				{
@@ -922,7 +924,7 @@ namespace BuildTools.HtmlDistiller
 			else
 			{
 				// parse for common inline script
-				tag = this.ParseComment("<%", "%>");
+				tag = this.ParseComment(CodeBlockStart, CodeBlockEnd);
 
 				while (!this.IsEOF)
 				{
@@ -949,7 +951,7 @@ namespace BuildTools.HtmlDistiller
 
 			if (tag != null && this.htmlFilter.FilterTag(tag))
 			{
-				return tag.ToString();
+				return tag;
 			}
 
 			return value;
