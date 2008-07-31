@@ -42,6 +42,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Builder\IJsonControl.cs" />
+    <Compile Include="Builder\JbstCodeBlock.cs" />
+    <Compile Include="JbstHandler.cs" />
     <Compile Include="Builder\JsonControl.cs" />
     <Compile Include="Builder\JsonControlBuilder.cs" />
     <Compile Include="Builder\JsonControlCollection.cs" />
