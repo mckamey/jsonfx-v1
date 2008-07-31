@@ -352,7 +352,7 @@ namespace BuildTools.HtmlDistiller
 							{
 								switch (tag.TagType)
 								{
-									case HtmlTagType.Comment:
+									case HtmlTagType.Unparsed:
 									case HtmlTagType.FullTag:
 									{
 										this.RenderTag(tag);
@@ -743,7 +743,7 @@ namespace BuildTools.HtmlDistiller
 		}
 
 		/// <summary>
-		/// 
+		/// Parses for "unparsed blocks" (e.g. comments)
 		/// </summary>
 		/// <returns>null if no comment found</returns>
 		/// <param name="startDelim"></param>
@@ -789,18 +789,18 @@ namespace BuildTools.HtmlDistiller
 
 			this.ParseSyncPoint();
 
-			string contents = this.FlushBuffer();
+			string content = this.FlushBuffer();
 			if (!this.IsEOF)
 			{
 				this.EmptyBuffer(endDelim.Length);
 			}
 
 			HtmlTag comment = new HtmlTag(commentName);
-			if (!String.IsNullOrEmpty(contents))
+			if (!String.IsNullOrEmpty(content))
 			{
-				comment.Attributes[HtmlTag.Key_Contents] = contents;
+				comment.Content = content;
 			}
-			comment.Attributes[HtmlTag.Key_EndDelim] = endDelim.Substring(0, endDelim.Length-1);
+			comment.EndDelim = endDelim.Substring(0, endDelim.Length-1);
 
 			return comment;
 		}
