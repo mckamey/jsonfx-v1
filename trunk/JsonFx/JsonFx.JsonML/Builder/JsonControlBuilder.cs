@@ -35,10 +35,13 @@ using System.Text.RegularExpressions;
 
 using BuildTools.HtmlDistiller;
 using BuildTools.HtmlDistiller.Filters;
+using BuildTools.HtmlDistiller.Writers;
 
 namespace JsonFx.JsonML.Builder
 {
-	internal class JsonControlBuilder : IDisposable, IHtmlFilter
+	internal class JsonControlBuilder :
+		IHtmlWriter,
+		IDisposable
 	{
 		#region Constants
 
@@ -72,9 +75,10 @@ namespace JsonFx.JsonML.Builder
 			this.writer = writer;
 
 			this.parser.EncodeNonAscii = false;
-			this.parser.BalanceTags = false;
+			this.parser.BalanceTags = true;
 			this.parser.NormalizeWhitespace = false;
-			this.parser.HtmlFilter = this;
+			this.parser.HtmlFilter = new UnsafeHtmlFilter();
+			this.parser.HtmlWriter = this;
 			this.parser.BeginIncrementalParsing();
 		}
 
@@ -95,7 +99,7 @@ namespace JsonFx.JsonML.Builder
 
 		#endregion Properties
 
-		#region Methods
+		#region Builder Methods
 
 		/// <summary>
 		/// Adds literal text to the output
@@ -317,9 +321,9 @@ namespace JsonFx.JsonML.Builder
 			target.Attributes["style"] = style;
 		}
 
-		#endregion Methods
+		#endregion Builder Methods
 
-		#region Methods
+		#region Render Methods
 
 		private void RenderControls()
 		{
@@ -347,16 +351,21 @@ namespace JsonFx.JsonML.Builder
 			this.dirty = true;
 		}
 
-		#endregion Methods
+		#endregion Render Methods
 
-		#region IHtmlFilter Members
+		#region IHtmlWriter Members
 
-		/// <summary>
-		/// Callback from literal parser
-		/// </summary>
-		/// <param name="tag"></param>
-		/// <returns></returns>
-		bool IHtmlFilter.FilterTag(HtmlTag tag)
+		void IHtmlWriter.WriteLiteral(string literal)
+		{
+			this.OutputLiteral(literal);
+		}
+
+		void IHtmlWriter.WriteLiteral(char literal)
+		{
+			this.OutputLiteral(literal.ToString());
+		}
+
+		bool IHtmlWriter.WriteTag(HtmlTag tag, IHtmlFilter filter)
 		{
 			switch (tag.TagType)
 			{
@@ -399,54 +408,15 @@ namespace JsonFx.JsonML.Builder
 				}
 			}
 
-			// suppress writing of HtmlDistiller output
-			return false;
-		}
-
-		/// <summary>
-		/// Callback from literal parser
-		/// </summary>
-		/// <param name="tag"></param>
-		/// <param name="attribute"></param>
-		/// <param name="value"></param>
-		/// <returns></returns>
-		bool IHtmlFilter.FilterAttribute(string tag, string attribute, ref string value)
-		{
-			// suppress writing of HtmlDistiller output
-			return false;
-		}
-
-		/// <summary>
-		/// Callback from literal parser
-		/// </summary>
-		/// <param name="tag"></param>
-		/// <param name="style"></param>
-		/// <param name="value"></param>
-		/// <returns></returns>
-		bool IHtmlFilter.FilterStyle(string tag, string style, ref string value)
-		{
-			// suppress writing of HtmlDistiller output
-			return false;
-		}
-
-		/// <summary>
-		/// Callback from literal parser
-		/// </summary>
-		/// <param name="source"></param>
-		/// <param name="start"></param>
-		/// <param name="end"></param>
-		/// <param name="replacement"></param>
-		/// <returns></returns>
-		bool IHtmlFilter.FilterLiteral(string source, int start, int end, out string replacement)
-		{
-			this.OutputLiteral(source.Substring(start, end-start));
-
-			// suppress writing of HtmlDistiller output
-			replacement = null;
 			return true;
 		}
 
-		#endregion IHtmlFilter Members
+		char IHtmlWriter.PrevChar(int peek)
+		{
+			return HtmlDistiller.NullChar;
+		}
+
+		#endregion IHtmlWriter Members
 
 		#region IDisposable Members
 
