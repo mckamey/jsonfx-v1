@@ -36,7 +36,7 @@ namespace JsonFx.JsonML.Builder
 	{
 		#region Constants
 
-		private const string FunctionFormat = "function($data){{return({0});}}";
+		private const string FunctionFormat = "function($item){{return({0});}}";
 
 		#endregion Constants
 
