@@ -60,6 +60,27 @@ namespace BuildTools.HtmlDistiller.Writers
 
 		#endregion Fields
 
+		#region Init
+
+		/// <summary>
+		/// Ctor.
+		/// </summary>
+		public HtmlWriter() : this(null)
+		{
+		}
+
+		/// <summary>
+		/// Ctor.
+		/// </summary>
+		/// <param name="writer">the underlying TextWriter</param>
+		public HtmlWriter(TextWriter writer)
+		{
+			this.writer = (writer != null) ?
+				writer : new StringWriter();
+		}
+
+		#endregion Init
+
 		#region Properties
 
 		/// <summary>
@@ -200,5 +221,18 @@ namespace BuildTools.HtmlDistiller.Writers
 		}
 
 		#endregion Methods
+
+		#region Object Overrides
+
+		/// <summary>
+		/// Returns a System.String that represents the current TextWriter.
+		/// </summary>
+		/// <returns></returns>
+		public override string ToString()
+		{
+			return this.TextWriter.ToString();
+		}
+
+		#endregion Object Overrides
 	}
 }
