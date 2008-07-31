@@ -184,6 +184,14 @@ namespace JsonFx.Json
 			set { this.strictConformance = value; }
 		}
 
+		/// <summary>
+		/// Gets the underlying TextWriter.
+		/// </summary>
+		public TextWriter TextWriter
+		{
+			get { return this.writer; }
+		}
+
 		#endregion Properties
 
 		#region Public Methods
