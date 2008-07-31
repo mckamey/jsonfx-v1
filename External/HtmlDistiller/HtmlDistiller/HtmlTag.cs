@@ -50,9 +50,9 @@ namespace BuildTools.HtmlDistiller
 		Unknown,
 
 		/// <summary>
-		/// Comment tag
+		/// Unparsed block
 		/// </summary>
-		Comment,
+		Unparsed,
 
 		/// <summary>
 		/// Opening tag
@@ -190,10 +190,10 @@ namespace BuildTools.HtmlDistiller
 		private const int DefaultAttributeCapacity = 3;
 		private const int DefaultStyleCapacity = 3;
 
-		// these key names are arbitrary
+		// these key names are relatively arbitrary
 		// just need to be unique for storing values in attributes table
-		public const string Key_Contents = "";
-		public const string Key_EndDelim = ">";
+		private const string Key_Content = "";
+		private const string Key_EndDelim = ">";
 
 		#endregion Constants
 
@@ -231,7 +231,7 @@ namespace BuildTools.HtmlDistiller
 				this.rawName.StartsWith("?") ||
 				this.rawName.StartsWith("%"))
 			{
-				this.tagType = HtmlTagType.Comment;
+				this.tagType = HtmlTagType.Unparsed;
 			}
 			else if (HtmlTag.IsFullTag(this.TagName)) // this.TagName is lowercase
 			{
@@ -352,6 +352,24 @@ namespace BuildTools.HtmlDistiller
 		public bool HasStyles
 		{
 			get { return (this.styles != null && this.styles.Count > 0); }
+		}
+
+		/// <summary>
+		/// Gets the content of unparsed blocks (e.g. comments)
+		/// </summary>
+		public string Content
+		{
+			get { return this.Attributes[HtmlTag.Key_Content]; }
+			set { this.Attributes[HtmlTag.Key_Content] = value; }
+		}
+
+		/// <summary>
+		/// Gets the end delimiter of unparsed blocks (e.g. comments)
+		/// </summary>
+		internal string EndDelim
+		{
+			get { return this.Attributes[HtmlTag.Key_EndDelim]; }
+			set { this.Attributes[HtmlTag.Key_EndDelim] = value; }
 		}
 
 		#endregion Properties

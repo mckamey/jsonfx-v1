@@ -152,9 +152,9 @@ namespace BuildTools.HtmlDistiller.Writers
 				this.WriteStyles(tag, filter);
 			}
 
-			if (tag.TagType == HtmlTagType.Comment)
+			if (tag.TagType == HtmlTagType.Unparsed)
 			{
-				this.writer.Write(tag.Attributes[HtmlTag.Key_EndDelim]);
+				this.writer.Write(tag.EndDelim);
 			}
 			else if (tag.TagType == HtmlTagType.FullTag)
 			{
@@ -175,9 +175,9 @@ namespace BuildTools.HtmlDistiller.Writers
 		/// <param name="output"></param>
 		protected void WriteAttributes(HtmlTag tag, IHtmlFilter filter)
 		{
-			if (tag.TagType == HtmlTagType.Comment)
+			if (tag.TagType == HtmlTagType.Unparsed)
 			{
-				this.writer.Write(tag.Attributes[HtmlTag.Key_Contents]);
+				this.writer.Write(tag.Content);
 				return;
 			}
 
