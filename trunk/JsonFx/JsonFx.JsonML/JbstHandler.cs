@@ -23,11 +23,12 @@ namespace JsonFx.JsonML
 			try
 			{
 				string jsonp = context.Request.QueryString["jsonp"];
-				if (!String.IsNullOrEmpty(jsonp))
+				bool isJsonp = !String.IsNullOrEmpty(jsonp);
+				if (isJsonp)
 				{
 					context.Response.Output.Write(jsonp);
+					context.Response.Output.Write('(');
 				}
-				context.Response.Output.Write('(');
 
 				JsonControlBuilder builder = new JsonControlBuilder(context.Response.Output);
 				builder.AllowLiteralsInRoot = false;
@@ -35,7 +36,10 @@ namespace JsonFx.JsonML
 				// TODO: secure this!
 				builder.Parse(File.ReadAllText(context.Request.MapPath(context.Request.FilePath)));
 
-				context.Response.Output.Write(");");
+				if (isJsonp)
+				{
+					context.Response.Output.Write(");");
+				}
 
 				builder.Flush();
 			}
