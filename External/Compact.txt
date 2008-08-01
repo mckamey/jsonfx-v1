@@ -4,6 +4,7 @@ JsonFx.UA.js
 JsonFx.IO.js
 JsonFx.Bindings.js
 JsonFx.JsonML.js
+JsonFx.JBST.js
 JsonFx.Effects.js
 JsonFx.History.js
 JsonFx.Controls.js
