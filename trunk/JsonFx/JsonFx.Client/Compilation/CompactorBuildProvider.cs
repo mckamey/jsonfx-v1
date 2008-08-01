@@ -54,14 +54,6 @@ namespace JsonFx.Compilation
 
 		#endregion Fields
 
-		#region Init
-
-		public CompactorBuildProvider()
-		{
-		}
-
-		#endregion Init
-
 		#region BuildProvider Methods
 
 		public override Type GetGeneratedType(CompilerResults results)
