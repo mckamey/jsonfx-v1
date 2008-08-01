@@ -18,16 +18,18 @@ if ("undefined" === typeof JsonFx.Utils) {
 
 /* Script Lazy Load ----------------------------------------------------*/
 
-/*void*/ JsonFx.Utils.loadScript = function(/*string*/ url) {
+/*void*/ JsonFx.Utils.loadScript = function(/*string*/ url, /*bool*/ reload) {
 	if (!url) {
 		return;
 	}
 
 	// check if script already exists
-	/*elem[]*/ var scripts = document.getElementsByTagName("script");
-	for (var i=0; i<scripts.length; i++) {
-		if (scripts[i].src === url) {
-			return;
+	if (!reload) {
+		/*elem[]*/ var scripts = document.getElementsByTagName("script");
+		for (var i=0; i<scripts.length; i++) {
+			if (scripts[i].src === url) {
+				return;
+			}
 		}
 	}
 
