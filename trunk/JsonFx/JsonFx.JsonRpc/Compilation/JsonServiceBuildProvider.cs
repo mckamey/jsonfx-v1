@@ -83,17 +83,6 @@ namespace JsonFx.Compilation
 
 		#endregion Fields
 
-		#region Init
-
-		/// <summary>
-		/// Ctor.
-		/// </summary>
-		public JsonServiceBuildProvider()
-		{
-		}
-
-		#endregion Init
-
 		#region BuildProvider Methods
 
 		public override System.Collections.ICollection VirtualPathDependencies
