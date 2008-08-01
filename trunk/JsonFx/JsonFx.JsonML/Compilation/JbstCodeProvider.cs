@@ -45,6 +45,7 @@ namespace JsonFx.Compilation
 		{
 			JsonControlBuilder builder = new JsonControlBuilder(writer);
 			builder.Parse(sourceText);
+			return new List<BuildTools.ParseException>();
 		}
 
 		#endregion CompactorCodeProvider
