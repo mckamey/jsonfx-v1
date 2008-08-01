@@ -85,6 +85,9 @@ namespace JsonFx.Compilation
 
 		#region Init
 
+		/// <summary>
+		/// Ctor.
+		/// </summary>
 		public JsonServiceBuildProvider()
 		{
 		}
