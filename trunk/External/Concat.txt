@@ -6,3 +6,4 @@ JsonFx.History.js
 JsonFx.IO.js
 JsonFx.Bindings.js
 JsonFx.JsonML.js
+JsonFx.JBST.js
