@@ -77,15 +77,20 @@ namespace JsonFx.Handlers
 					context.Response.Cache.SetCacheability(HttpCacheability.NoCache);
 				}
 
-				if (input == null)
-				{
-					//throw new HttpException((int)System.Net.HttpStatusCode.NotFound, "Invalid path");
-					this.OutputTargetFile(context, isDebug);
-				}
-				else
-				{
-					this.BufferedWrite(context, input);
-				}
+				this.Render(context, isDebug, input);
+			}
+		}
+
+		protected virtual void Render(HttpContext context, bool isDebug, Stream input)
+		{
+			if (input == null)
+			{
+				//throw new HttpException((int)System.Net.HttpStatusCode.NotFound, "Invalid path");
+				this.OutputTargetFile(context, isDebug);
+			}
+			else
+			{
+				this.BufferedWrite(context, input);
 			}
 		}
 
