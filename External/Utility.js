@@ -18,7 +18,7 @@ if ("undefined" === typeof JsonFx.Utils) {
 
 /* Script Lazy Load ----------------------------------------------------*/
 
-/*void*/ JsonFx.Utils.registerScript = function(/*string*/ url) {
+/*void*/ JsonFx.Utils.loadScript = function(/*string*/ url) {
 	if (!url) {
 		return;
 	}
