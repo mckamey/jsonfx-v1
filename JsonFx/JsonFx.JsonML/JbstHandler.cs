@@ -28,17 +28,8 @@ namespace JsonFx.JsonML
 
 		protected override void Render(HttpContext context, bool isDebug, Stream input)
 		{
-			string jsonp = context.Request.QueryString["jname"];
-			if (!String.IsNullOrEmpty(jsonp))
-			{
-				// var jname=(...); style
-				jsonp = "var "+jsonp+"=";
-			}
-			else
-			{
-				// jsonp(...); style
-				jsonp = context.Request.QueryString["jsonp"];
-			}
+			// jsonp(...); style
+			string jsonp = context.Request.QueryString["jsonp"];
 
 			if (!String.IsNullOrEmpty(jsonp))
 			{
