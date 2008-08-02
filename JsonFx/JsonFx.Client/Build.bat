@@ -37,6 +37,7 @@ IF NOT EXIST %CONCAT% (
 
 %COMPACTLITE% /IN:"%ROOT%\json2.js" /OUT:"%OUTDIR%\json2.js"
 %COMPACTLITE% /IN:"%ROOT%\JsonML2.js" /OUT:"%OUTDIR%\JsonML2.js"
+%COMPACTLITE% /IN:"%ROOT%\JBST.js" /OUT:"%OUTDIR%\JBST.js"
 FOR /F %%F IN (%ROOT%\Compact.txt) DO (
 	%COMPACT% /IN:"%ROOT%\%%F" /OUT:"%OUTDIR%\%%F"
 )
