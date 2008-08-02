@@ -82,7 +82,7 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="License.txt" />
-    <Compile Include="Scripts\JBST.js" />
+    <Content Include="Scripts\JBST.js" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
