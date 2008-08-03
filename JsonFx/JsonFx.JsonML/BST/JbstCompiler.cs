@@ -43,7 +43,7 @@ using BuildTools.HtmlDistiller.Writers;
 namespace JsonFx.JsonML.BST
 {
 	/// <summary>
-	/// Compiler of JsonML+BST nodes.
+	/// JsonML+BST Template Compiler
 	/// </summary>
 	internal class JbstCompiler :
 		IHtmlWriter,
@@ -92,7 +92,7 @@ namespace JsonFx.JsonML.BST
 
 		#region Properties
 
-		public JbstControlCollection Controls
+		internal JbstControlCollection Controls
 		{
 			get { return this.controls; }
 		}
@@ -158,7 +158,7 @@ namespace JsonFx.JsonML.BST
 			}
 		}
 
-		public void AppendChild(string text)
+		internal void AppendChild(string text)
 		{
 			if (String.IsNullOrEmpty(text))
 			{
@@ -209,7 +209,7 @@ namespace JsonFx.JsonML.BST
 			childControls.Add(child);
 		}
 
-		public void PushTag(string tagName)
+		internal void PushTag(string tagName)
 		{
 			// flush any accumulated literals
 			this.Flush();
@@ -237,7 +237,7 @@ namespace JsonFx.JsonML.BST
 			this.current = control;
 		}
 
-		public void PopTag()
+		internal void PopTag()
 		{
 			// flush any accumulated literals
 			this.Flush();
@@ -260,7 +260,7 @@ namespace JsonFx.JsonML.BST
 			}
 		}
 
-		public void StoreAttribute(string name, string value)
+		internal void StoreAttribute(string name, string value)
 		{
 			if (this.next == null)
 			{
@@ -270,7 +270,7 @@ namespace JsonFx.JsonML.BST
 			this.SetAttribute(this.next, name, value);
 		}
 
-		public void AddAttribute(string name, string value)
+		internal void AddAttribute(string name, string value)
 		{
 			if (this.current == null)
 			{
@@ -280,7 +280,7 @@ namespace JsonFx.JsonML.BST
 			this.SetAttribute(this.current, name, value);
 		}
 
-		public void SetAttribute(JbstControl target, string name, string value)
+		internal void SetAttribute(JbstControl target, string name, string value)
 		{
 			// flush any accumulated literals
 			this.Flush();
@@ -306,7 +306,7 @@ namespace JsonFx.JsonML.BST
 			this.current.Attributes[name] = value;
 		}
 
-		public void StoreStyle(string name, string value)
+		internal void StoreStyle(string name, string value)
 		{
 			if (this.next == null)
 			{
@@ -316,7 +316,7 @@ namespace JsonFx.JsonML.BST
 			this.SetStyle(this.next, name, value);
 		}
 
-		public void AddStyle(string name, string value)
+		internal void AddStyle(string name, string value)
 		{
 			if (this.current == null)
 			{
@@ -326,7 +326,7 @@ namespace JsonFx.JsonML.BST
 			this.SetStyle(this.current, name, value);
 		}
 
-		public void SetStyle(JbstControl target, string name, string value)
+		internal void SetStyle(JbstControl target, string name, string value)
 		{
 			// flush any accumulated literals
 			this.Flush();
@@ -361,99 +361,6 @@ namespace JsonFx.JsonML.BST
 
 			target.Attributes["style"] = style;
 		}
-
-		///// <summary>Converts a string that has been HTML-encoded for HTTP transmission into a decoded string.</summary>
-		///// <returns>A decoded string.</returns>
-		///// <param name="s">The string to decode. </param>
-		//public static string HtmlDecode(string s)
-		//{
-		//    if (s == null)
-		//    {
-		//        return null;
-		//    }
-		//    if (s.IndexOf('&') < 0)
-		//    {
-		//        return s;
-		//    }
-		//    StringBuilder sb = new StringBuilder();
-		//    StringWriter output = new StringWriter(sb);
-		//    HtmlDecode(s, output);
-		//    return sb.ToString();
-		//}
-
-		//private static char[] s_entityEndingChars = new char[] { ';', '&' };
-
-		///// <summary>Converts a string that has been HTML-encoded into a decoded string, and sends the decoded string to a <see cref="T:System.IO.TextWriter"></see> output stream.</summary>
-		///// <param name="s">The string to decode. </param>
-		///// <param name="output">A <see cref="T:System.IO.TextWriter"></see> stream of output. </param>
-		//private static void HtmlDecode(string s, TextWriter output)
-		//{
-		//    if (s != null)
-		//    {
-		//        if (s.IndexOf('&') < 0)
-		//        {
-		//            output.Write(s);
-		//        }
-		//        else
-		//        {
-		//            int length = s.Length;
-		//            for (int i = 0; i < length; i++)
-		//            {
-		//                char ch = s[i];
-		//                if (ch == '&')
-		//                {
-		//                    int num3 = s.IndexOfAny(s_entityEndingChars, i + 1);
-		//                    if ((num3 > 0) && (s[num3] == ';'))
-		//                    {
-		//                        string entity = s.Substring(i + 1, (num3 - i) - 1);
-		//                        if ((entity.Length > 1) && (entity[0] == '#'))
-		//                        {
-		//                            try
-		//                            {
-		//                                if ((entity[1] == 'x') || (entity[1] == 'X'))
-		//                                {
-		//                                    ch = (char)int.Parse(entity.Substring(2), System.Globalization.NumberStyles.AllowHexSpecifier);
-		//                                }
-		//                                else
-		//                                {
-		//                                    ch = (char)int.Parse(entity.Substring(1));
-		//                                }
-		//                                i = num3;
-		//                            }
-		//                            catch (FormatException)
-		//                            {
-		//                                i++;
-		//                            }
-		//                            catch (ArgumentException)
-		//                            {
-		//                                i++;
-		//                            }
-		//                        }
-		//                        else
-		//                        {
-		//                            i = num3;
-		//                            char ch2 = HtmlEntities.Lookup(entity);
-		//                            if (ch2 != '\0')
-		//                            {
-		//                                ch = ch2;
-		//                            }
-		//                            else
-		//                            {
-		//                                output.Write('&');
-		//                                output.Write(entity);
-		//                                output.Write(';');
-		//                                goto Label_0103;
-		//                            }
-		//                        }
-		//                    }
-		//                }
-		//                output.Write(ch);
-		//            Label_0103:
-		//                ;
-		//            }
-		//        }
-		//    }
-		//}
 
 		#endregion Builder Methods
 
