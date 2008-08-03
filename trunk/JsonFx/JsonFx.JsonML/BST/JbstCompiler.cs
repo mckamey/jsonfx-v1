@@ -41,6 +41,9 @@ using BuildTools.HtmlDistiller.Writers;
 
 namespace JsonFx.JsonML.BST
 {
+	/// <summary>
+	/// Compiler of JsonML+BST nodes.
+	/// </summary>
 	internal class JbstCompiler :
 		IHtmlWriter,
 		IDisposable
@@ -54,9 +57,9 @@ namespace JsonFx.JsonML.BST
 		#region Fields
 
 		TextWriter writer;
-		JsonControlCollection controls = new JsonControlCollection(null);
-		JsonControl current = null;
-		JsonControl next = null;
+		JbstControlCollection controls = new JbstControlCollection(null);
+		JbstControl current = null;
+		JbstControl next = null;
 		bool allowLiteralsInRoot = false;
 		private bool dirty = false;
 		private bool disposed = false;
@@ -88,7 +91,7 @@ namespace JsonFx.JsonML.BST
 
 		#region Properties
 
-		public JsonControlCollection Controls
+		public JbstControlCollection Controls
 		{
 			get { return this.controls; }
 		}
@@ -169,13 +172,13 @@ namespace JsonFx.JsonML.BST
 			// this allows HTML entities to be encoded as unicode
 			text = HttpUtility.HtmlDecode(text);
 
-			JsonControlCollection childControls = (this.current == null) ?
+			JbstControlCollection childControls = (this.current == null) ?
 				this.controls : this.current.ChildControls;
 
-			JsonLiteral jsonLiteral = childControls.Last as JsonLiteral;
+			JbstLiteral jsonLiteral = childControls.Last as JbstLiteral;
 			if (jsonLiteral == null)
 			{
-				jsonLiteral = new JsonLiteral(text);
+				jsonLiteral = new JbstLiteral(text);
 				childControls.Add(jsonLiteral);
 			}
 			else
@@ -187,7 +190,7 @@ namespace JsonFx.JsonML.BST
 			jsonLiteral.Text = RegexWhitespace.Replace(jsonLiteral.Text, " ");
 		}
 
-		internal void AppendChild(IJsonControl child)
+		internal void AppendChild(IJbstControl child)
 		{
 			if (child == null)
 			{
@@ -199,7 +202,7 @@ namespace JsonFx.JsonML.BST
 				return;
 			}
 
-			JsonControlCollection childControls = (this.current == null) ?
+			JbstControlCollection childControls = (this.current == null) ?
 				this.controls : this.current.ChildControls;
 
 			childControls.Add(child);
@@ -210,10 +213,10 @@ namespace JsonFx.JsonML.BST
 			// flush any accumulated literals
 			this.Flush();
 
-			JsonControl control = this.next;
+			JbstControl control = this.next;
 			if (control == null)
 			{
-				control = new JsonControl(tagName);
+				control = new JbstControl(tagName);
 			}
 			else
 			{
@@ -260,7 +263,7 @@ namespace JsonFx.JsonML.BST
 		{
 			if (this.next == null)
 			{
-				this.next = new JsonControl();
+				this.next = new JbstControl();
 			}
 
 			this.SetAttribute(this.next, name, value);
@@ -276,7 +279,7 @@ namespace JsonFx.JsonML.BST
 			this.SetAttribute(this.current, name, value);
 		}
 
-		public void SetAttribute(JsonControl target, string name, string value)
+		public void SetAttribute(JbstControl target, string name, string value)
 		{
 			// flush any accumulated literals
 			this.Flush();
@@ -292,7 +295,7 @@ namespace JsonFx.JsonML.BST
 			}
 		}
 
-		internal void AddAttribute(string name, IJsonControl value)
+		internal void AddAttribute(string name, IJbstControl value)
 		{
 			if (this.current == null)
 			{
@@ -306,7 +309,7 @@ namespace JsonFx.JsonML.BST
 		{
 			if (this.next == null)
 			{
-				this.next = new JsonControl();
+				this.next = new JbstControl();
 			}
 
 			this.SetStyle(this.next, name, value);
@@ -322,7 +325,7 @@ namespace JsonFx.JsonML.BST
 			this.SetStyle(this.current, name, value);
 		}
 
-		public void SetStyle(JsonControl target, string name, string value)
+		public void SetStyle(JbstControl target, string name, string value)
 		{
 			// flush any accumulated literals
 			this.Flush();

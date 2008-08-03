@@ -32,7 +32,10 @@ using System;
 
 namespace JsonFx.JsonML.BST
 {
-	internal interface IJsonControl
+	/// <summary>
+	/// Common base for all JsonML+BST nodes.
+	/// </summary>
+	internal interface IJbstControl
 	{
 	}
 }

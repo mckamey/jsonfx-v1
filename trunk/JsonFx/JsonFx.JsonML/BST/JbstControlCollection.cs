@@ -33,18 +33,21 @@ using System.Collections.Generic;
 
 namespace JsonFx.JsonML.BST
 {
-	internal class JsonControlCollection : ICollection<IJsonControl>
+	/// <summary>
+	/// Control collection for JsonML+BST nodes.
+	/// </summary>
+	internal class JbstControlCollection : ICollection<IJbstControl>
 	{
 		#region Fields
 
-		private List<IJsonControl> controls = new List<IJsonControl>();
-		private JsonControl owner;
+		private List<IJbstControl> controls = new List<IJbstControl>();
+		private JbstControl owner;
 
 		#endregion Fields
 
 		#region Init
 
-		public JsonControlCollection(JsonControl owner)
+		public JbstControlCollection(JbstControl owner)
 		{
 			this.owner = owner;
 		}
@@ -53,18 +56,18 @@ namespace JsonFx.JsonML.BST
 
 		#region Properties
 
-		public JsonControl Owner
+		public JbstControl Owner
 		{
 			get { return this.owner; }
 		}
 
-		public IJsonControl this[int index]
+		public IJbstControl this[int index]
 		{
 			get { return this.controls[index]; }
 			set { this.controls[index] = value; }
 		}
 
-		public IJsonControl Last
+		public IJbstControl Last
 		{
 			get
 			{
@@ -77,14 +80,14 @@ namespace JsonFx.JsonML.BST
 
 		#endregion Properties
 
-		#region ICollection<IJsonControl> Members
+		#region ICollection<IJbstControl> Members
 
-		public void Add(IJsonControl item)
+		public void Add(IJbstControl item)
 		{
 			this.controls.Add(item);
-			if (item is JsonControl)
+			if (item is JbstControl)
 			{
-				((JsonControl)item).Parent = this.Owner;
+				((JbstControl)item).Parent = this.Owner;
 			}
 		}
 
@@ -93,12 +96,12 @@ namespace JsonFx.JsonML.BST
 			this.controls.Clear();
 		}
 
-		bool ICollection<IJsonControl>.Contains(IJsonControl item)
+		bool ICollection<IJbstControl>.Contains(IJbstControl item)
 		{
 			return this.controls.Contains(item);
 		}
 
-		void ICollection<IJsonControl>.CopyTo(IJsonControl[] array, int arrayIndex)
+		void ICollection<IJbstControl>.CopyTo(IJbstControl[] array, int arrayIndex)
 		{
 			this.controls.CopyTo(array, arrayIndex);
 		}
@@ -108,26 +111,26 @@ namespace JsonFx.JsonML.BST
 			get { return this.controls.Count; }
 		}
 
-		bool ICollection<IJsonControl>.IsReadOnly
+		bool ICollection<IJbstControl>.IsReadOnly
 		{
-			get { return ((ICollection<IJsonControl>)this.controls).IsReadOnly; }
+			get { return ((ICollection<IJbstControl>)this.controls).IsReadOnly; }
 		}
 
-		bool ICollection<IJsonControl>.Remove(IJsonControl item)
+		bool ICollection<IJbstControl>.Remove(IJbstControl item)
 		{
 			return this.controls.Remove(item);
 		}
 
-		#endregion ICollection<IJsonControl> Members
+		#endregion ICollection<IJbstControl> Members
 
-		#region IEnumerable<IJsonControl> Members
+		#region IEnumerable<IJbstControl> Members
 
-		IEnumerator<IJsonControl> IEnumerable<IJsonControl>.GetEnumerator()
+		IEnumerator<IJbstControl> IEnumerable<IJbstControl>.GetEnumerator()
 		{
 			return this.controls.GetEnumerator();
 		}
 
-		#endregion IEnumerable<IJsonControl> Members
+		#endregion IEnumerable<IJbstControl> Members
 
 		#region IEnumerable Members
 
