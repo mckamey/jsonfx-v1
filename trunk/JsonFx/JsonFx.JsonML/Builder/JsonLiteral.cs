@@ -32,7 +32,7 @@ using System;
 
 using JsonFx.Json;
 
-namespace JsonFx.JsonML.Builder
+namespace JsonFx.JsonML.BST
 {
 	/// <summary>
 	/// Represents literal text in a JsonML document

@@ -30,7 +30,7 @@
 
 using System;
 
-namespace JsonFx.JsonML.Builder
+namespace JsonFx.JsonML.BST
 {
 	internal class JbstCodeBlock : IJsonControl, Json.IJsonSerializable
 	{

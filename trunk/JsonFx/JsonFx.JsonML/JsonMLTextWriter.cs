@@ -34,7 +34,7 @@ using System.Web.UI;
 using System.Text;
 using System.Text.RegularExpressions;
 
-using JsonFx.JsonML.Builder;
+using JsonFx.JsonML.BST;
 
 namespace JsonFx.JsonML
 {
@@ -51,7 +51,7 @@ namespace JsonFx.JsonML
 
 		#region Fields
 
-		private readonly JsonControlBuilder builder;
+		private readonly JbstCompiler builder;
 		private bool renderingIncompleteTag = false;
 
 		#endregion Fields
@@ -64,7 +64,7 @@ namespace JsonFx.JsonML
 		/// <param name="writer"></param>
 		public JsonMLTextWriter(TextWriter writer) : base(new NullTextWriter())
 		{
-			this.builder = new JsonControlBuilder(writer);
+			this.builder = new JbstCompiler(writer);
 		}
 
 		/// <summary>
@@ -74,7 +74,7 @@ namespace JsonFx.JsonML
 		/// <param name="tabString"></param>
 		public JsonMLTextWriter(TextWriter writer, string tabString) : base(new NullTextWriter(), tabString)
 		{
-			this.builder = new JsonControlBuilder(writer);
+			this.builder = new JbstCompiler(writer);
 		}
 
 		#endregion Init

@@ -31,7 +31,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace JsonFx.JsonML.Builder
+namespace JsonFx.JsonML.BST
 {
 	internal class JsonControlCollection : ICollection<IJsonControl>
 	{
