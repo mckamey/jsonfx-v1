@@ -1212,6 +1212,43 @@ namespace BuildTools.HtmlDistiller
 				(int)ch);
 		}
 
+		public static string DecodeHtmlEntities(string source)
+		{
+			StringBuilder builder = null;
+			int start = 0;
+
+			for (int i=start; i<source.Length; i++)
+			{
+				if (source[i] == '&')
+				{
+					char entity;
+					int count = DecodeHtmlEntity(source, i, out entity);
+					if (count > 1)
+					{
+						if (builder == null)
+						{
+							// initialize StringBuilder
+							builder = new StringBuilder(source.Length);
+						}
+						builder.Append(source, start, i);
+						builder.Append(entity);
+						i += count-1;
+						start = i+1;
+					}
+				}
+			}
+
+			if (builder == null)
+			{
+				// no entities were found
+				return source;
+			}
+
+			// write out rest of string
+			builder.Append(source, start, source.Length-start);
+			return builder.ToString();
+		}
+
 		/// <summary>
 		/// Decodes HTML entities into special characters
 		/// </summary>
