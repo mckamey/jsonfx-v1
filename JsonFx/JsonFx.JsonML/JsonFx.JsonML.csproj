@@ -45,16 +45,16 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Builder\IJsonControl.cs" />
-    <Compile Include="Builder\JbstCodeBlock.cs" />
+    <Compile Include="BST\IJsonControl.cs" />
+    <Compile Include="BST\JbstCodeBlock.cs" />
+    <Compile Include="BST\JsonControl.cs" />
+    <Compile Include="BST\JsonControlBuilder.cs" />
+    <Compile Include="BST\JsonControlCollection.cs" />
+    <Compile Include="BST\JsonLiteral.cs" />
     <Compile Include="Compilation\JbstCodeProvider.cs">
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="JbstHandler.cs" />
-    <Compile Include="Builder\JsonControl.cs" />
-    <Compile Include="Builder\JsonControlBuilder.cs" />
-    <Compile Include="Builder\JsonControlCollection.cs" />
-    <Compile Include="Builder\JsonLiteral.cs" />
     <Compile Include="JsonFxBrowserCapabilities.cs" />
     <Compile Include="JsonMLBrowserModule.cs" />
     <Compile Include="JsonMLTextWriter.cs" />
