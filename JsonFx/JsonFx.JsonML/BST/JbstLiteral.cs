@@ -35,9 +35,9 @@ using JsonFx.Json;
 namespace JsonFx.JsonML.BST
 {
 	/// <summary>
-	/// Represents literal text in a JsonML document
+	/// Represents literal text in a JsonML+BST document
 	/// </summary>
-	internal class JsonLiteral : IJsonControl, IJsonSerializable
+	internal class JbstLiteral : IJbstControl, IJsonSerializable
 	{
 		#region Fields
 
@@ -47,7 +47,7 @@ namespace JsonFx.JsonML.BST
 		
 		#region Init
 
-		public JsonLiteral(string text)
+		public JbstLiteral(string text)
 		{
 			this.text = text;
 		}

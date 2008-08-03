@@ -32,7 +32,10 @@ using System;
 
 namespace JsonFx.JsonML.BST
 {
-	internal class JbstCodeBlock : IJsonControl, Json.IJsonSerializable
+	/// <summary>
+	/// Internal representation of a JsonML+BST code block.
+	/// </summary>
+	internal class JbstCodeBlock : IJbstControl, Json.IJsonSerializable
 	{
 		#region Constants
 
@@ -49,7 +52,7 @@ namespace JsonFx.JsonML.BST
 		#region Init
 
 		/// <summary>
-		/// Ctor.
+		/// Ctor
 		/// </summary>
 		/// <param name="code"></param>
 		public JbstCodeBlock(string code)

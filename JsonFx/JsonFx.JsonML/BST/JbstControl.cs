@@ -37,27 +37,37 @@ using JsonFx.Json;
 
 namespace JsonFx.JsonML.BST
 {
-	internal class JsonControl : IJsonControl, IEnumerable
+	/// <summary>
+	/// Internal representation of a JsonML+BST element.
+	/// </summary>
+	internal class JbstControl : IJbstControl, IEnumerable
 	{
 		#region Fields
 
 		private string tagName;
 		private Dictionary<String, Object> attributes = new Dictionary<String, Object>();
-		private JsonControlCollection childControls;
-		private JsonControl parent = null;
+		private JbstControlCollection childControls;
+		private JbstControl parent = null;
 
 		#endregion Fields
 
 		#region Init
 
-		protected internal JsonControl() : this(String.Empty)
+		/// <summary>
+		/// Ctor
+		/// </summary>
+		protected internal JbstControl() : this(String.Empty)
 		{
 		}
 
-		public JsonControl(string tagName)
+		/// <summary>
+		/// Ctor
+		/// </summary>
+		/// <param name="tagName"></param>
+		public JbstControl(string tagName)
 		{
 			this.tagName = tagName;
-			this.childControls = new JsonControlCollection(this);
+			this.childControls = new JbstControlCollection(this);
 		}
 
 		#endregion Init
@@ -101,7 +111,7 @@ namespace JsonFx.JsonML.BST
 		//}
 
 		[JsonName("children")]
-		public JsonControlCollection ChildControls
+		public JbstControlCollection ChildControls
 		{
 			get { return this.childControls; }
 			set { this.childControls = value; }
@@ -115,7 +125,7 @@ namespace JsonFx.JsonML.BST
 		}
 
 		[JsonIgnore]
-		public JsonControl Parent
+		public JbstControl Parent
 		{
 			get { return this.parent; }
 			internal set { this.parent = value; }
@@ -127,7 +137,7 @@ namespace JsonFx.JsonML.BST
 
 		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
 		{
-			return new JsonControlEnumerator(this);
+			return new JbstControlEnumerator(this);
 		}
 
 		#endregion IEnumerable Members
@@ -145,11 +155,14 @@ namespace JsonFx.JsonML.BST
 
 		#endregion Enumerator State
 
-		private class JsonControlEnumerator : System.Collections.IEnumerator
+		/// <summary>
+		/// An enumerator for JbstControl objects.
+		/// </summary>
+		private class JbstControlEnumerator : IEnumerator
 		{
 			#region Fields
 
-			private JsonControl control;
+			private JbstControl control;
 			private EnumeratorState state = EnumeratorState.Start;
 			private int index = 0;
 
@@ -157,7 +170,7 @@ namespace JsonFx.JsonML.BST
 
 			#region Init
 
-			public JsonControlEnumerator(JsonControl control)
+			public JbstControlEnumerator(JbstControl control)
 			{
 				this.control = control;
 			}

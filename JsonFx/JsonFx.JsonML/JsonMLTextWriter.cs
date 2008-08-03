@@ -39,7 +39,7 @@ using JsonFx.JsonML.BST;
 namespace JsonFx.JsonML
 {
 	/// <summary>
-	/// Adapter between HtmlTextWriter interface and JsonControlBuilder internals
+	/// Adapter between HtmlTextWriter interface and JbstCompiler internals
 	/// </summary>
 	public class JsonMLTextWriter : XhtmlTextWriter
 	{
