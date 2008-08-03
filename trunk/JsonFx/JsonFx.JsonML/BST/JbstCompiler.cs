@@ -106,7 +106,7 @@ namespace JsonFx.JsonML.BST
 
 		internal List<ParseException> Errors
 		{
-			get { return this.Errors; }
+			get { return this.errors; }
 		}
 
 		#endregion Properties
