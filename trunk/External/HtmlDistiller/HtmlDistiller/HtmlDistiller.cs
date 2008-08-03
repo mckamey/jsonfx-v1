@@ -1230,7 +1230,7 @@ namespace BuildTools.HtmlDistiller
 							// initialize StringBuilder
 							builder = new StringBuilder(source.Length);
 						}
-						builder.Append(source, start, i);
+						builder.Append(source, start, i-start);
 						builder.Append(entity);
 						i += count-1;
 						start = i+1;
