@@ -119,13 +119,13 @@ namespace JsonFx.JsonML.BST
 			}
 			catch (Exception ex)
 			{
-				exceptions.Add(ex);
+				exceptions.Add(new ParseError(ex.Message, null, 1, 1, ex));
 			}
 			finally
 			{
 				this.isParsing = false;
-				return exceptions;
 			}
+			return exceptions;
 		}
 
 		/// <summary>
