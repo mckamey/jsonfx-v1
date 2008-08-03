@@ -134,7 +134,7 @@ namespace JsonFx.JsonML
 
 		protected override void Dispose(bool disposing)
 		{
-			this.builder.Dispose();
+			((IDisposable)this.builder).Dispose();
 			base.Dispose(disposing);
 		}
 
