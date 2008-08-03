@@ -57,11 +57,12 @@ namespace JsonFx.JsonML.BST
 
 		#region Fields
 
-		TextWriter writer;
-		JbstControlCollection controls = new JbstControlCollection(null);
-		JbstControl current = null;
-		JbstControl next = null;
-		bool allowLiteralsInRoot = false;
+		private List<ParseException> errors = new List<ParseException>();
+		private TextWriter writer;
+		private JbstControlCollection controls = new JbstControlCollection(null);
+		private JbstControl current = null;
+		private JbstControl next = null;
+		private bool allowLiteralsInRoot = false;
 		private bool dirty = false;
 		private bool disposed = false;
 
@@ -76,7 +77,7 @@ namespace JsonFx.JsonML.BST
 		/// Ctor
 		/// </summary>
 		/// <param name="writer"></param>
-		public JbstCompiler(TextWriter writer)
+		internal JbstCompiler(TextWriter writer)
 		{
 			this.writer = writer;
 
@@ -97,10 +98,15 @@ namespace JsonFx.JsonML.BST
 			get { return this.controls; }
 		}
 
-		public bool AllowLiteralsInRoot
+		internal bool AllowLiteralsInRoot
 		{
 			get { return this.allowLiteralsInRoot; }
 			set { this.allowLiteralsInRoot = value; }
+		}
+
+		internal List<ParseException> Errors
+		{
+			get { return this.Errors; }
 		}
 
 		#endregion Properties
@@ -112,9 +118,8 @@ namespace JsonFx.JsonML.BST
 		/// </summary>
 		/// <param name="literal"></param>
 		/// <returns>a list of any exeptions which occurred during the parsing.</returns>
-		public List<ParseException> Parse(string source)
+		internal void Parse(string source)
 		{
-			List<ParseException> exceptions = new List<ParseException>();
 			try
 			{
 				this.isParsing = true;
@@ -123,19 +128,18 @@ namespace JsonFx.JsonML.BST
 			}
 			catch (Exception ex)
 			{
-				exceptions.Add(new ParseError(ex.Message, null, 1, 1, ex));
+				this.errors.Add(new ParseError(ex.Message, null, 1, 1, ex));
 			}
 			finally
 			{
 				this.isParsing = false;
 			}
-			return exceptions;
 		}
 
 		/// <summary>
 		/// Writes any buffered text
 		/// </summary>
-		public void Flush()
+		internal void Flush()
 		{
 			if (this.isParsing)
 			{
@@ -472,7 +476,7 @@ namespace JsonFx.JsonML.BST
 
 		#region IDisposable Members
 
-		public void Dispose()
+		void IDisposable.Dispose()
 		{
 			if (!this.disposed)
 			{
