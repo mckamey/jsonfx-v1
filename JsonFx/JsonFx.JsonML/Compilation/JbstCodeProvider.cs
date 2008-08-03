@@ -33,7 +33,7 @@ using System.IO;
 using System.Collections.Generic;
 using System.Web.Compilation;
 
-using JsonFx.JsonML.Builder;
+using JsonFx.JsonML.BST;
 
 namespace JsonFx.Compilation
 {
@@ -43,9 +43,8 @@ namespace JsonFx.Compilation
 
 		protected override List<BuildTools.ParseException> Compact(string virtualPath, string sourceText, TextWriter writer)
 		{
-			JsonControlBuilder builder = new JsonControlBuilder(writer);
-			builder.Parse(sourceText);
-			return new List<BuildTools.ParseException>();
+			JbstCompiler builder = new JbstCompiler(writer);
+			return builder.Parse(sourceText);
 		}
 
 		#endregion CompactorCodeProvider

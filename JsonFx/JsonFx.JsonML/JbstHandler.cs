@@ -4,7 +4,7 @@ using System.Web;
 using System.Web.UI;
 using System.Web.Compilation;
 
-using JsonFx.JsonML.Builder;
+using JsonFx.JsonML.BST;
 
 namespace JsonFx.JsonML
 {

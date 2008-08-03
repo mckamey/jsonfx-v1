@@ -35,7 +35,7 @@ using System.Web;
 
 using JsonFx.Json;
 
-namespace JsonFx.JsonML.Builder
+namespace JsonFx.JsonML.BST
 {
 	internal class JsonControl : IJsonControl, IEnumerable
 	{

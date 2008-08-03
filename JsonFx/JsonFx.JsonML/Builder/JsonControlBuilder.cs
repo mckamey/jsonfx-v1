@@ -29,17 +29,19 @@
 #endregion License
 
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Web;
 using System.Text.RegularExpressions;
 
+using BuildTools;
 using BuildTools.HtmlDistiller;
 using BuildTools.HtmlDistiller.Filters;
 using BuildTools.HtmlDistiller.Writers;
 
-namespace JsonFx.JsonML.Builder
+namespace JsonFx.JsonML.BST
 {
-	internal class JsonControlBuilder :
+	internal class JbstCompiler :
 		IHtmlWriter,
 		IDisposable
 	{
@@ -59,7 +61,7 @@ namespace JsonFx.JsonML.Builder
 		private bool dirty = false;
 		private bool disposed = false;
 
-		private bool parsingHtml = false;
+		private bool isParsing = false;
 		private readonly HtmlDistiller parser = new HtmlDistiller();
 
 		#endregion Fields
@@ -70,7 +72,7 @@ namespace JsonFx.JsonML.Builder
 		/// Ctor
 		/// </summary>
 		/// <param name="writer"></param>
-		public JsonControlBuilder(TextWriter writer)
+		public JbstCompiler(TextWriter writer)
 		{
 			this.writer = writer;
 
@@ -102,20 +104,27 @@ namespace JsonFx.JsonML.Builder
 		#region Builder Methods
 
 		/// <summary>
-		/// Adds literal text to the output
+		/// Parses markup.
 		/// </summary>
 		/// <param name="literal"></param>
-		public void Parse(string literal)
+		/// <returns>a list of any exeptions which occurred during the parsing.</returns>
+		public List<ParseException> Parse(string source)
 		{
+			List<ParseException> exceptions = new List<ParseException>();
 			try
 			{
-				this.parsingHtml = true;
+				this.isParsing = true;
 
-				this.parser.Parse(literal);
+				this.parser.Parse(source);
+			}
+			catch (Exception ex)
+			{
+				exceptions.Add(ex);
 			}
 			finally
 			{
-				this.parsingHtml = false;
+				this.isParsing = false;
+				return exceptions;
 			}
 		}
 
@@ -124,14 +133,14 @@ namespace JsonFx.JsonML.Builder
 		/// </summary>
 		public void Flush()
 		{
-			if (this.parsingHtml)
+			if (this.isParsing)
 			{
 				return;
 			}
 
 			try
 			{
-				this.parsingHtml = true;
+				this.isParsing = true;
 
 				// flush remaining
 				this.parser.EndIncrementalParsing();
@@ -141,7 +150,7 @@ namespace JsonFx.JsonML.Builder
 			}
 			finally
 			{
-				this.parsingHtml = false;
+				this.isParsing = false;
 			}
 		}
 
