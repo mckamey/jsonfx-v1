@@ -47,8 +47,8 @@
   <ItemGroup>
     <Compile Include="BST\IJsonControl.cs" />
     <Compile Include="BST\JbstCodeBlock.cs" />
+    <Compile Include="BST\JbstCompiler.cs" />
     <Compile Include="BST\JsonControl.cs" />
-    <Compile Include="BST\JsonControlBuilder.cs" />
     <Compile Include="BST\JsonControlCollection.cs" />
     <Compile Include="BST\JsonLiteral.cs" />
     <Compile Include="Compilation\JbstCodeProvider.cs">
