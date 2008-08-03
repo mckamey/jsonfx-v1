@@ -32,6 +32,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Web;
+using System.Text;
 using System.Text.RegularExpressions;
 
 using BuildTools;
@@ -170,7 +171,7 @@ namespace JsonFx.JsonML.BST
 			}
 
 			// this allows HTML entities to be encoded as unicode
-			text = HttpUtility.HtmlDecode(text);
+			text = HtmlDistiller.DecodeHtmlEntities(text);
 
 			JbstControlCollection childControls = (this.current == null) ?
 				this.controls : this.current.ChildControls;
@@ -284,7 +285,7 @@ namespace JsonFx.JsonML.BST
 			// flush any accumulated literals
 			this.Flush();
 
-			value = HttpUtility.HtmlDecode(value);
+			value = HtmlDistiller.DecodeHtmlEntities(value);
 			if ("style".Equals(name, StringComparison.InvariantCultureIgnoreCase))
 			{
 				this.SetStyle(target, null, value);
@@ -360,6 +361,99 @@ namespace JsonFx.JsonML.BST
 
 			target.Attributes["style"] = style;
 		}
+
+		///// <summary>Converts a string that has been HTML-encoded for HTTP transmission into a decoded string.</summary>
+		///// <returns>A decoded string.</returns>
+		///// <param name="s">The string to decode. </param>
+		//public static string HtmlDecode(string s)
+		//{
+		//    if (s == null)
+		//    {
+		//        return null;
+		//    }
+		//    if (s.IndexOf('&') < 0)
+		//    {
+		//        return s;
+		//    }
+		//    StringBuilder sb = new StringBuilder();
+		//    StringWriter output = new StringWriter(sb);
+		//    HtmlDecode(s, output);
+		//    return sb.ToString();
+		//}
+
+		//private static char[] s_entityEndingChars = new char[] { ';', '&' };
+
+		///// <summary>Converts a string that has been HTML-encoded into a decoded string, and sends the decoded string to a <see cref="T:System.IO.TextWriter"></see> output stream.</summary>
+		///// <param name="s">The string to decode. </param>
+		///// <param name="output">A <see cref="T:System.IO.TextWriter"></see> stream of output. </param>
+		//private static void HtmlDecode(string s, TextWriter output)
+		//{
+		//    if (s != null)
+		//    {
+		//        if (s.IndexOf('&') < 0)
+		//        {
+		//            output.Write(s);
+		//        }
+		//        else
+		//        {
+		//            int length = s.Length;
+		//            for (int i = 0; i < length; i++)
+		//            {
+		//                char ch = s[i];
+		//                if (ch == '&')
+		//                {
+		//                    int num3 = s.IndexOfAny(s_entityEndingChars, i + 1);
+		//                    if ((num3 > 0) && (s[num3] == ';'))
+		//                    {
+		//                        string entity = s.Substring(i + 1, (num3 - i) - 1);
+		//                        if ((entity.Length > 1) && (entity[0] == '#'))
+		//                        {
+		//                            try
+		//                            {
+		//                                if ((entity[1] == 'x') || (entity[1] == 'X'))
+		//                                {
+		//                                    ch = (char)int.Parse(entity.Substring(2), System.Globalization.NumberStyles.AllowHexSpecifier);
+		//                                }
+		//                                else
+		//                                {
+		//                                    ch = (char)int.Parse(entity.Substring(1));
+		//                                }
+		//                                i = num3;
+		//                            }
+		//                            catch (FormatException)
+		//                            {
+		//                                i++;
+		//                            }
+		//                            catch (ArgumentException)
+		//                            {
+		//                                i++;
+		//                            }
+		//                        }
+		//                        else
+		//                        {
+		//                            i = num3;
+		//                            char ch2 = HtmlEntities.Lookup(entity);
+		//                            if (ch2 != '\0')
+		//                            {
+		//                                ch = ch2;
+		//                            }
+		//                            else
+		//                            {
+		//                                output.Write('&');
+		//                                output.Write(entity);
+		//                                output.Write(';');
+		//                                goto Label_0103;
+		//                            }
+		//                        }
+		//                    }
+		//                }
+		//                output.Write(ch);
+		//            Label_0103:
+		//                ;
+		//            }
+		//        }
+		//    }
+		//}
 
 		#endregion Builder Methods
 
