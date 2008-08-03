@@ -56,7 +56,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\JsonFx\JsonFx.Json\JsonFx.Json.csproj">
       <Project>{ABA23F14-7E47-43FE-A3E7-1FF97840C3FB}</Project>
-      <Name>JsonFx.Json</Name>
+      <Name>JsonFx.Json %28JsonFx.Json\JsonFx.Json%29</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
