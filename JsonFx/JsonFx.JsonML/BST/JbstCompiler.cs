@@ -45,9 +45,7 @@ namespace JsonFx.JsonML.BST
 	/// <summary>
 	/// JsonML+BST Template Compiler
 	/// </summary>
-	internal class JbstCompiler :
-		IHtmlWriter,
-		IDisposable
+	internal class JbstCompiler : IHtmlWriter
 	{
 		#region Constants
 
@@ -58,13 +56,9 @@ namespace JsonFx.JsonML.BST
 		#region Fields
 
 		private List<ParseException> errors = new List<ParseException>();
-		private TextWriter writer;
-		private JbstControlCollection controls = new JbstControlCollection(null);
+		private JbstControl document = new JbstControl(String.Empty);
 		private JbstControl current = null;
 		private JbstControl next = null;
-		private bool allowLiteralsInRoot = false;
-		private bool dirty = false;
-		private bool disposed = false;
 
 		private bool isParsing = false;
 		private readonly HtmlDistiller parser = new HtmlDistiller();
@@ -77,10 +71,8 @@ namespace JsonFx.JsonML.BST
 		/// Ctor
 		/// </summary>
 		/// <param name="writer"></param>
-		internal JbstCompiler(TextWriter writer)
+		internal JbstCompiler()
 		{
-			this.writer = writer;
-
 			this.parser.EncodeNonAscii = false;
 			this.parser.BalanceTags = true;
 			this.parser.NormalizeWhitespace = false;
@@ -92,17 +84,6 @@ namespace JsonFx.JsonML.BST
 		#endregion Init
 
 		#region Properties
-
-		internal JbstControlCollection Controls
-		{
-			get { return this.controls; }
-		}
-
-		internal bool AllowLiteralsInRoot
-		{
-			get { return this.allowLiteralsInRoot; }
-			set { this.allowLiteralsInRoot = value; }
-		}
 
 		internal List<ParseException> Errors
 		{
@@ -169,22 +150,19 @@ namespace JsonFx.JsonML.BST
 				return;
 			}
 
-			if (this.current == null && !this.AllowLiteralsInRoot)
+			if (this.current == null)
 			{
-				return;
+				this.current = this.document;
 			}
 
 			// this allows HTML entities to be encoded as unicode
 			text = HtmlDistiller.DecodeHtmlEntities(text);
 
-			JbstControlCollection childControls = (this.current == null) ?
-				this.controls : this.current.ChildControls;
-
-			JbstLiteral jsonLiteral = childControls.Last as JbstLiteral;
+			JbstLiteral jsonLiteral = this.current.ChildControls.Last as JbstLiteral;
 			if (jsonLiteral == null)
 			{
 				jsonLiteral = new JbstLiteral(text);
-				childControls.Add(jsonLiteral);
+				this.current.ChildControls.Add(jsonLiteral);
 			}
 			else
 			{
@@ -202,15 +180,12 @@ namespace JsonFx.JsonML.BST
 				return;
 			}
 
-			if (this.current == null && !this.AllowLiteralsInRoot)
+			if (this.current == null)
 			{
-				return;
+				this.current = this.document;
 			}
 
-			JbstControlCollection childControls = (this.current == null) ?
-				this.controls : this.current.ChildControls;
-
-			childControls.Add(child);
+			this.current.ChildControls.Add(child);
 		}
 
 		internal void PushTag(string tagName)
@@ -231,13 +206,10 @@ namespace JsonFx.JsonML.BST
 
 			if (this.current == null)
 			{
-				this.controls.Add(control);
-			}
-			else
-			{
-				this.current.ChildControls.Add(control);
+				this.current = this.document;
 			}
 
+			this.current.ChildControls.Add(control);
 			this.current = control;
 		}
 
@@ -260,7 +232,7 @@ namespace JsonFx.JsonML.BST
 
 			if (this.current == null)
 			{
-				this.RenderControls();
+				throw new InvalidOperationException("Pop mismatch? (Current is null)");
 			}
 		}
 
@@ -370,30 +342,22 @@ namespace JsonFx.JsonML.BST
 
 		#region Render Methods
 
-		private void RenderControls()
+		public void RenderControls(TextWriter writer)
 		{
-			if (this.dirty)
+			using (JsonFx.Json.JsonWriter jw = new JsonFx.Json.JsonWriter(writer))
 			{
-				// hacky but seems to work:
-				// if this builder is dirty it means it has already written out a control graph
-				// adding another back to back will not be valid JSON
-				// for some reason Crockford's JSON parse method appears to treat multiple graphs
-				// as if they are in an array if delimited by commas.
-				this.writer.Write(",");
-			}
-			using (JsonFx.Json.JsonWriter jw = new JsonFx.Json.JsonWriter(this.writer))
-			{
-				if (this.Controls.Count > 1)
+				if (this.document.ChildControls.Count > 1)
 				{
-					jw.Write(this.Controls);
+					// render with document wrapper
+					jw.Write(this.document);
 				}
-				else if (this.Controls.Count > 0)
+				else if (this.document.ChildControls.Count > 0)
 				{
-					jw.Write(this.Controls[0]);
+					// only render single node
+					jw.Write(this.document.ChildControls[0]);
 				}
 			}
-			this.Controls.Clear();
-			this.dirty = true;
+			this.document.ChildControls.Clear();
 		}
 
 		#endregion Render Methods
@@ -473,35 +437,5 @@ namespace JsonFx.JsonML.BST
 		}
 
 		#endregion IHtmlWriter Members
-
-		#region IDisposable Members
-
-		void IDisposable.Dispose()
-		{
-			if (!this.disposed)
-			{
-				this.disposed = true;
-
-				if (this.writer != null)
-				{
-					using (this.writer)
-					{
-						while (this.current != null)
-						{
-							this.PopTag();
-						}
-
-						// flush any accumulated literals
-						this.Flush();
-
-						this.writer.Flush();
-						this.writer.Close();
-						this.writer = null;
-					}
-				}
-			}
-		}
-
-		#endregion IDisposable Members
 	}
 }
