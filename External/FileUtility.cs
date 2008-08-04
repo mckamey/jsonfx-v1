@@ -82,7 +82,7 @@ namespace BuildTools.IO
 				{
 					return false;
 				}
-				if (!Directory.Exists(dir))
+				if (!String.IsNullOrEmpty(dir) && !Directory.Exists(dir))
 				{
 					// make sure path exists
 					Directory.CreateDirectory(dir);
