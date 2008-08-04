@@ -51,6 +51,7 @@ namespace JsonFx.JsonML
 
 		#region Fields
 
+		private readonly TextWriter writer;
 		private readonly JbstCompiler builder;
 		private bool renderingIncompleteTag = false;
 
@@ -64,7 +65,8 @@ namespace JsonFx.JsonML
 		/// <param name="writer"></param>
 		public JsonMLTextWriter(TextWriter writer) : base(new NullTextWriter())
 		{
-			this.builder = new JbstCompiler(writer);
+			this.writer = writer;
+			this.builder = new JbstCompiler();
 		}
 
 		/// <summary>
@@ -74,7 +76,8 @@ namespace JsonFx.JsonML
 		/// <param name="tabString"></param>
 		public JsonMLTextWriter(TextWriter writer, string tabString) : base(new NullTextWriter(), tabString)
 		{
-			this.builder = new JbstCompiler(writer);
+			this.writer = writer;
+			this.builder = new JbstCompiler();
 		}
 
 		#endregion Init
@@ -128,6 +131,7 @@ namespace JsonFx.JsonML
 
 		public override void Close()
 		{
+			this.builder.RenderControls(this.writer);
 			base.Close();
 			this.Dispose();
 		}
