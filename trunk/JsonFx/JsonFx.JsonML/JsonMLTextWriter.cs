@@ -63,10 +63,12 @@ namespace JsonFx.JsonML
 		/// Ctor
 		/// </summary>
 		/// <param name="writer"></param>
-		public JsonMLTextWriter(TextWriter writer) : base(new NullTextWriter())
+		public JsonMLTextWriter(TextWriter writer)
+			: base(new NullTextWriter(writer.Encoding))
 		{
 			this.writer = writer;
 			this.builder = new JbstCompiler();
+			this.builder.DocumentReady += new EventHandler(this.OnDocumentReady);
 		}
 
 		/// <summary>
@@ -74,15 +76,22 @@ namespace JsonFx.JsonML
 		/// </summary>
 		/// <param name="writer"></param>
 		/// <param name="tabString"></param>
-		public JsonMLTextWriter(TextWriter writer, string tabString) : base(new NullTextWriter(), tabString)
+		public JsonMLTextWriter(TextWriter writer, string tabString)
+			: base(new NullTextWriter(writer.Encoding), tabString)
 		{
 			this.writer = writer;
 			this.builder = new JbstCompiler();
+			this.builder.DocumentReady += new EventHandler(this.OnDocumentReady);
 		}
 
 		#endregion Init
 
 		#region Methods
+
+		private void OnDocumentReady(object sender, EventArgs e)
+		{
+			this.builder.RenderControls(this.writer);
+		}
 
 		public override void AddAttribute(string name, string value)
 		{
@@ -148,10 +157,10 @@ namespace JsonFx.JsonML
 			return value;
 		}
 
-		//public override System.Text.Encoding Encoding
-		//{
-		//    get { return System.Text.Encoding.UTF8; }
-		//}
+		public override Encoding Encoding
+		{
+			get { return this.writer.Encoding; }
+		}
 
 		public override void EndRender()
 		{
@@ -534,10 +543,33 @@ namespace JsonFx.JsonML
 
 		private class NullTextWriter : System.IO.TextWriter
 		{
+			#region Fields
+
+			private readonly Encoding encoding;
+
+			#endregion Fields
+
+			#region Init
+
+			/// <summary>
+			/// Ctor
+			/// </summary>
+			/// <param name="encoding"></param>
+			public NullTextWriter(Encoding encoding)
+			{
+				this.encoding = encoding;
+			}
+
+			#endregion Init
+
+			#region Properties
+
 			public override Encoding Encoding
 			{
-				get { return Encoding.UTF8; }
+				get { return this.encoding; }
 			}
+
+			#endregion Properties
 		}
 
 		#endregion NullTextWriter
