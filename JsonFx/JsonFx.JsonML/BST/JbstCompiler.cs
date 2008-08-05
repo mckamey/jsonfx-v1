@@ -158,19 +158,19 @@ namespace JsonFx.JsonML.BST
 			// this allows HTML entities to be encoded as unicode
 			text = HtmlDistiller.DecodeHtmlEntities(text);
 
-			JbstLiteral jsonLiteral = this.current.ChildControls.Last as JbstLiteral;
-			if (jsonLiteral == null)
+			JbstLiteral literal = this.current.ChildControls.Last as JbstLiteral;
+			if (literal == null)
 			{
-				jsonLiteral = new JbstLiteral(text);
-				this.current.ChildControls.Add(jsonLiteral);
+				literal = new JbstLiteral(text);
+				this.current.ChildControls.Add(literal);
 			}
 			else
 			{
-				jsonLiteral.Text += text;
+				literal.Text += text;
 			}
 
 			// normalize whitespace
-			jsonLiteral.Text = RegexWhitespace.Replace(jsonLiteral.Text, " ");
+			literal.Text = RegexWhitespace.Replace(literal.Text, JbstLiteral.Whitespace);
 		}
 
 		internal void AppendChild(IJbstControl child)
@@ -346,18 +346,32 @@ namespace JsonFx.JsonML.BST
 		{
 			using (JsonFx.Json.JsonWriter jw = new JsonFx.Json.JsonWriter(writer))
 			{
-				if (this.document.ChildControls.Count > 1)
+				IJbstControl control = null;
+				foreach (IJbstControl child in this.document.ChildControls)
 				{
-					// render with document wrapper
-					jw.Write(this.document);
+					// tally non-whitespace controls
+					JbstLiteral lit = child as JbstLiteral;
+					if (lit != null && lit.Text == JbstLiteral.Whitespace)
+					{
+						continue;
+					}
+
+					if (control != null)
+					{
+						// found 2 or more in root
+						// render with document wrapper
+						jw.Write(this.document);
+						this.document.ChildControls.Clear();
+						return;
+					}
+
+					control = child;
 				}
-				else if (this.document.ChildControls.Count > 0)
-				{
-					// only render single node
-					jw.Write(this.document.ChildControls[0]);
-				}
+
+				// only render single node found
+				jw.Write(control);
+				this.document.ChildControls.Clear();
 			}
-			this.document.ChildControls.Clear();
 		}
 
 		#endregion Render Methods

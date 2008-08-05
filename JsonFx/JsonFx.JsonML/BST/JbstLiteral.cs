@@ -39,6 +39,12 @@ namespace JsonFx.JsonML.BST
 	/// </summary>
 	internal class JbstLiteral : IJbstControl, IJsonSerializable
 	{
+		#region Constants
+
+		public const string Whitespace = " ";
+
+		#endregion Constants
+
 		#region Fields
 
 		private string text;
