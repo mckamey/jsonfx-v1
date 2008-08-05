@@ -74,7 +74,7 @@ namespace JsonFx.JsonML.BST
 		internal JbstCompiler()
 		{
 			this.parser.EncodeNonAscii = false;
-			this.parser.BalanceTags = true;
+			this.parser.BalanceTags = false;
 			this.parser.NormalizeWhitespace = false;
 			this.parser.HtmlFilter = new UnsafeHtmlFilter();
 			this.parser.HtmlWriter = this;
@@ -85,10 +85,15 @@ namespace JsonFx.JsonML.BST
 
 		#region Properties
 
+		/// <summary>
+		/// Gets a list of any errors that were encountered during parsing
+		/// </summary>
 		internal List<ParseException> Errors
 		{
 			get { return this.errors; }
 		}
+
+		internal event EventHandler DocumentReady;
 
 		#endregion Properties
 
@@ -220,19 +225,25 @@ namespace JsonFx.JsonML.BST
 
 			if (this.next != null)
 			{
-				throw new InvalidOperationException("Pop mismatch? (Next is null)");
+				throw new InvalidOperationException("Push/Pop mismatch? (Next is not null)");
 			}
 
 			if (this.current == null)
 			{
-				throw new InvalidOperationException("Pop mismatch? (Current is null)");
+				throw new InvalidOperationException("Push/Pop mismatch? (Current is null)");
 			}
 
 			this.current = this.current.Parent;
 
 			if (this.current == null)
 			{
-				throw new InvalidOperationException("Pop mismatch? (Current is null)");
+				throw new InvalidOperationException("Push/Pop mismatch? (Current is null)");
+			}
+
+			if (this.current == this.document &&
+				this.DocumentReady != null)
+			{
+				this.DocumentReady(this, EventArgs.Empty);
 			}
 		}
 
@@ -368,7 +379,7 @@ namespace JsonFx.JsonML.BST
 					control = child;
 				}
 
-				// only render single node found
+				// only render single node found (null is OK)
 				jw.Write(control);
 				this.document.ChildControls.Clear();
 			}
