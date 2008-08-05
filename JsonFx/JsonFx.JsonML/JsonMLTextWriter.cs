@@ -140,7 +140,6 @@ namespace JsonFx.JsonML
 
 		public override void Close()
 		{
-			this.builder.RenderControls(this.writer);
 			base.Close();
 			this.Dispose();
 		}
