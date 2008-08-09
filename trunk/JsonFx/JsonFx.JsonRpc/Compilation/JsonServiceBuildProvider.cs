@@ -32,6 +32,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
+using System.Web;
 using System.Web.Compilation;
 using System.CodeDom;
 using System.CodeDom.Compiler;
@@ -46,25 +47,28 @@ using JsonFx.Handlers;
 
 namespace JsonFx.Compilation
 {
+	/// <summary>
+	/// 
+	/// </summary>
 	[BuildProviderAppliesTo(BuildProviderAppliesTo.Web)]
 	[PermissionSet(SecurityAction.Demand, Unrestricted = true)]
 	public class JsonServiceBuildProvider : System.Web.Compilation.BuildProvider
 	{
 		#region Constants
 
+		private readonly object SyncLock = new object();
+
 		protected internal const string GeneratedNamespace = "JsonFx.JsonRpc._Generated";
 
-		protected const string DefaultDirectiveName = "JsonService";
-		protected const string ErrorMissingDirective = "The page must have a <%@ {0} class=\"MyNamespace.MyClass\" ... %> directive.";
-		protected const string ErrorDuplicateAttrib = "The directive contains duplicate \"{0}\" attributes.";
-		protected const string ErrorAttribNotSupported = "The \"{0}\" attribute is not supported by the \"{1}\" directive.";
-		protected const string ErrorCouldNotCreateType = "Could not create type \"{0}\".";
-		//protected const string ErrorInsufficientTrust = "The current trust level does not allow use of the \"{0}\" attribute";
-		protected const string ErrorAmbiguousType = "The type \"{0}\" is ambiguous: it could come from assembly \"{1}\" or from assembly \"{2}\". Please specify the assembly explicitly in the type name.";
-		protected const string ErrorMultipleDirectives = "There can be only one \"{0}\" directive.";
-		protected const string ErrorUnkownDirective = "The directive \"{0}\" is unknown.";
-		protected const string ErrorAttribMutExcl = "The \"{0}\" and \"{1}\" attributes are mutually exclusive.";
-		protected const string ErrorMissingAttrib = "The directive is missing a '{0}' attribute.";
+		private const string DefaultDirectiveName = "JsonService";
+		private const string ErrorMissingDirective = "The service must have a <%@ {0} class=\"MyNamespace.MyClass\" ... %> directive.";
+		private const string ErrorDuplicateAttrib = "The directive contains duplicate \"{0}\" attributes.";
+		private const string ErrorAttribNotSupported = "The \"{0}\" attribute is not supported by the \"{1}\" directive.";
+		private const string ErrorCouldNotCreateType = "Could not create type \"{0}\".";
+		private const string ErrorAmbiguousType = "The type \"{0}\" is ambiguous: it could come from assembly \"{1}\" or from assembly \"{2}\". Please specify the assembly explicitly in the type name.";
+		private const string ErrorMultipleDirectives = "There can be only one \"{0}\" directive.";
+		private const string ErrorUnkownDirective = "The directive \"{0}\" is unknown.";
+		private const string ErrorMissingAttrib = "The directive is missing a '{0}' attribute.";
 
 		private static readonly Regex Regex_Directive = new Regex(Pattern_Directive, RegexOptions.Singleline|RegexOptions.Multiline|RegexOptions.Compiled);
 		private const string Pattern_Directive = "<%\\s*@(\\s*(?<attrname>\\w[\\w:]*(?=\\W))(\\s*(?<equal>=)\\s*\"(?<attrval>[^\"]*)\"|\\s*(?<equal>=)\\s*'(?<attrval>[^']*)'|\\s*(?<equal>=)\\s*(?<attrval>[^\\s%>]*)|(?<equal>)(?<attrval>\\s*?)))*\\s*?%>";
@@ -77,63 +81,89 @@ namespace JsonFx.Compilation
 		private string sourceText = null;
 		private CompilerType compilerType = null;
 		private string serviceTypeName = null;
-		private string descriptorTypeName = null;
-		private bool sourceParsed = false;
+		private string proxyTypeName = null;
+		private bool directiveParsed = false;
 		private int lineNumber = 1;
 
 		#endregion Fields
 
 		#region BuildProvider Methods
 
-		public override System.Collections.ICollection VirtualPathDependencies
-		{
-			get { return base.VirtualPathDependencies; }
-		}
-
 		public override void GenerateCode(AssemblyBuilder assemblyBuilder)
 		{
-			this.EnsureDirective();
-
-			Assembly tempAssembly = null;
-
-			if (!String.IsNullOrEmpty(this.sourceText))
+			try
 			{
-				// generate a code snippet for any inline source
-				CodeSnippetCompileUnit unit = new CodeSnippetCompileUnit(sourceText);
-				unit.LinePragma = new CodeLinePragma(base.VirtualPath, this.lineNumber);
+				this.EnsureDirective();
 
-				// add known assembly references
-				foreach (Assembly assembly in base.ReferencedAssemblies)
+				if (String.IsNullOrEmpty(this.serviceTypeName))
 				{
-					if (!String.IsNullOrEmpty(assembly.Location) &&
-						!unit.ReferencedAssemblies.Contains(assembly.Location))
-					{
-						unit.ReferencedAssemblies.Add(assembly.Location);
-					}
+					return;
 				}
 
-				if (this.linkedAssemblies != null)
+				Assembly tempAssembly = null;
+
+				if (!String.IsNullOrEmpty(this.sourceText))
 				{
-					// add parsed assembly dependencies
-					foreach (Assembly assembly in this.linkedAssemblies)
+					// generate a code snippet for any inline source
+					CodeSnippetCompileUnit unit = new CodeSnippetCompileUnit(this.sourceText);
+					unit.LinePragma = new CodeLinePragma(base.VirtualPath, this.lineNumber);
+
+					// add known assembly references
+					foreach (Assembly assembly in base.ReferencedAssemblies)
 					{
-						assemblyBuilder.AddAssemblyReference(assembly);
 						if (!String.IsNullOrEmpty(assembly.Location) &&
-							!unit.ReferencedAssemblies.Contains(assembly.Location))
+						!unit.ReferencedAssemblies.Contains(assembly.Location))
 						{
 							unit.ReferencedAssemblies.Add(assembly.Location);
 						}
 					}
+
+					if (this.linkedAssemblies != null)
+					{
+						// add parsed assembly dependencies
+						foreach (Assembly assembly in this.linkedAssemblies)
+						{
+							assemblyBuilder.AddAssemblyReference(assembly);
+							if (!String.IsNullOrEmpty(assembly.Location) &&
+								!unit.ReferencedAssemblies.Contains(assembly.Location))
+							{
+								unit.ReferencedAssemblies.Add(assembly.Location);
+							}
+						}
+					}
+
+					// compile once so we can reflect and build proxy, etc.
+					assemblyBuilder.AddCodeCompileUnit(this, unit);
+					CompilerResults results = assemblyBuilder.CodeDomProvider.CompileAssemblyFromDom(new CompilerParameters(), unit);
+					if (results.Errors.HasErrors)
+					{
+						CompilerError error = results.Errors[0];
+						throw new HttpParseException(error.ErrorText, null, error.FileName, "", error.Line);
+					}
+					tempAssembly = results.CompiledAssembly;
 				}
 
-				// compile once so we can reflect and build proxy, etc.
-				assemblyBuilder.AddCodeCompileUnit(this, unit);
-				CompilerResults results = assemblyBuilder.CodeDomProvider.CompileAssemblyFromDom(new CompilerParameters(), unit);
-				tempAssembly = results.CompiledAssembly;
+				Type serviceType = this.GetTypeToCache(this.serviceTypeName, tempAssembly);
+				this.GenerateServiceProxyCode(assemblyBuilder, serviceType);
 			}
+			catch (Exception ex)
+			{
+				//if (this.IgnoreParseErrorsProtected())
+				//{
+				//    return;
+				//}
 
+				if (ex is HttpParseException)
+				{
+					throw;
+				}
+				throw new HttpParseException("GenerateCode: "+ex.Message, ex, base.VirtualPath, this.sourceText, this.lineNumber);
+			}
+		}
+
+		private void GenerateServiceProxyCode(AssemblyBuilder assemblyBuilder, Type serviceType)
+		{
 			// build proxy from main service type
-			Type serviceType = this.GetTypeToCache(this.serviceTypeName, tempAssembly);
 			JsonServiceDescription desc = new JsonServiceDescription(serviceType, base.VirtualPath);
 			JsonServiceProxyGenerator proxy = new JsonServiceProxyGenerator(desc);
 			string proxyOutput = proxy.OutputProxy(false);
@@ -293,157 +323,108 @@ namespace JsonFx.Compilation
 
 			assemblyBuilder.AddCodeCompileUnit(this, generatedUnit);
 
-			this.descriptorTypeName = JsonServiceBuildProvider.GeneratedNamespace+"."+descriptorType.Name;
+			this.proxyTypeName = JsonServiceBuildProvider.GeneratedNamespace+"."+descriptorType.Name;
 		}
 
 		public override CompilerType CodeCompilerType
 		{
 			get
 			{
-				this.EnsureDirective();
-
-				if (this.compilerType == null)
+				try
 				{
-					return base.CodeCompilerType;
+					this.EnsureDirective();
+
+					// if directive failed will be null
+					return this.compilerType;
 				}
+				catch (Exception ex)
+				{
+					//if (this.IgnoreParseErrorsProtected())
+					//{
+					//    return null;
+					//}
 
-				return this.compilerType;
+					if (ex is HttpParseException)
+					{
+						throw;
+					}
+					throw new HttpParseException("CodeCompilerType: "+ex.Message, ex, base.VirtualPath, this.sourceText, this.lineNumber);
+				}
 			}
-		}
-		
-		public override string GetCustomString(CompilerResults results)
-		{
-			this.EnsureDirective();
-
-			return base.GetCustomString(results);
 		}
 
 		public override Type GetGeneratedType(CompilerResults results)
 		{
-			this.EnsureDirective();
+			try
+			{
+				this.EnsureDirective();
 
-			return this.GetTypeToCache(this.descriptorTypeName, results.CompiledAssembly);
-		}
+				if (String.IsNullOrEmpty(this.proxyTypeName) ||
+					results.Errors.HasErrors)
+				{
+					return null;
+				}
 
-		public override BuildProviderResultFlags GetResultFlags(CompilerResults results)
-		{
-			return base.GetResultFlags(results);
+				return this.GetTypeToCache(this.proxyTypeName, results.CompiledAssembly);
+			}
+			catch (Exception ex)
+			{
+				//if (this.IgnoreParseErrorsProtected())
+				//{
+				//    return null;
+				//}
+
+				if (ex is HttpParseException)
+				{
+					throw;
+				}
+				throw new HttpParseException("GetGeneratedType: "+ex.Message, ex, base.VirtualPath, this.sourceText, this.lineNumber);
+			}
 		}
 
 		#endregion BuildProvider Methods
 
-		#region Methods
+		#region Parsing Methods
 
 		private void EnsureDirective()
 		{
-			if (!this.sourceParsed)
+			lock (this.SyncLock)
 			{
-				this.ParseReader();
-			}
-		}
-
-		private Type GetTypeToCache(string typeName, Assembly assembly)
-		{
-			Type type = null;
-			if (assembly != null)
-			{
-				type = assembly.GetType(typeName);
-			}
-			if (type == null)
-			{
-				type = this.GetType(typeName);
-			}
-			try
-			{
-				this.ValidateBaseType(type);
-			}
-			catch (Exception ex)
-			{
-				throw new System.Web.HttpParseException(ex.Message, ex, base.VirtualPath, this.sourceText, this.lineNumber);
-			}
-			return type;
-		}
-
-		private Type GetType(string typeName)
-		{
-			Type type = null;
-			if (CommaIndexInTypeName(typeName) > 0)// typeName contains assembly
-			{
-				try
+				if (!this.directiveParsed)
 				{
-					type = Type.GetType(typeName, true);
-				}
-				catch (Exception ex)
-				{
-					throw new System.Web.HttpParseException(null, ex, base.VirtualPath, this.sourceText, this.lineNumber);
-				}
-				return type;
-			}
-			type = this.GetTypeFromAssemblies(base.ReferencedAssemblies, typeName, false);
-			if (type == null)
-			{
-				type = this.GetTypeFromAssemblies(this.linkedAssemblies, typeName, false);
-				if (type == null)
-				{
-					throw new System.Web.HttpParseException(String.Format(ErrorCouldNotCreateType, typeName), null, base.VirtualPath, this.sourceText, this.lineNumber);
-				}
-				return type;
-			}
-			return type;
-		}
-
-		[ReflectionPermission(SecurityAction.Assert, Flags=ReflectionPermissionFlag.MemberAccess)]
-		private Type GetTypeFromAssemblies(ICollection assemblies, string typeName, bool ignoreCase)
-		{
-			if (assemblies == null)
-				return null;
-
-			Type type = null;
-			foreach (Assembly assembly in assemblies)
-			{
-				Type type2 = assembly.GetType(typeName, false, ignoreCase);
-				if (type2 != null)
-				{
-					if ((type != null) && (type2 != type))
-					{
-						throw new System.Web.HttpParseException(String.Format(ErrorAmbiguousType, typeName, type.Assembly.FullName, type2.Assembly.FullName), null, base.VirtualPath, this.sourceText, this.lineNumber);
-					}
-					type = type2;
+					this.ParseDirective();
 				}
 			}
-			return type;
 		}
 
-		private void ValidateBaseType(Type type)
-		{
-		}
+		//protected bool IgnoreParseErrorsProtected()
+		//{
+		//    try
+		//    {
+		//        PropertyInfo property = typeof(BuildProvider).GetProperty(
+		//            "IgnoreParseErrors",
+		//            BindingFlags.NonPublic|BindingFlags.Instance|BindingFlags.GetProperty);
 
-		private static int CommaIndexInTypeName(string typeName)
-		{
-			int comma = typeName.LastIndexOf(',');
-			if (comma < 0)
-			{
-				return -1;
-			}
-			int bracket = typeName.LastIndexOf(']');
-			if (bracket > comma)
-			{
-				return -1;
-			}
-			return typeName.IndexOf(',', bracket + 1);
-		}
+		//        MethodInfo method = property.GetGetMethod(true);
+		//        return (bool)method.Invoke(this, Type.EmptyTypes);
+		//    }
+		//    catch
+		//    {
+		//        return false;
+		//    }
+		//}
 
-		#endregion Methods
-
-		#region Parsing Methods
-
-		private void ParseReader()
+		private void ParseDirective()
 		{
 			try
 			{
 				using (System.IO.TextReader reader = base.OpenReader())
 				{
 					this.sourceText = reader.ReadToEnd();
+				}
+				if (this.sourceText == null)
+				{
+					this.sourceText = String.Empty;
 				}
 
 				bool foundDirective = false;
@@ -457,7 +438,9 @@ namespace JsonFx.Compilation
 					{
 						oldIndex = this.sourceText.IndexOf('\n', oldIndex);
 						if (oldIndex < 0 || oldIndex >= index)
+						{
 							break;
+						}
 						oldIndex++;// move past char
 						this.lineNumber++;// inc line count
 					}
@@ -467,7 +450,7 @@ namespace JsonFx.Compilation
 					{
 						if (foundDirective)
 						{
-							throw new System.Web.HttpParseException(String.Format(ErrorMultipleDirectives, DefaultDirectiveName), null, base.VirtualPath, this.sourceText, this.lineNumber);
+							throw new HttpParseException(String.Format(ErrorMultipleDirectives, DefaultDirectiveName), null, base.VirtualPath, this.sourceText, this.lineNumber);
 						}
 						foundDirective = true;
 
@@ -475,11 +458,12 @@ namespace JsonFx.Compilation
 						string language = GetAndRemove(attribs, "Language");
 						if (String.IsNullOrEmpty(language))
 						{
-							// otherwise defaults to VB which attaches extra References
+							// default to the project language
 							language = "C#";
 						}
-						this.compilerType = base.GetDefaultCompilerTypeForLanguage(language);
 
+						this.compilerType = base.GetDefaultCompilerTypeForLanguage(language);
+						
 						// determine backing class
 						this.serviceTypeName = GetAndRemove(attribs, "Class");
 
@@ -491,27 +475,18 @@ namespace JsonFx.Compilation
 					else if ("Assembly".Equals(directiveName, StringComparison.OrdinalIgnoreCase))
 					{
 						string name = GetAndRemove(attribs, "Name");
-						string src = GetAndRemove(attribs, "src");
-						if ((name != null) && (src != null))
-						{
-							throw new System.Web.HttpParseException(String.Format(ErrorAttribMutExcl, "Name", "Src"), null, base.VirtualPath, this.sourceText, this.lineNumber);
-						}
 						if (name != null)
 						{
-							  this.AddAssemblyDependency(name);
-						}
-						else if (src != null)
-						{
-							  this.ImportSourceFile(src);
+							this.AddAssemblyDependency(name);
 						}
 						else
 						{
-							throw new System.Web.HttpParseException(String.Format(ErrorMissingAttrib, "Name"), null, base.VirtualPath, this.sourceText, this.lineNumber);
+							throw new HttpParseException(String.Format(ErrorMissingAttrib, "Name"), null, base.VirtualPath, this.sourceText, this.lineNumber);
 						}
 					}
 					else
 					{
-						throw new System.Web.HttpParseException(String.Format(ErrorUnkownDirective, directiveName), null, base.VirtualPath, this.sourceText, this.lineNumber);
+						throw new HttpParseException(String.Format(ErrorUnkownDirective, directiveName), null, base.VirtualPath, this.sourceText, this.lineNumber);
 					}
 
 					this.CheckUnknownDirectiveAttributes(directiveName, attribs);
@@ -519,14 +494,23 @@ namespace JsonFx.Compilation
 
 				if (!foundDirective)
 				{
-					throw new System.Web.HttpParseException(String.Format(ErrorMissingDirective, DefaultDirectiveName), null, base.VirtualPath, this.sourceText, this.lineNumber);
+					throw new HttpParseException(String.Format(ErrorMissingDirective, DefaultDirectiveName), null, base.VirtualPath, this.sourceText, this.lineNumber);
 				}
 
+				// remove the directive from the original source
 				this.sourceText = this.sourceText.Substring(index).TrimEnd();
+			}
+			catch (Exception ex)
+			{
+				if (ex is HttpParseException)
+				{
+					throw;
+				}
+				throw new HttpParseException("ParseDirective: "+ex.Message, ex, base.VirtualPath, this.sourceText, this.lineNumber);
 			}
 			finally
 			{
-				this.sourceParsed = true;
+				this.directiveParsed = true;
 			}
 		}
 
@@ -581,7 +565,7 @@ namespace JsonFx.Compilation
 						}
 						catch (ArgumentException)
 						{
-							throw new System.Web.HttpParseException(String.Format(ErrorDuplicateAttrib, name), null, base.VirtualPath, this.sourceText, this.lineNumber);
+							throw new HttpParseException(String.Format(ErrorDuplicateAttrib, name), null, base.VirtualPath, this.sourceText, this.lineNumber);
 						}
 					}
 				}
@@ -604,16 +588,11 @@ namespace JsonFx.Compilation
 			this.linkedAssemblies.Add(assembly);
 		}
 
-		private void ImportSourceFile(string src)
-		{
-			throw new Exception("The method or operation is not implemented.");
-		}
-
 		private void CheckUnknownDirectiveAttributes(string directiveName, IDictionary attribs)
 		{
 			if (attribs.Count > 0)
 			{
-				throw new System.Web.HttpParseException(String.Format(ErrorAttribNotSupported, GetFirstKey(attribs), directiveName), null, base.VirtualPath, this.sourceText, this.lineNumber);
+				throw new HttpParseException(String.Format(ErrorAttribNotSupported, GetFirstKey(attribs), directiveName), null, base.VirtualPath, this.sourceText, this.lineNumber);
 			}
 		}
 
@@ -625,10 +604,6 @@ namespace JsonFx.Compilation
 			{
 				compilerParams.IncludeDebugInformation = debug;
 			}
-			//if (compilerParams.IncludeDebugInformation && !System.Web.HttpRuntime.HasAspNetHostingPermission(System.Web.AspNetHostingPermissionLevel.Medium))
-			//{
-			//    throw new System.Web.HttpParseException(String.Format(ErrorInsufficientTrust, "Debug"), null, base.VirtualPath, this.sourceText, this.lineNumber);
-			//}
 
 			uint warningLevel = 0;
 			string warningStr = GetAndRemove(directive, "WarningLevel");
@@ -643,15 +618,91 @@ namespace JsonFx.Compilation
 			string compilerOptions = GetAndRemove(directive, "CompilerOptions");
 			if (compilerOptions != null)
 			{
-				//if (!String.IsNullOrEmpty(compilerOptions) && !System.Web.HttpRuntime.HasUnmanagedPermission())
-				//{
-				//    throw new System.Web.HttpParseException(String.Format(ErrorInsufficientTrust, "CompilerOptions"), null, base.VirtualPath, this.sourceText, this.lineNumber);
-				//}
 				compilerParams.CompilerOptions = compilerOptions;
 			}
 		}
 
 		#endregion Parsing Methods
+
+		#region Type Methods
+
+		private Type GetTypeToCache(string typeName, Assembly assembly)
+		{
+			Type type = null;
+			if (assembly != null)
+			{
+				type = assembly.GetType(typeName);
+			}
+			if (type == null)
+			{
+				type = this.GetType(typeName);
+			}
+			return type;
+		}
+
+		private Type GetType(string typeName)
+		{
+			Type type = null;
+			if (CommaIndexInTypeName(typeName) > 0)// typeName contains assembly
+			{
+				try
+				{
+					type = Type.GetType(typeName, true);
+					return type;
+				}
+				catch { }
+			}
+			type = this.GetTypeFromAssemblies(base.ReferencedAssemblies, typeName, false);
+			if (type == null)
+			{
+				type = this.GetTypeFromAssemblies(this.linkedAssemblies, typeName, false);
+				if (type == null)
+				{
+					throw new HttpParseException(String.Format(ErrorCouldNotCreateType, typeName), null, base.VirtualPath, this.sourceText, this.lineNumber);
+				}
+				return type;
+			}
+			return type;
+		}
+
+		[ReflectionPermission(SecurityAction.Assert, Flags=ReflectionPermissionFlag.MemberAccess)]
+		private Type GetTypeFromAssemblies(ICollection assemblies, string typeName, bool ignoreCase)
+		{
+			if (assemblies == null)
+				return null;
+
+			Type type = null;
+			foreach (Assembly assembly in assemblies)
+			{
+				Type type2 = assembly.GetType(typeName, false, ignoreCase);
+				if (type2 != null)
+				{
+					if ((type != null) && (type2 != type))
+					{
+						throw new HttpParseException(String.Format(ErrorAmbiguousType, typeName, type.Assembly.FullName, type2.Assembly.FullName), null, base.VirtualPath, this.sourceText, this.lineNumber);
+					}
+					type = type2;
+				}
+			}
+			return type;
+		}
+
+		private static int CommaIndexInTypeName(string typeName)
+		{
+			int comma = typeName.LastIndexOf(',');
+			if (comma < 0)
+			{
+				return -1;
+			}
+			int bracket = typeName.LastIndexOf(']');
+			if (bracket > comma)
+			{
+				return -1;
+			}
+			return typeName.IndexOf(',', bracket + 1);
+		}
+
+		#endregion Type Methods
 
 		#region Dictionary Methods
 
