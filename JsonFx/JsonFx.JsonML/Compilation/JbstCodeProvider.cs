@@ -41,7 +41,7 @@ namespace JsonFx.Compilation
 	{
 		#region CompactorCodeProvider
 
-		protected override List<BuildTools.ParseException> Compact(string virtualPath, string sourceText, TextWriter writer)
+		protected override IList<BuildTools.ParseException> Compact(string virtualPath, string sourceText, TextWriter writer)
 		{
 			JbstCompiler parser = new JbstCompiler();
 			parser.Parse(sourceText);
