@@ -32,6 +32,7 @@ using System;
 using System.IO;
 using System.Text;
 using System.Web.Compilation;
+using System.Reflection;
 
 namespace JsonFx.Handlers
 {
@@ -90,6 +91,19 @@ namespace JsonFx.Handlers
 		internal static ResourceHandlerInfo GetHandlerInfo(string virtualPath)
 		{
 			return BuildManager.CreateInstanceFromVirtualPath(virtualPath, typeof(ResourceHandlerInfo)) as ResourceHandlerInfo;
+		}
+
+		public static string GetResourceString(string virtualPath, bool isDebug)
+		{
+			ResourceHandlerInfo info = ResourceHandlerInfo.GetHandlerInfo(virtualPath);
+			if (info == null)
+			{
+				return null;
+			}
+
+			string resourcePath = isDebug ? info.ResourceName : info.CompactResourceName;
+			Assembly assembly = BuildManager.GetCompiledAssembly(virtualPath);
+			return assembly.GetManifestResourceStream(resourcePath);
 		}
 
 		#endregion Methods

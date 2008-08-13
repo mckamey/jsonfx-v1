@@ -30,6 +30,7 @@
 
 using System;
 using System.IO;
+using System.Collections;
 using System.Collections.Generic;
 using System.Text;
 using System.Reflection;
@@ -65,21 +66,15 @@ namespace JsonFx.Compilation
 
 		public override void GenerateCode(AssemblyBuilder assemblyBuilder)
 		{
-			string sourceText;
-			using (TextReader reader = base.OpenReader())
-			{
-				sourceText = reader.ReadToEnd();
-			}
-
 			string resourceName = ResourceHandlerInfo.GetEmbeddedResourceName(base.VirtualPath);
 			using (Stream stream = assemblyBuilder.CreateEmbeddedResource(this, resourceName))
 			{
 				// truncate any previous contents
 				stream.SetLength(0);
 
-				using (StreamWriter writer = new StreamWriter(stream))
+				using (TextWriter writer = new StreamWriter(stream))
 				{
-					writer.Write(sourceText);
+					this.PreProcessSource(writer);
 				}
 			}
 
@@ -122,6 +117,17 @@ namespace JsonFx.Compilation
 			assemblyBuilder.GenerateTypeFactory(this.descriptorTypeName);
 		}
 
+		protected virtual void PreProcessSource(TextWriter writer)
+		{
+			string sourceText;
+			using (TextReader reader = base.OpenReader())
+			{
+				sourceText = reader.ReadToEnd();
+			}
+
+			writer.Write(sourceText);
+		}
+
 		public override CompilerType CodeCompilerType
 		{
 			get
@@ -140,6 +146,9 @@ namespace JsonFx.Compilation
 		#endregion BuildProvider Methods
 	}
 
+	/// <summary>
+	/// Base class for all build-time resource compaction implementations.
+	/// </summary>
 	public abstract class CompactorCodeProvider : Microsoft.CSharp.CSharpCodeProvider
 	{
 		#region Fields
@@ -150,6 +159,11 @@ namespace JsonFx.Compilation
 
 		#region Methods
 
+		/// <summary>
+		/// Gets a listing of all the resources which have been built
+		/// </summary>
+		/// <param name="virtualPath"></param>
+		/// <param name="resourceName"></param>
 		protected internal void AddCompactorTarget(string virtualPath, string resourceName)
 		{
 			this.sources[resourceName] = virtualPath;
@@ -159,11 +173,18 @@ namespace JsonFx.Compilation
 
 		#region CodeDomProvider Members
 
+		/// <summary>
+		/// Processes all the resources added by the BuildProvider, compacting and adding each one as another resource
+		/// </summary>
+		/// <param name="options"></param>
+		/// <param name="fileNames"></param>
+		/// <returns></returns>
 		public override CompilerResults CompileAssemblyFromFile(CompilerParameters options, params string[] fileNames)
 		{
 			List<ParseException> errors = new List<ParseException>();
 			string compactedText;
 
+			// compact each resource added by the BuildProvider
 			foreach (KeyValuePair<string, string> item in this.sources)
 			{
 				string resourceName = Path.Combine(options.TempFiles.TempDir, item.Key);
@@ -171,19 +192,27 @@ namespace JsonFx.Compilation
 
 				System.Diagnostics.Debug.Assert(File.Exists(resourceName));
 
+				// read the preprocessed resource contents
 				string sourceText = File.ReadAllText(resourceName);
 				using (StringWriter writer = new StringWriter(new StringBuilder(sourceText.Length)))
 				{
-					errors.AddRange(this.Compact(virtualPath, sourceText, writer));
+					// compact the resource
+					IList<ParseException> parseErrors = this.Compact(virtualPath, sourceText, writer);
+					if (parseErrors != null && parseErrors.Count > 0)
+					{
+						errors.AddRange(parseErrors);
+					}
 					writer.Flush();
 					compactedText = writer.ToString();
 				}
 
+				// write out compacted version to another resource
 				string compactedPath = ResourceHandlerInfo.GetCompactedResourceName(resourceName);
 				File.WriteAllText(compactedPath, compactedText);
 				options.EmbeddedResources.Add(compactedPath);
 			}
 
+			// build the assembly with the types describing which resources correspond to which paths
 			CompilerResults results = base.CompileAssemblyFromFile(options, fileNames);
 
 			foreach (ParseException ex in errors)
@@ -200,7 +229,14 @@ namespace JsonFx.Compilation
 
 		#region Compaction Methods
 
-		protected abstract List<ParseException> Compact(string virtualPath, string sourceText, TextWriter writer);
+		/// <summary>
+		/// Compacts the source.
+		/// </summary>
+		/// <param name="virtualPath"></param>
+		/// <param name="sourceText"></param>
+		/// <param name="writer"></param>
+		/// <returns></returns>
+		protected abstract IList<ParseException> Compact(string virtualPath, string sourceText, TextWriter writer);
 
 		#endregion Compaction Methods
 	}
