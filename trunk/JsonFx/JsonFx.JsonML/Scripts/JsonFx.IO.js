@@ -1,10 +1,14 @@
-/*global JsonFx, JSON */
-/*---------------------------------------------------------*\
-	JsonFx IO
-	Copyright (c)2006-2007 Stephen M. McKamey
+/*global JSON, JsonFx */
+/*
+	JsonFx.IO.js
+
+	Copyright (c)2006-2008 Stephen M. McKamey
 	Created: 2006-11-09-0120
 	Modified: 2008-05-25-2253
-\*---------------------------------------------------------*/
+
+	Distributed under the terms of an MIT-style license:
+	http://jsonfx.net/BuildTools/License.txt
+*/
 
 // dependency checks
 if ("undefined" === typeof JSON) {
@@ -115,10 +119,13 @@ JsonFx.IO = {};
 	}
 	if ("object" !== typeof options.headers) {
 		options.headers = {};
-		if (options.method === "POST" && options.params) {
-			options.headers["Content-Type"] = "application/x-www-form-urlencoded";
-		}
 	}
+	if (options.method === "POST" &&
+		options.params &&
+		!options.headers["Content-Type"]) {
+		options.headers["Content-Type"] = "application/x-www-form-urlencoded";
+	}
+
 	// prevent server from sending 304 Not-Modified response
 	// since we don't have a way to access the browser cache
 	options.headers["If-Modified-Since"] = "Sun, 1 Jan 1995 00:00:00 GMT";
@@ -175,26 +182,28 @@ JsonFx.IO = {};
 		return;
 	}
 
-	// kill off request if takes too long
-	var cancel = window.setTimeout(
-		function () {
-			if (xhr) {
-				xhr.onreadystatechange = function(){};
-				xhr.abort();
-				xhr = null;
-			}
-			if (options.onTimeout) {
-				// timeout-specific handler
-				options.onTimeout(xhr, options.context, new Error("Request Timeout"));
-			} else if (options.onFailure) {
-				// general-failure handler
-				options.onFailure(xhr, options.context, new Error("Request Timeout"));
-			}
-			if (options.onComplete) {
-				// complete
-				options.onComplete(xhr, options.context);
-			}
-		}, options.timeout);
+	if (options.timeout > 0) {
+		// kill off request if takes too long
+		var cancel = window.setTimeout(
+			function () {
+				if (xhr) {
+					xhr.onreadystatechange = function(){};
+					xhr.abort();
+					xhr = null;
+				}
+				if (options.onTimeout) {
+					// timeout-specific handler
+					options.onTimeout(xhr, options.context, new Error("Request Timeout"));
+				} else if (options.onFailure) {
+					// general-failure handler
+					options.onFailure(xhr, options.context, new Error("Request Timeout"));
+				}
+				if (options.onComplete) {
+					// complete
+					options.onComplete(xhr, options.context);
+				}
+			}, options.timeout);
+	}
 
 	function onRSC() {
 		/*
