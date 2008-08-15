@@ -79,37 +79,60 @@ namespace JsonFx.Compilation
 					continue;
 				}
 
-				if (this.sources[i].StartsWith("//"))
+				if (this.sources[i].StartsWith("//") ||
+					this.sources[i].StartsWith("#"))
 				{
 					this.sources[i] = null;
 					continue;
 				}
 
-				if (this.sources[i].IndexOf(':') >= 0)
+				if (this.sources[i].IndexOf(',') >= 0)
 				{
-					string[] resource = this.sources[i].Split(':');
-					if (resource.Length < 2)
+					this.sources[i] = this.sources[i].Replace(" ", "");
+					string[] parts = this.sources[i].Split(new char[] { ',' }, 3, StringSplitOptions.RemoveEmptyEntries);
+
+					if (parts.Length < 3 ||
+						String.IsNullOrEmpty(parts[0]) ||
+						String.IsNullOrEmpty(parts[1]) ||
+						String.IsNullOrEmpty(parts[2]))
 					{
 						this.sources[i] = null;
 						continue;
 					}
 
-					// TODO: load resource from Assembly
-					Assembly assembly = Assembly.Load(resource[1]);
-					ManifestResourceInfo info = assembly.GetManifestResourceInfo(resource[0]);
-					if (info == null)
-					{
-						this.sources[i] = null;
-						continue;
-					}
+					parts[0] = ResourceHandlerInfo.GetEmbeddedResourceName(parts[0]);
+					parts[1] = ResourceHandlerInfo.GetEmbeddedResourceName(parts[1]);
 
-					using (Stream stream = assembly.GetManifestResourceStream(resource[0]))
+					// load resources from Assembly
+					Assembly assembly = Assembly.Load(parts[2]);
+
+					ManifestResourceInfo info = assembly.GetManifestResourceInfo(parts[0]);
+					if (info != null)
 					{
-						using (StreamReader reader = new StreamReader(stream))
+						using (Stream stream = assembly.GetManifestResourceStream(parts[0]))
 						{
-							this.sources[i] = reader.ReadToEnd();
-							writer.WriteLine(this.sources[i]);
+							using (StreamReader reader = new StreamReader(stream))
+							{
+								this.sources[i] = reader.ReadToEnd();
+								writer.WriteLine(this.sources[i]);
+							}
 						}
+					}
+
+					info = assembly.GetManifestResourceInfo(parts[1]);
+					if (info != null)
+					{
+						using (Stream stream = assembly.GetManifestResourceStream(parts[1]))
+						{
+							using (StreamReader reader = new StreamReader(stream))
+							{
+								this.sources[i] = reader.ReadToEnd();
+							}
+						}
+					}
+					else
+					{
+						this.sources[i] = null;
 					}
 					continue;
 				}
