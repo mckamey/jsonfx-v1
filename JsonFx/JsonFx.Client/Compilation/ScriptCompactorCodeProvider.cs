@@ -37,11 +37,11 @@ using BuildTools.ScriptCompactor;
 
 namespace JsonFx.Compilation
 {
-	public class ScriptCompactorCodeProvider : JsonFx.Compilation.CompactorCodeProvider
+	public class ScriptCompactorCodeProvider : JsonFx.Compilation.ResourceCodeProvider
 	{
 		#region CompactorCodeProvider Methods
 
-		protected override IList<BuildTools.ParseException> Compact(string virtualPath, string sourceText, TextWriter writer)
+		protected override IList<BuildTools.ParseException> Compact(ResourceBuildHelper helper, string virtualPath, string sourceText, TextWriter writer)
 		{
 			return ScriptCompactor.Compact(virtualPath, sourceText, writer, null, null, ScriptCompactor.Options.None);
 		}

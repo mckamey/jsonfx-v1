@@ -32,9 +32,11 @@ using System;
 using System.Collections.Generic;
 using System.Reflection;
 
+using JsonFx.Compilation;
+
 namespace JsonFx.JsonRpc
 {
-	public abstract class JsonServiceInfo
+	public abstract class JsonServiceInfo : CompiledBuildResult
 	{
 		#region JsonServiceInfo Properties
 
@@ -108,5 +110,14 @@ namespace JsonFx.JsonRpc
 		}
 
 		#endregion Static Methods
+
+		#region CompiledBuildResult Members
+
+		string CompiledBuildResult.GetBuildResult(bool prettyPrint)
+		{
+			return prettyPrint ? this.DebugProxy : this.Proxy;
+		}
+
+		#endregion CompiledBuildResult Members
 	}
 }

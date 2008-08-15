@@ -50,9 +50,13 @@
     <Compile Include="Compilation\CompactorBuildProvider.cs">
       <SubType>Component</SubType>
     </Compile>
+    <Compile Include="Compilation\MergeResourceCodeProvider.cs">
+      <SubType>Component</SubType>
+    </Compile>
     <Compile Include="Compilation\CssCompactorCodeProvider.cs">
       <SubType>Component</SubType>
     </Compile>
+    <Compile Include="Handlers\MergeResourceHandler.cs" />
     <Compile Include="Handlers\CssHandler.cs" />
     <Compile Include="Handlers\ETag.cs" />
     <Compile Include="Handlers\JsonFxScriptHandler.cs" />
