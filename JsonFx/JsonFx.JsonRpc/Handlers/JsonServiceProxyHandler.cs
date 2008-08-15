@@ -65,7 +65,7 @@ namespace JsonFx.Handlers
 
 		void IHttpHandler.ProcessRequest(HttpContext context)
 		{
-			bool isDebug = "debug".Equals(context.Request.QueryString[null], StringComparison.InvariantCultureIgnoreCase);
+			bool prettyPrint = "debug".Equals(context.Request.QueryString[null], StringComparison.InvariantCultureIgnoreCase);
 
 			context.Response.Clear();
 			context.Response.BufferOutput = true;
@@ -74,7 +74,7 @@ namespace JsonFx.Handlers
 			ETag etag = new EmbeddedResourceETag(// should this be StringETag?
 				this.serviceInfo.ServiceType.Assembly,
 				this.serviceInfo.ServiceType.FullName);
-			if (!etag.HandleETag(context, HttpCacheability.ServerAndPrivate, isDebug))
+			if (!etag.HandleETag(context, HttpCacheability.ServerAndPrivate, prettyPrint))
 			{
 				context.Response.ContentEncoding = System.Text.Encoding.UTF8;
 				context.Response.ContentType = "application/javascript";
@@ -83,24 +83,18 @@ namespace JsonFx.Handlers
 					"Content-Disposition",
 					String.Format("inline;filename={0}.js", this.serviceInfo.ServiceType.FullName));
 
-				string proxyScript = isDebug ? this.serviceInfo.DebugProxy :  this.serviceInfo.Proxy;
+				string proxyScript = prettyPrint ? this.serviceInfo.DebugProxy :  this.serviceInfo.Proxy;
 				if (String.IsNullOrEmpty(proxyScript))
 				{
 					// if wasn't generated, generate on the fly with reflection
 					JsonServiceDescription desc = new JsonServiceDescription(this.serviceInfo.ServiceType, this.serviceUrl);
 					JsonServiceProxyGenerator proxy = new JsonServiceProxyGenerator(desc);
-					proxy.OutputProxy(context.Response.Output, isDebug);
+					proxy.OutputProxy(context.Response.Output, prettyPrint);
 				}
 				else
 				{
 					// use generated code
 					context.Response.Output.Write(proxyScript);
-				}
-				context.Response.Output.Write(this.serviceUrl);
-				context.Response.Output.Write(JsonServiceProxyGenerator.ProxyEnd);
-				if (isDebug)
-				{
-					context.Response.Output.WriteLine();
 				}
 			}
 		}
