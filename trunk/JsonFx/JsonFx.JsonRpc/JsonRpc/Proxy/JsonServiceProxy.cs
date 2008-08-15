@@ -86,45 +86,47 @@ namespace JsonFx.JsonRpc.Proxy
 			get { return this.proxyNamespace; }
 		}
 
-		internal const string ProxyEnd = "\");";
-
 		#endregion Properties
 
 		#region Public Methods
 
-		public string OutputProxy(bool isDebug)
+		public string OutputProxy(bool prettyPrint)
 		{
 			System.Text.StringBuilder builder = new System.Text.StringBuilder();
-			this.OutputProxy(builder, isDebug);
+			this.OutputProxy(builder, prettyPrint);
 			return builder.ToString();
 		}
 
-		public void OutputProxy(System.Text.StringBuilder builder, bool isDebug)
+		public void OutputProxy(System.Text.StringBuilder builder, bool prettyPrint)
 		{
 			using (TextWriter writer = new StringWriter(builder, System.Globalization.CultureInfo.InvariantCulture))
 			{
-				this.OutputProxy(writer, isDebug);
+				this.OutputProxy(writer, prettyPrint);
 			}
 		}
 
-		public void OutputProxy(Stream output, bool isDebug)
+		public void OutputProxy(Stream output, bool prettyPrint)
 		{
 			using (TextWriter writer = new StreamWriter(output, System.Text.Encoding.UTF8))
 			{
-				this.OutputProxy(writer, isDebug);
+				this.OutputProxy(writer, prettyPrint);
 			}
 		}
 
-		public void OutputProxy(TextWriter writer, bool isDebug)
+		public void OutputProxy(TextWriter writer, bool prettyPrint)
 		{
 			lock (this.SyncLock)
 			{
 				// locking because channging Formatter based upon debug switch
 
-				if (isDebug)
+				if (prettyPrint)
+				{
 					this.formatter = new DebugJsonServiceProxyFormat();
+				}
 				else
+				{
 					this.formatter = new CompactJsonServiceProxyFormat();
+				}
 
 				this.WriteNamespaces(writer);
 
@@ -151,7 +153,7 @@ namespace JsonFx.JsonRpc.Proxy
 
 				writer.Write(this.formatter.ClassEnd);
 
-				writer.Write(this.formatter.ProxyInstanceFormat, this.ProxyNamespace, this.Service.Name);
+				writer.Write(this.formatter.ProxyInstantiation, this.ProxyNamespace, this.Service.Name);
 			}
 		}
 
@@ -272,9 +274,7 @@ namespace JsonFx.JsonRpc.Proxy
 
 		internal abstract string ClassEnd { get; }
 
-		internal abstract string ProxyInstanceFormat { get; }
-
-		//internal abstract string ProxyEnd { get; }
+		internal abstract string ProxyInstantiation { get; }
 
 		internal abstract string PropertyFormat { get; }
 
@@ -322,9 +322,9 @@ namespace JsonFx.JsonRpc.Proxy
 			get { return "}"; }
 		}
 
-		internal override string ProxyInstanceFormat
+		internal override string ProxyInstantiation
 		{
-			get { return "{0}{1}=new {0}{1}(\""; }
+			get { return "{0}{1}=new {0}{1}();"; }
 		}
 
 		internal override string PropertyFormat
@@ -389,9 +389,9 @@ namespace JsonFx.JsonRpc.Proxy
 			get { return "}\r\n"; }
 		}
 
-		internal override string ProxyInstanceFormat
+		internal override string ProxyInstantiation
 		{
-			get { return "/* create singleton instance destroying the ctor */\r\n/*{0}{1}*/ {0}{1} = new {0}{1}(\""; }
+			get { return "/* create singleton instance destroying the ctor */\r\n/*{0}{1}*/ {0}{1} = new {0}{1}();"; }
 		}
 
 		internal override string PropertyFormat
