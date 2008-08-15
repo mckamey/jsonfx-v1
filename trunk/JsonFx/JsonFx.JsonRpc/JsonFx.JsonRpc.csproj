@@ -38,6 +38,10 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\JsonFx.Client\JsonFx.Client.csproj">
+      <Project>{5A84EB39-D30B-4085-8365-E1C05590F3BF}</Project>
+      <Name>JsonFx.Client</Name>
+    </ProjectReference>
     <ProjectReference Include="..\JsonFx.Json\JsonFx.Json.csproj">
       <Project>{ABA23F14-7E47-43FE-A3E7-1FF97840C3FB}</Project>
       <Name>JsonFx.Json</Name>

@@ -34,9 +34,11 @@ using System.Text;
 using System.Web.Compilation;
 using System.Reflection;
 
+using JsonFx.Compilation;
+
 namespace JsonFx.Handlers
 {
-	public abstract class ResourceHandlerInfo
+	public abstract class ResourceHandlerInfo : CompiledBuildResult
 	{
 		#region Constants
 
@@ -93,19 +95,20 @@ namespace JsonFx.Handlers
 			return BuildManager.CreateInstanceFromVirtualPath(virtualPath, typeof(ResourceHandlerInfo)) as ResourceHandlerInfo;
 		}
 
-		public static string GetResourceString(string virtualPath, bool isDebug)
-		{
-			ResourceHandlerInfo info = ResourceHandlerInfo.GetHandlerInfo(virtualPath);
-			if (info == null)
-			{
-				return null;
-			}
+		#endregion Methods
 
-			string resourcePath = isDebug ? info.ResourceName : info.CompactResourceName;
-			Assembly assembly = BuildManager.GetCompiledAssembly(virtualPath);
-			return assembly.GetManifestResourceStream(resourcePath);
+		#region CompiledBuildResult Members
+
+		string CompiledBuildResult.GetBuildResult(bool prettyPrint)
+		{
+			string resourcePath = prettyPrint ? this.ResourceName : this.CompactResourceName;
+			Assembly assembly = this.GetType().Assembly;
+			using (TextReader reader = new StreamReader(assembly.GetManifestResourceStream(resourcePath)))
+			{
+				return reader.ReadToEnd();
+			}
 		}
 
-		#endregion Methods
+		#endregion CompiledBuildResult Members
 	}
 }

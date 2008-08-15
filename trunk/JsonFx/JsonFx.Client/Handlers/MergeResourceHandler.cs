@@ -29,43 +29,23 @@
 #endregion License
 
 using System;
-using System.IO;
-using System.Collections.Generic;
-using System.Web.Compilation;
 
-using JsonFx.JsonML.BST;
-
-namespace JsonFx.Compilation
+namespace JsonFx.Handlers
 {
-	public class JbstCodeProvider : JsonFx.Compilation.ResourceCodeProvider
+	public class MergeResourceHandler : JsonFx.Handlers.ResourceHandler
 	{
-		#region Fields
+		#region Properties
 
-		private string source = null;
-		private string jsonp = null;
-
-		#endregion Fields
-
-		#region CompactorCodeProvider
-
-		protected override IList<BuildTools.ParseException> PreProcess(ResourceBuildHelper helper, string virtualPath, string sourceText, StringWriter writer)
+		protected override string ResourceContentType
 		{
-			this.source = sourceText;
-
-			JbstCompiler parser = new JbstCompiler();
-			parser.Parse(this.source);
-			parser.Render(writer, true);
-			return parser.Errors;
+			get { return "text/plain"; }
 		}
 
-		protected override IList<BuildTools.ParseException> Compact(ResourceBuildHelper helper, string virtualPath, string sourceText, TextWriter writer)
+		protected override string  ResourceExtension
 		{
-			JbstCompiler parser = new JbstCompiler();
-			parser.Parse(this.source);
-			parser.Render(writer, false);
-			return parser.Errors;
+			get { return ".txt"; }
 		}
 
-		#endregion CompactorCodeProvider
+		#endregion Properties
 	}
 }

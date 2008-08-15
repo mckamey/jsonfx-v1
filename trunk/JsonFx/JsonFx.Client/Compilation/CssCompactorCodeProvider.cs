@@ -37,11 +37,11 @@ using BuildTools.CssCompactor;
 
 namespace JsonFx.Compilation
 {
-	public class CssCompactorCodeProvider : JsonFx.Compilation.CompactorCodeProvider
+	public class CssCompactorCodeProvider : JsonFx.Compilation.ResourceCodeProvider
 	{
 		#region CompactorCodeProvider Members
 
-		protected override IList<ParseException> Compact(string virtualPath, string sourceText, TextWriter writer)
+		protected override IList<ParseException> Compact(ResourceBuildHelper helper, string virtualPath, string sourceText, TextWriter writer)
 		{
 			return CssCompactor.Compact(virtualPath, sourceText, writer, null, null, CssCompactor.Options.None);
 		}

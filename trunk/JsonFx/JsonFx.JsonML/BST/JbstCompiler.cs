@@ -353,10 +353,17 @@ namespace JsonFx.JsonML.BST
 
 		#region Render Methods
 
-		public void RenderControls(TextWriter writer)
+		public void Render(TextWriter writer)
+		{
+			this.Render(writer, false);
+		}
+
+		public void Render(TextWriter writer, bool prettyPrint)
 		{
 			using (JsonFx.Json.JsonWriter jw = new JsonFx.Json.JsonWriter(writer))
 			{
+				jw.PrettyPrint = prettyPrint;
+
 				IJbstControl control = null;
 				foreach (IJbstControl child in this.document.ChildControls)
 				{
