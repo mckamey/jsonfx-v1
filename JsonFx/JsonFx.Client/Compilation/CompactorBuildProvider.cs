@@ -60,7 +60,7 @@ namespace JsonFx.Compilation
 	/// </summary>
 	[BuildProviderAppliesTo(BuildProviderAppliesTo.Web)]
 	[PermissionSet(SecurityAction.Demand, Unrestricted=true)]
-	public class CompactorBuildProvider : System.Web.Compilation.BuildProvider, ResourceBuildHelper
+	public class ResourceBuildProvider : System.Web.Compilation.BuildProvider, ResourceBuildHelper
 	{
 		#region Fields
 
@@ -116,7 +116,7 @@ namespace JsonFx.Compilation
 			ResourceCodeProvider provider = assemblyBuilder.CodeDomProvider as ResourceCodeProvider;
 			if (provider != null)
 			{
-				provider.AddCompactorTarget(base.VirtualPath, resourceName, sourceText, this);
+				provider.AddResourceTarget(base.VirtualPath, resourceName, sourceText, this);
 			}
 
 			// generate a static class
@@ -261,7 +261,7 @@ namespace JsonFx.Compilation
 		/// <param name="virtualPath"></param>
 		/// <param name="resourceName"></param>
 		/// <param name="sourceText"></param>
-		protected internal void AddCompactorTarget(
+		protected internal void AddResourceTarget(
 			string virtualPath,
 			string resourceName,
 			string sourceText,

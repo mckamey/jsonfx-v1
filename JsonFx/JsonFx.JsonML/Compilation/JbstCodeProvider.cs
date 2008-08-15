@@ -46,7 +46,7 @@ namespace JsonFx.Compilation
 
 		#endregion Fields
 
-		#region CompactorCodeProvider
+		#region ResourceCodeProvider
 
 		protected override IList<BuildTools.ParseException> PreProcess(ResourceBuildHelper helper, string virtualPath, string sourceText, StringWriter writer)
 		{
@@ -66,6 +66,6 @@ namespace JsonFx.Compilation
 			return parser.Errors;
 		}
 
-		#endregion CompactorCodeProvider
+		#endregion ResourceCodeProvider
 	}
 }
