@@ -63,7 +63,7 @@ if ("undefined" === typeof JsonFx) {
 /* namespace JsonFx.IO */
 JsonFx.IO = {};
 
-/*bool*/ JsonFx.IO.hasAjax = !!(new XMLHttpRequest());
+/*bool*/ JsonFx.IO.hasAjax = !!new XMLHttpRequest();
 
 /*
 	RequestOptions = {
@@ -182,9 +182,10 @@ JsonFx.IO = {};
 		return;
 	}
 
+	var cancel;
 	if (options.timeout > 0) {
 		// kill off request if takes too long
-		var cancel = window.setTimeout(
+		cancel = window.setTimeout(
 			function () {
 				if (xhr) {
 					xhr.onreadystatechange = function(){};
