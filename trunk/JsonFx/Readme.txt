@@ -6,7 +6,7 @@ v1.0.706.xxxx:
 - added ETag support
 
 v1.0.705.1916:
-- Fixed bug where CompactorCodeProvider was being reused and resources were experiencing collisions
+- Fixed bug where ResourceCodeProvider was being reused and resources were experiencing collisions
 
 v1.0.705.1608:
 - Fixed bug where BuildManager fails when resources aren't prebuilt

@@ -37,6 +37,16 @@ namespace JsonFx.Handlers
 {
 	public class JsonFxScriptHandler : ClientScriptHandler
 	{
+		#region Constants
+
+		// full source scripts: good for dev and debugging
+		private const string ScriptPath = "JsonFx.Scripts.";
+
+		// compacted scripts: better for distribution and speed
+		private const string CompactedScriptPath = "JsonFx.Scripts.Compacted.";
+
+		#endregion Constants
+
 		#region Handler Members
 
 		protected override Stream GetResourceStream(HttpContext context, bool isDebug)
@@ -47,7 +57,7 @@ namespace JsonFx.Handlers
 			}
 
 			string virtualPath = context.Request.FilePath;
-			string resourcePath = isDebug ? ClientScriptHandler.ScriptPath : ClientScriptHandler.CompactedScriptPath;
+			string resourcePath = isDebug ? JsonFxScriptHandler.ScriptPath : JsonFxScriptHandler.CompactedScriptPath;
 			resourcePath += Path.GetFileNameWithoutExtension(virtualPath)+this.ResourceExtension;
 
 			Assembly assembly = Assembly.GetAssembly(typeof(ClientScriptHandler));
