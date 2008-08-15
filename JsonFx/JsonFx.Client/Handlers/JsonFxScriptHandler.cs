@@ -35,7 +35,7 @@ using System.Web;
 
 namespace JsonFx.Handlers
 {
-	public class JsonFxScriptHandler : ClientScriptHandler
+	public class JsonFxScriptHandler : ScriptResourceHandler
 	{
 		#region Constants
 
@@ -60,7 +60,7 @@ namespace JsonFx.Handlers
 			string resourcePath = isDebug ? JsonFxScriptHandler.ScriptPath : JsonFxScriptHandler.CompactedScriptPath;
 			resourcePath += Path.GetFileNameWithoutExtension(virtualPath)+this.ResourceExtension;
 
-			Assembly assembly = Assembly.GetAssembly(typeof(ClientScriptHandler));
+			Assembly assembly = Assembly.GetAssembly(typeof(JsonFxScriptHandler));
 			ManifestResourceInfo info = assembly.GetManifestResourceInfo(resourcePath);
 			if (info == null)
 			{

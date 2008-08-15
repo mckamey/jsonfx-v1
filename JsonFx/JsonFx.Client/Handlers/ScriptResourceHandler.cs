@@ -35,7 +35,7 @@ using System.Web;
 
 namespace JsonFx.Handlers
 {
-	public class ClientScriptHandler : ResourceHandler
+	public class ScriptResourceHandler : ResourceHandler
 	{
 		#region Properties
 

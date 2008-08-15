@@ -32,7 +32,7 @@ using System;
 
 namespace JsonFx.Handlers
 {
-	public class CssHandler : JsonFx.Handlers.ResourceHandler
+	public class CssResourceHandler : JsonFx.Handlers.ResourceHandler
 	{
 		#region Properties
 
