@@ -47,13 +47,16 @@
     <Reference Include="System.Web" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Compilation\CompactorBuildProvider.cs">
+    <Compile Include="Compilation\CssResourceCodeProvider.cs">
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="Compilation\MergeResourceCodeProvider.cs">
       <SubType>Component</SubType>
     </Compile>
-    <Compile Include="Compilation\CssCompactorCodeProvider.cs">
+    <Compile Include="Compilation\ResourceBuildProvider.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="Compilation\ScriptResourceCodeProvider.cs">
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="Handlers\MergeResourceHandler.cs" />
@@ -64,9 +67,6 @@
     <Compile Include="Handlers\ResourceHandlerInfo.cs" />
     <Compile Include="Handlers\ResourceHandler.cs" />
     <Compile Include="Properties\AssemblyVersion.cs" />
-    <Compile Include="Compilation\ScriptCompactorCodeProvider.cs">
-      <SubType>Component</SubType>
-    </Compile>
     <Compile Include="Handlers\ClientScriptHandler.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
