@@ -50,6 +50,8 @@ namespace JsonFx.Compilation
 
 		protected override IList<BuildTools.ParseException> PreProcess(ResourceBuildHelper helper, string virtualPath, string sourceText, StringWriter writer)
 		{
+			// TODO: add declaration and parse for JSONP or variable assignment?
+
 			this.source = sourceText;
 
 			JbstCompiler parser = new JbstCompiler();
