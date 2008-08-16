@@ -41,7 +41,7 @@ namespace JsonFx.Compilation
 	{
 		#region ResourceCodeProvider Members
 
-		protected override IList<ParseException> Compact(ResourceBuildHelper helper, string virtualPath, string sourceText, TextWriter writer)
+		protected internal override IList<ParseException> Compact(ResourceBuildHelper helper, string virtualPath, string sourceText, TextWriter writer)
 		{
 			return CssCompactor.Compact(virtualPath, sourceText, writer, null, null, CssCompactor.Options.None);
 		}
