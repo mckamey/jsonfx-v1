@@ -45,7 +45,7 @@ using JsonFx.Handlers;
 
 namespace JsonFx.Compilation
 {
-	public interface ResourceBuildHelper
+	public interface IResourceBuildHelper
 	{
 		void AddVirtualPathDependency(string virtualPath);
 		void AddAssemblyDependency(Assembly assembly);
@@ -61,7 +61,7 @@ namespace JsonFx.Compilation
 	/// </summary>
 	[BuildProviderAppliesTo(BuildProviderAppliesTo.Web)]
 	[PermissionSet(SecurityAction.Demand, Unrestricted=true)]
-	public class ResourceBuildProvider : System.Web.Compilation.BuildProvider, ResourceBuildHelper
+	public class ResourceBuildProvider : System.Web.Compilation.BuildProvider, IResourceBuildHelper
 	{
 		#region Fields
 
@@ -226,7 +226,7 @@ namespace JsonFx.Compilation
 
 		#region ResourceBuildHelper Members
 
-		void ResourceBuildHelper.AddVirtualPathDependency(string virtualPath)
+		void IResourceBuildHelper.AddVirtualPathDependency(string virtualPath)
 		{
 			if (this.pathDependencies == null)
 			{
@@ -237,7 +237,7 @@ namespace JsonFx.Compilation
 			this.pathDependencies.Add(virtualPath);
 		}
 
-		void ResourceBuildHelper.AddAssemblyDependency(Assembly assembly)
+		void IResourceBuildHelper.AddAssemblyDependency(Assembly assembly)
 		{
 			if (this.assemblyDependencies == null)
 			{
@@ -251,12 +251,12 @@ namespace JsonFx.Compilation
 			this.assemblyDependencies.Add(assembly);
 		}
 
-		TextReader ResourceBuildHelper.OpenReader(string virtualPath)
+		TextReader IResourceBuildHelper.OpenReader(string virtualPath)
 		{
 			return this.OpenReader(virtualPath);
 		}
 
-		CompilerType ResourceBuildHelper.GetDefaultCompilerTypeForLanguage(string language)
+		CompilerType IResourceBuildHelper.GetDefaultCompilerTypeForLanguage(string language)
 		{
 			return this.GetDefaultCompilerTypeForLanguage(language);
 		}
@@ -296,7 +296,7 @@ namespace JsonFx.Compilation
 		#region Methods
 
 		protected internal List<ParseException> CompileResource(
-			ResourceBuildHelper helper,
+			IResourceBuildHelper helper,
 			string virtualPath,
 			out string preProcessed,
 			out string compacted)
@@ -360,7 +360,7 @@ namespace JsonFx.Compilation
 		/// <param name="writer"></param>
 		/// <returns>Errors</returns>
 		protected internal virtual IList<ParseException> PreProcess(
-			ResourceBuildHelper helper,
+			IResourceBuildHelper helper,
 			string virtualPath,
 			string sourceText,
 			TextWriter writer)
@@ -378,7 +378,7 @@ namespace JsonFx.Compilation
 		/// <param name="writer"></param>
 		/// <returns>Errors</returns>
 		protected internal abstract IList<ParseException> Compact(
-			ResourceBuildHelper helper,
+			IResourceBuildHelper helper,
 			string virtualPath,
 			string sourceText,
 			TextWriter writer);

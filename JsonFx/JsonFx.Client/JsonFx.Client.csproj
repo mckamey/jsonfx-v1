@@ -62,7 +62,7 @@
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="Handlers\ETag.cs" />
-    <Compile Include="Handlers\ResourceHandlerInfo.cs" />
+    <Compile Include="Handlers\CompiledBuildResult.cs" />
     <Compile Include="Handlers\ResourceHandler.cs" />
     <Compile Include="Properties\AssemblyVersion.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

@@ -61,7 +61,7 @@ namespace JsonFx.Compilation
 		}
 
 		protected override IList<BuildTools.ParseException> PreProcess(
-			ResourceBuildHelper helper,
+			IResourceBuildHelper helper,
 			string virtualPath,
 			string sourceText,
 			TextWriter writer)
@@ -93,7 +93,7 @@ namespace JsonFx.Compilation
 		}
 
 		protected override IList<BuildTools.ParseException> Compact(
-			ResourceBuildHelper helper,
+			IResourceBuildHelper helper,
 			string virtualPath,
 			string sourceText,
 			TextWriter writer)
