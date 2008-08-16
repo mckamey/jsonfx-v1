@@ -50,6 +50,16 @@ namespace JsonFx.Compilation
 
 		#region ResourceCodeProvider
 
+		public override string ContentType
+		{
+			get { return "text/javascript"; }
+		}
+
+		public override string FileExtension
+		{
+			get { return "js"; }
+		}
+
 		protected override IList<BuildTools.ParseException> PreProcess(
 			ResourceBuildHelper helper,
 			string virtualPath,

@@ -113,10 +113,16 @@ namespace JsonFx.Compilation
 			}
 
 			string resourceName = ResourceHandlerInfo.GetEmbeddedResourceName(base.VirtualPath);
+			string compactResourceName = ResourceHandlerInfo.GetCompactedResourceName(resourceName);
+			string fileExtension = (assemblyBuilder.CodeDomProvider != null) ?
+				assemblyBuilder.CodeDomProvider.FileExtension :
+				".txt";
 
+			string contentType = "text/plain";
 			ResourceCodeProvider provider = assemblyBuilder.CodeDomProvider as ResourceCodeProvider;
 			if (provider != null)
 			{
+				contentType = provider.ContentType;
 				provider.AddResourceTarget(base.VirtualPath, resourceName, sourceText, this);
 			}
 
@@ -134,16 +140,58 @@ namespace JsonFx.Compilation
 			#region ResourceHandlerInfo.ResourceName
 
 			// add a readonly property with the resource name
-			CodeMemberProperty resourceProp = new CodeMemberProperty();
-			resourceProp.Name = "ResourceName";
-			resourceProp.Type = new CodeTypeReference(typeof(String));
-			resourceProp.Attributes = MemberAttributes.Public|MemberAttributes.Override;
-			resourceProp.HasGet = true;
+			CodeMemberProperty property = new CodeMemberProperty();
+			property.Name = "ResourceName";
+			property.Type = new CodeTypeReference(typeof(String));
+			property.Attributes = MemberAttributes.Public|MemberAttributes.Override;
+			property.HasGet = true;
 			// get { return resourceName; }
-			resourceProp.GetStatements.Add(new CodeMethodReturnStatement(new CodePrimitiveExpression(resourceName)));
-			descriptorType.Members.Add(resourceProp);
+			property.GetStatements.Add(new CodeMethodReturnStatement(new CodePrimitiveExpression(resourceName)));
+			descriptorType.Members.Add(property);
 
 			#endregion ResourceHandlerInfo.ResourceName
+
+			#region ResourceHandlerInfo.CompactResourceName
+
+			// add a readonly property with the compacted resource name
+			property = new CodeMemberProperty();
+			property.Name = "CompactResourceName";
+			property.Type = new CodeTypeReference(typeof(String));
+			property.Attributes = MemberAttributes.Public|MemberAttributes.Override;
+			property.HasGet = true;
+			// get { return compactResourceName; }
+			property.GetStatements.Add(new CodeMethodReturnStatement(new CodePrimitiveExpression(compactResourceName)));
+			descriptorType.Members.Add(property);
+
+			#endregion ResourceHandlerInfo.CompactResourceName
+
+			#region ResourceHandlerInfo.ContentType
+
+			// add a readonly property with the MIME type
+			property = new CodeMemberProperty();
+			property.Name = "ContentType";
+			property.Type = new CodeTypeReference(typeof(String));
+			property.Attributes = MemberAttributes.Public|MemberAttributes.Override;
+			property.HasGet = true;
+			// get { return contentType; }
+			property.GetStatements.Add(new CodeMethodReturnStatement(new CodePrimitiveExpression(contentType)));
+			descriptorType.Members.Add(property);
+
+			#endregion ResourceHandlerInfo.ContentType
+
+			#region ResourceHandlerInfo.FileExtension
+
+			// add a readonly property with the MIME type
+			property = new CodeMemberProperty();
+			property.Name = "FileExtension";
+			property.Type = new CodeTypeReference(typeof(String));
+			property.Attributes = MemberAttributes.Public|MemberAttributes.Override;
+			property.HasGet = true;
+			// get { return fileExtension; }
+			property.GetStatements.Add(new CodeMethodReturnStatement(new CodePrimitiveExpression(fileExtension)));
+			descriptorType.Members.Add(property);
+
+			#endregion ResourceHandlerInfo.FileExtension
 
 			assemblyBuilder.AddCodeCompileUnit(this, generatedUnit);
 
@@ -258,6 +306,23 @@ namespace JsonFx.Compilation
 		private List<ResourceData> sources = new List<ResourceData>();
 
 		#endregion Fields
+
+		#region Properties
+
+		/// <summary>
+		/// Gets the MIME type of the output.
+		/// </summary>
+		public abstract string ContentType { get; }
+
+		/// <summary>
+		/// Gets the file extension of the output.
+		/// </summary>
+		public override string FileExtension
+		{
+			get { return base.FileExtension; }
+		}
+
+		#endregion Properties
 
 		#region Methods
 

@@ -37,20 +37,13 @@ using System.Web.Compilation;
 
 namespace JsonFx.Handlers
 {
-	public abstract class ResourceHandler : IHttpHandler
+	public class ResourceHandler : IHttpHandler
 	{
 		#region Constants
 
-		private const int BufferSize = 1024;
+		private const int BufferSize = 4096;
 
 		#endregion Constants
-
-		#region Properties
-
-		protected abstract string ResourceContentType { get; }
-		protected abstract string ResourceExtension { get; }
-
-		#endregion Properties
 
 		#region IHttpHandler Members
 
@@ -62,15 +55,16 @@ namespace JsonFx.Handlers
 			context.Response.BufferOutput = true;
 
 			// specifying "DEBUG" in the query string gets the non-compacted form
-			Stream input = this.GetResourceStream(context, isDebug);
+			ResourceHandlerInfo info;
+			Stream input = this.GetResourceStream(context, isDebug, out info);
 			if (input != Stream.Null)
 			{
 				context.Response.ContentEncoding = System.Text.Encoding.UTF8;
-				context.Response.ContentType = this.ResourceContentType;
+				context.Response.ContentType = info.ContentType;
 
 				context.Response.AppendHeader(
 					"Content-Disposition",
-					"inline;filename="+Path.GetFileNameWithoutExtension(context.Request.FilePath)+this.ResourceExtension);
+					"inline;filename="+Path.GetFileNameWithoutExtension(context.Request.FilePath)+'.'+info.FileExtension);
 
 				if (isDebug)
 				{
@@ -109,10 +103,10 @@ namespace JsonFx.Handlers
 		/// <param name="context"></param>
 		/// <param name="isDebug"></param>
 		/// <returns></returns>
-		protected virtual Stream GetResourceStream(HttpContext context, bool isDebug)
+		protected virtual Stream GetResourceStream(HttpContext context, bool isDebug, out ResourceHandlerInfo info)
 		{
 			string virtualPath = context.Request.AppRelativeCurrentExecutionFilePath;
-			ResourceHandlerInfo info = ResourceHandlerInfo.GetHandlerInfo(virtualPath);
+			info = ResourceHandlerInfo.GetHandlerInfo(virtualPath);
 			if (info == null)
 			{
 				return null;

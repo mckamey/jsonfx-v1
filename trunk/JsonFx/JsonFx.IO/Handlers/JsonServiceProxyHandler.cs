@@ -77,11 +77,11 @@ namespace JsonFx.Handlers
 			if (!etag.HandleETag(context, HttpCacheability.ServerAndPrivate, prettyPrint))
 			{
 				context.Response.ContentEncoding = System.Text.Encoding.UTF8;
-				context.Response.ContentType = "application/javascript";
+				context.Response.ContentType = this.serviceInfo.ContentType;
 
 				context.Response.AppendHeader(
 					"Content-Disposition",
-					String.Format("inline;filename={0}.js", this.serviceInfo.ServiceType.FullName));
+					"inline;filename="+this.serviceInfo.ServiceType.FullName+'.'+this.serviceInfo.FileExtension);
 
 				string proxyScript = prettyPrint ? this.serviceInfo.DebugProxy :  this.serviceInfo.Proxy;
 				if (String.IsNullOrEmpty(proxyScript))

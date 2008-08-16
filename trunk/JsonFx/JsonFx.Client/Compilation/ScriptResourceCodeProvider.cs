@@ -41,6 +41,16 @@ namespace JsonFx.Compilation
 	{
 		#region ResourceCodeProvider Methods
 
+		public override string ContentType
+		{
+			get { return "text/javascript"; }
+		}
+
+		public override string FileExtension
+		{
+			get { return "js"; }
+		}
+
 		protected internal override IList<BuildTools.ParseException> Compact(ResourceBuildHelper helper, string virtualPath, string sourceText, TextWriter writer)
 		{
 			return ScriptCompactor.Compact(virtualPath, sourceText, writer, null, null, ScriptCompactor.Options.None);
