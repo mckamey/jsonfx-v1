@@ -45,17 +45,6 @@ namespace JsonFx.Handlers
 
 		#endregion Constants
 
-		#region Init
-
-		/// <summary>
-		/// Ctor
-		/// </summary>
-		protected ResourceHandler()
-		{
-		}
-
-		#endregion Init
-
 		#region Properties
 
 		protected abstract string ResourceContentType { get; }
