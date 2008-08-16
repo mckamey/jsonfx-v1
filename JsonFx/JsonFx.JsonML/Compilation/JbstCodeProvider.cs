@@ -122,6 +122,10 @@ namespace JsonFx.Compilation
 			{
 				writer.Write(");");
 			}
+			if (prettyPrint)
+			{
+				writer.WriteLine();
+			}
 		}
 
 		private string ParseDirective(string sourceText, string virtualPath)
