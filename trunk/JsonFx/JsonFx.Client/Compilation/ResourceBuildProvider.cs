@@ -50,6 +50,7 @@ namespace JsonFx.Compilation
 		void AddVirtualPathDependency(string virtualPath);
 		void AddAssemblyDependency(Assembly assembly);
 		TextReader OpenReader(string virtualPath);
+		CompilerType GetDefaultCompilerTypeForLanguage(string language);
 	}
 
 	/// <summary>
@@ -199,6 +200,11 @@ namespace JsonFx.Compilation
 		TextReader ResourceBuildHelper.OpenReader(string virtualPath)
 		{
 			return this.OpenReader(virtualPath);
+		}
+
+		CompilerType ResourceBuildHelper.GetDefaultCompilerTypeForLanguage(string language)
+		{
+			return this.GetDefaultCompilerTypeForLanguage(language);
 		}
 
 		#endregion ResourceBuildHelper Members
@@ -376,7 +382,7 @@ namespace JsonFx.Compilation
 		/// <param name="sourceText"></param>
 		/// <param name="writer"></param>
 		/// <returns>Errors</returns>
-		protected virtual IList<ParseException> PreProcess(ResourceBuildHelper helper, string virtualPath, string sourceText, StringWriter writer)
+		protected internal virtual IList<ParseException> PreProcess(ResourceBuildHelper helper, string virtualPath, string sourceText, StringWriter writer)
 		{
 			writer.Write(sourceText);
 
@@ -390,7 +396,7 @@ namespace JsonFx.Compilation
 		/// <param name="sourceText"></param>
 		/// <param name="writer"></param>
 		/// <returns>Errors</returns>
-		protected abstract IList<ParseException> Compact(ResourceBuildHelper helper, string virtualPath, string sourceText, TextWriter writer);
+		protected internal abstract IList<ParseException> Compact(ResourceBuildHelper helper, string virtualPath, string sourceText, TextWriter writer);
 
 		#endregion Compaction Methods
 	}

@@ -33,6 +33,7 @@ using System.IO;
 using System.Collections;
 using System.Collections.Generic;
 using System.Web.Compilation;
+using System.CodeDom.Compiler;
 using System.Reflection;
 
 using BuildTools;
@@ -61,7 +62,7 @@ namespace JsonFx.Compilation
 
 		#region ResourceCodeProvider Members
 
-		protected override IList<ParseException> PreProcess(ResourceBuildHelper helper, string virtualPath, string sourceText, StringWriter writer)
+		protected internal override IList<ParseException> PreProcess(ResourceBuildHelper helper, string virtualPath, string sourceText, StringWriter writer)
 		{
 			if (String.IsNullOrEmpty(sourceText))
 			{
@@ -72,106 +73,163 @@ namespace JsonFx.Compilation
 				this.sources = sourceText.Split(LineDelims, StringSplitOptions.RemoveEmptyEntries);
 			}
 
+			List<ParseException> errors = new List<ParseException>();
 			for (int i=0; i<this.sources.Length; i++)
 			{
-				if (String.IsNullOrEmpty(this.sources[i]))
+				try
 				{
-					continue;
-				}
+					if (String.IsNullOrEmpty(this.sources[i]))
+					{
+						continue;
+					}
 
-				if (this.sources[i].StartsWith("//") ||
-					this.sources[i].StartsWith("#"))
-				{
-					this.sources[i] = null;
-					continue;
-				}
-
-				if (this.sources[i].IndexOf(',') >= 0)
-				{
-					this.sources[i] = this.sources[i].Replace(" ", "");
-					string[] parts = this.sources[i].Split(new char[] { ',' }, 3, StringSplitOptions.RemoveEmptyEntries);
-
-					if (parts.Length < 3 ||
-						String.IsNullOrEmpty(parts[0]) ||
-						String.IsNullOrEmpty(parts[1]) ||
-						String.IsNullOrEmpty(parts[2]))
+					if (this.sources[i].StartsWith("//") ||
+						this.sources[i].StartsWith("#"))
 					{
 						this.sources[i] = null;
 						continue;
 					}
 
-					parts[0] = ResourceHandlerInfo.GetEmbeddedResourceName(parts[0]);
-					parts[1] = ResourceHandlerInfo.GetEmbeddedResourceName(parts[1]);
-
-					// load resources from Assembly
-					Assembly assembly = Assembly.Load(parts[2]);
-
-					ManifestResourceInfo info = assembly.GetManifestResourceInfo(parts[0]);
-					if (info != null)
+					if (this.sources[i].IndexOf(',') >= 0)
 					{
-						using (Stream stream = assembly.GetManifestResourceStream(parts[0]))
-						{
-							using (StreamReader reader = new StreamReader(stream))
-							{
-								this.sources[i] = reader.ReadToEnd();
-								writer.WriteLine(this.sources[i]);
-							}
-						}
+						string preProcessed, compacted;
+						this.ProcessEmbeddedResource(helper, this.sources[i], out preProcessed, out compacted, errors);
+
+						writer.Write(preProcessed);
+						this.sources[i] = compacted;
+						continue;
 					}
 
-					info = assembly.GetManifestResourceInfo(parts[1]);
-					if (info != null)
+					if (this.sources[i].StartsWith("/"))
 					{
-						using (Stream stream = assembly.GetManifestResourceStream(parts[1]))
-						{
-							using (StreamReader reader = new StreamReader(stream))
-							{
-								this.sources[i] = reader.ReadToEnd();
-							}
-						}
+						// ensure app-relative paths for BuildManager lookup
+						this.sources[i] = "~"+this.sources[i];
 					}
-					else
+
+					CompiledBuildResult result = BuildManager.CreateInstanceFromVirtualPath(this.sources[i], typeof(CompiledBuildResult)) as CompiledBuildResult;
+					if (result != null)
 					{
-						this.sources[i] = null;
+						helper.AddVirtualPathDependency(this.sources[i]);
+
+						writer.WriteLine(result.GetBuildResult(true));
+						this.sources[i] = result.GetBuildResult(false);
+						continue;
 					}
-					continue;
+
+					string source = BuildManager.GetCompiledCustomString(this.sources[i]);
+					if (!String.IsNullOrEmpty(source))
+					{
+						helper.AddVirtualPathDependency(this.sources[i]);
+
+						writer.WriteLine(source);
+						this.sources[i] = source;
+						continue;
+					}
+
+					source = helper.OpenReader(this.sources[i]).ReadToEnd();
+					if (!String.IsNullOrEmpty(source))
+					{
+						helper.AddVirtualPathDependency(this.sources[i]);
+
+						writer.WriteLine(source);
+						this.sources[i] = source;
+						continue;
+					}
 				}
-
-				CompiledBuildResult result = BuildManager.CreateInstanceFromVirtualPath(this.sources[i], typeof(CompiledBuildResult)) as CompiledBuildResult;
-				if (result != null)
+				catch (Exception ex)
 				{
-					helper.AddVirtualPathDependency(this.sources[i]);
-
-					writer.WriteLine(result.GetBuildResult(true));
-					this.sources[i] = result.GetBuildResult(false);
-					continue;
-				}
-
-				string source = BuildManager.GetCompiledCustomString(this.sources[i]);
-				if (!String.IsNullOrEmpty(source))
-				{
-					helper.AddVirtualPathDependency(this.sources[i]);
-
-					writer.WriteLine(source);
-					this.sources[i] = source;
-					continue;
-				}
-
-				source = helper.OpenReader(this.sources[i]).ReadToEnd();
-				if (!String.IsNullOrEmpty(source))
-				{
-					helper.AddVirtualPathDependency(this.sources[i]);
-
-					writer.WriteLine(source);
-					this.sources[i] = source;
-					continue;
+					errors.Add(new ParseError(ex.Message, virtualPath, i+1, 1, ex));
 				}
 			}
 
-			return null;
+			return errors;
 		}
 
-		protected override IList<ParseException> Compact(ResourceBuildHelper helper, string virtualPath, string sourceText, TextWriter writer)
+		private void ProcessEmbeddedResource(
+			ResourceBuildHelper helper,
+			string source,
+			out string preProcessed,
+			out string compacted,
+			List<ParseException> errors)
+		{
+			preProcessed = source.Replace(" ", "");
+			string[] parts = preProcessed.Split(new char[] { ',' }, 2, StringSplitOptions.RemoveEmptyEntries);
+
+			if (parts.Length < 2 ||
+				String.IsNullOrEmpty(parts[0]) ||
+				String.IsNullOrEmpty(parts[1]))
+			{
+				compacted = preProcessed = null;
+				return;
+			}
+
+			parts[0] = ResourceHandlerInfo.GetEmbeddedResourceName(parts[0]);
+
+			// load resources from Assembly
+			Assembly assembly = Assembly.Load(parts[1]);
+			helper.AddAssemblyDependency(assembly);
+
+			ManifestResourceInfo info = assembly.GetManifestResourceInfo(parts[0]);
+			if (info == null)
+			{
+				compacted = preProcessed = null;
+				return;
+			}
+
+			using (Stream stream = assembly.GetManifestResourceStream(parts[0]))
+			{
+				using (StreamReader reader = new StreamReader(stream))
+				{
+					preProcessed = reader.ReadToEnd();
+				}
+			}
+
+			string ext = Path.GetExtension(parts[0]).Trim('.');
+			CompilerType compiler = helper.GetDefaultCompilerTypeForLanguage(ext);
+			if (!typeof(ResourceCodeProvider).IsAssignableFrom(compiler.CodeDomProviderType))
+			{
+				compacted = preProcessed;
+				return;
+			}
+			ResourceCodeProvider provider = (ResourceCodeProvider)Activator.CreateInstance(compiler.CodeDomProviderType);
+			using (StringWriter sw = new StringWriter())
+			{
+				IList<ParseException> parseErrors = provider.PreProcess(
+					helper,
+					parts[0],
+					preProcessed,
+					sw);
+				if (parseErrors != null && parseErrors.Count > 0)
+				{
+					// report any errors
+					errors.AddRange(parseErrors);
+				}
+				sw.Flush();
+
+				// concatenate the preprocessed source for current merge phase
+				preProcessed = sw.ToString();
+			}
+
+			using (StringWriter sw = new StringWriter())
+			{
+				IList<ParseException> parseErrors = provider.Compact(
+					helper,
+					parts[0],
+					preProcessed,
+					sw);
+				if (parseErrors != null && parseErrors.Count > 0)
+				{
+					// report any errors
+					errors.AddRange(parseErrors);
+				}
+				sw.Flush();
+
+				// ensure compacted source for next merge phase
+				compacted = sw.ToString();
+			}
+		}
+
+		protected internal override IList<ParseException> Compact(ResourceBuildHelper helper, string virtualPath, string sourceText, TextWriter writer)
 		{
 			foreach (string source in this.sources)
 			{
