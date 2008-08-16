@@ -56,6 +56,8 @@
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="Compilation\ResourceBuildProvider.cs">
+    </Compile>
+    <Compile Include="Compilation\ResourceCodeProvider.cs">
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="Compilation\ScriptResourceCodeProvider.cs">
