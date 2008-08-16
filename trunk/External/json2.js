@@ -1,6 +1,6 @@
 /*
     http://www.JSON.org/json2.js
-    2008-05-25
+    2008-07-15
 
     Public Domain.
 
@@ -15,8 +15,8 @@
             value       any JavaScript value, usually an object or array.
 
             replacer    an optional parameter that determines how object
-                        values are stringified for objects without a toJSON
-                        method. It can be a function or an array.
+                        values are stringified for objects. It can be a
+                        function or an array.
 
             space       an optional parameter that specifies the indentation
                         of nested structures. If it is omitted, the text will
@@ -148,6 +148,13 @@
 
 /*global JSON */
 
+/*members "", "\b", "\t", "\n", "\f", "\r", "\"", JSON, "\\", call,
+    charCodeAt, getUTCDate, getUTCFullYear, getUTCHours, getUTCMinutes,
+    getUTCMonth, getUTCSeconds, hasOwnProperty, join, lastIndex, length,
+    parse, propertyIsEnumerable, prototype, push, replace, slice, stringify,
+    test, toJSON, toString
+*/
+
 if (!this.JSON) {
 
 // Create a JSON object only if one does not already exist. We create the
@@ -168,6 +175,12 @@ if (!this.JSON) {
                  f(this.getUTCHours())     + ':' +
                  f(this.getUTCMinutes())   + ':' +
                  f(this.getUTCSeconds())   + 'Z';
+        };
+
+        String.prototype.toJSON =
+        Number.prototype.toJSON =
+        Boolean.prototype.toJSON = function (key) {
+            return this.valueOf();
         };
 
         var cx = /[\u0000\u00ad\u0600-\u0604\u070f\u17b4\u17b5\u200c-\u200f\u2028-\u202f\u2060-\u206f\ufeff\ufff0-\uffff]/g,
@@ -303,7 +316,7 @@ if (!this.JSON) {
                     for (i = 0; i < length; i += 1) {
                         k = rep[i];
                         if (typeof k === 'string') {
-                            v = str(k, value, rep);
+                            v = str(k, value);
                             if (v) {
                                 partial.push(quote(k) + (gap ? ': ' : ':') + v);
                             }
@@ -315,7 +328,7 @@ if (!this.JSON) {
 
                     for (k in value) {
                         if (Object.hasOwnProperty.call(value, k)) {
-                            v = str(k, value, rep);
+                            v = str(k, value);
                             if (v) {
                                 partial.push(quote(k) + (gap ? ': ' : ':') + v);
                             }
