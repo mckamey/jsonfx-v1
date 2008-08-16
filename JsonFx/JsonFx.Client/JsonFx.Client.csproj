@@ -63,8 +63,6 @@
     <Compile Include="Handlers\CssResourceHandler.cs" />
     <Compile Include="Handlers\MergeResourceHandler.cs" />
     <Compile Include="Handlers\ETag.cs" />
-    <Compile Include="Handlers\JsonFxScriptHandler.cs" />
-    <Compile Include="Handlers\JsonpHandler.cs" />
     <Compile Include="Handlers\ResourceHandlerInfo.cs" />
     <Compile Include="Handlers\ResourceHandler.cs" />
     <Compile Include="Handlers\ScriptResourceHandler.cs" />
@@ -72,39 +70,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Scripts\JsonFx.Trace.js" />
-    <EmbeddedResource Include="Scripts\JsonFx.Utility.js" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="Scripts\JsonFx.Effects.js" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="Scripts\String.js" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="App_Browsers\Fixes.browser" />
-    <None Include="Web.Config" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="Scripts\JsonFx.UA.js" />
-    <EmbeddedResource Include="Scripts\Theme.js" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="Scripts\JsonFx.ServiceTest.js" />
-  </ItemGroup>
-  <ItemGroup>
     <Content Include="License.txt" />
-    <Content Include="Scripts\JSLint.Options.js" />
-    <EmbeddedResource Include="Scripts\JsonML_BST.js" />
-    <EmbeddedResource Include="Scripts\JsonFx.JsonML.js" />
-    <EmbeddedResource Include="Scripts\JsonFx.Bindings.js" />
-    <EmbeddedResource Include="Scripts\JsonFx.IO.js" />
-    <EmbeddedResource Include="Scripts\ECMAScript.js" />
-    <EmbeddedResource Include="Scripts\json2.js" />
-    <EmbeddedResource Include="Scripts\JsonFx.History.js" />
-    <EmbeddedResource Include="Scripts\JsonFx.Timer.js" />
-    <EmbeddedResource Include="Scripts\JsonML2.js" />
-    <EmbeddedResource Include="Scripts\JsonFx.Controls.js" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

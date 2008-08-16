@@ -38,7 +38,7 @@ using JsonFx.Compilation;
 
 namespace JsonFx.Handlers
 {
-	public abstract class ResourceHandlerInfo : CompiledBuildResult
+	internal abstract class ResourceHandlerInfo : CompiledBuildResult
 	{
 		#region Constants
 
