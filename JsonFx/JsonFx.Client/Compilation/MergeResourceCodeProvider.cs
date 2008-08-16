@@ -183,7 +183,7 @@ namespace JsonFx.Compilation
 				return;
 			}
 
-			parts[0] = MergeResourceCodeProvider.ScrumResourceName(parts[0]);
+			parts[0] = MergeResourceCodeProvider.ScrubResourceName(parts[0]);
 
 			// load resources from Assembly
 			Assembly assembly = Assembly.Load(parts[1]);
@@ -280,7 +280,7 @@ namespace JsonFx.Compilation
 
 		#region Utility Methods
 
-		private static string ScrumResourceName(string resource)
+		private static string ScrubResourceName(string resource)
 		{
 			if (String.IsNullOrEmpty(resource))
 			{
