@@ -51,9 +51,34 @@ namespace JsonFx.Compilation
 			get { return "js"; }
 		}
 
-		protected internal override IList<BuildTools.ParseException> Compact(IResourceBuildHelper helper, string virtualPath, string sourceText, TextWriter writer)
+		protected internal override void ProcessResource(
+			IResourceBuildHelper helper,
+			string virtualPath,
+			string sourceText,
+			out string resource,
+			out string compacted,
+			List<ParseException> errors)
 		{
-			return ScriptCompactor.Compact(virtualPath, sourceText, writer, null, null, ScriptCompactor.Options.None);
+			using (StringWriter writer = new StringWriter())
+			{
+				IList<ParseException> parseErrors = ScriptCompactor.Compact(
+					virtualPath,
+					sourceText,
+					writer,
+					null,
+					null,
+					ScriptCompactor.Options.None);
+
+				if (parseErrors != null && parseErrors.Count > 0)
+				{
+					errors.AddRange(parseErrors);
+				}
+
+				writer.Flush();
+
+				resource = sourceText;
+				compacted = writer.ToString();
+			}
 		}
 
 		#endregion ResourceCodeProvider Methods

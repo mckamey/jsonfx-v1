@@ -51,9 +51,34 @@ namespace JsonFx.Compilation
 			get { return "css"; }
 		}
 
-		protected internal override IList<ParseException> Compact(IResourceBuildHelper helper, string virtualPath, string sourceText, TextWriter writer)
+		protected internal override void ProcessResource(
+			IResourceBuildHelper helper,
+			string virtualPath,
+			string sourceText,
+			out string resource,
+			out string compacted,
+			List<ParseException> errors)
 		{
-			return CssCompactor.Compact(virtualPath, sourceText, writer, null, null, CssCompactor.Options.None);
+			using (StringWriter writer = new StringWriter())
+			{
+				IList<ParseException> parseErrors = CssCompactor.Compact(
+					virtualPath,
+					sourceText,
+					writer,
+					null,
+					null,
+					CssCompactor.Options.None);
+
+				if (parseErrors != null && parseErrors.Count > 0)
+				{
+					errors.AddRange(parseErrors);
+				}
+
+				writer.Flush();
+
+				resource = sourceText;
+				compacted = writer.ToString();
+			}
 		}
 
 		#endregion ResourceCodeProvider Members

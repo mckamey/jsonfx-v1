@@ -101,42 +101,14 @@ namespace JsonFx.Compilation
 				preProcessed = reader.ReadToEnd();
 			}
 
-			using (StringWriter writer = new StringWriter(new StringBuilder(preProcessed.Length)))
-			{
-				// preprocess the resource
-				IList<ParseException> parseErrors = this.PreProcess(
-					helper,
-					virtualPath,
-					preProcessed,
-					writer);
-
-				if (parseErrors != null && parseErrors.Count > 0)
-				{
-					// combine any errors
-					errors.AddRange(parseErrors);
-				}
-
-				writer.Flush();
-				preProcessed = writer.ToString();
-			}
-
-			using (StringWriter writer = new StringWriter(new StringBuilder(preProcessed.Length)))
-			{
-				// compact the resource
-				IList<ParseException> parseErrors = this.Compact(
-					helper,
-					virtualPath,
-					preProcessed,
-					writer);
-
-				if (parseErrors != null && parseErrors.Count > 0)
-				{
-					// combine any errors
-					errors.AddRange(parseErrors);
-				}
-				writer.Flush();
-				compacted = writer.ToString();
-			}
+			// preprocess the resource
+			this.ProcessResource(
+				helper,
+				virtualPath,
+				preProcessed,
+				out preProcessed,
+				out compacted,
+				this.errors);
 		}
 
 		/// <summary>
@@ -189,35 +161,21 @@ namespace JsonFx.Compilation
 		#region Compaction Methods
 
 		/// <summary>
-		/// PreProcesses the source.  Default implementation simply writes through.
+		/// Processes the source.
 		/// </summary>
+		/// <param name="helper"></param>
 		/// <param name="virtualPath"></param>
 		/// <param name="sourceText"></param>
-		/// <param name="writer"></param>
-		/// <returns>Errors</returns>
-		protected internal virtual IList<ParseException> PreProcess(
+		/// <param name="resource"></param>
+		/// <param name="compacted"></param>
+		/// <param name="errors"></param>
+		protected internal abstract void ProcessResource(
 			IResourceBuildHelper helper,
 			string virtualPath,
-			string sourceText,
-			TextWriter writer)
-		{
-			writer.Write(sourceText);
-
-			return null;
-		}
-
-		/// <summary>
-		/// Compacts the source.
-		/// </summary>
-		/// <param name="virtualPath"></param>
-		/// <param name="sourceText"></param>
-		/// <param name="writer"></param>
-		/// <returns>Errors</returns>
-		protected internal abstract IList<ParseException> Compact(
-			IResourceBuildHelper helper,
-			string virtualPath,
-			string sourceText,
-			TextWriter writer);
+			string source,
+			out string resource,
+			out string compacted,
+			List<ParseException> errors);
 
 		#endregion Compaction Methods
 	}
