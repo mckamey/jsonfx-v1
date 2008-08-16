@@ -47,7 +47,7 @@ v1.0.704.1900:
 - A bare bones example, but it shows just about everything
 - Added Example pages ~/Services/Default.aspx and ~/Effects/Default.aspx with some light instructions on them
 - IIS Configuration (http://jsonfx.net/Download/JsonFx_Config.gif)
-- You will need to register the extensions .jsonfx, .json, and .js to be handled by ASP.NET
+- You will need to register the extensions .css, .js, .merge, .jrpc, .jbst to be handled by ASP.NET
 - Eventually .css also, but that isn't quite finished
 - If you end up mapping services or handlers to other extensions, then you would obviously need to register those extensions as well/instead.
 - I think that is the only configuration that you need to do.
