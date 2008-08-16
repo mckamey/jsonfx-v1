@@ -35,19 +35,13 @@ using System.Collections.Generic;
 using System.Web.Compilation;
 using System.CodeDom.Compiler;
 using System.Reflection;
+using System.Text;
 
 using BuildTools;
 using JsonFx.Handlers;
 
 namespace JsonFx.Compilation
 {
-	public interface CompiledBuildResult
-	{
-		string ContentType { get; }
-		string FileExtension { get; }
-		string GetBuildResult(bool prettyPrint);
-	}
-
 	public class MergeResourceCodeProvider : JsonFx.Compilation.ResourceCodeProvider
 	{
 		#region Constants
@@ -123,7 +117,7 @@ namespace JsonFx.Compilation
 						this.sources[i] = "~"+this.sources[i];
 					}
 
-					CompiledBuildResult result = BuildManager.CreateInstanceFromVirtualPath(this.sources[i], typeof(CompiledBuildResult)) as CompiledBuildResult;
+					CompiledBuildResult result = CompiledBuildResult.Create(this.sources[i]);
 					if (result != null)
 					{
 						if (!this.isMimeSet &&
@@ -137,8 +131,8 @@ namespace JsonFx.Compilation
 
 						helper.AddVirtualPathDependency(this.sources[i]);
 
-						writer.WriteLine(result.GetBuildResult(true));
-						this.sources[i] = result.GetBuildResult(false);
+						writer.WriteLine(result.Resource);
+						this.sources[i] = result.CompactedResource;
 						continue;
 					}
 
@@ -189,7 +183,7 @@ namespace JsonFx.Compilation
 				return;
 			}
 
-			parts[0] = ResourceHandlerInfo.GetEmbeddedResourceName(parts[0]);
+			parts[0] = MergeResourceCodeProvider.ScrumResourceName(parts[0]);
 
 			// load resources from Assembly
 			Assembly assembly = Assembly.Load(parts[1]);
@@ -283,5 +277,25 @@ namespace JsonFx.Compilation
 		}
 
 		#endregion ResourceCodeProvider Members
+
+		#region Utility Methods
+
+		private static string ScrumResourceName(string resource)
+		{
+			if (String.IsNullOrEmpty(resource))
+			{
+				return resource;
+			}
+
+			StringBuilder builder = new StringBuilder(resource);
+			builder.Replace('/', '.');
+			builder.Replace('\\', '.');
+			builder.Replace('?', '.');
+			builder.Replace('*', '.');
+			builder.Replace(':', '.');
+			return builder.ToString().TrimStart('.');
+		}
+
+		#endregion Utility Methods
 	}
 }

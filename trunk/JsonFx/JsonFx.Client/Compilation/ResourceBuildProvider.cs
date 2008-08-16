@@ -106,64 +106,70 @@ namespace JsonFx.Compilation
 
 		public override void GenerateCode(AssemblyBuilder assemblyBuilder)
 		{
-			string sourceText;
-			using (TextReader reader = base.OpenReader())
-			{
-				sourceText = reader.ReadToEnd();
-			}
+			string resource, compactedResource, contentType, fileExtension;
 
-			string resourceName = ResourceHandlerInfo.GetEmbeddedResourceName(base.VirtualPath);
-			string compactResourceName = ResourceHandlerInfo.GetCompactedResourceName(resourceName);
-			string fileExtension = (assemblyBuilder.CodeDomProvider != null) ?
-				assemblyBuilder.CodeDomProvider.FileExtension :
-				".txt";
-
-			string contentType = "text/plain";
 			ResourceCodeProvider provider = assemblyBuilder.CodeDomProvider as ResourceCodeProvider;
 			if (provider != null)
 			{
+				IList<ParseException> errors = provider.CompileResource(
+					this,
+					base.VirtualPath,
+					out resource,
+					out compactedResource);
+
 				contentType = provider.ContentType;
-				provider.AddResourceTarget(base.VirtualPath, resourceName, sourceText, this);
+				fileExtension = provider.FileExtension;
+			}
+			else
+			{
+				// read the resource contents
+				using (TextReader reader = this.OpenReader())
+				{
+					compactedResource = resource = reader.ReadToEnd();
+				}
+
+				contentType = "text/plain";
+				fileExtension = "txt";
 			}
 
 			// generate a static class
 			CodeCompileUnit generatedUnit = new CodeCompileUnit();
-			CodeNamespace ns = new CodeNamespace(ResourceHandlerInfo.GeneratedNamespace);
+			CodeNamespace ns = new CodeNamespace(CompiledBuildResult.GeneratedNamespace);
 			generatedUnit.Namespaces.Add(ns);
 			CodeTypeDeclaration descriptorType = new CodeTypeDeclaration();
 			descriptorType.IsClass = true;
 			descriptorType.Name = "_"+Guid.NewGuid().ToString("N");
 			descriptorType.Attributes = MemberAttributes.Public|MemberAttributes.Final;
-			descriptorType.BaseTypes.Add(typeof(ResourceHandlerInfo));
+			descriptorType.BaseTypes.Add(typeof(CompiledBuildResult));
 			ns.Types.Add(descriptorType);
 
-			#region ResourceHandlerInfo.ResourceName
+			#region ResourceHandlerInfo.Resource
 
-			// add a readonly property with the resource name
+			// add a readonly property with the resource data
 			CodeMemberProperty property = new CodeMemberProperty();
-			property.Name = "ResourceName";
+			property.Name = "Resource";
 			property.Type = new CodeTypeReference(typeof(String));
 			property.Attributes = MemberAttributes.Public|MemberAttributes.Override;
 			property.HasGet = true;
-			// get { return resourceName; }
-			property.GetStatements.Add(new CodeMethodReturnStatement(new CodePrimitiveExpression(resourceName)));
+			// get { return resource; }
+			property.GetStatements.Add(new CodeMethodReturnStatement(new CodePrimitiveExpression(resource)));
 			descriptorType.Members.Add(property);
 
-			#endregion ResourceHandlerInfo.ResourceName
+			#endregion ResourceHandlerInfo.Resource
 
-			#region ResourceHandlerInfo.CompactResourceName
+			#region ResourceHandlerInfo.CompactedResource
 
-			// add a readonly property with the compacted resource name
+			// add a readonly property with the compacted resource data
 			property = new CodeMemberProperty();
-			property.Name = "CompactResourceName";
+			property.Name = "CompactedResource";
 			property.Type = new CodeTypeReference(typeof(String));
 			property.Attributes = MemberAttributes.Public|MemberAttributes.Override;
 			property.HasGet = true;
-			// get { return compactResourceName; }
-			property.GetStatements.Add(new CodeMethodReturnStatement(new CodePrimitiveExpression(compactResourceName)));
+			// get { return compactedResource; }
+			property.GetStatements.Add(new CodeMethodReturnStatement(new CodePrimitiveExpression(compactedResource)));
 			descriptorType.Members.Add(property);
 
-			#endregion ResourceHandlerInfo.CompactResourceName
+			#endregion ResourceHandlerInfo.CompactedResource
 
 			#region ResourceHandlerInfo.ContentType
 
@@ -196,7 +202,7 @@ namespace JsonFx.Compilation
 			assemblyBuilder.AddCodeCompileUnit(this, generatedUnit);
 
 			System.Diagnostics.Debug.Assert(String.IsNullOrEmpty(this.descriptorTypeName));
-			this.descriptorTypeName = ResourceHandlerInfo.GeneratedNamespace+"."+descriptorType.Name;
+			this.descriptorTypeName = CompiledBuildResult.GeneratedNamespace+"."+descriptorType.Name;
 
 			assemblyBuilder.GenerateTypeFactory(this.descriptorTypeName);
 		}
@@ -270,43 +276,6 @@ namespace JsonFx.Compilation
 	/// </remarks>
 	public abstract class ResourceCodeProvider : Microsoft.CSharp.CSharpCodeProvider
 	{
-		#region ResourceData
-
-		private class ResourceData
-		{
-			#region Fields
-
-			public readonly string VirtualPath;
-			public readonly string ResourceName;
-			public readonly string SourceText;
-			public readonly ResourceBuildHelper BuildHelper;
-
-			#endregion Fields
-
-			#region Init
-
-			/// <summary>
-			/// Ctor
-			/// </summary>
-			public ResourceData(string virtualPath, string resourceName, string sourceText, ResourceBuildHelper helper)
-			{
-				this.VirtualPath = (virtualPath == null)? "" : virtualPath;
-				this.ResourceName = (resourceName == null)? "" : resourceName;
-				this.SourceText = (sourceText == null)? "" : sourceText;
-				this.BuildHelper = helper;
-			}
-
-			#endregion Init
-		}
-
-		#endregion ResourceData
-
-		#region Fields
-
-		private List<ResourceData> sources = new List<ResourceData>();
-
-		#endregion Fields
-
 		#region Properties
 
 		/// <summary>
@@ -326,117 +295,60 @@ namespace JsonFx.Compilation
 
 		#region Methods
 
-		/// <summary>
-		/// Adds to the listing of the resources which have to be built.
-		/// </summary>
-		/// <param name="virtualPath"></param>
-		/// <param name="resourceName"></param>
-		/// <param name="sourceText"></param>
-		protected internal void AddResourceTarget(
+		protected internal List<ParseException> CompileResource(
+			ResourceBuildHelper helper,
 			string virtualPath,
-			string resourceName,
-			string sourceText,
-			ResourceBuildHelper helper)
-		{
-			this.sources.Add(new ResourceData(virtualPath, resourceName, sourceText, helper));
-		}
-
-		#endregion Methods
-
-		#region CodeDomProvider Members
-
-		/// <summary>
-		/// Processes all the resources added by the BuildProvider, compacting and adding each one as another resource
-		/// </summary>
-		/// <param name="options"></param>
-		/// <param name="fileNames"></param>
-		/// <returns></returns>
-		/// <remarks>
-		/// This is implemented here simply because this is where the CodeProvider gets called in this circumstance.
-		/// We don't actually need to "compile from files" but we need access to the CompilerParameters object to
-		/// add additional embedded resources, and we need access to the CompilerResult to report any errors found.
-		/// </remarks>
-		public override CompilerResults CompileAssemblyFromFile(CompilerParameters options, params string[] fileNames)
-		{
-			List<ParseException> errors = new List<ParseException>();
-
-			foreach (ResourceData source in this.sources)
-			{
-				// compact each resource added by the BuildProvider
-				this.ProcessSingleSource(options, source, errors);
-			}
-
-			// build the assembly with the types describing which resources correspond to which paths
-			CompilerResults results = base.CompileAssemblyFromFile(options, fileNames);
-
-			foreach (ParseException ex in errors)
-			{
-				CompilerError error = new CompilerError(ex.File, ex.Line, ex.Column, ex.ErrorCode, ex.Message);
-				error.IsWarning = (ex is ParseWarning);
-				results.Errors.Add(error);
-			}
-
-			return results;
-		}
-
-		private void ProcessSingleSource(CompilerParameters options, ResourceData source, List<ParseException> errors)
+			out string preProcessed,
+			out string compacted)
 		{
 			// read the resource contents
-			string sourceText = source.SourceText;
+			using (TextReader reader = helper.OpenReader(virtualPath))
+			{
+				preProcessed = reader.ReadToEnd();
+			}
 
-			using (StringWriter writer = new StringWriter(new StringBuilder(sourceText.Length)))
+			List<ParseException> errors = new List<ParseException>();
+			using (StringWriter writer = new StringWriter(new StringBuilder(preProcessed.Length)))
 			{
 				// preprocess the resource
 				IList<ParseException> parseErrors = this.PreProcess(
-					source.BuildHelper,
-					source.VirtualPath,
-					sourceText,
+					helper,
+					virtualPath,
+					preProcessed,
 					writer);
 
 				if (parseErrors != null && parseErrors.Count > 0)
 				{
-					// report any errors
+					// combine any errors
 					errors.AddRange(parseErrors);
 				}
+
 				writer.Flush();
-				sourceText = writer.ToString();
+				preProcessed = writer.ToString();
 			}
 
-			// write out source version to a resource
-			string resourcePath = Path.Combine(options.TempFiles.TempDir, source.ResourceName);
-			File.WriteAllText(resourcePath, sourceText);
-
-			// add source copy to the embedded resource list
-			options.EmbeddedResources.Add(resourcePath);
-
-			string compactedText;
-			using (StringWriter writer = new StringWriter(new StringBuilder(sourceText.Length)))
+			using (StringWriter writer = new StringWriter(new StringBuilder(preProcessed.Length)))
 			{
 				// compact the resource
 				IList<ParseException> parseErrors = this.Compact(
-					source.BuildHelper,
-					source.SourceText.Equals(sourceText) ? source.VirtualPath : resourcePath,
-					sourceText,
+					helper,
+					virtualPath,
+					preProcessed,
 					writer);
 
 				if (parseErrors != null && parseErrors.Count > 0)
 				{
-					// report any errors
+					// combine any errors
 					errors.AddRange(parseErrors);
 				}
 				writer.Flush();
-				compactedText = writer.ToString();
+				compacted = writer.ToString();
 			}
 
-			// write out compacted version to another resource
-			string compactedPath = ResourceHandlerInfo.GetCompactedResourceName(resourcePath);
-			File.WriteAllText(compactedPath, compactedText);
-
-			// add compacted copy to the embedded resource list
-			options.EmbeddedResources.Add(compactedPath);
+			return errors;
 		}
 
-		#endregion CodeDomProvider Members
+		#endregion Methods
 
 		#region Compaction Methods
 

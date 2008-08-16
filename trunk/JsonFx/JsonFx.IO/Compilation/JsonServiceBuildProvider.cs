@@ -48,7 +48,7 @@ using JsonFx.Handlers;
 namespace JsonFx.Compilation
 {
 	/// <summary>
-	/// 
+	/// BuildProvider for JSON-RPC services.
 	/// </summary>
 	[BuildProviderAppliesTo(BuildProviderAppliesTo.Web)]
 	[PermissionSet(SecurityAction.Demand, Unrestricted = true)]
@@ -56,9 +56,7 @@ namespace JsonFx.Compilation
 	{
 		#region Constants
 
-		private readonly object SyncLock = new object();
-
-		protected internal const string GeneratedNamespace = "JsonFx.JsonRpc._Generated";
+		protected internal const string GeneratedNamespace = "JsonFx._Services";
 
 		private const string DefaultDirectiveName = "JsonService";
 		private const string ErrorMissingDirective = "The service must have a <%@ {0} class=\"MyNamespace.MyClass\" ... %> directive.";
@@ -174,33 +172,33 @@ namespace JsonFx.Compilation
 			descriptorType.BaseTypes.Add(typeof(JsonServiceInfo));
 			ns.Types.Add(descriptorType);
 
-			#region JsonServiceInfo.Proxy
+			#region JsonServiceInfo.CompactedResource
 
 			// add a readonly property with the proxy code string
-			CodeMemberProperty proxyProp = new CodeMemberProperty();
-			proxyProp.Name = "Proxy";
-			proxyProp.Type = new CodeTypeReference(typeof(String));
-			proxyProp.Attributes = MemberAttributes.Public|MemberAttributes.Override;
-			proxyProp.HasGet = true;
+			CodeMemberProperty property = new CodeMemberProperty();
+			property.Name = "CompactedResource";
+			property.Type = new CodeTypeReference(typeof(String));
+			property.Attributes = MemberAttributes.Public|MemberAttributes.Override;
+			property.HasGet = true;
 			// get { return proxyOutput; }
-			proxyProp.GetStatements.Add(new CodeMethodReturnStatement(new CodePrimitiveExpression(proxyOutput)));
-			descriptorType.Members.Add(proxyProp);
+			property.GetStatements.Add(new CodeMethodReturnStatement(new CodePrimitiveExpression(proxyOutput)));
+			descriptorType.Members.Add(property);
 
-			#endregion JsonServiceInfo.Proxy
+			#endregion JsonServiceInfo.CompactedResource
 
-			#region JsonServiceInfo.DebugProxy
+			#region JsonServiceInfo.Resource
 
 			// add a readonly property with the debug proxy code string
-			proxyProp = new CodeMemberProperty();
-			proxyProp.Name = "DebugProxy";
-			proxyProp.Type = new CodeTypeReference(typeof(String));
-			proxyProp.Attributes = MemberAttributes.Public|MemberAttributes.Override;
-			proxyProp.HasGet = true;
+			property = new CodeMemberProperty();
+			property.Name = "Resource";
+			property.Type = new CodeTypeReference(typeof(String));
+			property.Attributes = MemberAttributes.Public|MemberAttributes.Override;
+			property.HasGet = true;
 			// get { return debugProxyOutput; }
-			proxyProp.GetStatements.Add(new CodeMethodReturnStatement(new CodePrimitiveExpression(debugProxyOutput)));
-			descriptorType.Members.Add(proxyProp);
+			property.GetStatements.Add(new CodeMethodReturnStatement(new CodePrimitiveExpression(debugProxyOutput)));
+			descriptorType.Members.Add(property);
 
-			#endregion JsonServiceInfo.DebugProxy
+			#endregion JsonServiceInfo.Resource
 
 			#region JsonServiceInfo.ServiceType
 
@@ -372,35 +370,32 @@ namespace JsonFx.Compilation
 
 		private void EnsureDirective()
 		{
-			lock (this.SyncLock)
+			if (!this.directiveParsed)
 			{
-				if (!this.directiveParsed)
+				using (System.IO.TextReader reader = base.OpenReader())
 				{
-					using (System.IO.TextReader reader = base.OpenReader())
-					{
-						this.sourceText = reader.ReadToEnd();
-					}
-					if (this.sourceText == null)
-					{
-						this.sourceText = String.Empty;
-					}
+					this.sourceText = reader.ReadToEnd();
+				}
+				if (this.sourceText == null)
+				{
+					this.sourceText = String.Empty;
+				}
 
-					try
-					{
-						DirectiveParser parser = new DirectiveParser(this.sourceText, base.VirtualPath);
-						parser.ProcessDirective += this.ProcessDirective;
-						int index = parser.ParseDirectives(out this.lineNumber);
-						this.sourceText = this.sourceText.Substring(index).Trim();
-					}
-					finally
-					{
-						this.directiveParsed = true;
-					}
+				try
+				{
+					DirectiveParser parser = new DirectiveParser(this.sourceText, base.VirtualPath);
+					parser.ProcessDirective += this.ProcessDirective;
+					int index = parser.ParseDirectives(out this.lineNumber);
+					this.sourceText = this.sourceText.Substring(index).Trim();
+				}
+				finally
+				{
+					this.directiveParsed = true;
+				}
 
-					if (!this.foundDirective)
-					{
-						throw new HttpParseException(String.Format(ErrorMissingDirective, DefaultDirectiveName), null, base.VirtualPath, this.sourceText, this.lineNumber);
-					}
+				if (!this.foundDirective)
+				{
+					throw new HttpParseException(String.Format(ErrorMissingDirective, DefaultDirectiveName), null, base.VirtualPath, this.sourceText, this.lineNumber);
 				}
 			}
 		}

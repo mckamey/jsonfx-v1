@@ -32,7 +32,7 @@ using System;
 using System.Collections.Generic;
 using System.Reflection;
 
-using JsonFx.Compilation;
+using JsonFx.Handlers;
 
 namespace JsonFx.JsonRpc
 {
@@ -41,10 +41,6 @@ namespace JsonFx.JsonRpc
 		#region JsonServiceInfo Properties
 
 		public abstract Type ServiceType { get; }
-
-		public abstract String Proxy { get; }
-
-		public abstract String DebugProxy { get; }
 
 		#endregion JsonServiceInfo Properties
 
@@ -116,7 +112,7 @@ namespace JsonFx.JsonRpc
 		/// <summary>
 		/// Gets the MIME type for the proxy.
 		/// </summary>
-		public string ContentType
+		public override string ContentType
 		{
 			get { return "text/javascript"; }
 		}
@@ -124,14 +120,9 @@ namespace JsonFx.JsonRpc
 		/// <summary>
 		/// Gets the file extension for the proxy.
 		/// </summary>
-		public string FileExtension
+		public override string FileExtension
 		{
 			get { return "js"; }
-		}
-
-		string CompiledBuildResult.GetBuildResult(bool prettyPrint)
-		{
-			return prettyPrint ? this.DebugProxy : this.Proxy;
 		}
 
 		#endregion CompiledBuildResult Members
