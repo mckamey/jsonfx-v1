@@ -72,8 +72,6 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Scripts\Compacted\JsonFx.Trace.js" />
-    <EmbeddedResource Include="Scripts\Compacted\JsonFx.Utility.js" />
     <EmbeddedResource Include="Scripts\JsonFx.Trace.js" />
     <EmbeddedResource Include="Scripts\JsonFx.Utility.js" />
   </ItemGroup>
@@ -81,52 +79,21 @@
     <EmbeddedResource Include="Scripts\JsonFx.Effects.js" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Scripts\Compacted\JsonFx.Effects.js" />
-  </ItemGroup>
-  <ItemGroup>
     <EmbeddedResource Include="Scripts\String.js" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Scripts\Compacted\String.js" />
-  </ItemGroup>
-  <ItemGroup>
     <None Include="App_Browsers\Fixes.browser" />
-    <None Include="Build.bat" />
     <None Include="Web.Config" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="Scripts\Compacted\JsonFx.Core.js" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="Scripts\JsonFx.Core.js" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Scripts\JsonFx.UA.js" />
     <EmbeddedResource Include="Scripts\Theme.js" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Scripts\Compacted\JsonFx.UA.js" />
-  </ItemGroup>
-  <ItemGroup>
     <EmbeddedResource Include="Scripts\JsonFx.ServiceTest.js" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Scripts\Compacted\JsonFx.ServiceTest.js" />
-  </ItemGroup>
-  <ItemGroup>
     <Content Include="License.txt" />
-    <Content Include="Scripts\Compact.txt" />
-    <EmbeddedResource Include="Scripts\Compacted\JsonFx.Controls.js" />
-    <EmbeddedResource Include="Scripts\Compacted\JsonFx.History.js" />
-    <EmbeddedResource Include="Scripts\Compacted\JsonFx.Timer.js" />
-    <EmbeddedResource Include="Scripts\Compacted\JsonML2.js" />
-    <EmbeddedResource Include="Scripts\Compacted\ECMAScript.js" />
-    <EmbeddedResource Include="Scripts\Compacted\JsonFx.IO.js" />
-    <EmbeddedResource Include="Scripts\Compacted\JsonFx.Bindings.js" />
-    <EmbeddedResource Include="Scripts\Compacted\JsonFx.JsonML.js" />
-    <EmbeddedResource Include="Scripts\Compacted\json2.js" />
-    <EmbeddedResource Include="Scripts\Compacted\JsonML_BST.js" />
-    <Content Include="Scripts\Concat.txt" />
     <Content Include="Scripts\JSLint.Options.js" />
     <EmbeddedResource Include="Scripts\JsonML_BST.js" />
     <EmbeddedResource Include="Scripts\JsonFx.JsonML.js" />
@@ -148,7 +115,8 @@
   </Target>
   -->
   <PropertyGroup>
-    <PreBuildEvent>$(ProjectDir)Build.bat</PreBuildEvent>
+    <PreBuildEvent>
+    </PreBuildEvent>
     <PostBuildEvent>
     </PostBuildEvent>
   </PropertyGroup>
