@@ -41,6 +41,16 @@ namespace JsonFx.Compilation
 	{
 		#region ResourceCodeProvider Members
 
+		public override string ContentType
+		{
+			get { return "text/css"; }
+		}
+
+		public override string FileExtension
+		{
+			get { return "css"; }
+		}
+
 		protected internal override IList<ParseException> Compact(ResourceBuildHelper helper, string virtualPath, string sourceText, TextWriter writer)
 		{
 			return CssCompactor.Compact(virtualPath, sourceText, writer, null, null, CssCompactor.Options.None);

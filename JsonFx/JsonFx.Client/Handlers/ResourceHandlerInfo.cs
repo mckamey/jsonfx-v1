@@ -52,10 +52,7 @@ namespace JsonFx.Handlers
 
 		public abstract string ResourceName { get; }
 
-		public string CompactResourceName
-		{
-			get { return ResourceHandlerInfo.GetCompactedResourceName(this.ResourceName); }
-		}
+		public abstract string CompactResourceName { get; }
 
 		#endregion Properties
 
@@ -98,6 +95,10 @@ namespace JsonFx.Handlers
 		#endregion Methods
 
 		#region CompiledBuildResult Members
+
+		public abstract string ContentType { get; }
+
+		public abstract string FileExtension { get; }
 
 		string CompiledBuildResult.GetBuildResult(bool prettyPrint)
 		{

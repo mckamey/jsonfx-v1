@@ -43,6 +43,8 @@ namespace JsonFx.Compilation
 {
 	public interface CompiledBuildResult
 	{
+		string ContentType { get; }
+		string FileExtension { get; }
 		string GetBuildResult(bool prettyPrint);
 	}
 
@@ -57,10 +59,23 @@ namespace JsonFx.Compilation
 		#region Fields
 
 		private string[] sources = null;
+		private string contentType = "text/plain";
+		private string fileExtension = "txt";
+		private bool isMimeSet = false;
 
 		#endregion Fields
 
 		#region ResourceCodeProvider Members
+
+		public override string FileExtension
+		{
+			get { return this.fileExtension; }
+		}
+
+		public override string ContentType
+		{
+			get { return this.contentType; }
+		}
 
 		protected internal override IList<ParseException> PreProcess(
 			ResourceBuildHelper helper,
@@ -111,6 +126,15 @@ namespace JsonFx.Compilation
 					CompiledBuildResult result = BuildManager.CreateInstanceFromVirtualPath(this.sources[i], typeof(CompiledBuildResult)) as CompiledBuildResult;
 					if (result != null)
 					{
+						if (!this.isMimeSet &&
+							!String.IsNullOrEmpty(result.ContentType) &&
+							!String.IsNullOrEmpty(result.FileExtension))
+						{
+							this.contentType = result.ContentType;
+							this.fileExtension = result.FileExtension;
+							this.isMimeSet = true;
+						}
+
 						helper.AddVirtualPathDependency(this.sources[i]);
 
 						writer.WriteLine(result.GetBuildResult(true));
@@ -231,10 +255,20 @@ namespace JsonFx.Compilation
 				// ensure compacted source for next merge phase
 				compacted = sw.ToString();
 			}
+
+			if (!this.isMimeSet &&
+				!String.IsNullOrEmpty(provider.ContentType) &&
+				!String.IsNullOrEmpty(provider.FileExtension))
+			{
+				this.contentType = provider.ContentType;
+				this.fileExtension = provider.FileExtension;
+				this.isMimeSet = true;
+			}
 		}
 
 		protected internal override IList<ParseException> Compact(ResourceBuildHelper helper, string virtualPath, string sourceText, TextWriter writer)
 		{
+			// these were compacted in the preprocess so just emit
 			foreach (string source in this.sources)
 			{
 				if (String.IsNullOrEmpty(source))

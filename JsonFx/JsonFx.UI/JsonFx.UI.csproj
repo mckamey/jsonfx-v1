@@ -55,7 +55,6 @@
     <Compile Include="Compilation\JbstCodeProvider.cs">
       <SubType>Component</SubType>
     </Compile>
-    <Compile Include="JbstHandler.cs" />
     <Compile Include="JsonFxBrowserCapabilities.cs" />
     <Compile Include="JsonMLBrowserModule.cs" />
     <Compile Include="JsonMLTextWriter.cs" />

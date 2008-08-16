@@ -113,6 +113,22 @@ namespace JsonFx.JsonRpc
 
 		#region CompiledBuildResult Members
 
+		/// <summary>
+		/// Gets the MIME type for the proxy.
+		/// </summary>
+		public string ContentType
+		{
+			get { return "text/javascript"; }
+		}
+
+		/// <summary>
+		/// Gets the file extension for the proxy.
+		/// </summary>
+		public string FileExtension
+		{
+			get { return "js"; }
+		}
+
 		string CompiledBuildResult.GetBuildResult(bool prettyPrint)
 		{
 			return prettyPrint ? this.DebugProxy : this.Proxy;

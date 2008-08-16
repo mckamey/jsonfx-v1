@@ -61,12 +61,9 @@
     <Compile Include="Compilation\ScriptResourceCodeProvider.cs">
       <SubType>Component</SubType>
     </Compile>
-    <Compile Include="Handlers\CssResourceHandler.cs" />
-    <Compile Include="Handlers\MergeResourceHandler.cs" />
     <Compile Include="Handlers\ETag.cs" />
     <Compile Include="Handlers\ResourceHandlerInfo.cs" />
     <Compile Include="Handlers\ResourceHandler.cs" />
-    <Compile Include="Handlers\ScriptResourceHandler.cs" />
     <Compile Include="Properties\AssemblyVersion.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
