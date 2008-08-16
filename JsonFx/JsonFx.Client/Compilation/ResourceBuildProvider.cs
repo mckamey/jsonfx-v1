@@ -111,7 +111,7 @@ namespace JsonFx.Compilation
 			ResourceCodeProvider provider = assemblyBuilder.CodeDomProvider as ResourceCodeProvider;
 			if (provider != null)
 			{
-				IList<ParseException> errors = provider.CompileResource(
+				provider.CompileResource(
 					this,
 					base.VirtualPath,
 					out resource,
