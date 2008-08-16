@@ -43,31 +43,110 @@ namespace JsonFx.Compilation
 
 		private string source = null;
 		private string jsonp = null;
+		private bool hasJsonp = false;
 
 		#endregion Fields
 
 		#region ResourceCodeProvider
 
-		protected override IList<BuildTools.ParseException> PreProcess(ResourceBuildHelper helper, string virtualPath, string sourceText, StringWriter writer)
+		protected override IList<BuildTools.ParseException> PreProcess(
+			ResourceBuildHelper helper,
+			string virtualPath,
+			string sourceText,
+			TextWriter writer)
 		{
-			// TODO: add declaration and parse for JSONP or variable assignment?
+			this.source = this.ParseDirective(sourceText, virtualPath);
 
-			this.source = sourceText;
-
+			// parse JBST markup
 			JbstCompiler parser = new JbstCompiler();
 			parser.Parse(this.source);
-			parser.Render(writer, true);
+
+			using (StringWriter sw = new StringWriter())
+			{
+				// render a pretty-print debug version
+				this.Render(parser, sw, true);
+				sw.Flush();
+				writer.Write(sw.ToString());
+			}
+
+			using (StringWriter sw = new StringWriter())
+			{
+				// render the compacted version
+				this.Render(parser, sw, false);
+				sw.Flush();
+				this.source = sw.ToString();
+			}
+
+			// report any errors
 			return parser.Errors;
 		}
 
-		protected override IList<BuildTools.ParseException> Compact(ResourceBuildHelper helper, string virtualPath, string sourceText, TextWriter writer)
+		protected override IList<BuildTools.ParseException> Compact(
+			ResourceBuildHelper helper,
+			string virtualPath,
+			string sourceText,
+			TextWriter writer)
 		{
-			JbstCompiler parser = new JbstCompiler();
-			parser.Parse(this.source);
-			parser.Render(writer, false);
-			return parser.Errors;
+			writer.Write(this.source);
+			return null;
 		}
 
 		#endregion ResourceCodeProvider
+
+		#region Methods
+
+		private void Render(JbstCompiler parser, TextWriter writer, bool prettyPrint)
+		{
+			if (this.hasJsonp)
+			{
+				// wrap in JsonP
+				writer.Write(jsonp);
+				writer.Write('(');
+				if (prettyPrint)
+				{
+					writer.WriteLine();
+				}
+			}
+
+			parser.Render(writer, prettyPrint);
+
+			if (this.hasJsonp)
+			{
+				writer.WriteLine(");");
+			}
+		}
+
+		private string ParseDirective(string sourceText, string virtualPath)
+		{
+			int lineNumber;
+
+			DirectiveParser parser = new DirectiveParser(sourceText, virtualPath);
+			parser.ProcessDirective += new DirectiveParser.ProcessDirectiveEvent(this.ProcessDirective);
+
+			int index = parser.ParseDirectives(out lineNumber);
+
+			this.hasJsonp = !String.IsNullOrEmpty(this.jsonp);
+
+			return sourceText.Substring(index).Trim();
+		}
+
+		private void ProcessDirective(string directiveName, IDictionary<string, string> attribs, int lineNumber)
+		{
+			string name = attribs.ContainsKey("Name") ? attribs["Name"] : null;
+			if (!String.IsNullOrEmpty(name))
+			{
+				this.jsonp = name+'=';
+				return;
+			}
+
+			string method = attribs.ContainsKey("Callback") ? attribs["Callback"] : null;
+			if (!String.IsNullOrEmpty(method))
+			{
+				this.jsonp = method;
+				return;
+			}
+		}
+
+		#endregion Methods
 	}
 }

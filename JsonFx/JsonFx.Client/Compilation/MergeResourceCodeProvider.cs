@@ -50,7 +50,7 @@ namespace JsonFx.Compilation
 	{
 		#region Constants
 
-		private static readonly char[] LineDelims = { '\r', '\n' };
+		private static readonly char[] TypeDelims = { ',' };
 
 		#endregion Constants
 
@@ -62,16 +62,18 @@ namespace JsonFx.Compilation
 
 		#region ResourceCodeProvider Members
 
-		protected internal override IList<ParseException> PreProcess(ResourceBuildHelper helper, string virtualPath, string sourceText, StringWriter writer)
+		protected internal override IList<ParseException> PreProcess(
+			ResourceBuildHelper helper,
+			string virtualPath,
+			string sourceText,
+			TextWriter writer)
 		{
 			if (String.IsNullOrEmpty(sourceText))
 			{
 				return null;
 			}
-			else
-			{
-				this.sources = sourceText.Split(LineDelims, StringSplitOptions.RemoveEmptyEntries);
-			}
+
+			this.sources = sourceText.Replace("\r\n", "\n").Split('\n');
 
 			List<ParseException> errors = new List<ParseException>();
 			for (int i=0; i<this.sources.Length; i++)
@@ -153,7 +155,7 @@ namespace JsonFx.Compilation
 			List<ParseException> errors)
 		{
 			preProcessed = source.Replace(" ", "");
-			string[] parts = preProcessed.Split(new char[] { ',' }, 2, StringSplitOptions.RemoveEmptyEntries);
+			string[] parts = preProcessed.Split(TypeDelims, 2, StringSplitOptions.RemoveEmptyEntries);
 
 			if (parts.Length < 2 ||
 				String.IsNullOrEmpty(parts[0]) ||
@@ -188,9 +190,11 @@ namespace JsonFx.Compilation
 			CompilerType compiler = helper.GetDefaultCompilerTypeForLanguage(ext);
 			if (!typeof(ResourceCodeProvider).IsAssignableFrom(compiler.CodeDomProviderType))
 			{
+				// don't know how to process any further
 				compacted = preProcessed;
 				return;
 			}
+
 			ResourceCodeProvider provider = (ResourceCodeProvider)Activator.CreateInstance(compiler.CodeDomProviderType);
 			using (StringWriter sw = new StringWriter())
 			{

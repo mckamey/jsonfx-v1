@@ -50,6 +50,7 @@
     <Compile Include="Compilation\CssResourceCodeProvider.cs">
       <SubType>Component</SubType>
     </Compile>
+    <Compile Include="Compilation\DirectiveParser.cs" />
     <Compile Include="Compilation\MergeResourceCodeProvider.cs">
       <SubType>Component</SubType>
     </Compile>

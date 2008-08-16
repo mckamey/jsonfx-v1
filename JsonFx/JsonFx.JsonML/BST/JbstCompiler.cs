@@ -349,6 +349,11 @@ namespace JsonFx.JsonML.BST
 			target.Attributes["style"] = style;
 		}
 
+		public void Clear()
+		{
+			this.document.ChildControls.Clear();
+		}
+
 		#endregion Builder Methods
 
 		#region Render Methods
@@ -360,36 +365,32 @@ namespace JsonFx.JsonML.BST
 
 		public void Render(TextWriter writer, bool prettyPrint)
 		{
-			using (JsonFx.Json.JsonWriter jw = new JsonFx.Json.JsonWriter(writer))
+			JsonFx.Json.JsonWriter jw = new JsonFx.Json.JsonWriter(writer);
+			jw.PrettyPrint = prettyPrint;
+
+			IJbstControl control = null;
+			foreach (IJbstControl child in this.document.ChildControls)
 			{
-				jw.PrettyPrint = prettyPrint;
-
-				IJbstControl control = null;
-				foreach (IJbstControl child in this.document.ChildControls)
+				// tally non-whitespace controls
+				JbstLiteral lit = child as JbstLiteral;
+				if (lit != null && lit.Text == JbstLiteral.Whitespace)
 				{
-					// tally non-whitespace controls
-					JbstLiteral lit = child as JbstLiteral;
-					if (lit != null && lit.Text == JbstLiteral.Whitespace)
-					{
-						continue;
-					}
-
-					if (control != null)
-					{
-						// found 2 or more in root
-						// render with document wrapper
-						jw.Write(this.document);
-						this.document.ChildControls.Clear();
-						return;
-					}
-
-					control = child;
+					continue;
 				}
 
-				// only render single node found (null is OK)
-				jw.Write(control);
-				this.document.ChildControls.Clear();
+				if (control != null)
+				{
+					// found 2 or more in root
+					// render with document wrapper
+					jw.Write(this.document);
+					return;
+				}
+
+				control = child;
 			}
+
+			// only render single node found (null is OK)
+			jw.Write(control);
 		}
 
 		#endregion Render Methods

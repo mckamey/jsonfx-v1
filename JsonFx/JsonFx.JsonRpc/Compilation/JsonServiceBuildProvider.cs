@@ -62,8 +62,6 @@ namespace JsonFx.Compilation
 
 		private const string DefaultDirectiveName = "JsonService";
 		private const string ErrorMissingDirective = "The service must have a <%@ {0} class=\"MyNamespace.MyClass\" ... %> directive.";
-		private const string ErrorDuplicateAttrib = "The directive contains duplicate \"{0}\" attributes.";
-		private const string ErrorAttribNotSupported = "The \"{0}\" attribute is not supported by the \"{1}\" directive.";
 		private const string ErrorCouldNotCreateType = "Could not create type \"{0}\".";
 		private const string ErrorAmbiguousType = "The type \"{0}\" is ambiguous: it could come from assembly \"{1}\" or from assembly \"{2}\". Please specify the assembly explicitly in the type name.";
 		private const string ErrorMultipleDirectives = "There can be only one \"{0}\" directive.";
@@ -84,6 +82,7 @@ namespace JsonFx.Compilation
 		private string proxyTypeName = null;
 		private bool directiveParsed = false;
 		private int lineNumber = 1;
+		private bool foundDirective = false;
 
 		#endregion Fields
 
@@ -148,11 +147,6 @@ namespace JsonFx.Compilation
 			}
 			catch (Exception ex)
 			{
-				//if (this.IgnoreParseErrorsProtected())
-				//{
-				//    return;
-				//}
-
 				if (ex is HttpParseException)
 				{
 					throw;
@@ -339,11 +333,6 @@ namespace JsonFx.Compilation
 				}
 				catch (Exception ex)
 				{
-					//if (this.IgnoreParseErrorsProtected())
-					//{
-					//    return null;
-					//}
-
 					if (ex is HttpParseException)
 					{
 						throw;
@@ -369,11 +358,6 @@ namespace JsonFx.Compilation
 			}
 			catch (Exception ex)
 			{
-				//if (this.IgnoreParseErrorsProtected())
-				//{
-				//    return null;
-				//}
-
 				if (ex is HttpParseException)
 				{
 					throw;
@@ -384,7 +368,7 @@ namespace JsonFx.Compilation
 
 		#endregion BuildProvider Methods
 
-		#region Parsing Methods
+		#region Directive Methods
 
 		private void EnsureDirective()
 		{
@@ -392,186 +376,78 @@ namespace JsonFx.Compilation
 			{
 				if (!this.directiveParsed)
 				{
-					this.ParseDirective();
+					using (System.IO.TextReader reader = base.OpenReader())
+					{
+						this.sourceText = reader.ReadToEnd();
+					}
+					if (this.sourceText == null)
+					{
+						this.sourceText = String.Empty;
+					}
+
+					try
+					{
+						DirectiveParser parser = new DirectiveParser(this.sourceText, base.VirtualPath);
+						parser.ProcessDirective += this.ProcessDirective;
+						int index = parser.ParseDirectives(out this.lineNumber);
+						this.sourceText = this.sourceText.Substring(index).Trim();
+					}
+					finally
+					{
+						this.directiveParsed = true;
+					}
+
+					if (!this.foundDirective)
+					{
+						throw new HttpParseException(String.Format(ErrorMissingDirective, DefaultDirectiveName), null, base.VirtualPath, this.sourceText, this.lineNumber);
+					}
 				}
 			}
 		}
 
-		//protected bool IgnoreParseErrorsProtected()
-		//{
-		//    try
-		//    {
-		//        PropertyInfo property = typeof(BuildProvider).GetProperty(
-		//            "IgnoreParseErrors",
-		//            BindingFlags.NonPublic|BindingFlags.Instance|BindingFlags.GetProperty);
-
-		//        MethodInfo method = property.GetGetMethod(true);
-		//        return (bool)method.Invoke(this, Type.EmptyTypes);
-		//    }
-		//    catch
-		//    {
-		//        return false;
-		//    }
-		//}
-
-		private void ParseDirective()
+		private void ProcessDirective(string directiveName, IDictionary<string, string> attribs, int lineNumber)
 		{
-			try
+			this.lineNumber = lineNumber;
+
+			if (DefaultDirectiveName.Equals(directiveName, StringComparison.OrdinalIgnoreCase))
 			{
-				using (System.IO.TextReader reader = base.OpenReader())
+				if (this.foundDirective)
 				{
-					this.sourceText = reader.ReadToEnd();
+					throw new HttpParseException(String.Format(ErrorMultipleDirectives, DefaultDirectiveName), null, base.VirtualPath, this.sourceText, this.lineNumber);
 				}
-				if (this.sourceText == null)
+				this.foundDirective = true;
+
+				// determine source language
+				string language = attribs.ContainsKey("Language") ? attribs["Language"] : null;
+				if (String.IsNullOrEmpty(language))
 				{
-					this.sourceText = String.Empty;
-				}
-
-				bool foundDirective = false;
-				int index = 0;
-				int oldIndex = 0;
-				string directiveName;
-				IDictionary attribs;
-				while (this.ProcessDirective(this.sourceText, out directiveName, out attribs, ref index))
-				{
-					while (oldIndex < index)
-					{
-						oldIndex = this.sourceText.IndexOf('\n', oldIndex);
-						if (oldIndex < 0 || oldIndex >= index)
-						{
-							break;
-						}
-						oldIndex++;// move past char
-						this.lineNumber++;// inc line count
-					}
-					oldIndex = index;
-
-					if (DefaultDirectiveName.Equals(directiveName, StringComparison.OrdinalIgnoreCase))
-					{
-						if (foundDirective)
-						{
-							throw new HttpParseException(String.Format(ErrorMultipleDirectives, DefaultDirectiveName), null, base.VirtualPath, this.sourceText, this.lineNumber);
-						}
-						foundDirective = true;
-
-						// determine source language
-						string language = GetAndRemove(attribs, "Language");
-						if (String.IsNullOrEmpty(language))
-						{
-							// default to the project language
-							language = "C#";
-						}
-
-						this.compilerType = base.GetDefaultCompilerTypeForLanguage(language);
-						
-						// determine backing class
-						this.serviceTypeName = GetAndRemove(attribs, "Class");
-
-						attribs.Remove("Description");
-						attribs.Remove("CodeBehind");
-
-						this.ProcessCompilationParams(attribs, compilerType.CompilerParameters);
-					}
-					else if ("Assembly".Equals(directiveName, StringComparison.OrdinalIgnoreCase))
-					{
-						string name = GetAndRemove(attribs, "Name");
-						if (name != null)
-						{
-							this.AddAssemblyDependency(name);
-						}
-						else
-						{
-							throw new HttpParseException(String.Format(ErrorMissingAttrib, "Name"), null, base.VirtualPath, this.sourceText, this.lineNumber);
-						}
-					}
-					else
-					{
-						throw new HttpParseException(String.Format(ErrorUnkownDirective, directiveName), null, base.VirtualPath, this.sourceText, this.lineNumber);
-					}
-
-					this.CheckUnknownDirectiveAttributes(directiveName, attribs);
+					// default to C# because no additional assemblies needed
+					language = "C#";
 				}
 
-				if (!foundDirective)
-				{
-					throw new HttpParseException(String.Format(ErrorMissingDirective, DefaultDirectiveName), null, base.VirtualPath, this.sourceText, this.lineNumber);
-				}
+				this.compilerType = this.GetDefaultCompilerTypeForLanguage(language);
 
-				// remove the directive from the original source
-				this.sourceText = this.sourceText.Substring(index).TrimEnd();
+				// determine backing class
+				this.serviceTypeName = attribs.ContainsKey("Class") ? attribs["Class"] : null;
 			}
-			catch (Exception ex)
+			else if ("Assembly".Equals(directiveName, StringComparison.OrdinalIgnoreCase))
 			{
-				if (ex is HttpParseException)
+				string name = attribs.ContainsKey("Name") ? attribs["Name"] : null;
+				if (String.IsNullOrEmpty(name))
 				{
-					throw;
+					throw new HttpParseException(String.Format(ErrorMissingAttrib, "Name"), null, base.VirtualPath, this.sourceText, this.lineNumber);
 				}
-				throw new HttpParseException("ParseDirective: "+ex.Message, ex, base.VirtualPath, this.sourceText, this.lineNumber);
+				this.AddAssemblyDependency(name);
 			}
-			finally
+			else
 			{
-				this.directiveParsed = true;
+				throw new HttpParseException(String.Format(ErrorUnkownDirective, directiveName), null, base.VirtualPath, this.sourceText, this.lineNumber);
 			}
 		}
 
-		private bool ProcessDirective(string source, out string directiveName, out IDictionary attribs, ref int index)
-		{
-			Match match = Regex_Directive.Match(source, index);
-			if (!match.Success)
-			{
-				attribs = null;
-				directiveName = null;
-				return false;
-			}
+		#endregion Directive Methods
 
-			index = match.Index+match.Length;
-			attribs = new SortedList(CaseInsensitiveComparer.Default);
-			directiveName = this.ProcessAttributes(match, attribs);
-
-			return true;
-		}
-
-		/// <summary>
-		/// Parses the directive for its attributes.
-		/// </summary>
-		/// <param name="match"></param>
-		/// <param name="attribs"></param>
-		/// <returns>directive name</returns>
-		private string ProcessAttributes(Match match, IDictionary attribs)
-		{
-			string directiveName = String.Empty;
-			CaptureCollection names = match.Groups["attrname"].Captures;
-			CaptureCollection values = match.Groups["attrval"].Captures;
-			CaptureCollection equals = match.Groups["equal"].Captures;
-			for (int i = 0; i < names.Count; i++)
-			{
-				string name = names[i].ToString();
-				string value = values[i].ToString();
-				bool isAttribute = equals[i].ToString().Length > 0;
-				if (name != null)
-				{
-					if (!isAttribute && (i == 0))
-					{
-						directiveName = name;
-					}
-					else
-					{
-						try
-						{
-							if (attribs != null)
-							{
-								attribs.Add(name, value);
-							}
-						}
-						catch (ArgumentException)
-						{
-							throw new HttpParseException(String.Format(ErrorDuplicateAttrib, name), null, base.VirtualPath, this.sourceText, this.lineNumber);
-						}
-					}
-				}
-			}
-			return directiveName;
-		}
+		#region Type Methods
 
 		private void AddAssemblyDependency(string assemblyName)
 		{
@@ -587,44 +463,6 @@ namespace JsonFx.Compilation
 			}
 			this.linkedAssemblies.Add(assembly);
 		}
-
-		private void CheckUnknownDirectiveAttributes(string directiveName, IDictionary attribs)
-		{
-			if (attribs.Count > 0)
-			{
-				throw new HttpParseException(String.Format(ErrorAttribNotSupported, GetFirstKey(attribs), directiveName), null, base.VirtualPath, this.sourceText, this.lineNumber);
-			}
-		}
-
-		private void ProcessCompilationParams(IDictionary directive, CompilerParameters compilerParams)
-		{
-			bool debug = false;
-			string debugStr = GetAndRemove(directive, "Debug");
-			if (Boolean.TryParse(debugStr, out debug))
-			{
-				compilerParams.IncludeDebugInformation = debug;
-			}
-
-			uint warningLevel = 0;
-			string warningStr = GetAndRemove(directive, "WarningLevel");
-			if (UInt32.TryParse(warningStr, out warningLevel))
-			{
-				compilerParams.WarningLevel = (int)warningLevel;
-				if (warningLevel > 0)
-				{
-					compilerParams.TreatWarningsAsErrors = true;
-				}
-			}
-			string compilerOptions = GetAndRemove(directive, "CompilerOptions");
-			if (compilerOptions != null)
-			{
-				compilerParams.CompilerOptions = compilerOptions;
-			}
-		}
-
-		#endregion Parsing Methods
-
-		#region Type Methods
 
 		private Type GetTypeToCache(string typeName, Assembly assembly)
 		{
@@ -703,27 +541,5 @@ namespace JsonFx.Compilation
 		}
 
 		#endregion Type Methods
-
-		#region Dictionary Methods
-
-		private static string GetAndRemove(IDictionary dictionary, string key)
-		{
-			string value = (string)dictionary[key];
-			if (value != null)
-			{
-				dictionary.Remove(key);
-				value = value.Trim();
-			}
-			return value;
-		}
-
-		private static string GetFirstKey(IDictionary dictionary)
-		{
-			IDictionaryEnumerator enumerator = dictionary.GetEnumerator();
-			enumerator.MoveNext();
-			return (string)enumerator.Key;
-		}
-
-		#endregion Dictionary Methods
 	}
 }

@@ -91,6 +91,7 @@ namespace JsonFx.JsonML
 		private void OnDocumentReady(object sender, EventArgs e)
 		{
 			this.builder.Render(this.writer);
+			this.builder.Clear();
 		}
 
 		public override void AddAttribute(string name, string value)

@@ -382,7 +382,11 @@ namespace JsonFx.Compilation
 		/// <param name="sourceText"></param>
 		/// <param name="writer"></param>
 		/// <returns>Errors</returns>
-		protected internal virtual IList<ParseException> PreProcess(ResourceBuildHelper helper, string virtualPath, string sourceText, StringWriter writer)
+		protected internal virtual IList<ParseException> PreProcess(
+			ResourceBuildHelper helper,
+			string virtualPath,
+			string sourceText,
+			TextWriter writer)
 		{
 			writer.Write(sourceText);
 
@@ -396,7 +400,11 @@ namespace JsonFx.Compilation
 		/// <param name="sourceText"></param>
 		/// <param name="writer"></param>
 		/// <returns>Errors</returns>
-		protected internal abstract IList<ParseException> Compact(ResourceBuildHelper helper, string virtualPath, string sourceText, TextWriter writer);
+		protected internal abstract IList<ParseException> Compact(
+			ResourceBuildHelper helper,
+			string virtualPath,
+			string sourceText,
+			TextWriter writer);
 
 		#endregion Compaction Methods
 	}
