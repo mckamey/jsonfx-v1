@@ -72,7 +72,7 @@ namespace JsonFx.Compilation
 		}
 
 		protected internal override IList<ParseException> PreProcess(
-			ResourceBuildHelper helper,
+			IResourceBuildHelper helper,
 			string virtualPath,
 			string sourceText,
 			TextWriter writer)
@@ -166,7 +166,7 @@ namespace JsonFx.Compilation
 		}
 
 		private void ProcessEmbeddedResource(
-			ResourceBuildHelper helper,
+			IResourceBuildHelper helper,
 			string source,
 			out string preProcessed,
 			out string compacted,
@@ -260,7 +260,7 @@ namespace JsonFx.Compilation
 			}
 		}
 
-		protected internal override IList<ParseException> Compact(ResourceBuildHelper helper, string virtualPath, string sourceText, TextWriter writer)
+		protected internal override IList<ParseException> Compact(IResourceBuildHelper helper, string virtualPath, string sourceText, TextWriter writer)
 		{
 			// these were compacted in the preprocess so just emit
 			foreach (string source in this.sources)
