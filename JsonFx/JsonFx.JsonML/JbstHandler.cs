@@ -23,29 +23,5 @@ namespace JsonFx.JsonML
 		}
 
 		#endregion Properties
-
-		#region Methods
-
-		protected override void Render(HttpContext context, bool isDebug, Stream input)
-		{
-			// jsonp(...); style
-			string jsonp = context.Request.QueryString["jsonp"];
-
-			if (!String.IsNullOrEmpty(jsonp))
-			{
-				context.Response.Output.Write(jsonp);
-				context.Response.Output.Write("(");
-			}
-
-			// let JsonFx.Handlers.ResourceHandler serve the request
-			base.Render(context, isDebug, input);
-
-			if (!String.IsNullOrEmpty(jsonp))
-			{
-				context.Response.Output.Write(");");
-			}
-		}
-
-		#endregion Methods
 	}
 }

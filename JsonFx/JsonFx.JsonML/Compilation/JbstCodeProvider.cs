@@ -112,7 +112,7 @@ namespace JsonFx.Compilation
 
 			if (this.hasJsonp)
 			{
-				writer.WriteLine(");");
+				writer.Write(");");
 			}
 		}
 
