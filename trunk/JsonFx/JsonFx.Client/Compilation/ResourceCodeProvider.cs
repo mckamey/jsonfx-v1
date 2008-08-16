@@ -57,6 +57,12 @@ namespace JsonFx.Compilation
 	/// </remarks>
 	public abstract class ResourceCodeProvider : Microsoft.CSharp.CSharpCodeProvider
 	{
+		#region Fields
+
+		private List<ParseException> errors = new List<ParseException>();
+
+		#endregion Fields
+
 		#region Properties
 
 		/// <summary>
@@ -76,7 +82,14 @@ namespace JsonFx.Compilation
 
 		#region Methods
 
-		protected internal List<ParseException> CompileResource(
+		/// <summary>
+		/// Delegates compilation to the compiler implementation
+		/// </summary>
+		/// <param name="helper"></param>
+		/// <param name="virtualPath"></param>
+		/// <param name="preProcessed"></param>
+		/// <param name="compacted"></param>
+		protected internal void CompileResource(
 			IResourceBuildHelper helper,
 			string virtualPath,
 			out string preProcessed,
@@ -88,7 +101,6 @@ namespace JsonFx.Compilation
 				preProcessed = reader.ReadToEnd();
 			}
 
-			List<ParseException> errors = new List<ParseException>();
 			using (StringWriter writer = new StringWriter(new StringBuilder(preProcessed.Length)))
 			{
 				// preprocess the resource
@@ -125,11 +137,54 @@ namespace JsonFx.Compilation
 				writer.Flush();
 				compacted = writer.ToString();
 			}
+		}
 
-			return errors;
+		/// <summary>
+		/// Adds any existing errors to the CompilerResults
+		/// </summary>
+		/// <param name="results"></param>
+		private void ReportErrors(CompilerResults results)
+		{
+			foreach (ParseException ex in errors)
+			{
+				CompilerError error = new CompilerError(ex.File, ex.Line, ex.Column, ex.ErrorCode, ex.Message);
+				error.IsWarning = (ex is ParseWarning);
+				results.Errors.Add(error);
+			}
 		}
 
 		#endregion Methods
+
+		#region CodeDomProvider Methods
+
+		public override CompilerResults CompileAssemblyFromFile(CompilerParameters options, params string[] fileNames)
+		{
+			CompilerResults results = base.CompileAssemblyFromFile(options, fileNames);
+
+			this.ReportErrors(results);
+
+			return results;
+		}
+
+		public override CompilerResults CompileAssemblyFromDom(CompilerParameters options, params CodeCompileUnit[] compilationUnits)
+		{
+			CompilerResults results = base.CompileAssemblyFromDom(options, compilationUnits);
+
+			this.ReportErrors(results);
+
+			return results;
+		}
+
+		public override CompilerResults CompileAssemblyFromSource(CompilerParameters options, params string[] sources)
+		{
+			CompilerResults results = base.CompileAssemblyFromSource(options, sources);
+
+			this.ReportErrors(results);
+
+			return results;
+		}
+
+		#endregion CodeDomProvider Methods
 
 		#region Compaction Methods
 
