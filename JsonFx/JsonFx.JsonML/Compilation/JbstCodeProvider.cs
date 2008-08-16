@@ -44,6 +44,7 @@ namespace JsonFx.Compilation
 		private string source = null;
 		private string jsonp = null;
 		private bool hasJsonp = false;
+		private bool isJsonpVar = false;
 
 		#endregion Fields
 
@@ -101,11 +102,18 @@ namespace JsonFx.Compilation
 			{
 				// wrap in JsonP
 				writer.Write(jsonp);
-				writer.Write('(');
-				if (prettyPrint)
+				if (this.isJsonpVar)
 				{
-					writer.WriteLine();
+					if (prettyPrint)
+					{
+						writer.Write(" = ");
+					}
+					else
+					{
+						writer.Write('=');
+					}
 				}
+				writer.Write('(');
 			}
 
 			parser.Render(writer, prettyPrint);
@@ -135,7 +143,8 @@ namespace JsonFx.Compilation
 			string name = attribs.ContainsKey("Name") ? attribs["Name"] : null;
 			if (!String.IsNullOrEmpty(name))
 			{
-				this.jsonp = name+'=';
+				this.jsonp = name;
+				this.isJsonpVar = true;
 				return;
 			}
 
@@ -143,6 +152,7 @@ namespace JsonFx.Compilation
 			if (!String.IsNullOrEmpty(method))
 			{
 				this.jsonp = method;
+				this.isJsonpVar = false;
 				return;
 			}
 		}
