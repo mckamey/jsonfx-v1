@@ -52,7 +52,6 @@ namespace JsonFx.Compilation
 
 		#region Fields
 
-		private string[] sources = null;
 		private string contentType = "text/plain";
 		private string fileExtension = "txt";
 		private bool isMimeSet = false;
@@ -71,53 +70,57 @@ namespace JsonFx.Compilation
 			get { return this.contentType; }
 		}
 
-		protected internal override IList<ParseException> PreProcess(
+		protected internal override void ProcessResource(
 			IResourceBuildHelper helper,
 			string virtualPath,
 			string sourceText,
-			TextWriter writer)
+			out string resource,
+			out string compacted,
+			List<ParseException> errors)
 		{
 			if (String.IsNullOrEmpty(sourceText))
 			{
-				return null;
+				resource = null;
+				compacted = null;
+				return;
 			}
 
-			this.sources = sourceText.Replace("\r\n", "\n").Split('\n');
+			StringBuilder resources = new StringBuilder();
+			StringBuilder compacts = new StringBuilder();
+			string[] files = sourceText.Replace("\r\n", "\n").Split('\n');
 
-			List<ParseException> errors = new List<ParseException>();
-			for (int i=0; i<this.sources.Length; i++)
+			for (int i=0; i<files.Length; i++)
 			{
 				try
 				{
-					if (String.IsNullOrEmpty(this.sources[i]))
+					// skip blank and comment lines
+					if (String.IsNullOrEmpty(files[i]) ||
+						files[i].StartsWith("//") ||
+						files[i].StartsWith("#"))
 					{
 						continue;
 					}
 
-					if (this.sources[i].StartsWith("//") ||
-						this.sources[i].StartsWith("#"))
+					// process embedded resource
+					if (files[i].IndexOf(',') >= 0)
 					{
-						this.sources[i] = null;
+						string preProcessed, compact;
+
+						this.ProcessEmbeddedResource(helper, files[i], out preProcessed, out compact, errors);
+
+						compacts.Append(compact);
+						resources.Append(preProcessed);
 						continue;
 					}
 
-					if (this.sources[i].IndexOf(',') >= 0)
+					// ensure app-relative BuildManager paths
+					if (files[i].StartsWith("/"))
 					{
-						string preProcessed, compacted;
-						this.ProcessEmbeddedResource(helper, this.sources[i], out preProcessed, out compacted, errors);
-
-						writer.Write(preProcessed);
-						this.sources[i] = compacted;
-						continue;
+						files[i] = "~"+files[i];
 					}
 
-					if (this.sources[i].StartsWith("/"))
-					{
-						// ensure app-relative paths for BuildManager lookup
-						this.sources[i] = "~"+this.sources[i];
-					}
-
-					CompiledBuildResult result = CompiledBuildResult.Create(this.sources[i]);
+					// try to get as a CompiledBuildResult
+					CompiledBuildResult result = CompiledBuildResult.Create(files[i]);
 					if (result != null)
 					{
 						if (!this.isMimeSet &&
@@ -129,30 +132,32 @@ namespace JsonFx.Compilation
 							this.isMimeSet = true;
 						}
 
-						helper.AddVirtualPathDependency(this.sources[i]);
+						helper.AddVirtualPathDependency(files[i]);
 
-						writer.WriteLine(result.Resource);
-						this.sources[i] = result.CompactedResource;
+						resources.Append(result.Resource);
+						compacts.Append(result.CompactedResource);
 						continue;
 					}
 
-					string source = BuildManager.GetCompiledCustomString(this.sources[i]);
-					if (!String.IsNullOrEmpty(source))
+					// ask BuildManager if compiles down to a string
+					string text = BuildManager.GetCompiledCustomString(files[i]);
+					if (!String.IsNullOrEmpty(text))
 					{
-						helper.AddVirtualPathDependency(this.sources[i]);
+						helper.AddVirtualPathDependency(files[i]);
 
-						writer.WriteLine(source);
-						this.sources[i] = source;
+						resources.Append(text);
+						compacts.Append(text);
 						continue;
 					}
 
-					source = helper.OpenReader(this.sources[i]).ReadToEnd();
-					if (!String.IsNullOrEmpty(source))
+					// use the contents of the virtual path
+					text = helper.OpenReader(files[i]).ReadToEnd();
+					if (!String.IsNullOrEmpty(text))
 					{
-						helper.AddVirtualPathDependency(this.sources[i]);
+						helper.AddVirtualPathDependency(files[i]);
 
-						writer.WriteLine(source);
-						this.sources[i] = source;
+						resources.Append(text);
+						compacts.Append(text);
 						continue;
 					}
 				}
@@ -162,7 +167,8 @@ namespace JsonFx.Compilation
 				}
 			}
 
-			return errors;
+			resource = resources.ToString();
+			compacted = compacts.ToString();
 		}
 
 		private void ProcessEmbeddedResource(
@@ -214,41 +220,15 @@ namespace JsonFx.Compilation
 			}
 
 			ResourceCodeProvider provider = (ResourceCodeProvider)Activator.CreateInstance(compiler.CodeDomProviderType);
-			using (StringWriter sw = new StringWriter())
-			{
-				IList<ParseException> parseErrors = provider.PreProcess(
-					helper,
-					parts[0],
-					preProcessed,
-					sw);
-				if (parseErrors != null && parseErrors.Count > 0)
-				{
-					// report any errors
-					errors.AddRange(parseErrors);
-				}
-				sw.Flush();
 
-				// concatenate the preprocessed source for current merge phase
-				preProcessed = sw.ToString();
-			}
-
-			using (StringWriter sw = new StringWriter())
-			{
-				IList<ParseException> parseErrors = provider.Compact(
-					helper,
-					parts[0],
-					preProcessed,
-					sw);
-				if (parseErrors != null && parseErrors.Count > 0)
-				{
-					// report any errors
-					errors.AddRange(parseErrors);
-				}
-				sw.Flush();
-
-				// ensure compacted source for next merge phase
-				compacted = sw.ToString();
-			}
+			// concatenate the preprocessed source for current merge phase
+			provider.ProcessResource(
+				helper,
+				parts[0],
+				preProcessed,
+				out preProcessed,
+				out compacted,
+				errors);
 
 			if (!this.isMimeSet &&
 				!String.IsNullOrEmpty(provider.ContentType) &&
@@ -258,22 +238,6 @@ namespace JsonFx.Compilation
 				this.fileExtension = provider.FileExtension;
 				this.isMimeSet = true;
 			}
-		}
-
-		protected internal override IList<ParseException> Compact(IResourceBuildHelper helper, string virtualPath, string sourceText, TextWriter writer)
-		{
-			// these were compacted in the preprocess so just emit
-			foreach (string source in this.sources)
-			{
-				if (String.IsNullOrEmpty(source))
-				{
-					continue;
-				}
-
-				writer.WriteLine(source);
-			}
-
-			return null;
 		}
 
 		#endregion ResourceCodeProvider Members

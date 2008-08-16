@@ -33,6 +33,7 @@ using System.IO;
 using System.Collections.Generic;
 using System.Web.Compilation;
 
+using BuildTools;
 using JsonFx.JsonML.BST;
 
 namespace JsonFx.Compilation
@@ -41,7 +42,6 @@ namespace JsonFx.Compilation
 	{
 		#region Fields
 
-		private string source = null;
 		private string jsonp = null;
 		private bool hasJsonp = false;
 		private bool isJsonpVar = false;
@@ -60,24 +60,26 @@ namespace JsonFx.Compilation
 			get { return "js"; }
 		}
 
-		protected override IList<BuildTools.ParseException> PreProcess(
+		protected override void ProcessResource(
 			IResourceBuildHelper helper,
 			string virtualPath,
 			string sourceText,
-			TextWriter writer)
+			out string resource,
+			out string compacted,
+			List<ParseException> errors)
 		{
-			this.source = this.ParseDirective(sourceText, virtualPath);
+			resource = this.ParseDirective(sourceText, virtualPath);
 
 			// parse JBST markup
 			JbstCompiler parser = new JbstCompiler();
-			parser.Parse(this.source);
+			parser.Parse(resource);
 
 			using (StringWriter sw = new StringWriter())
 			{
 				// render a pretty-print debug version
 				this.Render(parser, sw, true);
 				sw.Flush();
-				writer.Write(sw.ToString());
+				resource = sw.ToString();
 			}
 
 			using (StringWriter sw = new StringWriter())
@@ -85,21 +87,8 @@ namespace JsonFx.Compilation
 				// render the compacted version
 				this.Render(parser, sw, false);
 				sw.Flush();
-				this.source = sw.ToString();
+				compacted = sw.ToString();
 			}
-
-			// report any errors
-			return parser.Errors;
-		}
-
-		protected override IList<BuildTools.ParseException> Compact(
-			IResourceBuildHelper helper,
-			string virtualPath,
-			string sourceText,
-			TextWriter writer)
-		{
-			writer.Write(this.source);
-			return null;
 		}
 
 		#endregion ResourceCodeProvider
