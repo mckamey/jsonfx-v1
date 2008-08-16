@@ -38,58 +38,45 @@ using JsonFx.Compilation;
 
 namespace JsonFx.Handlers
 {
-	public abstract class ResourceHandlerInfo : CompiledBuildResult
+	public abstract class CompiledBuildResult
 	{
 		#region Constants
 
-		protected internal const string GeneratedNamespace = "JsonFx._Generated";
-
-		private const string CompactedPath = "Compacted_";
+		protected internal const string GeneratedNamespace = "JsonFx._Resources";
 
 		#endregion Constants
 
 		#region Properties
 
-		public abstract string ResourceName { get; }
+		/// <summary>
+		/// Gets the pretty-printed resource data
+		/// </summary>
+		public abstract string Resource { get; }
 
-		public abstract string CompactResourceName { get; }
+		/// <summary>
+		/// Gets the compacted resource data
+		/// </summary>
+		public abstract string CompactedResource { get; }
 
 		#endregion Properties
 
 		#region Methods
 
-		internal static string GetEmbeddedResourceName(string virtualPath)
+		/// <summary>
+		/// ResourceHandlerInfo Factory method
+		/// </summary>
+		/// <param name="virtualPath"></param>
+		/// <returns></returns>
+		internal static CompiledBuildResult Create(string virtualPath)
 		{
-			if (String.IsNullOrEmpty(virtualPath))
+			try
 			{
-				return virtualPath;
+				return (CompiledBuildResult)BuildManager.CreateInstanceFromVirtualPath(virtualPath, typeof(CompiledBuildResult));
 			}
-
-			StringBuilder builder = new StringBuilder(virtualPath);
-			builder.Replace('/', '.');
-			builder.Replace('\\', '.');
-			builder.Replace('?', '.');
-			builder.Replace('*', '.');
-			builder.Replace(':', '.');
-			return builder.ToString().TrimStart('.');
-		}
-
-		internal static string GetCompactedResourceName(string resourceName)
-		{
-			string dir = Path.GetDirectoryName(resourceName);
-			if (!String.IsNullOrEmpty(dir))
+			catch
 			{
-				dir += Path.DirectorySeparatorChar;
+				return null;
 			}
-
-			return dir +
-				ResourceHandlerInfo.CompactedPath +
-				Path.GetFileName(resourceName);
-		}
-
-		internal static ResourceHandlerInfo GetHandlerInfo(string virtualPath)
-		{
-			return BuildManager.CreateInstanceFromVirtualPath(virtualPath, typeof(ResourceHandlerInfo)) as ResourceHandlerInfo;
 		}
 
 		#endregion Methods
@@ -99,16 +86,6 @@ namespace JsonFx.Handlers
 		public abstract string ContentType { get; }
 
 		public abstract string FileExtension { get; }
-
-		string CompiledBuildResult.GetBuildResult(bool prettyPrint)
-		{
-			string resourcePath = prettyPrint ? this.ResourceName : this.CompactResourceName;
-			Assembly assembly = this.GetType().Assembly;
-			using (TextReader reader = new StreamReader(assembly.GetManifestResourceStream(resourcePath)))
-			{
-				return reader.ReadToEnd();
-			}
-		}
 
 		#endregion CompiledBuildResult Members
 	}

@@ -83,7 +83,7 @@ namespace JsonFx.Handlers
 					"Content-Disposition",
 					"inline;filename="+this.serviceInfo.ServiceType.FullName+'.'+this.serviceInfo.FileExtension);
 
-				string proxyScript = prettyPrint ? this.serviceInfo.DebugProxy :  this.serviceInfo.Proxy;
+				string proxyScript = prettyPrint ? this.serviceInfo.Resource :  this.serviceInfo.CompactedResource;
 				if (String.IsNullOrEmpty(proxyScript))
 				{
 					// if wasn't generated, generate on the fly with reflection

@@ -39,12 +39,6 @@ namespace JsonFx.Handlers
 {
 	public class ResourceHandler : IHttpHandler
 	{
-		#region Constants
-
-		private const int BufferSize = 4096;
-
-		#endregion Constants
-
 		#region IHttpHandler Members
 
 		void IHttpHandler.ProcessRequest(HttpContext context)
@@ -55,36 +49,29 @@ namespace JsonFx.Handlers
 			context.Response.BufferOutput = true;
 
 			// specifying "DEBUG" in the query string gets the non-compacted form
-			ResourceHandlerInfo info;
-			Stream input = this.GetResourceStream(context, isDebug, out info);
-			if (input != Stream.Null)
+			CompiledBuildResult info = this.GetResourceInfo(context, isDebug);
+			if (info == null)
 			{
-				context.Response.ContentEncoding = System.Text.Encoding.UTF8;
-				context.Response.ContentType = info.ContentType;
-
-				context.Response.AppendHeader(
-					"Content-Disposition",
-					"inline;filename="+Path.GetFileNameWithoutExtension(context.Request.FilePath)+'.'+info.FileExtension);
-
-				if (isDebug)
-				{
-					context.Response.Cache.SetCacheability(HttpCacheability.NoCache);
-				}
-
-				this.Render(context, isDebug, input);
+				// either eTag 304 was sent or no resource found
+				return;
 			}
-		}
 
-		protected virtual void Render(HttpContext context, bool isDebug, Stream input)
-		{
-			if (input == null)
+			context.Response.ContentEncoding = System.Text.Encoding.UTF8;
+			context.Response.ContentType = info.ContentType;
+
+			context.Response.AppendHeader(
+				"Content-Disposition",
+				"inline;filename="+Path.GetFileNameWithoutExtension(context.Request.FilePath)+'.'+info.FileExtension);
+
+			TextWriter writer = context.Response.Output;
+			if (isDebug)
 			{
-				//throw new HttpException((int)System.Net.HttpStatusCode.NotFound, "Invalid path");
-				this.OutputTargetFile(context, isDebug);
+//				context.Response.Cache.SetCacheability(HttpCacheability.NoCache);
+				writer.Write(info.Resource);
 			}
 			else
 			{
-				this.BufferedWrite(context, input);
+				writer.Write(info.CompactedResource);
 			}
 		}
 
@@ -98,70 +85,31 @@ namespace JsonFx.Handlers
 		#region ResourceHandler Members
 
 		/// <summary>
-		/// Determines the appropriate source stream for the incomming request
+		/// Determines the appropriate source for the incomming request
 		/// </summary>
 		/// <param name="context"></param>
 		/// <param name="isDebug"></param>
-		/// <returns></returns>
-		protected virtual Stream GetResourceStream(HttpContext context, bool isDebug, out ResourceHandlerInfo info)
+		/// <returns>ResourceHandlerInfo</returns>
+		protected virtual CompiledBuildResult GetResourceInfo(HttpContext context, bool isDebug)
 		{
 			string virtualPath = context.Request.AppRelativeCurrentExecutionFilePath;
-			info = ResourceHandlerInfo.GetHandlerInfo(virtualPath);
+			CompiledBuildResult info = CompiledBuildResult.Create(virtualPath);
 			if (info == null)
 			{
 				return null;
 			}
-			string resourcePath = isDebug ? info.ResourceName : info.CompactResourceName;
-
-			Assembly assembly = BuildManager.GetCompiledAssembly(virtualPath);
 
 			// check if client has cached copy
-			ETag etag = new EmbeddedResourceETag(assembly, resourcePath);
+			Type resourceType = info.GetType();
+			ETag etag = new EmbeddedResourceETag(// should this be StringETag?
+				resourceType.Assembly,
+				resourceType.FullName);
 			if (etag.HandleETag(context, HttpCacheability.ServerAndPrivate, isDebug))
 			{
-				return Stream.Null;
+				return null;
 			}
 
-			return assembly.GetManifestResourceStream(resourcePath);
-		}
-
-		protected void OutputTargetFile(HttpContext context, bool isDebug)
-		{
-			string fileName = context.Request.PhysicalPath;
-
-			// check if client has cached copy
-			ETag etag = new FileETag(fileName);
-			if (!etag.HandleETag(context, HttpCacheability.ServerAndPrivate, isDebug))
-			{
-				context.Response.TransmitFile(fileName);
-
-				//using (StreamReader reader = File.OpenText(fileName))
-				//{
-				//    this.BufferedWrite(context, reader);
-				//}
-			}
-		}
-
-		protected void BufferedWrite(HttpContext context, Stream input)
-		{
-			if (input == null)
-			{
-				throw new HttpException((int)System.Net.HttpStatusCode.NotFound, "Input stream is null.");
-			}
-			using (TextReader reader = new StreamReader(input, System.Text.Encoding.UTF8))
-			{
-				TextWriter writer = context.Response.Output;
-				// buffered write to response
-				char[] buffer = new char[ResourceHandler.BufferSize];
-				int count;
-				do
-				{
-					count = reader.ReadBlock(buffer, 0, ResourceHandler.BufferSize);
-					writer.Write(buffer, 0, count);
-				} while (count > 0);
-
-				// flushing/closing the output causes "Transfer-Encoding: Chunked" which chokes IE6
-			}
+			return info;
 		}
 
 		#endregion ResourceHandler Members
