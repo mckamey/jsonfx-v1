@@ -56,9 +56,6 @@
     <Compile Include="Handlers\JsonServiceHandlerFactory.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Handlers\JsonServiceProxyHandler.cs">
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Include="JsonRpc\Discovery\JsonDescriptionBase.cs">
       <SubType>Code</SubType>
     </Compile>

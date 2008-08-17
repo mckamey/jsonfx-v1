@@ -211,7 +211,7 @@ namespace JsonFx.Compilation
 			field.Type = new CodeTypeReference(typeof(byte[]));
 			field.Attributes = MemberAttributes.Private|MemberAttributes.Static|MemberAttributes.Final;
 
-			CodeArrayCreateExpression arrayInit = new CodeArrayCreateExpression(field.Type);
+			CodeArrayCreateExpression arrayInit = new CodeArrayCreateExpression(field.Type, gzippedBytes.Length);
 			foreach (byte b in gzippedBytes)
 			{
 				arrayInit.Initializers.Add(new CodePrimitiveExpression(b));
@@ -229,7 +229,7 @@ namespace JsonFx.Compilation
 			field.Type = new CodeTypeReference(typeof(byte[]));
 			field.Attributes = MemberAttributes.Private|MemberAttributes.Static|MemberAttributes.Final;
 
-			arrayInit = new CodeArrayCreateExpression(field.Type);
+			arrayInit = new CodeArrayCreateExpression(field.Type, deflatedProxy.Length);
 			foreach (byte b in deflatedBytes)
 			{
 				arrayInit.Initializers.Add(new CodePrimitiveExpression(b));
