@@ -42,7 +42,7 @@ namespace JsonFx.Handlers
 	{
 		#region Constants
 
-		private const string RootNamespace = "JsonFx._Generated";
+		private const string RootNamespace = "__JsonFx";
 
 		#endregion Constants
 
