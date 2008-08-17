@@ -237,12 +237,13 @@ namespace JsonFx.Compilation
 			field.Type = new CodeTypeReference(typeof(byte[]));
 			field.Attributes = MemberAttributes.Private|MemberAttributes.Static|MemberAttributes.Final;
 
-			CodeArrayCreateExpression arrayInit = new CodeArrayCreateExpression(field.Type);
+			CodeArrayCreateExpression arrayInit = new CodeArrayCreateExpression(field.Type, gzippedProxy.Length);
 			foreach (byte b in gzippedProxy)
 			{
 				arrayInit.Initializers.Add(new CodePrimitiveExpression(b));
 			}
 			field.InitExpression = arrayInit;
+
 			resourceType.Members.Add(field);
 
 			#endregion private static static readonly byte[] GzippedBytes
@@ -254,12 +255,13 @@ namespace JsonFx.Compilation
 			field.Type = new CodeTypeReference(typeof(byte[]));
 			field.Attributes = MemberAttributes.Private|MemberAttributes.Static|MemberAttributes.Final;
 
-			arrayInit = new CodeArrayCreateExpression(field.Type);
+			arrayInit = new CodeArrayCreateExpression(field.Type, deflatedProxy.Length);
 			foreach (byte b in deflatedProxy)
 			{
 				arrayInit.Initializers.Add(new CodePrimitiveExpression(b));
 			}
 			field.InitExpression = arrayInit;
+
 			resourceType.Members.Add(field);
 
 			#endregion private static readonly byte[] DeflatedBytes
