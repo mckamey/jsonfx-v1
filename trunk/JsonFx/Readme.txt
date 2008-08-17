@@ -45,7 +45,7 @@ v1.0.704.2210:
 
 v1.0.704.1900:
 - A bare bones example, but it shows just about everything
-- Added Example pages ~/Services/Default.aspx and ~/Effects/Default.aspx with some light instructions on them
+- Added Example pages ~/Services/ and ~/Effects/ with some light instructions on them
 - IIS Configuration (http://jsonfx.net/Download/JsonFx_Config.gif)
 - You will need to register the extensions .css, .js, .merge, .jrpc, .jbst to be handled by ASP.NET
 - Eventually .css also, but that isn't quite finished
