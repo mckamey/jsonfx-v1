@@ -229,7 +229,7 @@ namespace JsonFx.Compilation
 			field.Type = new CodeTypeReference(typeof(byte[]));
 			field.Attributes = MemberAttributes.Private|MemberAttributes.Static|MemberAttributes.Final;
 
-			arrayInit = new CodeArrayCreateExpression(field.Type, deflatedProxy.Length);
+			arrayInit = new CodeArrayCreateExpression(field.Type, deflatedBytes.Length);
 			foreach (byte b in deflatedBytes)
 			{
 				arrayInit.Initializers.Add(new CodePrimitiveExpression(b));

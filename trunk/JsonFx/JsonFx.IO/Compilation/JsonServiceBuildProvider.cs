@@ -206,8 +206,8 @@ namespace JsonFx.Compilation
 			string proxyOutput = proxy.OutputProxy(false);
 			string debugProxyOutput = proxy.OutputProxy(true);
 
-			byte[] gzippedProxy, deflatedProxy;
-			ResourceBuildProvider.Compress(proxyOutput, out gzippedProxy, out deflatedProxy);
+			byte[] gzippedBytes, deflatedBytes;
+			ResourceBuildProvider.Compress(proxyOutput, out gzippedBytes, out deflatedBytes);
 
 			// generate a service factory
 			CodeCompileUnit generatedUnit = new CodeCompileUnit();
@@ -237,8 +237,8 @@ namespace JsonFx.Compilation
 			field.Type = new CodeTypeReference(typeof(byte[]));
 			field.Attributes = MemberAttributes.Private|MemberAttributes.Static|MemberAttributes.Final;
 
-			CodeArrayCreateExpression arrayInit = new CodeArrayCreateExpression(field.Type, gzippedProxy.Length);
-			foreach (byte b in gzippedProxy)
+			CodeArrayCreateExpression arrayInit = new CodeArrayCreateExpression(field.Type, gzippedBytes.Length);
+			foreach (byte b in gzippedBytes)
 			{
 				arrayInit.Initializers.Add(new CodePrimitiveExpression(b));
 			}
@@ -255,8 +255,8 @@ namespace JsonFx.Compilation
 			field.Type = new CodeTypeReference(typeof(byte[]));
 			field.Attributes = MemberAttributes.Private|MemberAttributes.Static|MemberAttributes.Final;
 
-			arrayInit = new CodeArrayCreateExpression(field.Type, deflatedProxy.Length);
-			foreach (byte b in deflatedProxy)
+			arrayInit = new CodeArrayCreateExpression(field.Type, deflatedBytes.Length);
+			foreach (byte b in deflatedBytes)
 			{
 				arrayInit.Initializers.Add(new CodePrimitiveExpression(b));
 			}
