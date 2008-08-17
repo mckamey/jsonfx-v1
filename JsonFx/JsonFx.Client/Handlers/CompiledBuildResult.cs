@@ -42,7 +42,7 @@ namespace JsonFx.Handlers
 	{
 		#region Constants
 
-		protected internal const string GeneratedNamespace = "JsonFx._Resources";
+		private const string RootNamespace = "JsonFx._Generated";
 
 		#endregion Constants
 
@@ -77,6 +77,47 @@ namespace JsonFx.Handlers
 			{
 				return null;
 			}
+		}
+
+		public static string GenerateTypeName(string virtualPath)
+		{
+			if (String.IsNullOrEmpty(virtualPath))
+			{
+				return CompiledBuildResult.RootNamespace+"._"+Guid.NewGuid().ToString("N");
+			}
+
+			StringBuilder builder = new StringBuilder(virtualPath);
+			if (builder[0] == '~')
+			{
+				builder.Remove(0, 1);
+			}
+
+			for (int i=0; i<builder.Length; i++)
+			{
+				if (Char.IsLetterOrDigit(builder[i]))
+				{
+					continue;
+				}
+
+				switch (builder[i])
+				{
+					case '\\':
+					case '/':
+					{
+						builder[i] = '.';
+						break;
+					}
+					case '-':
+					case '.':
+					default:
+					{
+						builder[i] = '_';
+						break;
+					}
+				}
+			}
+
+			return CompiledBuildResult.RootNamespace+builder.ToString();
 		}
 
 		#endregion Methods

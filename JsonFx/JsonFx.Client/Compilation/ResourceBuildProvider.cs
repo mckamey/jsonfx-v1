@@ -65,11 +65,57 @@ namespace JsonFx.Compilation
 	{
 		#region Fields
 
-		private string descriptorTypeName = null;
 		private List<string> pathDependencies = null;
 		private List<Assembly> assemblyDependencies = null;
+		private string resourceFullName = null;
+		private string resourceTypeName = null;
+		private string resourceNamespace = null;
 
 		#endregion Fields
+
+		#region Properties
+
+		protected virtual string ResourceFullName
+		{
+			get
+			{
+				if (String.IsNullOrEmpty(this.resourceFullName))
+				{
+					this.resourceFullName = CompiledBuildResult.GenerateTypeName(base.VirtualPath);
+				}
+				return this.resourceFullName;
+			}
+		}
+
+		protected string ResourceNamespace
+		{
+			get
+			{
+				if (String.IsNullOrEmpty(this.resourceNamespace))
+				{
+					string type = this.ResourceFullName;
+					int dot = type.LastIndexOf('.');
+					this.resourceNamespace = type.Substring(0, dot);
+				}
+				return this.resourceNamespace;
+			}
+		}
+
+		protected string ResourceTypeName
+		{
+			get
+			{
+				if (String.IsNullOrEmpty(this.resourceTypeName))
+				{
+					string type = this.ResourceFullName;
+					int dot = type.LastIndexOf('.');
+					this.resourceTypeName = type.Substring(dot+1);
+				}
+				return this.resourceTypeName;
+			}
+		}
+
+		#endregion Properties
 
 		#region BuildProvider Methods
 
@@ -99,9 +145,9 @@ namespace JsonFx.Compilation
 
 		public override Type GetGeneratedType(CompilerResults results)
 		{
-			System.Diagnostics.Debug.Assert(!String.IsNullOrEmpty(this.descriptorTypeName));
+			System.Diagnostics.Debug.Assert(!String.IsNullOrEmpty(this.resourceFullName));
 
-			return results.CompiledAssembly.GetType(this.descriptorTypeName);
+			return results.CompiledAssembly.GetType(this.resourceFullName);
 		}
 
 		public override void GenerateCode(AssemblyBuilder assemblyBuilder)
@@ -134,14 +180,14 @@ namespace JsonFx.Compilation
 
 			// generate a static class
 			CodeCompileUnit generatedUnit = new CodeCompileUnit();
-			CodeNamespace ns = new CodeNamespace(CompiledBuildResult.GeneratedNamespace);
+			CodeNamespace ns = new CodeNamespace(this.ResourceNamespace);
 			generatedUnit.Namespaces.Add(ns);
-			CodeTypeDeclaration descriptorType = new CodeTypeDeclaration();
-			descriptorType.IsClass = true;
-			descriptorType.Name = "_"+Guid.NewGuid().ToString("N");
-			descriptorType.Attributes = MemberAttributes.Public|MemberAttributes.Final;
-			descriptorType.BaseTypes.Add(typeof(CompiledBuildResult));
-			ns.Types.Add(descriptorType);
+			CodeTypeDeclaration resourceType = new CodeTypeDeclaration();
+			resourceType.IsClass = true;
+			resourceType.Name = this.ResourceTypeName;
+			resourceType.Attributes = MemberAttributes.Public|MemberAttributes.Final;
+			resourceType.BaseTypes.Add(typeof(CompiledBuildResult));
+			ns.Types.Add(resourceType);
 
 			#region ResourceHandlerInfo.Resource
 
@@ -153,7 +199,7 @@ namespace JsonFx.Compilation
 			property.HasGet = true;
 			// get { return resource; }
 			property.GetStatements.Add(new CodeMethodReturnStatement(new CodePrimitiveExpression(resource)));
-			descriptorType.Members.Add(property);
+			resourceType.Members.Add(property);
 
 			#endregion ResourceHandlerInfo.Resource
 
@@ -167,7 +213,7 @@ namespace JsonFx.Compilation
 			property.HasGet = true;
 			// get { return compactedResource; }
 			property.GetStatements.Add(new CodeMethodReturnStatement(new CodePrimitiveExpression(compactedResource)));
-			descriptorType.Members.Add(property);
+			resourceType.Members.Add(property);
 
 			#endregion ResourceHandlerInfo.CompactedResource
 
@@ -181,7 +227,7 @@ namespace JsonFx.Compilation
 			property.HasGet = true;
 			// get { return contentType; }
 			property.GetStatements.Add(new CodeMethodReturnStatement(new CodePrimitiveExpression(contentType)));
-			descriptorType.Members.Add(property);
+			resourceType.Members.Add(property);
 
 			#endregion ResourceHandlerInfo.ContentType
 
@@ -195,16 +241,13 @@ namespace JsonFx.Compilation
 			property.HasGet = true;
 			// get { return fileExtension; }
 			property.GetStatements.Add(new CodeMethodReturnStatement(new CodePrimitiveExpression(fileExtension)));
-			descriptorType.Members.Add(property);
+			resourceType.Members.Add(property);
 
 			#endregion ResourceHandlerInfo.FileExtension
 
 			assemblyBuilder.AddCodeCompileUnit(this, generatedUnit);
 
-			System.Diagnostics.Debug.Assert(String.IsNullOrEmpty(this.descriptorTypeName));
-			this.descriptorTypeName = CompiledBuildResult.GeneratedNamespace+"."+descriptorType.Name;
-
-			assemblyBuilder.GenerateTypeFactory(this.descriptorTypeName);
+			assemblyBuilder.GenerateTypeFactory(this.ResourceFullName);
 		}
 
 		public override CompilerType CodeCompilerType
