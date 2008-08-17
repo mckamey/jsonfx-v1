@@ -42,7 +42,6 @@ namespace JsonFx.Handlers
 		#region Fields
 
 		private JsonServiceInfo serviceInfo;
-		private string serviceUrl;
 
 		#endregion Fields
 
@@ -51,7 +50,6 @@ namespace JsonFx.Handlers
 		public JsonServiceProxyHandler(JsonServiceInfo serviceInfo, string serviceUrl)
 		{
 			this.serviceInfo = serviceInfo;
-			this.serviceUrl = serviceUrl;
 		}
 
 		#endregion Init

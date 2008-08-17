@@ -73,13 +73,13 @@ namespace JsonFx.Handlers
 				case CompiledBuildResultType.Gzip:
 				{
 					context.Response.AppendHeader("Content-Encoding", CompiledBuildResult.GzipContentEncoding);
-					context.Response.Output.Write(info.Gzipped);
+					context.Response.OutputStream.Write(info.Gzipped, 0, info.Gzipped.Length);
 					break;
 				}
 				case CompiledBuildResultType.Deflate:
 				{
 					context.Response.AppendHeader("Content-Encoding", CompiledBuildResult.DeflateContentEncoding);
-					context.Response.Output.Write(info.Deflated);
+					context.Response.OutputStream.Write(info.Deflated, 0, info.Deflated.Length);
 					break;
 				}
 				case CompiledBuildResultType.Compact:
