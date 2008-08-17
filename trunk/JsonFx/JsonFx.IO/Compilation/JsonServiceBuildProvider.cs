@@ -56,8 +56,6 @@ namespace JsonFx.Compilation
 	{
 		#region Constants
 
-		protected internal const string GeneratedNamespace = "JsonFx._Services";
-
 		private const string DefaultDirectiveName = "JsonService";
 		private const string ErrorMissingDirective = "The service must have a <%@ {0} class=\"MyNamespace.MyClass\" ... %> directive.";
 		private const string ErrorCouldNotCreateType = "Could not create type \"{0}\".";
@@ -77,12 +75,58 @@ namespace JsonFx.Compilation
 		private string sourceText = null;
 		private CompilerType compilerType = null;
 		private string serviceTypeName = null;
-		private string proxyTypeName = null;
 		private bool directiveParsed = false;
 		private int lineNumber = 1;
 		private bool foundDirective = false;
+		private string resourceFullName = null;
+		private string resourceTypeName = null;
+		private string resourceNamespace = null;
 
 		#endregion Fields
+
+		#region Properties
+
+		protected virtual string ResourceFullName
+		{
+			get
+			{
+				if (String.IsNullOrEmpty(this.resourceFullName))
+				{
+					this.resourceFullName = CompiledBuildResult.GenerateTypeName(base.VirtualPath);
+				}
+				return this.resourceFullName;
+			}
+		}
+
+		protected string ResourceNamespace
+		{
+			get
+			{
+				if (String.IsNullOrEmpty(this.resourceNamespace))
+				{
+					string type = this.ResourceFullName;
+					int dot = type.LastIndexOf('.');
+					this.resourceNamespace = type.Substring(0, dot);
+				}
+				return this.resourceNamespace;
+			}
+		}
+
+		protected string ResourceTypeName
+		{
+			get
+			{
+				if (String.IsNullOrEmpty(this.resourceTypeName))
+				{
+					string type = this.ResourceFullName;
+					int dot = type.LastIndexOf('.');
+					this.resourceTypeName = type.Substring(dot+1);
+				}
+				return this.resourceTypeName;
+			}
+		}
+
+		#endregion Properties
 
 		#region BuildProvider Methods
 
@@ -163,14 +207,14 @@ namespace JsonFx.Compilation
 
 			// generate a service factory
 			CodeCompileUnit generatedUnit = new CodeCompileUnit();
-			CodeNamespace ns = new CodeNamespace(JsonServiceBuildProvider.GeneratedNamespace);
+			CodeNamespace ns = new CodeNamespace(this.ResourceNamespace);
 			generatedUnit.Namespaces.Add(ns);
-			CodeTypeDeclaration descriptorType = new CodeTypeDeclaration();
-			descriptorType.IsClass = true;
-			descriptorType.Name = "_"+serviceType.GUID.ToString("N");
-			descriptorType.Attributes = MemberAttributes.Public|MemberAttributes.Final;
-			descriptorType.BaseTypes.Add(typeof(JsonServiceInfo));
-			ns.Types.Add(descriptorType);
+			CodeTypeDeclaration resourceType = new CodeTypeDeclaration();
+			resourceType.IsClass = true;
+			resourceType.Name = this.ResourceTypeName;
+			resourceType.Attributes = MemberAttributes.Public|MemberAttributes.Final;
+			resourceType.BaseTypes.Add(typeof(JsonServiceInfo));
+			ns.Types.Add(resourceType);
 
 			#region JsonServiceInfo.CompactedResource
 
@@ -182,7 +226,7 @@ namespace JsonFx.Compilation
 			property.HasGet = true;
 			// get { return proxyOutput; }
 			property.GetStatements.Add(new CodeMethodReturnStatement(new CodePrimitiveExpression(proxyOutput)));
-			descriptorType.Members.Add(property);
+			resourceType.Members.Add(property);
 
 			#endregion JsonServiceInfo.CompactedResource
 
@@ -196,50 +240,50 @@ namespace JsonFx.Compilation
 			property.HasGet = true;
 			// get { return debugProxyOutput; }
 			property.GetStatements.Add(new CodeMethodReturnStatement(new CodePrimitiveExpression(debugProxyOutput)));
-			descriptorType.Members.Add(property);
+			resourceType.Members.Add(property);
 
 			#endregion JsonServiceInfo.Resource
 
 			#region JsonServiceInfo.ServiceType
 
 			// add a static field with the service type
-			CodeMemberProperty serviceTypeProp = new CodeMemberProperty();
-			serviceTypeProp.Name = "ServiceType";
-			serviceTypeProp.Type = new CodeTypeReference(typeof(Type));
-			serviceTypeProp.Attributes = MemberAttributes.Public|MemberAttributes.Override;
-			serviceTypeProp.HasGet = true;
+			property = new CodeMemberProperty();
+			property.Name = "ServiceType";
+			property.Type = new CodeTypeReference(typeof(Type));
+			property.Attributes = MemberAttributes.Public|MemberAttributes.Override;
+			property.HasGet = true;
 			// get { return typeof(serviceType); }
-			serviceTypeProp.GetStatements.Add(new CodeMethodReturnStatement(new CodeTypeOfExpression(serviceType.FullName)));
-			descriptorType.Members.Add(serviceTypeProp);
+			property.GetStatements.Add(new CodeMethodReturnStatement(new CodeTypeOfExpression(serviceType.FullName)));
+			resourceType.Members.Add(property);
 
 			#endregion JsonServiceInfo.ServiceType
 
 			#region JsonServiceInfo.CreateService()
 
-			CodeMemberMethod createServiceMethod = new CodeMemberMethod();
-			createServiceMethod.Name = "CreateService";
-			createServiceMethod.Attributes = MemberAttributes.Public|MemberAttributes.Override;
-			createServiceMethod.ReturnType = new CodeTypeReference(typeof(Object));
+			CodeMemberMethod codeMethod = new CodeMemberMethod();
+			codeMethod.Name = "CreateService";
+			codeMethod.Attributes = MemberAttributes.Public|MemberAttributes.Override;
+			codeMethod.ReturnType = new CodeTypeReference(typeof(Object));
 			// return new serviceType();
-			createServiceMethod.Statements.Add(new CodeMethodReturnStatement(new CodeObjectCreateExpression(serviceType)));
-			descriptorType.Members.Add(createServiceMethod);
+			codeMethod.Statements.Add(new CodeMethodReturnStatement(new CodeObjectCreateExpression(serviceType)));
+			resourceType.Members.Add(codeMethod);
 
 			#endregion JsonServiceInfo.CreateService()
 
 			#region JsonServiceInfo.ResolveMethodName()
 
-			CodeMemberMethod resolveMethod = new CodeMemberMethod();
-			resolveMethod.Name = "ResolveMethodName";
-			resolveMethod.Attributes = MemberAttributes.Public|MemberAttributes.Override;
-			resolveMethod.Parameters.Add(new CodeParameterDeclarationExpression(typeof(String), "name"));
-			resolveMethod.ReturnType = new CodeTypeReference(typeof(MethodInfo));
+			codeMethod = new CodeMemberMethod();
+			codeMethod.Name = "ResolveMethodName";
+			codeMethod.Attributes = MemberAttributes.Public|MemberAttributes.Override;
+			codeMethod.Parameters.Add(new CodeParameterDeclarationExpression(typeof(String), "name"));
+			codeMethod.ReturnType = new CodeTypeReference(typeof(MethodInfo));
 			CodeVariableReferenceExpression nameParam = new CodeVariableReferenceExpression("name");
 
 			// if (String.IsNullOrEmpty(name)) { return null; }
 			CodeConditionStatement nullCheck = new CodeConditionStatement();
 			nullCheck.Condition = new CodeMethodInvokeExpression(new CodeTypeReferenceExpression(typeof(String)), "IsNullOrEmpty", nameParam);
 			nullCheck.TrueStatements.Add(new CodeMethodReturnStatement(new CodePrimitiveExpression(null)));
-			resolveMethod.Statements.Add(nullCheck);
+			codeMethod.Statements.Add(nullCheck);
 
 			Dictionary<string, MethodInfo> methodMap = JsonServiceInfo.CreateMethodMap(serviceType);
 			foreach (string name in methodMap.Keys)
@@ -259,28 +303,28 @@ namespace JsonFx.Compilation
 
 				// return MethodInfo;
 				nameTest.TrueStatements.Add(new CodeMethodReturnStatement(methodInfoRef));
-				resolveMethod.Statements.Add(nameTest);
+				codeMethod.Statements.Add(nameTest);
 			}
 
-			resolveMethod.Statements.Add(new CodeMethodReturnStatement(new CodePrimitiveExpression(null)));
-			descriptorType.Members.Add(resolveMethod);
+			codeMethod.Statements.Add(new CodeMethodReturnStatement(new CodePrimitiveExpression(null)));
+			resourceType.Members.Add(codeMethod);
 
 			#endregion JsonServiceInfo.ResolveMethodName()
 
 			#region JsonServiceInfo.GetMethodParams()
 
-			CodeMemberMethod paramsMethod = new CodeMemberMethod();
-			paramsMethod.Name = "GetMethodParams";
-			paramsMethod.Attributes = MemberAttributes.Public|MemberAttributes.Override;
-			paramsMethod.Parameters.Add(new CodeParameterDeclarationExpression(typeof(String), "name"));
-			paramsMethod.ReturnType = new CodeTypeReference(typeof(String[]));
+			codeMethod = new CodeMemberMethod();
+			codeMethod.Name = "GetMethodParams";
+			codeMethod.Attributes = MemberAttributes.Public|MemberAttributes.Override;
+			codeMethod.Parameters.Add(new CodeParameterDeclarationExpression(typeof(String), "name"));
+			codeMethod.ReturnType = new CodeTypeReference(typeof(String[]));
 			CodeVariableReferenceExpression nameParam2 = new CodeVariableReferenceExpression("name");
 
 			// if (String.IsNullOrEmpty(name)) { return new string[0]; }
 			CodeConditionStatement nullCheck2 = new CodeConditionStatement();
 			nullCheck2.Condition = new CodeMethodInvokeExpression(new CodeTypeReferenceExpression(typeof(String)), "IsNullOrEmpty", nameParam);
 			nullCheck2.TrueStatements.Add(new CodeMethodReturnStatement(new CodeArrayCreateExpression(typeof(String[]), 0)));
-			paramsMethod.Statements.Add(nullCheck2);
+			codeMethod.Statements.Add(nullCheck2);
 
 			foreach (MethodInfo method in methodMap.Values)
 			{
@@ -305,17 +349,15 @@ namespace JsonFx.Compilation
 
 				// return string[];
 				nameTest.TrueStatements.Add(new CodeMethodReturnStatement(paramArray));
-				paramsMethod.Statements.Add(nameTest);
+				codeMethod.Statements.Add(nameTest);
 			}
 
-			paramsMethod.Statements.Add(new CodeMethodReturnStatement(new CodeArrayCreateExpression(typeof(String[]), 0)));
-			descriptorType.Members.Add(paramsMethod);
+			codeMethod.Statements.Add(new CodeMethodReturnStatement(new CodeArrayCreateExpression(typeof(String[]), 0)));
+			resourceType.Members.Add(codeMethod);
 
 			#endregion JsonServiceInfo.GetMethodParams()
 
 			assemblyBuilder.AddCodeCompileUnit(this, generatedUnit);
-
-			this.proxyTypeName = JsonServiceBuildProvider.GeneratedNamespace+"."+descriptorType.Name;
 		}
 
 		public override CompilerType CodeCompilerType
@@ -346,13 +388,13 @@ namespace JsonFx.Compilation
 			{
 				this.EnsureDirective();
 
-				if (String.IsNullOrEmpty(this.proxyTypeName) ||
+				if (String.IsNullOrEmpty(this.serviceTypeName) ||
 					results.Errors.HasErrors)
 				{
 					return null;
 				}
 
-				return this.GetTypeToCache(this.proxyTypeName, results.CompiledAssembly);
+				return this.GetTypeToCache(this.ResourceFullName, results.CompiledAssembly);
 			}
 			catch (Exception ex)
 			{
