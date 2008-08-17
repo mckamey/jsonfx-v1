@@ -104,16 +104,16 @@ namespace JsonFx.Handlers
 
 			acceptEncoding = acceptEncoding.ToLowerInvariant();
 
-			if (this.Gzipped != null &&
-				acceptEncoding.Contains("gzip"))
-			{
-				return CompiledBuildResultType.Gzip;
-			}
-
 			if (this.Deflated != null &&
 				acceptEncoding.Contains("deflate"))
 			{
 				return CompiledBuildResultType.Deflate;
+			}
+
+			if (this.Gzipped != null &&
+				acceptEncoding.Contains("gzip"))
+			{
+				return CompiledBuildResultType.Gzip;
 			}
 
 			return CompiledBuildResultType.Compact;

@@ -43,17 +43,16 @@ namespace JsonFx.Handlers
 		IHttpHandler IHttpHandlerFactory.GetHandler(HttpContext context, string verb, string url, string path)
 		{
 			Type descriptorType = BuildManager.GetCompiledType(url);
-			JsonServiceInfo serviceInfo = BuildManager.CreateInstanceFromVirtualPath(url, descriptorType) as JsonServiceInfo;
 
 			if ("GET".Equals(verb, StringComparison.InvariantCultureIgnoreCase) &&
-				String.IsNullOrEmpty(context.Request.PathInfo) /*&&
-				String.IsNullOrEmpty(context.Request.Url.Query)*/)
+				String.IsNullOrEmpty(context.Request.PathInfo))
 			{
 				// output service javascript proxy
-				return new JsonFx.Handlers.JsonServiceProxyHandler(serviceInfo, url);
+				return new ResourceHandler();
 			}
 
 			// handle service requests
+			JsonServiceInfo serviceInfo = BuildManager.CreateInstanceFromVirtualPath(url, descriptorType) as JsonServiceInfo;
 			return new JsonFx.Handlers.JsonServiceHandler(serviceInfo, url);
 		}
 
