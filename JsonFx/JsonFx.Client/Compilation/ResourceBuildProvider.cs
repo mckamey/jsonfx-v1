@@ -30,6 +30,7 @@
 
 using System;
 using System.IO;
+using System.IO.Compression;
 using System.Collections;
 using System.Collections.Generic;
 using System.Text;
@@ -56,7 +57,7 @@ namespace JsonFx.Compilation
 	/// <summary>
 	/// The BuildProvider for all build-time resource compaction implementations.
 	/// This provider processes the source storing a debug and a release output.
-	/// The compilation result is a ResourceHandlerInfo class which has references
+	/// The compilation result is a CompiledBuildResult class which has references
 	/// to both resources.
 	/// </summary>
 	[BuildProviderAppliesTo(BuildProviderAppliesTo.Web)]
@@ -152,7 +153,8 @@ namespace JsonFx.Compilation
 
 		public override void GenerateCode(AssemblyBuilder assemblyBuilder)
 		{
-			string resource, compactedResource, contentType, fileExtension;
+			string contentType, fileExtension;
+			string prettyPrintResource, compactedResource;
 
 			ResourceCodeProvider provider = assemblyBuilder.CodeDomProvider as ResourceCodeProvider;
 			if (provider != null)
@@ -160,7 +162,7 @@ namespace JsonFx.Compilation
 				provider.CompileResource(
 					this,
 					base.VirtualPath,
-					out resource,
+					out prettyPrintResource,
 					out compactedResource);
 
 				contentType = provider.ContentType;
@@ -171,17 +173,28 @@ namespace JsonFx.Compilation
 				// read the resource contents
 				using (TextReader reader = this.OpenReader())
 				{
-					compactedResource = resource = reader.ReadToEnd();
+					compactedResource = prettyPrintResource = reader.ReadToEnd();
 				}
 
 				contentType = "text/plain";
 				fileExtension = "txt";
 			}
 
-			// generate a static class
+			byte[] gzippedBytes, deflatedBytes;
+			ResourceBuildProvider.Compress(compactedResource, out gzippedBytes, out deflatedBytes);
+
+			// generate a resource container
 			CodeCompileUnit generatedUnit = new CodeCompileUnit();
+
+			#region namespace ResourceNamespace
+
 			CodeNamespace ns = new CodeNamespace(this.ResourceNamespace);
 			generatedUnit.Namespaces.Add(ns);
+
+			#endregion namespace ResourceNamespace
+
+			#region public sealed class ResourceTypeName : CompiledBuildResult
+
 			CodeTypeDeclaration resourceType = new CodeTypeDeclaration();
 			resourceType.IsClass = true;
 			resourceType.Name = this.ResourceTypeName;
@@ -189,25 +202,63 @@ namespace JsonFx.Compilation
 			resourceType.BaseTypes.Add(typeof(CompiledBuildResult));
 			ns.Types.Add(resourceType);
 
-			#region ResourceHandlerInfo.Resource
+			#endregion public sealed class ResourceTypeName
+
+			#region private static readonly byte[] GzippedBytes
+
+			CodeMemberField field = new CodeMemberField();
+			field.Name = "GzippedBytes";
+			field.Type = new CodeTypeReference(typeof(byte[]));
+			field.Attributes = MemberAttributes.Private|MemberAttributes.Static|MemberAttributes.Final;
+
+			CodeArrayCreateExpression arrayInit = new CodeArrayCreateExpression(field.Type);
+			foreach (byte b in gzippedBytes)
+			{
+				arrayInit.Initializers.Add(new CodePrimitiveExpression(b));
+			}
+			field.InitExpression = arrayInit;
+
+			resourceType.Members.Add(field);
+
+			#endregion private static static readonly byte[] GzippedBytes
+
+			#region private static readonly byte[] DeflatedBytes;
+
+			field = new CodeMemberField();
+			field.Name = "DeflatedBytes";
+			field.Type = new CodeTypeReference(typeof(byte[]));
+			field.Attributes = MemberAttributes.Private|MemberAttributes.Static|MemberAttributes.Final;
+
+			arrayInit = new CodeArrayCreateExpression(field.Type);
+			foreach (byte b in deflatedBytes)
+			{
+				arrayInit.Initializers.Add(new CodePrimitiveExpression(b));
+			}
+			field.InitExpression = arrayInit;
+
+			resourceType.Members.Add(field);
+
+			#endregion private static readonly byte[] DeflatedBytes;
+
+			#region public override string PrettyPrinted { get; }
 
 			// add a readonly property with the resource data
 			CodeMemberProperty property = new CodeMemberProperty();
-			property.Name = "Resource";
+			property.Name = "PrettyPrinted";
 			property.Type = new CodeTypeReference(typeof(String));
 			property.Attributes = MemberAttributes.Public|MemberAttributes.Override;
 			property.HasGet = true;
 			// get { return resource; }
-			property.GetStatements.Add(new CodeMethodReturnStatement(new CodePrimitiveExpression(resource)));
+			property.GetStatements.Add(new CodeMethodReturnStatement(new CodePrimitiveExpression(prettyPrintResource)));
 			resourceType.Members.Add(property);
 
-			#endregion ResourceHandlerInfo.Resource
+			#endregion public override string PrettyPrinted { get; }
 
-			#region ResourceHandlerInfo.CompactedResource
+			#region public override string Compacted { get; }
 
 			// add a readonly property with the compacted resource data
 			property = new CodeMemberProperty();
-			property.Name = "CompactedResource";
+			property.Name = "Compacted";
 			property.Type = new CodeTypeReference(typeof(String));
 			property.Attributes = MemberAttributes.Public|MemberAttributes.Override;
 			property.HasGet = true;
@@ -215,9 +266,43 @@ namespace JsonFx.Compilation
 			property.GetStatements.Add(new CodeMethodReturnStatement(new CodePrimitiveExpression(compactedResource)));
 			resourceType.Members.Add(property);
 
-			#endregion ResourceHandlerInfo.CompactedResource
+			#endregion public override string Compacted { get; }
 
-			#region ResourceHandlerInfo.ContentType
+			#region public override byte[] Gzipped { get; }
+
+			// add a readonly property with the gzipped resource data
+			property = new CodeMemberProperty();
+			property.Name = "Gzipped";
+			property.Type = new CodeTypeReference(typeof(byte[]));
+			property.Attributes = MemberAttributes.Public|MemberAttributes.Override;
+			property.HasGet = true;
+			// get { return GzippedBytes; }
+			property.GetStatements.Add(new CodeMethodReturnStatement(
+				new CodeFieldReferenceExpression(
+					new CodeTypeReferenceExpression(this.ResourceTypeName),
+					"GzippedBytes")));
+			resourceType.Members.Add(property);
+
+			#endregion public override byte[] Gzipped { get; }
+
+			#region public override byte[] Deflated { get; }
+
+			// add a readonly property with the deflated resource data
+			property = new CodeMemberProperty();
+			property.Name = "Deflated";
+			property.Type = new CodeTypeReference(typeof(byte[]));
+			property.Attributes = MemberAttributes.Public|MemberAttributes.Override;
+			property.HasGet = true;
+			// get { return DeflatedBytes; }
+			property.GetStatements.Add(new CodeMethodReturnStatement(
+				new CodeFieldReferenceExpression(
+					new CodeTypeReferenceExpression(this.ResourceTypeName),
+					"DeflatedBytes")));
+			resourceType.Members.Add(property);
+
+			#endregion public override byte[] Deflated { get; }
+
+			#region public override string ContentType { get; }
 
 			// add a readonly property with the MIME type
 			property = new CodeMemberProperty();
@@ -229,9 +314,9 @@ namespace JsonFx.Compilation
 			property.GetStatements.Add(new CodeMethodReturnStatement(new CodePrimitiveExpression(contentType)));
 			resourceType.Members.Add(property);
 
-			#endregion ResourceHandlerInfo.ContentType
+			#endregion public override string ContentType { get; }
 
-			#region ResourceHandlerInfo.FileExtension
+			#region public override string FileExtension { get; }
 
 			// add a readonly property with the MIME type
 			property = new CodeMemberProperty();
@@ -243,11 +328,50 @@ namespace JsonFx.Compilation
 			property.GetStatements.Add(new CodeMethodReturnStatement(new CodePrimitiveExpression(fileExtension)));
 			resourceType.Members.Add(property);
 
-			#endregion ResourceHandlerInfo.FileExtension
+			#endregion public override string FileExtension { get; }
 
 			assemblyBuilder.AddCodeCompileUnit(this, generatedUnit);
+		}
 
-			assemblyBuilder.GenerateTypeFactory(this.ResourceFullName);
+		public static void Compress(string source, out byte[] gzipped, out byte[] deflated)
+		{
+			if (String.IsNullOrEmpty(source))
+			{
+				gzipped = deflated = null;
+				return;
+			}
+
+			using (MemoryStream memStream = new MemoryStream())
+			{
+				using (GZipStream gzipStream = new GZipStream(memStream, CompressionMode.Compress, true))
+				{
+					using (StreamWriter writer = new StreamWriter(gzipStream))
+					{
+						writer.Write(source);
+						writer.Flush();
+					}
+				}
+
+				memStream.Seek(0L, SeekOrigin.Begin);
+				gzipped = new byte[memStream.Length];
+				memStream.Read(gzipped, 0, gzipped.Length);
+			}
+
+			using (MemoryStream memStream = new MemoryStream())
+			{
+				using (DeflateStream gzipStream = new DeflateStream(memStream, CompressionMode.Compress, true))
+				{
+					using (StreamWriter writer = new StreamWriter(gzipStream))
+					{
+						writer.Write(source);
+						writer.Flush();
+					}
+				}
+
+				memStream.Seek(0L, SeekOrigin.Begin);
+				deflated = new byte[memStream.Length];
+				memStream.Read(deflated, 0, deflated.Length);
+			}
 		}
 
 		public override CompilerType CodeCompilerType

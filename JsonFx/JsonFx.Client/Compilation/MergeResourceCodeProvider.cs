@@ -134,8 +134,8 @@ namespace JsonFx.Compilation
 
 						helper.AddVirtualPathDependency(files[i]);
 
-						resources.Append(result.Resource);
-						compacts.Append(result.CompactedResource);
+						resources.Append(result.PrettyPrinted);
+						compacts.Append(result.Compacted);
 						continue;
 					}
 

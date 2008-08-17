@@ -65,7 +65,7 @@ namespace JsonFx.Handlers
 
 		void IHttpHandler.ProcessRequest(HttpContext context)
 		{
-			bool prettyPrint = "debug".Equals(context.Request.QueryString[null], StringComparison.InvariantCultureIgnoreCase);
+			bool isDebug = "debug".Equals(context.Request.QueryString[null], StringComparison.InvariantCultureIgnoreCase);
 
 			context.Response.Clear();
 			context.Response.BufferOutput = true;
@@ -74,27 +74,44 @@ namespace JsonFx.Handlers
 			ETag etag = new EmbeddedResourceETag(// should this be StringETag?
 				this.serviceInfo.ServiceType.Assembly,
 				this.serviceInfo.ServiceType.FullName);
-			if (!etag.HandleETag(context, HttpCacheability.ServerAndPrivate, prettyPrint))
+
+			if (etag.HandleETag(context, HttpCacheability.ServerAndPrivate, isDebug))
 			{
-				context.Response.ContentEncoding = System.Text.Encoding.UTF8;
-				context.Response.ContentType = this.serviceInfo.ContentType;
+				return;
+			}
+			context.Response.ContentEncoding = System.Text.Encoding.UTF8;
+			context.Response.ContentType = this.serviceInfo.ContentType;
 
-				context.Response.AppendHeader(
-					"Content-Disposition",
-					"inline;filename="+this.serviceInfo.ServiceType.FullName+'.'+this.serviceInfo.FileExtension);
+			context.Response.AppendHeader(
+				"Content-Disposition",
+				"inline;filename="+this.serviceInfo.ServiceType.FullName+'.'+this.serviceInfo.FileExtension);
 
-				string proxyScript = prettyPrint ? this.serviceInfo.Resource :  this.serviceInfo.CompactedResource;
-				if (String.IsNullOrEmpty(proxyScript))
+			switch (this.serviceInfo.GetOutputEncoding(context, isDebug))
+			{
+				case CompiledBuildResultType.PrettyPrint:
 				{
-					// if wasn't generated, generate on the fly with reflection
-					JsonServiceDescription desc = new JsonServiceDescription(this.serviceInfo.ServiceType, this.serviceUrl);
-					JsonServiceProxyGenerator proxy = new JsonServiceProxyGenerator(desc);
-					proxy.OutputProxy(context.Response.Output, prettyPrint);
+					context.Response.ContentEncoding = System.Text.Encoding.UTF8;
+					context.Response.Output.Write(this.serviceInfo.PrettyPrinted);
+					break;
 				}
-				else
+				case CompiledBuildResultType.Gzip:
 				{
-					// use generated code
-					context.Response.Output.Write(proxyScript);
+					context.Response.AppendHeader("Content-Encoding", CompiledBuildResult.GzipContentEncoding);
+					context.Response.Output.Write(this.serviceInfo.Gzipped);
+					break;
+				}
+				case CompiledBuildResultType.Deflate:
+				{
+					context.Response.AppendHeader("Content-Encoding", CompiledBuildResult.DeflateContentEncoding);
+					context.Response.Output.Write(this.serviceInfo.Deflated);
+					break;
+				}
+				case CompiledBuildResultType.Compact:
+				default:
+				{
+					context.Response.ContentEncoding = System.Text.Encoding.UTF8;
+					context.Response.Output.Write(this.serviceInfo.Compacted);
+					break;
 				}
 			}
 		}

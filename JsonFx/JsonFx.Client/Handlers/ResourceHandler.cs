@@ -56,22 +56,39 @@ namespace JsonFx.Handlers
 				return;
 			}
 
-			context.Response.ContentEncoding = System.Text.Encoding.UTF8;
 			context.Response.ContentType = info.ContentType;
 
 			context.Response.AppendHeader(
 				"Content-Disposition",
 				"inline;filename="+Path.GetFileNameWithoutExtension(context.Request.FilePath)+'.'+info.FileExtension);
 
-			TextWriter writer = context.Response.Output;
-			if (isDebug)
+			switch (info.GetOutputEncoding(context, isDebug))
 			{
-//				context.Response.Cache.SetCacheability(HttpCacheability.NoCache);
-				writer.Write(info.Resource);
-			}
-			else
-			{
-				writer.Write(info.CompactedResource);
+				case CompiledBuildResultType.PrettyPrint:
+				{
+					context.Response.ContentEncoding = System.Text.Encoding.UTF8;
+					context.Response.Output.Write(info.PrettyPrinted);
+					break;
+				}
+				case CompiledBuildResultType.Gzip:
+				{
+					context.Response.AppendHeader("Content-Encoding", CompiledBuildResult.GzipContentEncoding);
+					context.Response.Output.Write(info.Gzipped);
+					break;
+				}
+				case CompiledBuildResultType.Deflate:
+				{
+					context.Response.AppendHeader("Content-Encoding", CompiledBuildResult.DeflateContentEncoding);
+					context.Response.Output.Write(info.Deflated);
+					break;
+				}
+				case CompiledBuildResultType.Compact:
+				default:
+				{
+					context.Response.ContentEncoding = System.Text.Encoding.UTF8;
+					context.Response.Output.Write(info.Compacted);
+					break;
+				}
 			}
 		}
 
@@ -89,7 +106,7 @@ namespace JsonFx.Handlers
 		/// </summary>
 		/// <param name="context"></param>
 		/// <param name="isDebug"></param>
-		/// <returns>ResourceHandlerInfo</returns>
+		/// <returns>CompiledBuildResult</returns>
 		protected virtual CompiledBuildResult GetResourceInfo(HttpContext context, bool isDebug)
 		{
 			string virtualPath = context.Request.AppRelativeCurrentExecutionFilePath;

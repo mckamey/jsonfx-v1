@@ -31,6 +31,7 @@
 using System;
 using System.IO;
 using System.Text;
+using System.Web;
 using System.Web.Compilation;
 using System.Reflection;
 
@@ -38,11 +39,21 @@ using JsonFx.Compilation;
 
 namespace JsonFx.Handlers
 {
+	public enum CompiledBuildResultType
+	{
+		PrettyPrint,
+		Compact,
+		Gzip,
+		Deflate
+	}
+
 	public abstract class CompiledBuildResult
 	{
 		#region Constants
 
 		private const string RootNamespace = "__JsonFx";
+		public const string GzipContentEncoding = "gzip";
+		public const string DeflateContentEncoding = "deflate";
 
 		#endregion Constants
 
@@ -51,19 +62,69 @@ namespace JsonFx.Handlers
 		/// <summary>
 		/// Gets the pretty-printed resource data
 		/// </summary>
-		public abstract string Resource { get; }
+		public abstract string PrettyPrinted { get; }
 
 		/// <summary>
 		/// Gets the compacted resource data
 		/// </summary>
-		public abstract string CompactedResource { get; }
+		public abstract string Compacted { get; }
+
+		/// <summary>
+		/// Gets the compacted resource data compressed with Gzip
+		/// </summary>
+		public abstract byte[] Gzipped { get; }
+
+		/// <summary>
+		/// Gets the compacted resource data compressed with Deflate
+		/// </summary>
+		public abstract byte[] Deflated { get; }
 
 		#endregion Properties
 
 		#region Methods
 
 		/// <summary>
-		/// ResourceHandlerInfo Factory method
+		/// Determines the most compact Content-Encoding supported by request.
+		/// </summary>
+		/// <param name="acceptEncoding"></param>
+		/// <param name="isDebug"></param>
+		/// <returns>optimal format</returns>
+		public CompiledBuildResultType GetOutputEncoding(HttpContext context, bool isDebug)
+		{
+			if (isDebug)
+			{
+				return CompiledBuildResultType.PrettyPrint;
+			}
+
+			string acceptEncoding = context.Request.Headers["Accept-Encoding"];
+			if (String.IsNullOrEmpty(acceptEncoding))
+			{
+				return CompiledBuildResultType.Compact;
+			}
+
+			acceptEncoding = acceptEncoding.ToLowerInvariant();
+
+			if (this.Gzipped != null &&
+				acceptEncoding.Contains("gzip"))
+			{
+				return CompiledBuildResultType.Gzip;
+			}
+
+			if (this.Deflated != null &&
+				acceptEncoding.Contains("deflate"))
+			{
+				return CompiledBuildResultType.Deflate;
+			}
+
+			return CompiledBuildResultType.Compact;
+		}
+
+		#endregion Properties
+
+		#region Factory Methods
+
+		/// <summary>
+		/// CompiledBuildResult Factory method
 		/// </summary>
 		/// <param name="virtualPath"></param>
 		/// <returns></returns>
@@ -79,6 +140,11 @@ namespace JsonFx.Handlers
 			}
 		}
 
+		/// <summary>
+		/// Generates a Type name for the compiled resource
+		/// </summary>
+		/// <param name="virtualPath"></param>
+		/// <returns></returns>
 		public static string GenerateTypeName(string virtualPath)
 		{
 			if (String.IsNullOrEmpty(virtualPath))
@@ -120,7 +186,7 @@ namespace JsonFx.Handlers
 			return CompiledBuildResult.RootNamespace+builder.ToString();
 		}
 
-		#endregion Methods
+		#endregion Factory Methods
 
 		#region CompiledBuildResult Members
 
