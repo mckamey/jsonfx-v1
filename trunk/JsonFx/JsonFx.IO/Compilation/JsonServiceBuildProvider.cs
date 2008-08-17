@@ -202,13 +202,25 @@ namespace JsonFx.Compilation
 			// build proxy from main service type
 			JsonServiceDescription desc = new JsonServiceDescription(serviceType, base.VirtualPath);
 			JsonServiceProxyGenerator proxy = new JsonServiceProxyGenerator(desc);
+
 			string proxyOutput = proxy.OutputProxy(false);
 			string debugProxyOutput = proxy.OutputProxy(true);
 
+			byte[] gzippedProxy, deflatedProxy;
+			ResourceBuildProvider.Compress(proxyOutput, out gzippedProxy, out deflatedProxy);
+
 			// generate a service factory
 			CodeCompileUnit generatedUnit = new CodeCompileUnit();
+
+			#region namespace ResourceNamespace
+
 			CodeNamespace ns = new CodeNamespace(this.ResourceNamespace);
 			generatedUnit.Namespaces.Add(ns);
+
+			#endregion namespace ResourceNamespace
+
+			#region public sealed class ResourceTypeName : JsonServiceInfo
+
 			CodeTypeDeclaration resourceType = new CodeTypeDeclaration();
 			resourceType.IsClass = true;
 			resourceType.Name = this.ResourceTypeName;
@@ -216,25 +228,47 @@ namespace JsonFx.Compilation
 			resourceType.BaseTypes.Add(typeof(JsonServiceInfo));
 			ns.Types.Add(resourceType);
 
-			#region JsonServiceInfo.CompactedResource
+			#endregion public sealed class ResourceTypeName : CompiledBuildResult
 
-			// add a readonly property with the proxy code string
-			CodeMemberProperty property = new CodeMemberProperty();
-			property.Name = "CompactedResource";
-			property.Type = new CodeTypeReference(typeof(String));
-			property.Attributes = MemberAttributes.Public|MemberAttributes.Override;
-			property.HasGet = true;
-			// get { return proxyOutput; }
-			property.GetStatements.Add(new CodeMethodReturnStatement(new CodePrimitiveExpression(proxyOutput)));
-			resourceType.Members.Add(property);
+			#region private static readonly byte[] GzippedBytes
 
-			#endregion JsonServiceInfo.CompactedResource
+			CodeMemberField field = new CodeMemberField();
+			field.Name = "GzippedBytes";
+			field.Type = new CodeTypeReference(typeof(byte[]));
+			field.Attributes = MemberAttributes.Private|MemberAttributes.Static|MemberAttributes.Final;
 
-			#region JsonServiceInfo.Resource
+			CodeArrayCreateExpression arrayInit = new CodeArrayCreateExpression(field.Type);
+			foreach (byte b in gzippedProxy)
+			{
+				arrayInit.Initializers.Add(new CodePrimitiveExpression(b));
+			}
+			field.InitExpression = arrayInit;
+			resourceType.Members.Add(field);
+
+			#endregion private static static readonly byte[] GzippedBytes
+
+			#region private static readonly byte[] DeflatedBytes
+
+			field = new CodeMemberField();
+			field.Name = "DeflatedBytes";
+			field.Type = new CodeTypeReference(typeof(byte[]));
+			field.Attributes = MemberAttributes.Private|MemberAttributes.Static|MemberAttributes.Final;
+
+			arrayInit = new CodeArrayCreateExpression(field.Type);
+			foreach (byte b in deflatedProxy)
+			{
+				arrayInit.Initializers.Add(new CodePrimitiveExpression(b));
+			}
+			field.InitExpression = arrayInit;
+			resourceType.Members.Add(field);
+
+			#endregion private static readonly byte[] DeflatedBytes
+
+			#region public override string PrettyPrinted { get; }
 
 			// add a readonly property with the debug proxy code string
-			property = new CodeMemberProperty();
-			property.Name = "Resource";
+			CodeMemberProperty property = new CodeMemberProperty();
+			property.Name = "PrettyPrinted";
 			property.Type = new CodeTypeReference(typeof(String));
 			property.Attributes = MemberAttributes.Public|MemberAttributes.Override;
 			property.HasGet = true;
@@ -242,9 +276,57 @@ namespace JsonFx.Compilation
 			property.GetStatements.Add(new CodeMethodReturnStatement(new CodePrimitiveExpression(debugProxyOutput)));
 			resourceType.Members.Add(property);
 
-			#endregion JsonServiceInfo.Resource
+			#endregion public override string PrettyPrinted { get; }
 
-			#region JsonServiceInfo.ServiceType
+			#region public override string Compacted { get; }
+
+			// add a readonly property with the proxy code string
+			property = new CodeMemberProperty();
+			property.Name = "Compacted";
+			property.Type = new CodeTypeReference(typeof(String));
+			property.Attributes = MemberAttributes.Public|MemberAttributes.Override;
+			property.HasGet = true;
+			// get { return proxyOutput; }
+			property.GetStatements.Add(new CodeMethodReturnStatement(new CodePrimitiveExpression(proxyOutput)));
+			resourceType.Members.Add(property);
+
+			#endregion public override string Compacted { get; }
+
+			#region public override byte[] Gzipped { get; }
+
+			// add a readonly property with the gzipped proxy code
+			property = new CodeMemberProperty();
+			property.Name = "Gzipped";
+			property.Type = new CodeTypeReference(typeof(byte[]));
+			property.Attributes = MemberAttributes.Public|MemberAttributes.Override;
+			property.HasGet = true;
+			// get { return GzippedBytes; }
+			property.GetStatements.Add(new CodeMethodReturnStatement(
+				new CodeFieldReferenceExpression(
+					new CodeTypeReferenceExpression(this.ResourceTypeName),
+					"GzippedBytes")));
+			resourceType.Members.Add(property);
+
+			#endregion public override byte[] Gzipped { get; }
+
+			#region public override byte[] Deflated { get; }
+
+			// add a readonly property with the deflated proxy code
+			property = new CodeMemberProperty();
+			property.Name = "Deflated";
+			property.Type = new CodeTypeReference(typeof(byte[]));
+			property.Attributes = MemberAttributes.Public|MemberAttributes.Override;
+			property.HasGet = true;
+			// get { return DeflatedBytes; }
+			property.GetStatements.Add(new CodeMethodReturnStatement(
+				new CodeFieldReferenceExpression(
+					new CodeTypeReferenceExpression(this.ResourceTypeName),
+					"DeflatedBytes")));
+			resourceType.Members.Add(property);
+
+			#endregion public override byte[] Deflated { get; }
+
+			#region public override Type ServiceType { get; }
 
 			// add a static field with the service type
 			property = new CodeMemberProperty();
@@ -256,9 +338,9 @@ namespace JsonFx.Compilation
 			property.GetStatements.Add(new CodeMethodReturnStatement(new CodeTypeOfExpression(serviceType.FullName)));
 			resourceType.Members.Add(property);
 
-			#endregion JsonServiceInfo.ServiceType
+			#endregion public override Type ServiceType { get; }
 
-			#region JsonServiceInfo.CreateService()
+			#region public override object CreateService();
 
 			CodeMemberMethod codeMethod = new CodeMemberMethod();
 			codeMethod.Name = "CreateService";
@@ -268,9 +350,9 @@ namespace JsonFx.Compilation
 			codeMethod.Statements.Add(new CodeMethodReturnStatement(new CodeObjectCreateExpression(serviceType)));
 			resourceType.Members.Add(codeMethod);
 
-			#endregion JsonServiceInfo.CreateService()
+			#endregion public override object CreateService();
 
-			#region JsonServiceInfo.ResolveMethodName()
+			#region public override MethodInfo ResolveMethodName(string name);
 
 			codeMethod = new CodeMemberMethod();
 			codeMethod.Name = "ResolveMethodName";
@@ -309,9 +391,9 @@ namespace JsonFx.Compilation
 			codeMethod.Statements.Add(new CodeMethodReturnStatement(new CodePrimitiveExpression(null)));
 			resourceType.Members.Add(codeMethod);
 
-			#endregion JsonServiceInfo.ResolveMethodName()
+			#endregion public override MethodInfo ResolveMethodName(string name);
 
-			#region JsonServiceInfo.GetMethodParams()
+			#region public override string[] GetMethodParams(string name);
 
 			codeMethod = new CodeMemberMethod();
 			codeMethod.Name = "GetMethodParams";
@@ -355,7 +437,7 @@ namespace JsonFx.Compilation
 			codeMethod.Statements.Add(new CodeMethodReturnStatement(new CodeArrayCreateExpression(typeof(String[]), 0)));
 			resourceType.Members.Add(codeMethod);
 
-			#endregion JsonServiceInfo.GetMethodParams()
+			#endregion public override string[] GetMethodParams(string name);
 
 			assemblyBuilder.AddCodeCompileUnit(this, generatedUnit);
 		}
