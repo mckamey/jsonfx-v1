@@ -205,7 +205,7 @@ namespace JsonFx.Compilation
 			if (appPath != null && appPath.Length > 1 &&
 				proxyPath.StartsWith(appPath, StringComparison.OrdinalIgnoreCase))
 			{
-				proxyPath = "/"+proxyPath.Substring(appPath.Length);
+				proxyPath = proxyPath.Substring(appPath.Length);
 			}
 
 			// build proxy from main service type
