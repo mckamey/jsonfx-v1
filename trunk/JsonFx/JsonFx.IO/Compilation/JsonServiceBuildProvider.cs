@@ -199,8 +199,17 @@ namespace JsonFx.Compilation
 
 		private void GenerateServiceProxyCode(AssemblyBuilder assemblyBuilder, Type serviceType)
 		{
+			// calculate the service end-point path
+			string proxyPath = base.VirtualPath;
+			string appPath = System.Web.Hosting.HostingEnvironment.ApplicationVirtualPath;
+			if (appPath != null && appPath.Length > 1 &&
+				proxyPath.StartsWith(appPath, StringComparison.OrdinalIgnoreCase))
+			{
+				proxyPath = "/"+proxyPath.Substring(appPath.Length);
+			}
+
 			// build proxy from main service type
-			JsonServiceDescription desc = new JsonServiceDescription(serviceType, base.VirtualPath);
+			JsonServiceDescription desc = new JsonServiceDescription(serviceType, proxyPath);
 			JsonServiceProxyGenerator proxy = new JsonServiceProxyGenerator(desc);
 
 			string proxyOutput = proxy.OutputProxy(false);
