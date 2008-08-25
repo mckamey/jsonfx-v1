@@ -84,7 +84,8 @@ namespace JsonFx.JsonML.BST
 			this.code = String.Empty;
 			this.type = JbstCodeBlockType.None;
 
-			for (int i=0; i<code.Length; i++)
+			bool done = false;
+			for (int i=0; !done && i<code.Length; i++)
 			{
 				if (Char.IsWhiteSpace(code[i]))
 				{
@@ -97,12 +98,14 @@ namespace JsonFx.JsonML.BST
 					{
 						this.type = JbstCodeBlockType.Directive;
 						this.code = code.Substring(i+1).Trim();
+						done = true;
 						break;
 					}
 					case '!':
 					{
 						this.type = JbstCodeBlockType.Declaration;
 						this.code = code.Substring(i+1).Trim();
+						done = true;
 						break;
 					}
 					case '-':
@@ -117,18 +120,21 @@ namespace JsonFx.JsonML.BST
 
 						this.type = JbstCodeBlockType.Comment;
 						this.code = code.Substring(i+2).TrimEnd('-').Trim();
+						done = true;
 						break;
 					}
 					case '=':
 					{
 						this.type = JbstCodeBlockType.Expression;
 						this.code = code.Substring(i+1).Trim();
+						done = true;
 						break;
 					}
 					default:
 					{
 						this.type = JbstCodeBlockType.EmbeddedScript;
 						this.code = code.Substring(i+1).Trim();
+						done = true;
 						break;
 					}
 				}
