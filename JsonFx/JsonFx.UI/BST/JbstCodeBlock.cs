@@ -37,17 +37,34 @@ namespace JsonFx.JsonML.BST
 	/// </summary>
 	internal class JbstCodeBlock : IJbstControl, Json.IJsonSerializable
 	{
+		#region JbstCodeBlockType
+
+		private enum JbstCodeBlockType
+		{
+			None,
+			Directive,
+			Declaration,
+			Comment,
+			EmbeddedScript,
+			Expression
+		}
+
+		#endregion JbstCodeBlockType
+
 		#region Constants
 
-		// TODO: evaluate the usefulness of straight code output
-		private const string CodeBlockFormat = "function($item){{return({0});}}";
-		private const string FunctionFormat = "function($item){{return({0});}}";
+		private const string EmbeddedFormat = "function($item){{{0}}}";
+		private const string ExpressionFormat = "function($item){{return({0});}}";
+#if DEBUG
+		private const string CommentFormat = "/*{0}*/";
+#endif
 
 		#endregion Constants
 
 		#region Field
 
-		private string code;
+		private readonly string code;
+		private readonly JbstCodeBlockType type;
 
 		#endregion Field
 
@@ -59,9 +76,63 @@ namespace JsonFx.JsonML.BST
 		/// <param name="code"></param>
 		public JbstCodeBlock(string code)
 		{
-			this.code = (code != null) ?
-				code.Trim() :
-				String.Empty;
+			if (code == null)
+			{
+				code = String.Empty;
+			}
+
+			this.code = String.Empty;
+			this.type = JbstCodeBlockType.None;
+
+			for (int i=0; i<code.Length; i++)
+			{
+				if (Char.IsWhiteSpace(code[i]))
+				{
+					continue;
+				}
+
+				switch (code[i])
+				{
+					case '@':
+					{
+						this.type = JbstCodeBlockType.Directive;
+						this.code = code.Substring(i+1).Trim();
+						break;
+					}
+					case '!':
+					{
+						this.type = JbstCodeBlockType.Declaration;
+						this.code = code.Substring(i+1).Trim();
+						break;
+					}
+					case '-':
+					{
+						// look ahead one
+						if (i+1 >= code.Length ||
+							code[i+1] != '-')
+						{
+							// is general case
+							goto default;
+						}
+
+						this.type = JbstCodeBlockType.Comment;
+						this.code = code.Substring(i+2).TrimEnd('-').Trim();
+						break;
+					}
+					case '=':
+					{
+						this.type = JbstCodeBlockType.Expression;
+						this.code = code.Substring(i+1).Trim();
+						break;
+					}
+					default:
+					{
+						this.type = JbstCodeBlockType.EmbeddedScript;
+						this.code = code.Substring(i+1).Trim();
+						break;
+					}
+				}
+			}
 		}
 
 		#endregion Init
@@ -82,13 +153,40 @@ namespace JsonFx.JsonML.BST
 
 		void JsonFx.Json.IJsonSerializable.WriteJson(JsonFx.Json.JsonWriter writer)
 		{
-			if (this.Code.StartsWith("="))
+			switch (this.type)
 			{
-				writer.TextWriter.Write(FunctionFormat, this.Code.Substring(1));
-			}
-			else
-			{
-				writer.TextWriter.Write(CodeBlockFormat, this.Code);
+				case JbstCodeBlockType.Expression:
+				{
+					// output expressions are the core of the syntax
+					writer.TextWriter.Write(ExpressionFormat, this.Code);
+					break;
+				}
+				case JbstCodeBlockType.EmbeddedScript:
+				case JbstCodeBlockType.Declaration:
+				{
+					// currently there isn't a scope difference between
+					// JSP-style declarations and embedded code blocks
+					writer.TextWriter.Write(EmbeddedFormat, this.Code);
+					break;
+				}
+				case JbstCodeBlockType.Comment:
+				{
+#if DEBUG
+					// comments are only emitted during debug builds
+					writer.TextWriter.Write(CommentFormat, this.Code);
+#endif
+					break;
+				}
+				case JbstCodeBlockType.Directive:
+				{
+					// there is no output typically from directives
+					break;
+				}
+				case JbstCodeBlockType.None:
+				default:
+				{
+					break;
+				}
 			}
 		}
 
