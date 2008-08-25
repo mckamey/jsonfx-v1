@@ -39,6 +39,8 @@ namespace JsonFx.JsonML.BST
 	{
 		#region Constants
 
+		// TODO: evaluate the usefulness of straight code output
+		private const string CodeBlockFormat = "function($item){{return({0});}}";
 		private const string FunctionFormat = "function($item){{return({0});}}";
 
 		#endregion Constants
@@ -57,7 +59,9 @@ namespace JsonFx.JsonML.BST
 		/// <param name="code"></param>
 		public JbstCodeBlock(string code)
 		{
-			this.code = code;
+			this.code = (code != null) ?
+				code.Trim() :
+				String.Empty;
 		}
 
 		#endregion Init
@@ -78,7 +82,14 @@ namespace JsonFx.JsonML.BST
 
 		void JsonFx.Json.IJsonSerializable.WriteJson(JsonFx.Json.JsonWriter writer)
 		{
-			writer.TextWriter.Write(FunctionFormat, this.Code);
+			if (this.Code.StartsWith("="))
+			{
+				writer.TextWriter.Write(FunctionFormat, this.Code.Substring(1));
+			}
+			else
+			{
+				writer.TextWriter.Write(CodeBlockFormat, this.Code);
+			}
 		}
 
 		void JsonFx.Json.IJsonSerializable.ReadJson(JsonFx.Json.JsonReader reader)
