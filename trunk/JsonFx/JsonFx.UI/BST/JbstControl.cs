@@ -111,7 +111,7 @@ namespace JsonFx.JsonML.BST
 		//}
 
 		[JsonName("children")]
-		public JbstControlCollection ChildControls
+		public virtual JbstControlCollection ChildControls
 		{
 			get { return this.childControls; }
 			set { this.childControls = value; }

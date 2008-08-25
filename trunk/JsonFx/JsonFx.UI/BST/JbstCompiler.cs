@@ -198,15 +198,25 @@ namespace JsonFx.JsonML.BST
 			// flush any accumulated literals
 			this.Flush();
 
-			JbstControl control = this.next;
-			if (control == null)
+			JbstControl control;
+			int prefix = String.IsNullOrEmpty(tagName) ? -1 : tagName.IndexOf(':');
+			if (prefix > 0 &&
+				tagName.Substring(0, prefix).Equals("jbst", StringComparison.InvariantCultureIgnoreCase))
 			{
-				control = new JbstControl(tagName);
+				control = new JbstCustomControl(tagName.Substring(prefix+1));
 			}
 			else
 			{
-				control.TagName = tagName;
-				this.next = null;
+				control = this.next;
+				if (control == null)
+				{
+					control = new JbstControl(tagName);
+				}
+				else
+				{
+					control.TagName = tagName;
+					this.next = null;
+				}
 			}
 
 			if (this.current == null)
