@@ -724,7 +724,10 @@ namespace BuildTools.HtmlDistiller
 				ch = Char.ToLowerInvariant(this.Current);
 				if ((ch < AlphaStartChar || ch > AlphaEndChar) &&
 					(ch < NumStartChar || ch > NumEndChar) &&
-					(ch != NamespacePrefixChar))
+					(ch != NamespacePrefixChar) &&
+					(ch != '-') &&
+					(ch != '_') &&
+					(ch != '.'))
 				{
 					break;
 				}
