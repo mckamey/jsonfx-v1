@@ -51,6 +51,7 @@
     <Compile Include="BST\JbstCompiler.cs" />
     <Compile Include="BST\JbstControl.cs" />
     <Compile Include="BST\JbstControlCollection.cs" />
+    <Compile Include="BST\JbstCustomControl.cs" />
     <Compile Include="BST\JbstLiteral.cs" />
     <Compile Include="Compilation\JbstCodeProvider.cs">
       <SubType>Component</SubType>
