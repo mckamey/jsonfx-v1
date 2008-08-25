@@ -66,6 +66,7 @@ namespace BuildTools.HtmlDistiller
 		private const char OpenTagChar = '<';
 		private const char CloseTagChar = '>';
 		private const char EndTagChar = '/';
+		private const char NamespacePrefixChar = ':';
 		private const char AttrDelimChar = '=';
 		private const char SingleQuoteChar = '\'';
 		private const char DoubleQuoteChar = '\"';
@@ -722,7 +723,8 @@ namespace BuildTools.HtmlDistiller
 
 				ch = Char.ToLowerInvariant(this.Current);
 				if ((ch < AlphaStartChar || ch > AlphaEndChar) &&
-					(ch < NumStartChar || ch > NumEndChar))
+					(ch < NumStartChar || ch > NumEndChar) &&
+					(ch != NamespacePrefixChar))
 				{
 					break;
 				}
