@@ -54,7 +54,9 @@ namespace JsonFx.JsonML.BST
 		#region Constants
 
 		private const string EmbeddedFormat = "function($item){{{0}}}";
+		private const string EmbeddedFormatPrettyPrint = "function($item) {{ {0} }}";
 		private const string ExpressionFormat = "function($item){{return({0});}}";
+		private const string ExpressionFormatPrettyPrint = "function($item) {{ return ( {0} ); }}";
 #if DEBUG
 		private const string CommentFormat = "/*{0}*/";
 #endif
@@ -164,7 +166,9 @@ namespace JsonFx.JsonML.BST
 				case JbstCodeBlockType.Expression:
 				{
 					// output expressions are the core of the syntax
-					writer.TextWriter.Write(ExpressionFormat, this.Code);
+					writer.TextWriter.Write(
+						writer.PrettyPrint ? ExpressionFormatPrettyPrint : ExpressionFormat,
+						this.Code);
 					break;
 				}
 				case JbstCodeBlockType.EmbeddedScript:
@@ -172,7 +176,9 @@ namespace JsonFx.JsonML.BST
 				{
 					// currently there isn't a scope difference between
 					// JSP-style declarations and embedded code blocks
-					writer.TextWriter.Write(EmbeddedFormat, this.Code);
+					writer.TextWriter.Write(
+						writer.PrettyPrint ? EmbeddedFormatPrettyPrint : EmbeddedFormat,
+						this.Code);
 					break;
 				}
 				case JbstCodeBlockType.Comment:
