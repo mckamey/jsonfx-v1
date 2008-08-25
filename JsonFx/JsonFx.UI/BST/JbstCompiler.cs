@@ -414,7 +414,7 @@ namespace JsonFx.JsonML.BST
 				case HtmlTagType.FullTag:
 				case HtmlTagType.BeginTag:
 				{
-					this.PushTag(tag.TagName);
+					this.PushTag(tag.RawName);
 
 					if (tag.HasAttributes)
 					{
