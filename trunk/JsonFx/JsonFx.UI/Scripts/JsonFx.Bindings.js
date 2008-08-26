@@ -55,6 +55,17 @@ if ("undefined" === typeof JsonFx.UI) {
 	}
 };
 
+/*object*/ JsonFx.UI.jsonReviver = function(/*string*/ key, /*object*/ value) {
+    var a;
+    if ("string" === typeof value) {
+        a = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2}(?:\.\d*)?)Z$/.exec(value);
+        if (a) {
+            return new Date(Date.UTC(+a[1], +a[2] - 1, +a[3], +a[4], +a[5], +a[6]));
+        }
+    }
+    return value;
+};
+
 /* singleton JsonFx.Bindings */
 JsonFx.Bindings = function() {
 
@@ -111,10 +122,10 @@ JsonFx.Bindings = function() {
 
 						// allow element to provide parameters for bindings
 						options = elem.getAttribute("jsonfx:options");
-						if (options) {
+						if (options && "string" === typeof options) {
 							try {
 								// treat string as JSON
-								options = JSON.parse(options);
+								options = JSON.parse(options, JsonFx.UI.jsonReviver);
 							} catch (ex) { }
 						}
 

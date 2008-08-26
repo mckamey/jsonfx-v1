@@ -295,6 +295,17 @@ JsonFx.IO = {};
 
 /* JsonRequest ----------------------------------------------------*/
 
+/*object*/ JsonFx.IO.jsonReviver = function(/*string*/ key, /*object*/ value) {
+    var a;
+    if ("string" === typeof value) {
+        a = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2}(?:\.\d*)?)Z$/.exec(value);
+        if (a) {
+            return new Date(Date.UTC(+a[1], +a[2] - 1, +a[3], +a[4], +a[5], +a[6]));
+        }
+    }
+    return value;
+};
+
 /*void*/ JsonFx.IO.sendJsonRequest = function (
 	/*string*/ restUrl,
 	/*RequestOptions*/ options) {
@@ -310,7 +321,7 @@ JsonFx.IO = {};
 		// decode response as JSON
 		var json = xhr ? xhr.responseText : null;
 		try {
-			json = ("string" === typeof json) ? JSON.parse(json) : null;
+			json = ("string" === typeof json) ? JSON.parse(json, JsonFx.IO.jsonReviver) : null;
 
 			if ("function" === typeof onSuccess) {
 				onSuccess(json, context);
@@ -391,7 +402,7 @@ JsonFx.IO = {};
 
 		var json = xhr ? xhr.responseText : null;
 		try {
-			json = ("string" === typeof json) ? JSON.parse(json) : null;
+			json = ("string" === typeof json) ? JSON.parse(json, JsonFx.IO.jsonReviver) : null;
 
 			if (json.error) {
 				if (onFailure) {
@@ -418,7 +429,7 @@ JsonFx.IO = {};
 
 		var json = xhr ? xhr.responseText : null;
 		try {
-			json = ("string" === typeof json) ? JSON.parse(json) : null;
+			json = ("string" === typeof json) ? JSON.parse(json, JsonFx.IO.jsonReviver) : null;
 
 			if (onFailure) {
 				onFailure(json, cx, ex);
