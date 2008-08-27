@@ -43,9 +43,13 @@ if ("undefined" === typeof Browse) {
 	elem.className = elem.className.replace(new RegExp("(^|\\s+)"+cssClass+"(\\s+|$)"), " ");
 };
 
-/*DOM*/ Browse.findParent = function(/*DOM*/ elem, /*string*/ cssClass) {
+/*DOM*/ Browse.findParent = function(/*DOM*/ elem, /*string*/ cssClass, /*bool*/ skipRoot) {
 	if (!cssClass) {
-		return false;
+		return null;
+	}
+
+	if (skipRoot) {
+		elem = elem.parentNode;
 	}
 
 	// search up the ancestors
@@ -56,15 +60,27 @@ if ("undefined" === typeof Browse) {
 
 		elem = elem.parentNode;
 	}
+	return null;
 };
 
-/*DOM*/ Browse.findChild = function(/*DOM*/ elem, /*string*/ cssClass) {
+/*DOM*/ Browse.findChild = function(/*DOM*/ elem, /*string*/ cssClass, /*bool*/ skipRoot) {
 	if (!cssClass) {
-		return false;
+		return null;
 	}
 
 	// breadth-first search of all children
-	var queue = [elem];
+	var queue = [];
+	
+	if (skipRoot) {
+		if (elem && elem.childNodes) {
+			for (var i=0; i<elem.childNodes.length; i++) {
+				queue.push(elem.childNodes[i]);
+			}
+		}
+	} else {
+		queue.push(elem);
+	}
+
 	while (queue.length) {
 		elem = queue.shift();
 		if (Browse.hasCssClass(elem, cssClass)) {
@@ -76,4 +92,43 @@ if ("undefined" === typeof Browse) {
 			}
 		}
 	}
+	return null;
+};
+
+/*DOM*/ Browse.findPrevSibling = function(/*DOM*/ elem, /*string*/ cssClass, /*bool*/ skipRoot) {
+	if (!cssClass) {
+		return null;
+	}
+
+	if (skipRoot) {
+		elem = elem.previousSibling;
+	}
+
+	// search all siblings
+	while (elem) {
+		if (Browse.hasCssClass(elem, cssClass)) {
+			return elem;
+		}
+		elem = elem.previousSibling;
+	}
+	return null;
+};
+
+/*DOM*/ Browse.findNextSibling = function(/*DOM*/ elem, /*string*/ cssClass, /*bool*/ skipRoot) {
+	if (!cssClass) {
+		return null;
+	}
+
+	if (skipRoot) {
+		elem = elem.nextSibling;
+	}
+
+	// search all siblings
+	while (elem) {
+		if (Browse.hasCssClass(elem, cssClass)) {
+			return elem;
+		}
+		elem = elem.nextSibling;
+	}
+	return null;
 };
