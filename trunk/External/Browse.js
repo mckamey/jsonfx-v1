@@ -5,6 +5,23 @@ if ("undefined" === typeof Browse) {
 	window.Browse = {};
 }
 
+/*void*/ Browse.clearEvent = function(/*Event*/ evt) {
+	evt = evt || window.event;
+	if (evt) {
+		if (evt.stopPropagation) {
+			evt.stopPropagation();
+			evt.preventDefault();
+		} else {
+			try {
+				evt.cancelBubble = true;
+				evt.returnValue = false;
+			} catch (ex) {
+				// IE6
+			}
+		}
+	}
+};
+
 /*int*/ Browse.getKeyCode = function(/*Event*/ evt) {
 	evt = evt || window.event;
 	if (!evt) {
@@ -69,11 +86,11 @@ if ("undefined" === typeof Browse) {
 	}
 
 	// breadth-first search of all children
-	var queue = [];
+	var i, queue = [];
 	
 	if (skipRoot) {
 		if (elem && elem.childNodes) {
-			for (var i=0; i<elem.childNodes.length; i++) {
+			for (i=0; i<elem.childNodes.length; i++) {
 				queue.push(elem.childNodes[i]);
 			}
 		}
@@ -87,7 +104,7 @@ if ("undefined" === typeof Browse) {
 			return elem;
 		}
 		if (elem && elem.childNodes) {
-			for (var i=0; i<elem.childNodes.length; i++) {
+			for (i=0; i<elem.childNodes.length; i++) {
 				queue.push(elem.childNodes[i]);
 			}
 		}
@@ -104,7 +121,7 @@ if ("undefined" === typeof Browse) {
 		elem = elem.previousSibling;
 	}
 
-	// search all siblings
+	// search up siblings in order
 	while (elem) {
 		if (Browse.hasCssClass(elem, cssClass)) {
 			return elem;
@@ -123,7 +140,7 @@ if ("undefined" === typeof Browse) {
 		elem = elem.nextSibling;
 	}
 
-	// search all siblings
+	// search down siblings in order
 	while (elem) {
 		if (Browse.hasCssClass(elem, cssClass)) {
 			return elem;
