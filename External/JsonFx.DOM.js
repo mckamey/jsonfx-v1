@@ -1,11 +1,14 @@
-/*global Browse */
+/*global JsonFx */
 
-/* namespace Browse */
-if ("undefined" === typeof Browse) {
-	window.Browse = {};
+/* namespace JsonFx.DOM */
+if ("undefined" === typeof JsonFx) {
+	window.JsonFx = {};
+}
+if ("undefined" === typeof JsonFx.DOM) {
+	JsonFx.DOM = {};
 }
 
-/*void*/ Browse.clearEvent = function(/*Event*/ evt) {
+/*void*/ JsonFx.DOM.clearEvent = function(/*Event*/ evt) {
 	evt = evt || window.event;
 	if (evt) {
 		if (evt.stopPropagation) {
@@ -22,7 +25,7 @@ if ("undefined" === typeof Browse) {
 	}
 };
 
-/*int*/ Browse.getKeyCode = function(/*Event*/ evt) {
+/*int*/ JsonFx.DOM.getKeyCode = function(/*Event*/ evt) {
 	evt = evt || window.event;
 	if (!evt) {
 		return -1;
@@ -30,7 +33,7 @@ if ("undefined" === typeof Browse) {
 	return Number(evt.keyCode || evt.charCode || -1);
 };
 
-/*bool*/ Browse.clear = function(/*DOM*/ elem) {
+/*bool*/ JsonFx.DOM.clear = function(/*DOM*/ elem) {
 	if (!elem) {
 		return;
 	}
@@ -39,12 +42,12 @@ if ("undefined" === typeof Browse) {
 	}
 };
 
-/*bool*/ Browse.hasCssClass = function(/*DOM*/ elem, /*string*/ cssClass) {
+/*bool*/ JsonFx.DOM.hasClass = function(/*DOM*/ elem, /*string*/ cssClass) {
 	return elem && elem.className && cssClass &&
 		!!elem.className.match(new RegExp("(^|\\s)"+cssClass+"(\\s|$)"));
 };
 
-/*void*/ Browse.addCssClass = function(/*DOM*/ elem, /*string*/ cssClass) {
+/*void*/ JsonFx.DOM.addClass = function(/*DOM*/ elem, /*string*/ cssClass) {
 	if (!elem || !cssClass) {
 		return;
 	}
@@ -52,7 +55,7 @@ if ("undefined" === typeof Browse) {
 	elem.className += ' '+cssClass;
 };
 
-/*void*/ Browse.removeCssClass = function(/*DOM*/ elem, /*string*/ cssClass) {
+/*void*/ JsonFx.DOM.removeClass = function(/*DOM*/ elem, /*string*/ cssClass) {
 	if (!elem || !cssClass) {
 		return;
 	}
@@ -60,7 +63,7 @@ if ("undefined" === typeof Browse) {
 	elem.className = elem.className.replace(new RegExp("(^|\\s+)"+cssClass+"(\\s+|$)"), " ");
 };
 
-/*DOM*/ Browse.findParent = function(/*DOM*/ elem, /*string*/ cssClass, /*bool*/ skipRoot) {
+/*DOM*/ JsonFx.DOM.findParent = function(/*DOM*/ elem, /*string*/ cssClass, /*bool*/ skipRoot) {
 	if (!cssClass) {
 		return null;
 	}
@@ -71,7 +74,7 @@ if ("undefined" === typeof Browse) {
 
 	// search up the ancestors
 	while (elem) {
-		if (Browse.hasCssClass(elem, cssClass)) {
+		if (JsonFx.DOM.hasClass(elem, cssClass)) {
 			return elem;
 		}
 
@@ -80,7 +83,7 @@ if ("undefined" === typeof Browse) {
 	return null;
 };
 
-/*DOM*/ Browse.findChild = function(/*DOM*/ elem, /*string*/ cssClass, /*bool*/ skipRoot) {
+/*DOM*/ JsonFx.DOM.findChild = function(/*DOM*/ elem, /*string*/ cssClass, /*bool*/ skipRoot) {
 	if (!cssClass) {
 		return null;
 	}
@@ -100,7 +103,7 @@ if ("undefined" === typeof Browse) {
 
 	while (queue.length) {
 		elem = queue.shift();
-		if (Browse.hasCssClass(elem, cssClass)) {
+		if (JsonFx.DOM.hasClass(elem, cssClass)) {
 			return elem;
 		}
 		if (elem && elem.childNodes) {
@@ -112,7 +115,7 @@ if ("undefined" === typeof Browse) {
 	return null;
 };
 
-/*DOM*/ Browse.findPrevSibling = function(/*DOM*/ elem, /*string*/ cssClass, /*bool*/ skipRoot) {
+/*DOM*/ JsonFx.DOM.findPrev = function(/*DOM*/ elem, /*string*/ cssClass, /*bool*/ skipRoot) {
 	if (!cssClass) {
 		return null;
 	}
@@ -123,7 +126,7 @@ if ("undefined" === typeof Browse) {
 
 	// search up siblings in order
 	while (elem) {
-		if (Browse.hasCssClass(elem, cssClass)) {
+		if (JsonFx.DOM.hasClass(elem, cssClass)) {
 			return elem;
 		}
 		elem = elem.previousSibling;
@@ -131,7 +134,7 @@ if ("undefined" === typeof Browse) {
 	return null;
 };
 
-/*DOM*/ Browse.findNextSibling = function(/*DOM*/ elem, /*string*/ cssClass, /*bool*/ skipRoot) {
+/*DOM*/ JsonFx.DOM.findNext = function(/*DOM*/ elem, /*string*/ cssClass, /*bool*/ skipRoot) {
 	if (!cssClass) {
 		return null;
 	}
@@ -142,7 +145,7 @@ if ("undefined" === typeof Browse) {
 
 	// search down siblings in order
 	while (elem) {
-		if (Browse.hasCssClass(elem, cssClass)) {
+		if (JsonFx.DOM.hasClass(elem, cssClass)) {
 			return elem;
 		}
 		elem = elem.nextSibling;
