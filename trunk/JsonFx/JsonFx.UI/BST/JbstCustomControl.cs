@@ -39,8 +39,10 @@ namespace JsonFx.JsonML.BST
 	{
 		#region Constants
 
-		private const string StartFormat = "function($item){{ return JsonML.dataBind(({0}), {{ \"template\": (";
-		private const string EndFormat = "), \"data\": $item.data, \"index\": $item.index }}); }}";
+		// TODO: find out why content after this is being suppressed
+		// TODO: add pretty printing
+		private const string StartFormat = "function() {{ var t = new JsonML.BST(";
+		private const string EndFormat = "); t.prototype = this; return ({0}).dataBind({{ \"$jbst\": t, \"data\": this.data, \"index\": this.index }}); }}";
 
 		#endregion Constants
 
@@ -78,9 +80,9 @@ namespace JsonFx.JsonML.BST
 
 		void JsonFx.Json.IJsonSerializable.WriteJson(JsonFx.Json.JsonWriter writer)
 		{
-			writer.TextWriter.Write(StartFormat, this.TagName);
+			writer.TextWriter.Write(StartFormat, "");
 			writer.Write(this.content);
-			writer.TextWriter.Write(EndFormat, -1);
+			writer.TextWriter.Write(EndFormat, this.TagName);
 		}
 
 		void JsonFx.Json.IJsonSerializable.ReadJson(JsonFx.Json.JsonReader reader)
