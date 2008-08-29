@@ -135,7 +135,7 @@ namespace JsonFx.JsonML.BST
 					default:
 					{
 						this.type = JbstCodeBlockType.EmbeddedScript;
-						this.code = code.Substring(i+1).Trim();
+						this.code = code.Trim();
 						done = true;
 						break;
 					}
