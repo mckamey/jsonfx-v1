@@ -53,10 +53,10 @@ namespace JsonFx.JsonML.BST
 
 		#region Constants
 
-		private const string EmbeddedFormat = "function($item){{{0}}}";
-		private const string EmbeddedFormatPrettyPrint = "function($item) {{ {0} }}";
-		private const string ExpressionFormat = "function($item){{return({0});}}";
-		private const string ExpressionFormatPrettyPrint = "function($item) {{ return ( {0} ); }}";
+		private const string EmbeddedFormat = "function(){{{0}}}";
+		private const string EmbeddedFormatPrettyPrint = "function() {{ {0} }}";
+		private const string ExpressionFormat = "function(){{return({0});}}";
+		private const string ExpressionFormatPrettyPrint = "function() {{ return ( {0} ); }}";
 #if DEBUG
 		private const string CommentFormat = "/*{0}*/";
 #endif
@@ -112,6 +112,9 @@ namespace JsonFx.JsonML.BST
 					}
 					case '-':
 					{
+						// TODO: differentiate between comment and "--this.i;"
+						// difference is in the ending?
+
 						// look ahead one
 						if (i+1 >= code.Length ||
 							code[i+1] != '-')

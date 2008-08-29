@@ -42,9 +42,8 @@ namespace JsonFx.Compilation
 	{
 		#region Fields
 
-		private string jsonp = null;
-		private bool hasJsonp = false;
-		private bool isJsonpVar = false;
+		private string name = null;
+		private bool isJsonp = false;
 
 		#endregion Fields
 
@@ -97,33 +96,54 @@ namespace JsonFx.Compilation
 
 		private void Render(JbstCompiler parser, TextWriter writer, bool prettyPrint)
 		{
-			if (this.hasJsonp)
+			// TODO: allow import statements for better de-linting?
+			int dot = this.name.IndexOf('.');
+			string global = (dot < 0) ? this.name : this.name.Substring(0, dot);
+			writer.WriteLine("/*global JsonML, {0} */", global);
+
+			// wrap in JsonP
+			writer.Write(name);
+			if (this.isJsonp)
 			{
-				// wrap in JsonP
-				writer.Write(jsonp);
-				if (this.isJsonpVar)
+				writer.Write("(");
+			}
+			else
+			{
+				if (prettyPrint)
 				{
-					if (prettyPrint)
-					{
-						writer.Write(" = ");
-					}
-					else
-					{
-						writer.Write('=');
-					}
+					writer.Write(" = ");
 				}
-				writer.Write('(');
+				else
+				{
+					writer.Write("=");
+				}
+			}
+
+			if (prettyPrint)
+			{
+				writer.WriteLine("new JsonML.BST(");
+			}
+			else
+			{
+				writer.Write("new JsonML.BST(");
 			}
 
 			parser.Render(writer, prettyPrint);
 
-			if (this.hasJsonp)
+			if (this.isJsonp)
 			{
-				writer.Write(");");
+				writer.Write("));");
 			}
-			if (prettyPrint)
+			else
 			{
-				writer.WriteLine();
+				if (prettyPrint)
+				{
+					writer.WriteLine(");");
+				}
+				else
+				{
+					writer.Write(");");
+				}
 			}
 		}
 
@@ -136,8 +156,6 @@ namespace JsonFx.Compilation
 
 			int index = parser.ParseDirectives(out lineNumber);
 
-			this.hasJsonp = !String.IsNullOrEmpty(this.jsonp);
-
 			return sourceText.Substring(index).Trim();
 		}
 
@@ -146,18 +164,21 @@ namespace JsonFx.Compilation
 			string name = attribs.ContainsKey("Name") ? attribs["Name"] : null;
 			if (!String.IsNullOrEmpty(name))
 			{
-				this.jsonp = name;
-				this.isJsonpVar = true;
+				this.name = name;
+				this.isJsonp = false;
 				return;
 			}
 
 			string method = attribs.ContainsKey("Callback") ? attribs["Callback"] : null;
 			if (!String.IsNullOrEmpty(method))
 			{
-				this.jsonp = method;
-				this.isJsonpVar = false;
+				this.name = method;
+				this.isJsonp = true;
 				return;
 			}
+
+			this.name = "throw new Error";
+			this.isJsonp = true;
 		}
 
 		#endregion Methods
