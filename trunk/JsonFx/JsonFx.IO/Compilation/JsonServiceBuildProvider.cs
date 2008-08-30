@@ -217,6 +217,7 @@ namespace JsonFx.Compilation
 
 			byte[] gzippedBytes, deflatedBytes;
 			ResourceBuildProvider.Compress(proxyOutput, out gzippedBytes, out deflatedBytes);
+			byte[] hash = ResourceBuildProvider.MD5Hash(proxyOutput);
 
 			// generate a service factory
 			CodeCompileUnit generatedUnit = new CodeCompileUnit();
@@ -336,6 +337,28 @@ namespace JsonFx.Compilation
 			resourceType.Members.Add(property);
 
 			#endregion public override byte[] Deflated { get; }
+
+			#region public override Guid MD5 { get; }
+
+			// add a readonly property with the resource data
+			property = new CodeMemberProperty();
+			property.Name = "MD5";
+			property.Type = new CodeTypeReference(typeof(Guid));
+			property.Attributes = MemberAttributes.Public|MemberAttributes.Override;
+			property.HasGet = true;
+			// get { return new Guid(hash)); }
+
+			arrayInit = new CodeArrayCreateExpression(typeof(byte[]), hash.Length);
+			foreach (byte b in hash)
+			{
+				arrayInit.Initializers.Add(new CodePrimitiveExpression(b));
+			}
+
+			CodeObjectCreateExpression newGuid = new CodeObjectCreateExpression(property.Type, arrayInit);
+			property.GetStatements.Add(new CodeMethodReturnStatement(newGuid));
+			resourceType.Members.Add(property);
+
+			#endregion public override Guid MD5 { get; }
 
 			#region public override Type ServiceType { get; }
 
