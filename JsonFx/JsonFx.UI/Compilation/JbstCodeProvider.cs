@@ -42,7 +42,7 @@ namespace JsonFx.Compilation
 	{
 		#region Fields
 
-		private string name = null;
+		private string name = String.Empty;
 		private bool isJsonp = false;
 
 		#endregion Fields
