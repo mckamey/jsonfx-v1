@@ -267,7 +267,11 @@ namespace JsonFx.Handlers
 			object metaData = this.GetMetaData();
 
 			string etag;
-			if (metaData is string)
+			if (metaData is Guid)
+			{
+				etag = ((Guid)metaData).ToString("N");
+			}
+			else if (metaData is string)
 			{
 				etag = ETag.MD5Hash((string)metaData);
 			}
@@ -281,7 +285,7 @@ namespace JsonFx.Handlers
 			}
 			else
 			{
-				throw new NotSupportedException("GetMetaData must return String, Byte[], or Stream");
+				throw new NotSupportedException("GetMetaData must return Guid, String, Byte[], or Stream");
 			}
 
 			return "\""+etag+"\"";
@@ -417,6 +421,45 @@ namespace JsonFx.Handlers
 		}
 
 		#endregion Utility Methods
+	}
+
+	/// <summary>
+	/// Generates an ETag for a specific Guid.
+	/// </summary>
+	internal class GuidETag : ETag
+	{
+		#region Fields
+
+		private readonly Guid Hash;
+
+		#endregion Fields
+
+		#region Init
+
+		/// <summary>
+		/// Ctor
+		/// </summary>
+		/// <param name="Content"></param>
+		public GuidETag(Guid hash)
+		{
+			this.Hash = hash;
+		}
+
+		#endregion Init
+
+		#region ETag Members
+
+		/// <summary>
+		/// Generates a unique ETag which changes when the Content changes
+		/// </summary>
+		/// <param name="entity"></param>
+		/// <returns></returns>
+		protected override object GetMetaData()
+		{
+			return this.Hash;
+		}
+
+		#endregion ETag Members
 	}
 
 	/// <summary>

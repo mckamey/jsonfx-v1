@@ -117,10 +117,7 @@ namespace JsonFx.Handlers
 			}
 
 			// check if client has cached copy
-			Type resourceType = info.GetType();
-			ETag etag = new EmbeddedResourceETag(// should this be StringETag?
-				resourceType.Assembly,
-				resourceType.FullName);
+			ETag etag = new GuidETag(info.MD5);
 			if (etag.HandleETag(context, HttpCacheability.ServerAndPrivate, isDebug))
 			{
 				return null;
