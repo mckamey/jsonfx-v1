@@ -40,6 +40,7 @@ using System.Web.Compilation;
 using System.CodeDom;
 using System.CodeDom.Compiler;
 using System.Security.Permissions;
+using System.Security.Cryptography;
 
 using BuildTools;
 using JsonFx.Handlers;
@@ -64,6 +65,12 @@ namespace JsonFx.Compilation
 	[PermissionSet(SecurityAction.Demand, Unrestricted=true)]
 	public class ResourceBuildProvider : System.Web.Compilation.BuildProvider, IResourceBuildHelper
 	{
+		#region Constants
+
+		private static readonly MD5 MD5HashProvider = MD5.Create();
+
+		#endregion Constants
+
 		#region Fields
 
 		private List<string> pathDependencies = null;
@@ -182,6 +189,7 @@ namespace JsonFx.Compilation
 
 			byte[] gzippedBytes, deflatedBytes;
 			ResourceBuildProvider.Compress(compactedResource, out gzippedBytes, out deflatedBytes);
+			byte[] hash = ResourceBuildProvider.MD5Hash(compactedResource);
 
 			// generate a resource container
 			CodeCompileUnit generatedUnit = new CodeCompileUnit();
@@ -330,6 +338,28 @@ namespace JsonFx.Compilation
 
 			#endregion public override string FileExtension { get; }
 
+			#region public override Guid MD5 { get; }
+
+			// add a readonly property with the resource data
+			property = new CodeMemberProperty();
+			property.Name = "MD5";
+			property.Type = new CodeTypeReference(typeof(Guid));
+			property.Attributes = MemberAttributes.Public|MemberAttributes.Override;
+			property.HasGet = true;
+			// get { return new Guid(hash)); }
+
+			arrayInit = new CodeArrayCreateExpression(typeof(byte[]), hash.Length);
+			foreach (byte b in hash)
+			{
+				arrayInit.Initializers.Add(new CodePrimitiveExpression(b));
+			}
+
+			CodeObjectCreateExpression newGuid = new CodeObjectCreateExpression(property.Type, arrayInit);
+			property.GetStatements.Add(new CodeMethodReturnStatement(newGuid));
+			resourceType.Members.Add(property);
+
+			#endregion public override Guid MD5 { get; }
+
 			assemblyBuilder.AddCodeCompileUnit(this, generatedUnit);
 		}
 
@@ -429,5 +459,39 @@ namespace JsonFx.Compilation
 		}
 
 		#endregion ResourceBuildHelper Members
+
+		#region Utility Methods
+
+		/// <summary>
+		/// Generates a unique MD5 hash from string
+		/// </summary>
+		/// <param name="value"></param>
+		/// <returns></returns>
+		public static byte[] MD5Hash(string value)
+		{
+			// get String as a Byte[]
+			byte[] buffer = Encoding.Unicode.GetBytes(value);
+
+			return ResourceBuildProvider.MD5Hash(buffer);
+		}
+
+		/// <summary>
+		/// Generates an MD5 hash from byte[]
+		/// </summary>
+		/// <param name="buffer"></param>
+		/// <returns></returns>
+		public static byte[] MD5Hash(byte[] value)
+		{
+			byte[] hash;
+			lock (MD5HashProvider)
+			{
+				// generate MD5 hash
+				hash = MD5HashProvider.ComputeHash(value);
+			}
+
+			return hash;
+		}
+
+		#endregion Utility Methods
 	}
 }
