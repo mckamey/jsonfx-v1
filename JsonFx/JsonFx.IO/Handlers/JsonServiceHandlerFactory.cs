@@ -51,6 +51,9 @@ namespace JsonFx.Handlers
 				return new ResourceHandler();
 			}
 
+			// TODO: provide a mechanism for disabling compression?
+			CompiledBuildResult.EnableStreamCompression(context);
+
 			// handle service requests
 			JsonServiceInfo serviceInfo = BuildManager.CreateInstanceFromVirtualPath(url, descriptorType) as JsonServiceInfo;
 			return new JsonFx.Handlers.JsonServiceHandler(serviceInfo, url);
