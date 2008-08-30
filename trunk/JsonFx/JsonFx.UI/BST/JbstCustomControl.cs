@@ -42,7 +42,8 @@ namespace JsonFx.JsonML.BST
 		// TODO: find out why content after this is being suppressed
 		// TODO: add pretty printing
 		private const string StartFormat = "function() {{ var t = new JsonML.BST(";
-		private const string EndFormat = "); t.prototype = this; return ({0}).dataBind({{ \"$jbst\": t, \"data\": this.data, \"index\": this.index }}); }}";
+		private const string EndFormat = "); t.prototype = this; return ({0}).dataBind({{ \"jbst\": t, \"data\": this.data, \"index\": this.index }}); }}";
+		public const string CustomControlPlaceholder = "if (this.data && this.data.jbst instanceof JsonML.BST) { return this.data.jbst.dataBind(this.data.data, this.data.item); }";
 
 		#endregion Constants
 
