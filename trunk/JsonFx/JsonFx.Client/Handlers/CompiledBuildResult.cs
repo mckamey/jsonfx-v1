@@ -30,6 +30,7 @@
 
 using System;
 using System.IO;
+using System.IO.Compression;
 using System.Text;
 using System.Web;
 using System.Web.Compilation;
@@ -39,6 +40,9 @@ using JsonFx.Compilation;
 
 namespace JsonFx.Handlers
 {
+	/// <remarks>
+	/// Good request compression summary: http://www.west-wind.com/WebLog/posts/102969.aspx
+	/// </remarks>
 	public enum CompiledBuildResultType
 	{
 		PrettyPrint,
@@ -119,7 +123,64 @@ namespace JsonFx.Handlers
 			return CompiledBuildResultType.Compact;
 		}
 
-		#endregion Properties
+		/// <summary>
+		/// If supported, adds a runtime compression filter to the response output.
+		/// </summary>
+		/// <param name="context"></param>
+		public static void EnableStreamCompression(HttpContext context)
+		{
+			switch (CompiledBuildResult.GetOutputEncoding(context))
+			{
+				case CompiledBuildResultType.Gzip:
+				{
+					context.Response.AppendHeader("Content-Encoding", CompiledBuildResult.GzipContentEncoding);
+					context.Response.Filter = new GZipStream(context.Response.Filter, CompressionMode.Compress, true);
+					break;
+				}
+				case CompiledBuildResultType.Deflate:
+				{
+					context.Response.AppendHeader("Content-Encoding", CompiledBuildResult.DeflateContentEncoding);
+					context.Response.Filter = new DeflateStream(context.Response.Filter, CompressionMode.Compress, true);
+					break;
+				}
+			}
+		}
+
+		/// <summary>
+		/// Determines appropriate content-encoding.
+		/// </summary>
+		/// <param name="context"></param>
+		/// <returns></returns>
+		private static CompiledBuildResultType GetOutputEncoding(HttpContext context)
+		{
+			bool isDebug = "debug".Equals(context.Request.QueryString[null], StringComparison.InvariantCultureIgnoreCase);
+			if (isDebug)
+			{
+				return CompiledBuildResultType.PrettyPrint;
+			}
+
+			string acceptEncoding = context.Request.Headers["Accept-Encoding"];
+			if (String.IsNullOrEmpty(acceptEncoding))
+			{
+				return CompiledBuildResultType.Compact;
+			}
+
+			acceptEncoding = acceptEncoding.ToLowerInvariant();
+
+			if (acceptEncoding.Contains("deflate"))
+			{
+				return CompiledBuildResultType.Deflate;
+			}
+
+			if (acceptEncoding.Contains("gzip"))
+			{
+				return CompiledBuildResultType.Gzip;
+			}
+
+			return CompiledBuildResultType.Compact;
+		}
+
+		#endregion Methods
 
 		#region Factory Methods
 
