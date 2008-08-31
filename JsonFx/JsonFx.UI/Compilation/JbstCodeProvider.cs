@@ -96,10 +96,13 @@ namespace JsonFx.Compilation
 
 		private void Render(JbstCompiler parser, TextWriter writer, bool prettyPrint)
 		{
-			// TODO: allow import statements for better de-linting?
-			int dot = this.name.IndexOf('.');
-			string global = (dot < 0) ? this.name : this.name.Substring(0, dot);
-			writer.WriteLine("/*global JsonML, {0} */", global);
+			if (prettyPrint)
+			{
+				// TODO: allow import statements for better de-linting?
+				int dot = this.name.IndexOf('.');
+				string global = (dot < 0) ? this.name : this.name.Substring(0, dot);
+				writer.WriteLine("/*global JsonML, {0} */", global);
+			}
 
 			// wrap in JsonP
 			writer.Write(name);
