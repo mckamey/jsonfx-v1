@@ -44,10 +44,10 @@ namespace JsonFx.JsonML.BST
 		private enum JbstCodeBlockType
 		{
 			None,
+			Comment,
 			Directive,
 			Declaration,
-			Comment,
-			EmbeddedScript,
+			Scriptlet,
 			Expression
 		}
 
@@ -55,9 +55,10 @@ namespace JsonFx.JsonML.BST
 
 		#region Constants
 
-		private const string EmbeddedFormat = "function() {{ {0} }}";
-		private const string ExpressionFormat = "function() {{ return ( {0} ); }}";
-		private const string CommentFormat = "/*{0}*/";
+		private const string DeclarationFormat = "function()\r\n{{\r\n\t{0}\r\n}}";
+		private const string ScriptletFormat = "function()\r\n{{\r\n\t{0}\r\n}}";
+		private const string ExpressionFormat = "function()\r\n{{\r\n\treturn ({0});\r\n}}";
+		private const string CommentFormat = "/* {0} */";
 
 		#endregion Constants
 
@@ -126,7 +127,7 @@ namespace JsonFx.JsonML.BST
 					}
 					default:
 					{
-						this.type = JbstCodeBlockType.EmbeddedScript;
+						this.type = JbstCodeBlockType.Scriptlet;
 						this.code = code;
 						done = true;
 						break;
@@ -153,51 +154,58 @@ namespace JsonFx.JsonML.BST
 
 		void JsonFx.Json.IJsonSerializable.WriteJson(JsonFx.Json.JsonWriter writer)
 		{
-			string output;
+			string codeBlock;
 			switch (this.type)
 			{
 				case JbstCodeBlockType.Expression:
 				{
 					// output expressions are the core of the syntax
-					output = String.Format(ExpressionFormat, this.Code);
+					codeBlock = String.Format(ExpressionFormat, this.Code);
 					break;
 				}
-				case JbstCodeBlockType.EmbeddedScript:
+				case JbstCodeBlockType.Scriptlet:
+				{
+					// analogous to instance code or JSP scriptlets
+					// executed each time template is bound
+					codeBlock = String.Format(ScriptletFormat, this.Code);
+					break;
+				}
 				case JbstCodeBlockType.Declaration:
 				{
-					// currently there isn't a scope difference between
-					// JSP-style declarations and embedded code blocks
-					output = String.Format(EmbeddedFormat, this.Code);
+					// analogous to static code or JSP declarations
+					// executed only on first usage of template
+					codeBlock = String.Format(DeclarationFormat, this.Code);
 					break;
 				}
 				case JbstCodeBlockType.Comment:
 				{
 					// comments are only emitted during debug builds
-					output = String.Format(CommentFormat, this.Code);
+					codeBlock = String.Format(CommentFormat, this.Code.Replace("*/", "* /"));
 					break;
 				}
 				case JbstCodeBlockType.Directive:
 				{
 					// there is no output typically from directives
-					output = null;
+					codeBlock = null;
 					break;
 				}
 				case JbstCodeBlockType.None:
 				default:
 				{
-					output = null;
+					codeBlock = null;
 					break;
 				}
 			}
 
-			if (String.IsNullOrEmpty(output))
+			if (String.IsNullOrEmpty(codeBlock))
 			{
 				return;
 			}
 
 			if (writer.PrettyPrint)
 			{
-				writer.TextWriter.Write(output);
+				writer.TextWriter.WriteLine();
+				writer.TextWriter.WriteLine(codeBlock);
 			}
 			else
 			{
@@ -205,7 +213,7 @@ namespace JsonFx.JsonML.BST
 				// signal to JSMin that isn't linted so
 				// doesn't break users code if they leave
 				// off semicolons, etc.
-				new JSMin().Run(output, writer.TextWriter, false, true);
+				new JSMin().Run(codeBlock, writer.TextWriter, false, true);
 			}
 		}
 
