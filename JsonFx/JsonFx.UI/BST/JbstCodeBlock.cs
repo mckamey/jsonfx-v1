@@ -30,6 +30,8 @@
 
 using System;
 
+using BuildTools.ScriptCompactor;
+
 namespace JsonFx.JsonML.BST
 {
 	/// <summary>
@@ -53,13 +55,9 @@ namespace JsonFx.JsonML.BST
 
 		#region Constants
 
-		private const string EmbeddedFormat = "function(){{{0}}}";
-		private const string EmbeddedFormatPrettyPrint = "function() {{ {0} }}";
-		private const string ExpressionFormat = "function(){{return({0});}}";
-		private const string ExpressionFormatPrettyPrint = "function() {{ return ( {0} ); }}";
-#if DEBUG
+		private const string EmbeddedFormat = "function() {{ {0} }}";
+		private const string ExpressionFormat = "function() {{ return ( {0} ); }}";
 		private const string CommentFormat = "/*{0}*/";
-#endif
 
 		#endregion Constants
 
@@ -89,56 +87,47 @@ namespace JsonFx.JsonML.BST
 			bool done = false;
 			for (int i=0; !done && i<code.Length; i++)
 			{
-				if (Char.IsWhiteSpace(code[i]))
-				{
-					continue;
-				}
-
 				switch (code[i])
 				{
 					case '@':
 					{
 						this.type = JbstCodeBlockType.Directive;
-						this.code = code.Substring(i+1).Trim();
+						this.code = code.Substring(i+1);
 						done = true;
 						break;
 					}
 					case '!':
 					{
 						this.type = JbstCodeBlockType.Declaration;
-						this.code = code.Substring(i+1).Trim();
+						this.code = code.Substring(i+1);
 						done = true;
 						break;
 					}
 					case '-':
 					{
-						// TODO: differentiate between comment and "--this.i;"
-						// difference is in the ending?
-
-						// look ahead one
-						if (i+1 >= code.Length ||
-							code[i+1] != '-')
+						if (!code.StartsWith("--") ||
+							!code.EndsWith("--"))
 						{
-							// is general case
+							// is general case e.g. "--this.index;"
 							goto default;
 						}
 
 						this.type = JbstCodeBlockType.Comment;
-						this.code = code.Substring(i+2).TrimEnd('-').Trim();
+						this.code = code.Substring(i+2).TrimEnd('-');
 						done = true;
 						break;
 					}
 					case '=':
 					{
 						this.type = JbstCodeBlockType.Expression;
-						this.code = code.Substring(i+1).Trim();
+						this.code = code.Substring(i+1);
 						done = true;
 						break;
 					}
 					default:
 					{
 						this.type = JbstCodeBlockType.EmbeddedScript;
-						this.code = code.Trim();
+						this.code = code;
 						done = true;
 						break;
 					}
@@ -164,14 +153,13 @@ namespace JsonFx.JsonML.BST
 
 		void JsonFx.Json.IJsonSerializable.WriteJson(JsonFx.Json.JsonWriter writer)
 		{
+			string output;
 			switch (this.type)
 			{
 				case JbstCodeBlockType.Expression:
 				{
 					// output expressions are the core of the syntax
-					writer.TextWriter.Write(
-						writer.PrettyPrint ? ExpressionFormatPrettyPrint : ExpressionFormat,
-						this.Code);
+					output = String.Format(ExpressionFormat, this.Code);
 					break;
 				}
 				case JbstCodeBlockType.EmbeddedScript:
@@ -179,29 +167,45 @@ namespace JsonFx.JsonML.BST
 				{
 					// currently there isn't a scope difference between
 					// JSP-style declarations and embedded code blocks
-					writer.TextWriter.Write(
-						writer.PrettyPrint ? EmbeddedFormatPrettyPrint : EmbeddedFormat,
-						this.Code);
+					output = String.Format(EmbeddedFormat, this.Code);
 					break;
 				}
 				case JbstCodeBlockType.Comment:
 				{
-#if DEBUG
 					// comments are only emitted during debug builds
-					writer.TextWriter.Write(CommentFormat, this.Code);
-#endif
+					output = String.Format(CommentFormat, this.Code);
 					break;
 				}
 				case JbstCodeBlockType.Directive:
 				{
 					// there is no output typically from directives
+					output = null;
 					break;
 				}
 				case JbstCodeBlockType.None:
 				default:
 				{
+					output = null;
 					break;
 				}
+			}
+
+			if (String.IsNullOrEmpty(output))
+			{
+				return;
+			}
+
+			if (writer.PrettyPrint)
+			{
+				writer.TextWriter.Write(output);
+			}
+			else
+			{
+				// min the output for better compaction
+				// signal to JSMin that isn't linted so
+				// doesn't break users code if they leave
+				// off semicolons, etc.
+				new JSMin().Run(output, writer.TextWriter, false, true);
 			}
 		}
 
