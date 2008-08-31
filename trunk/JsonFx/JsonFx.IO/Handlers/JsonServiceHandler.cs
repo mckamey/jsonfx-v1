@@ -219,6 +219,8 @@ namespace JsonFx.Handlers
 
 		void System.Web.IHttpHandler.ProcessRequest(System.Web.HttpContext context)
 		{
+			context.Response.Cache.SetCacheability(HttpCacheability.Private);
+
 			JsonResponse response = new JsonResponse();
 			try
 			{
@@ -237,7 +239,9 @@ namespace JsonFx.Handlers
 				}
 
 				if (request == null)
+				{
 					throw new JsonServiceException("The JSON-RPC Request was empty.");
+				}
 
 				this.HandleRequest(context, request, ref response);
 			}
