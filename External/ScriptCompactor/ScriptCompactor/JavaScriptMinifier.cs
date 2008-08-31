@@ -101,7 +101,8 @@ namespace JavaScriptSupport
 			isSafe = isLinted;
 			using (sr = src)
 			{
-				using (sw = dst)
+				// don't dispose the dst since may be incrementally writing
+				//using (sw = dst)
 				{
 					jsmin();
 				}
