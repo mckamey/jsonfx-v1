@@ -393,30 +393,33 @@ namespace JsonFx.JsonML.BST
 			}
 
 			// wrap in JsonP
-			writer.Write(name);
-			if (this.isJsonp)
+			if (!String.IsNullOrEmpty(name))
 			{
-				writer.Write("(");
-			}
-			else
-			{
-				if (prettyPrint)
+				writer.Write(name);
+				if (this.isJsonp)
 				{
-					writer.Write(" = ");
+					writer.Write("(");
 				}
 				else
 				{
-					writer.Write("=");
+					if (prettyPrint)
+					{
+						writer.Write(" = ");
+					}
+					else
+					{
+						writer.Write("=");
+					}
 				}
-			}
 
-			if (prettyPrint)
-			{
-				writer.WriteLine("new JsonML.BST(");
-			}
-			else
-			{
-				writer.Write("new JsonML.BST(");
+				if (prettyPrint)
+				{
+					writer.WriteLine("new JsonML.BST(");
+				}
+				else
+				{
+					writer.Write("new JsonML.BST(");
+				}
 			}
 
 			JsonFx.Json.JsonWriter jw = new JsonFx.Json.JsonWriter(writer);
@@ -446,20 +449,23 @@ namespace JsonFx.JsonML.BST
 			// only render single node found (null is OK)
 			jw.Write(control);
 
-			// close out JSONP
-			if (this.isJsonp)
+			if (!String.IsNullOrEmpty(name))
 			{
-				writer.Write("));");
-			}
-			else
-			{
-				if (prettyPrint)
+				// close out JSONP
+				if (this.isJsonp)
 				{
-					writer.WriteLine(");");
+					writer.Write("));");
 				}
 				else
 				{
-					writer.Write(");");
+					if (prettyPrint)
+					{
+						writer.WriteLine(");");
+					}
+					else
+					{
+						writer.Write(");");
+					}
 				}
 			}
 
