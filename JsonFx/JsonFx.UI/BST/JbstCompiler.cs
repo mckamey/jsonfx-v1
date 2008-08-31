@@ -39,6 +39,8 @@ using BuildTools;
 using BuildTools.HtmlDistiller;
 using BuildTools.HtmlDistiller.Filters;
 using BuildTools.HtmlDistiller.Writers;
+using BuildTools.ScriptCompactor;
+using JsonFx.Compilation;
 
 namespace JsonFx.JsonML.BST
 {
@@ -62,6 +64,11 @@ namespace JsonFx.JsonML.BST
 
 		private bool isParsing = false;
 		private readonly HtmlDistiller parser = new HtmlDistiller();
+		private readonly StringBuilder Directives = new StringBuilder();
+		private readonly StringBuilder Declarations = new StringBuilder();
+
+		private string name = String.Empty;
+		private bool isJsonp = false;
 
 		#endregion Fields
 
@@ -103,7 +110,6 @@ namespace JsonFx.JsonML.BST
 		/// Parses markup.
 		/// </summary>
 		/// <param name="literal"></param>
-		/// <returns>a list of any exeptions which occurred during the parsing.</returns>
 		internal void Parse(string source)
 		{
 			try
@@ -375,6 +381,44 @@ namespace JsonFx.JsonML.BST
 
 		public void Render(TextWriter writer, bool prettyPrint)
 		{
+			this.ProcessDirectives();
+
+			// add JSLINT directives
+			if (prettyPrint)
+			{
+				// TODO: allow import statements for better de-linting?
+				int dot = this.name.IndexOf('.');
+				string global = (dot < 0) ? this.name : this.name.Substring(0, dot);
+				writer.WriteLine("/*global JsonML, {0} */", global);
+			}
+
+			// wrap in JsonP
+			writer.Write(name);
+			if (this.isJsonp)
+			{
+				writer.Write("(");
+			}
+			else
+			{
+				if (prettyPrint)
+				{
+					writer.Write(" = ");
+				}
+				else
+				{
+					writer.Write("=");
+				}
+			}
+
+			if (prettyPrint)
+			{
+				writer.WriteLine("new JsonML.BST(");
+			}
+			else
+			{
+				writer.Write("new JsonML.BST(");
+			}
+
 			JsonFx.Json.JsonWriter jw = new JsonFx.Json.JsonWriter(writer);
 			jw.PrettyPrint = prettyPrint;
 
@@ -401,6 +445,40 @@ namespace JsonFx.JsonML.BST
 
 			// only render single node found (null is OK)
 			jw.Write(control);
+
+			// close out JSONP
+			if (this.isJsonp)
+			{
+				writer.Write("));");
+			}
+			else
+			{
+				if (prettyPrint)
+				{
+					writer.WriteLine(");");
+				}
+				else
+				{
+					writer.Write(");");
+				}
+			}
+
+			// render any declarations
+			if (this.Declarations.Length > 0)
+			{
+				if (prettyPrint)
+				{
+					writer.WriteLine(this.Declarations.ToString());
+				}
+				else
+				{
+					// min the output for better compaction
+					// signal to JSMin that isn't linted so
+					// doesn't break users code if they leave
+					// off semicolons, etc.
+					new JSMin().Run(this.Declarations.ToString(), writer, false, true);
+				}
+			}
 		}
 
 		#endregion Render Methods
@@ -431,9 +509,46 @@ namespace JsonFx.JsonML.BST
 						foreach (string key in tag.Attributes.Keys)
 						{
 							string value = tag.Attributes[key];
-							if (value.StartsWith("<%") && value.EndsWith("%>"))
+
+							// TODO: replace this re-parsing
+							if (value.Length >= 4 &&
+								value.StartsWith("<%") &&
+								value.EndsWith("%>"))
 							{
-								this.AddAttribute(key, new JbstCodeBlock(value.Trim('<', '%', '>')));
+								switch (value[2])
+								{
+									case '-':
+									{
+										// TODO: fix as this might be produce false positives
+										break;
+									}
+									case '@':
+									{
+										this.Directives.Append(value);
+										break;
+									}
+									case '!':
+									{
+										this.Declarations.Append(value.Substring(3, value.Length-5));
+										break;
+									}
+									case '=':
+									{
+										JbstCodeBlock code = new JbstCodeBlock(
+											value.Substring(3, value.Length-5),
+											JbstCodeBlockType.Expression);
+										this.AddAttribute(key, code);
+										break;
+									}
+									default:
+									{
+										JbstCodeBlock code = new JbstCodeBlock(
+											value.Substring(2, value.Length-4),
+											JbstCodeBlockType.Statement);
+										this.AddAttribute(key, code);
+										break;
+									}
+								}
 							}
 							else
 							{
@@ -463,10 +578,47 @@ namespace JsonFx.JsonML.BST
 				}
 				case HtmlTagType.Unparsed:
 				{
-					if (tag.TagName == "%")
+					switch (tag.TagName)
 					{
-						JbstCodeBlock code = new JbstCodeBlock(tag.Content);
-						this.AppendChild(code);
+						case "%@":
+						{
+							// store directive for specialized parsing
+							this.Directives.Append(tag.ToString());
+							break;
+						}
+						case "%!":
+						{
+							// analogous to static code, or JSP declarations
+							// executed only on initialization of template
+							// output from declarations are appended after the template
+							this.Declarations.Append(tag.Content);
+							break;
+						}
+						case "%=":
+						{
+							// expressions are emitted directly into JBST
+							JbstCodeBlock code = new JbstCodeBlock(tag.Content, JbstCodeBlockType.Expression);
+							this.AppendChild(code);
+							break;
+						}
+						case "%":
+						{
+							// statements are emitted directly into JBST
+							JbstCodeBlock code = new JbstCodeBlock(tag.Content, JbstCodeBlockType.Statement);
+							this.AppendChild(code);
+							break;
+						}
+						case "%--":
+						{
+							// Comments are emitted directly into JBST
+							JbstCodeBlock code = new JbstCodeBlock(tag.Content, JbstCodeBlockType.Comment);
+							this.AppendChild(code);
+							break;
+						}
+						default:
+						{
+							throw new ParseError("Unknown tag syntax: <"+tag.TagName+"..."+tag.EndDelim, "", 1, 1);
+						}
 					}
 					break;
 				}
@@ -480,5 +632,40 @@ namespace JsonFx.JsonML.BST
 		}
 
 		#endregion IHtmlWriter Members
+
+		#region Directive Methods
+
+		private void ProcessDirectives()
+		{
+			DirectiveParser parser = new DirectiveParser(this.Directives.ToString(), String.Empty);
+			parser.ProcessDirective += this.ProcessDirective;
+
+			int index = 0;
+			parser.ParseDirectives(out index);
+		}
+
+		private void ProcessDirective(string directiveName, IDictionary<string, string> attribs, int lineNumber)
+		{
+			string name = attribs.ContainsKey("Name") ? attribs["Name"] : null;
+			if (!String.IsNullOrEmpty(name))
+			{
+				this.name = name;
+				this.isJsonp = false;
+				return;
+			}
+
+			string method = attribs.ContainsKey("Callback") ? attribs["Callback"] : null;
+			if (!String.IsNullOrEmpty(method))
+			{
+				this.name = method;
+				this.isJsonp = true;
+				return;
+			}
+
+			this.name = "throw new Error";
+			this.isJsonp = true;
+		}
+
+		#endregion Directive Methods
 	}
 }
