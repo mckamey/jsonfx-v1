@@ -118,7 +118,7 @@ namespace JsonFx.Handlers
 				return path;
 			}
 
-			string cache = String.Empty;
+			string cache;
 			if (isDebug)
 			{
 				cache = "?debug";
