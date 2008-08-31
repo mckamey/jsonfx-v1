@@ -55,10 +55,27 @@ namespace JsonFx.JsonML.BST
 
 		#region Constants
 
-		private const string DeclarationFormat = "function()\r\n{{\r\n\t{0}\r\n}}";
-		private const string ScriptletFormat = "function()\r\n{{\r\n\t{0}\r\n}}";
-		private const string ExpressionFormat = "function()\r\n{{\r\n\treturn ({0});\r\n}}";
-		private const string CommentFormat = "/* {0} */";
+		private const string DeclarationFormat = @"
+			(function() {{
+				setTimeout(function() {{
+					// execute declaration
+					{0}
+				}}, 0);
+			}})()";
+
+		private const string ScriptletFormat = @"
+			function() {{
+				// execute scriptlet
+				{0}
+			}}";
+
+		private const string ExpressionFormat = @"
+			function() {{
+				// evaluate expression
+				return ({0});
+			}}";
+
+		private const string CommentFormat = @"/* {0} */";
 
 		#endregion Constants
 
@@ -165,15 +182,15 @@ namespace JsonFx.JsonML.BST
 				}
 				case JbstCodeBlockType.Scriptlet:
 				{
-					// analogous to instance code or JSP scriptlets
+					// analogous to instance code, or JSP scriptlets
 					// executed each time template is bound
 					codeBlock = String.Format(ScriptletFormat, this.Code);
 					break;
 				}
 				case JbstCodeBlockType.Declaration:
 				{
-					// analogous to static code or JSP declarations
-					// executed only on first usage of template
+					// analogous to static code, or JSP declarations
+					// executed only on initialization of template
 					codeBlock = String.Format(DeclarationFormat, this.Code);
 					break;
 				}
@@ -204,7 +221,6 @@ namespace JsonFx.JsonML.BST
 
 			if (writer.PrettyPrint)
 			{
-				writer.TextWriter.WriteLine();
 				writer.TextWriter.WriteLine(codeBlock);
 			}
 			else
