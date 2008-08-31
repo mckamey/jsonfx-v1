@@ -1,6 +1,10 @@
-2007-03-20 @ 08:18
+2008-08-31 @ 11:04
 
-- split up JavaScript more modularly
+- create documentation
+	see: http://www.jsptut.com/
+	see: http://domscripting.com/presentations/fowa07/slides/03_data_formats.html
+
+- Implement JSON-RPC 2.0
 
 - define mechanism for loading scripts with dependencies
 
@@ -22,7 +26,6 @@
 - Implement arrays for arguments in JSON-RPC for server-side HTTP GET.
 - Convert reader so can read from stream rather than from complete string
 - add SAX-style parsing option
-- Fix intelisense & syntax coloring in JsonService
 
 ____________________________
 
