@@ -84,8 +84,16 @@ namespace BuildTools.HtmlDistiller
 		private const char EntityHexChar = 'x';
 		private const char HexStartChar = 'A';
 		private const char HexEndChar = 'F';
-		private const string CodeBlockStart = "<%";
-		private const string CodeBlockEnd = "%>";
+
+		private static readonly string[] CodeBlockTags =
+			{
+				"<%@",	// ASP/JSP directive
+				"<%=",	// ASP/JSP expression
+				"<%!",	// JSP declaration
+				"<%#",	// ASP.NET databind expression
+				"<%$",	// ASP.NET expression
+				"<%"	// ASP wrapper / JSP scriptlet
+			};
 
 		private const string EllipsisEntity = "&hellip;";
 		private const string Ellipsis = "...";
@@ -674,34 +682,9 @@ namespace BuildTools.HtmlDistiller
 		/// <returns>null if no tag was found (e.g. just LessThan char)</returns>
 		private HtmlTag ParseTag()
 		{
-			HtmlTag tag = this.ParseComment(CodeBlockStart, CodeBlockEnd);
+			HtmlTag tag = this.ParseBlocks();
 			if (tag != null)
 			{
-				// common ASP/JSP script found
-				return tag;
-			}
-			tag = this.ParseComment("<!--", "-->");
-			if (tag != null)
-			{
-				// standard HTML/XML/SGML comment found
-				return tag;
-			}
-			tag = this.ParseComment("<![CDATA[", "]]>");
-			if (tag != null)
-			{
-				// CDATA section found
-				return tag;
-			}
-			tag = this.ParseComment("<!", ">");
-			if (tag != null)
-			{
-				// SGML processing instruction (usually DOCTYPE)
-				return tag;
-			}
-			tag = this.ParseComment("<?", "?>");
-			if (tag != null)
-			{
-				// XML/SGML processing instruction (usually XML declaration)
 				return tag;
 			}
 
@@ -748,16 +731,66 @@ namespace BuildTools.HtmlDistiller
 			return tag;
 		}
 
+		private HtmlTag ParseBlocks()
+		{
+			HtmlTag tag = this.ParseBlock("<%--", "--%>");
+			if (tag != null)
+			{
+				// ASP/JSP-style code comment found
+				return tag;
+			}
+
+			for (int i=0; i<CodeBlockTags.Length; i++)
+			{
+				tag = this.ParseBlock(CodeBlockTags[i], "%>");
+				if (tag != null)
+				{
+					// ASP/JSP-style code block found
+					return tag;
+				}
+			}
+
+			tag = this.ParseBlock("<!--", "-->");
+			if (tag != null)
+			{
+				// standard HTML/XML/SGML comment found
+				return tag;
+			}
+
+			tag = this.ParseBlock("<![CDATA[", "]]>");
+			if (tag != null)
+			{
+				// CDATA section found
+				return tag;
+			}
+
+			tag = this.ParseBlock("<!", ">");
+			if (tag != null)
+			{
+				// SGML processing instruction (usually DOCTYPE or SSI)
+				return tag;
+			}
+
+			tag = this.ParseBlock("<?", "?>");
+			if (tag != null)
+			{
+				// XML/SGML processing instruction (usually XML declaration)
+				return tag;
+			}
+
+			return null;
+		}
+
 		/// <summary>
-		/// Parses for "unparsed blocks" (e.g. comments)
+		/// Parses for "unparsed blocks" (e.g. comments, code blocks)
 		/// </summary>
 		/// <returns>null if no comment found</returns>
 		/// <param name="startDelim"></param>
 		/// <param name="endDelim"></param>
 		/// <remarks>
-		/// This supports standard comments, DocType declarations, and CDATA sections.
+		/// This supports comments, DocType declarations, CDATA sections, and ASP/JSP-style blocks.
 		/// </remarks>
-		private HtmlTag ParseComment(string startDelim, string endDelim)
+		private HtmlTag ParseBlock(string startDelim, string endDelim)
 		{
 			int i=0;
 			for (i=0; i<startDelim.Length; i++)
@@ -771,7 +804,7 @@ namespace BuildTools.HtmlDistiller
 			// consume LessThan
 			this.EmptyBuffer(1);
 
-			string commentName = this.FlushBuffer(startDelim.Length-1);
+			string blockName = this.FlushBuffer(startDelim.Length-1);
 
 			i = 0;
 			while (!this.IsEOF)
@@ -801,7 +834,7 @@ namespace BuildTools.HtmlDistiller
 				this.EmptyBuffer(endDelim.Length);
 			}
 
-			HtmlTag comment = new HtmlTag(commentName);
+			HtmlTag comment = new HtmlTag(blockName);
 			if (!String.IsNullOrEmpty(content))
 			{
 				comment.Content = content;
@@ -908,8 +941,8 @@ namespace BuildTools.HtmlDistiller
 				// consume open quote
 				this.EmptyBuffer(1);
 
-				// parse for common inline script
-				tag = this.ParseComment(CodeBlockStart, CodeBlockEnd);
+				// parse for inline script and data binding expressions
+				tag = this.ParseBlocks();
 
 				while (!this.IsEOF)
 				{
@@ -929,7 +962,7 @@ namespace BuildTools.HtmlDistiller
 			else
 			{
 				// parse for common inline script
-				tag = this.ParseComment(CodeBlockStart, CodeBlockEnd);
+				tag = this.ParseBlocks();
 
 				while (!this.IsEOF)
 				{
