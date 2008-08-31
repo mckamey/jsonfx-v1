@@ -34,48 +34,38 @@ using BuildTools.ScriptCompactor;
 
 namespace JsonFx.JsonML.BST
 {
+	#region JbstCodeBlockType
+
+	internal enum JbstCodeBlockType
+	{
+		None,
+		Comment,
+		Directive,
+		Declaration,
+		Expression,
+		Statement
+	}
+
+	#endregion JbstCodeBlockType
+
 	/// <summary>
 	/// Internal representation of a JsonML+BST code block.
 	/// </summary>
 	internal class JbstCodeBlock : IJbstControl, Json.IJsonSerializable
 	{
-		#region JbstCodeBlockType
-
-		private enum JbstCodeBlockType
-		{
-			None,
-			Comment,
-			Directive,
-			Declaration,
-			Scriptlet,
-			Expression
-		}
-
-		#endregion JbstCodeBlockType
-
 		#region Constants
 
-		private const string DeclarationFormat = @"
-			(function() {{
-				setTimeout(function() {{
-					// execute declaration
-					{0}
-				}}, 0);
-			}})()";
-
-		private const string ScriptletFormat = @"
+		private const string StatementFormat = @"
 			function() {{
-				// execute scriptlet
 				{0}
 			}}";
 
 		private const string ExpressionFormat = @"
 			function() {{
-				// evaluate expression
 				return ({0});
 			}}";
 
-		private const string CommentFormat = @"/* {0} */";
+		private const string CommentFormat = "/* {0} */ \"\"";
 
 		#endregion Constants
 
@@ -92,65 +82,11 @@ namespace JsonFx.JsonML.BST
 		/// Ctor
 		/// </summary>
 		/// <param name="code"></param>
-		public JbstCodeBlock(string code)
+		/// <param name="type"></param>
+		public JbstCodeBlock(string code, JbstCodeBlockType type)
 		{
-			if (code == null)
-			{
-				code = String.Empty;
-			}
-
-			this.code = String.Empty;
-			this.type = JbstCodeBlockType.None;
-
-			bool done = false;
-			for (int i=0; !done && i<code.Length; i++)
-			{
-				switch (code[i])
-				{
-					case '@':
-					{
-						this.type = JbstCodeBlockType.Directive;
-						this.code = code.Substring(i+1);
-						done = true;
-						break;
-					}
-					case '!':
-					{
-						this.type = JbstCodeBlockType.Declaration;
-						this.code = code.Substring(i+1);
-						done = true;
-						break;
-					}
-					case '-':
-					{
-						if (!code.StartsWith("--") ||
-							!code.EndsWith("--"))
-						{
-							// is general case e.g. "--this.index;"
-							goto default;
-						}
-
-						this.type = JbstCodeBlockType.Comment;
-						this.code = code.Substring(i+2).TrimEnd('-');
-						done = true;
-						break;
-					}
-					case '=':
-					{
-						this.type = JbstCodeBlockType.Expression;
-						this.code = code.Substring(i+1);
-						done = true;
-						break;
-					}
-					default:
-					{
-						this.type = JbstCodeBlockType.Scriptlet;
-						this.code = code;
-						done = true;
-						break;
-					}
-				}
-			}
+			this.code = (code == null) ? String.Empty : code;
+			this.type = type;
 		}
 
 		#endregion Init
@@ -165,6 +101,14 @@ namespace JsonFx.JsonML.BST
 			get { return this.code; }
 		}
 
+		/// <summary>
+		/// Gets the code block type
+		/// </summary>
+		public JbstCodeBlockType Type
+		{
+			get { return this.type; }
+		}
+
 		#endregion Properties
 
 		#region IJsonSerializable Members
@@ -174,43 +118,29 @@ namespace JsonFx.JsonML.BST
 			string codeBlock;
 			switch (this.type)
 			{
+				case JbstCodeBlockType.Comment:
+				{
+					// comments are only emitted for pretty-print
+					codeBlock = String.Format(CommentFormat, this.Code.Replace("*/", "*\\/"));
+					break;
+				}
 				case JbstCodeBlockType.Expression:
 				{
 					// output expressions are the core of the syntax
 					codeBlock = String.Format(ExpressionFormat, this.Code);
 					break;
 				}
-				case JbstCodeBlockType.Scriptlet:
+				case JbstCodeBlockType.Statement:
 				{
 					// analogous to instance code, or JSP scriptlets
 					// executed each time template is bound
-					codeBlock = String.Format(ScriptletFormat, this.Code);
+					codeBlock = String.Format(StatementFormat, this.Code);
 					break;
 				}
-				case JbstCodeBlockType.Declaration:
-				{
-					// analogous to static code, or JSP declarations
-					// executed only on initialization of template
-					codeBlock = String.Format(DeclarationFormat, this.Code);
-					break;
-				}
-				case JbstCodeBlockType.Comment:
-				{
-					// comments are only emitted during debug builds
-					codeBlock = String.Format(CommentFormat, this.Code.Replace("*/", "* /"));
-					break;
-				}
-				case JbstCodeBlockType.Directive:
-				{
-					// there is no output typically from directives
-					codeBlock = null;
-					break;
-				}
-				case JbstCodeBlockType.None:
 				default:
 				{
-					codeBlock = null;
-					break;
+					// not supported inline
+					return;
 				}
 			}
 

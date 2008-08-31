@@ -40,13 +40,6 @@ namespace JsonFx.Compilation
 {
 	public class JbstCodeProvider : JsonFx.Compilation.ResourceCodeProvider
 	{
-		#region Fields
-
-		private string name = String.Empty;
-		private bool isJsonp = false;
-
-		#endregion Fields
-
 		#region ResourceCodeProvider
 
 		public override string ContentType
@@ -67,16 +60,14 @@ namespace JsonFx.Compilation
 			out string compacted,
 			List<ParseException> errors)
 		{
-			resource = this.ParseDirective(sourceText, virtualPath);
-
 			// parse JBST markup
 			JbstCompiler parser = new JbstCompiler();
-			parser.Parse(resource);
+			parser.Parse(sourceText);
 
 			using (StringWriter sw = new StringWriter())
 			{
-				// render a pretty-print debug version
-				this.Render(parser, sw, true);
+				// render the pretty-printed version
+				parser.Render(sw, true);
 				sw.Flush();
 				resource = sw.ToString();
 			}
@@ -84,106 +75,12 @@ namespace JsonFx.Compilation
 			using (StringWriter sw = new StringWriter())
 			{
 				// render the compacted version
-				this.Render(parser, sw, false);
+				parser.Render(sw, false);
 				sw.Flush();
 				compacted = sw.ToString();
 			}
 		}
 
 		#endregion ResourceCodeProvider
-
-		#region Methods
-
-		private void Render(JbstCompiler parser, TextWriter writer, bool prettyPrint)
-		{
-			if (prettyPrint)
-			{
-				// TODO: allow import statements for better de-linting?
-				int dot = this.name.IndexOf('.');
-				string global = (dot < 0) ? this.name : this.name.Substring(0, dot);
-				writer.WriteLine("/*global JsonML, {0} */", global);
-			}
-
-			// wrap in JsonP
-			writer.Write(name);
-			if (this.isJsonp)
-			{
-				writer.Write("(");
-			}
-			else
-			{
-				if (prettyPrint)
-				{
-					writer.Write(" = ");
-				}
-				else
-				{
-					writer.Write("=");
-				}
-			}
-
-			if (prettyPrint)
-			{
-				writer.WriteLine("new JsonML.BST(");
-			}
-			else
-			{
-				writer.Write("new JsonML.BST(");
-			}
-
-			parser.Render(writer, prettyPrint);
-
-			if (this.isJsonp)
-			{
-				writer.Write("));");
-			}
-			else
-			{
-				if (prettyPrint)
-				{
-					writer.WriteLine(");");
-				}
-				else
-				{
-					writer.Write(");");
-				}
-			}
-		}
-
-		private string ParseDirective(string sourceText, string virtualPath)
-		{
-			int lineNumber;
-
-			DirectiveParser parser = new DirectiveParser(sourceText, virtualPath);
-			parser.ProcessDirective += new DirectiveParser.ProcessDirectiveEvent(this.ProcessDirective);
-
-			int index = parser.ParseDirectives(out lineNumber);
-
-			return sourceText.Substring(index).Trim();
-		}
-
-		private void ProcessDirective(string directiveName, IDictionary<string, string> attribs, int lineNumber)
-		{
-			string name = attribs.ContainsKey("Name") ? attribs["Name"] : null;
-			if (!String.IsNullOrEmpty(name))
-			{
-				this.name = name;
-				this.isJsonp = false;
-				return;
-			}
-
-			string method = attribs.ContainsKey("Callback") ? attribs["Callback"] : null;
-			if (!String.IsNullOrEmpty(method))
-			{
-				this.name = method;
-				this.isJsonp = true;
-				return;
-			}
-
-			this.name = "throw new Error";
-			this.isJsonp = true;
-		}
-
-		#endregion Methods
 	}
 }
