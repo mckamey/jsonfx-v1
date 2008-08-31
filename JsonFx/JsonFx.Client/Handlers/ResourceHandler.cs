@@ -110,6 +110,11 @@ namespace JsonFx.Handlers
 
 		#region ResourceHandler Members
 
+		public static string GetCacheUrl(string path)
+		{
+			return GetCacheUrl(path, false);
+		}
+
 		public static string GetCacheUrl(string path, bool isDebug)
 		{
 			CompiledBuildResult info = CompiledBuildResult.Create(path);
