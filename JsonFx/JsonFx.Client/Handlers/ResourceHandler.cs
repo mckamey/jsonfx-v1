@@ -43,7 +43,8 @@ namespace JsonFx.Handlers
 
 		void IHttpHandler.ProcessRequest(HttpContext context)
 		{
-			bool isDebug = "debug".Equals(context.Request.QueryString[null], StringComparison.InvariantCultureIgnoreCase);
+			string cacheKey = context.Request.QueryString[null];
+			bool isDebug = "debug".Equals(cacheKey, StringComparison.InvariantCultureIgnoreCase);
 
 			context.Response.ClearHeaders();
 			context.Response.BufferOutput = true;
@@ -54,6 +55,14 @@ namespace JsonFx.Handlers
 			{
 				// either eTag 304 was sent or no resource found
 				return;
+			}
+
+			bool isCached = info.MD5.ToString("N").Equals(cacheKey, StringComparison.InvariantCultureIgnoreCase);
+			if (isCached)
+			{
+				// if the content changes then so will the MD5
+				// so we can effectively cache this forever
+				context.Response.ExpiresAbsolute = DateTime.UtcNow.AddYears(5);
 			}
 
 			context.Response.ContentType = info.ContentType;
@@ -100,6 +109,29 @@ namespace JsonFx.Handlers
 		#endregion IHttpHandler Members
 
 		#region ResourceHandler Members
+
+		public static string GetCacheUrl(string path)
+		{
+#if DEBUG
+			const string cache = "?debug";
+#else
+			string cache = String.Empty;
+
+			CompiledBuildResult info = CompiledBuildResult.Create(path);
+			if (info != null)
+			{
+				cache = '?'+info.MD5.ToString("N");
+			}
+#endif
+
+			int index = path.IndexOf('?');
+			if (index >= 0)
+			{
+				path = path.Substring(0, index);
+			}
+
+			return path+cache;
+		}
 
 		/// <summary>
 		/// Determines the appropriate source for the incomming request
