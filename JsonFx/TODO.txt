@@ -2,6 +2,7 @@
 
 - create documentation
 	see: http://www.jsptut.com/
+	see: http://java.sun.com/products/jsp/pdf/card11.pdf
 	see: http://domscripting.com/presentations/fowa07/slides/03_data_formats.html
 
 - Implement JSON-RPC 2.0
