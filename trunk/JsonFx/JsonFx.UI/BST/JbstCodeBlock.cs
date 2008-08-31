@@ -56,12 +56,12 @@ namespace JsonFx.JsonML.BST
 		#region Constants
 
 		private const string StatementFormat =
-@"			function() {{
+			@"function() {{
 				{0}
 			}}";
 
 		private const string ExpressionFormat =
-@"			function() {{
+			@"function() {{
 				return ({0});
 			}}";
 
@@ -151,7 +151,7 @@ namespace JsonFx.JsonML.BST
 
 			if (writer.PrettyPrint)
 			{
-				writer.TextWriter.WriteLine(codeBlock);
+				writer.TextWriter.Write(codeBlock);
 			}
 			else
 			{
