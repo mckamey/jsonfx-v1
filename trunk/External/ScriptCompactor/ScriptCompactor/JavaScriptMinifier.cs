@@ -98,13 +98,30 @@ namespace JavaScriptSupport
 
 		public void Minify(TextReader src, TextWriter dst, bool isLinted)
 		{
+			Minify(src, dst, isLinted, false);
+		}
+
+		public void Minify(TextReader src, TextWriter dst, bool isLinted, bool keepOpen)
+		{
 			isSafe = isLinted;
 			using (sr = src)
 			{
 				// don't dispose the dst since may be incrementally writing
-				//using (sw = dst)
+				sw = dst;
+				try
 				{
 					jsmin();
+				}
+				finally
+				{
+					if (keepOpen)
+					{
+						dst.Flush();
+					}
+					else
+					{
+						dst.Dispose();
+					}
 				}
 			}
 		}
