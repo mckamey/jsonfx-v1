@@ -96,11 +96,6 @@ namespace JavaScriptSupport
 		//    new JavaScriptMinifier().Minify(args[0], args[1]);
 		//}
 
-		public void Minify(TextReader src, TextWriter dst, bool isLinted)
-		{
-			Minify(src, dst, isLinted, false);
-		}
-
 		public void Minify(TextReader src, TextWriter dst, bool isLinted, bool keepOpen)
 		{
 			isSafe = isLinted;
