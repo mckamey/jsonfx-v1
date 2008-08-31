@@ -55,13 +55,13 @@ namespace JsonFx.JsonML.BST
 	{
 		#region Constants
 
-		private const string StatementFormat = @"
-			function() {{
+		private const string StatementFormat =
+@"			function() {{
 				{0}
 			}}";
 
-		private const string ExpressionFormat = @"
-			function() {{
+		private const string ExpressionFormat =
+@"			function() {{
 				return ({0});
 			}}";
 
