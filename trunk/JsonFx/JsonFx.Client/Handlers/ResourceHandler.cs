@@ -110,19 +110,23 @@ namespace JsonFx.Handlers
 
 		#region ResourceHandler Members
 
-		public static string GetCacheUrl(string path)
+		public static string GetCacheUrl(string path, bool isDebug)
 		{
-#if DEBUG
-			const string cache = "?debug";
-#else
-			string cache = String.Empty;
-
 			CompiledBuildResult info = CompiledBuildResult.Create(path);
-			if (info != null)
+			if (info == null)
+			{
+				return path;
+			}
+
+			string cache = String.Empty;
+			if (isDebug)
+			{
+				cache = "?debug";
+			}
+			else
 			{
 				cache = '?'+info.MD5.ToString("N");
 			}
-#endif
 
 			int index = path.IndexOf('?');
 			if (index >= 0)
