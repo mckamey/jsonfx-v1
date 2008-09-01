@@ -477,7 +477,7 @@ namespace JsonFx.JsonML.BST
 
 				if (prettyPrint)
 				{
-					writer.WriteLine(this.Declarations.ToString());
+					writer.WriteLine(declarations);
 				}
 				else
 				{
@@ -485,7 +485,7 @@ namespace JsonFx.JsonML.BST
 					// signal to JSMin that isn't linted so
 					// doesn't break users code if they leave
 					// off semicolons, etc.
-					new JSMin().Run(this.Declarations.ToString(), writer);
+					new JSMin().Run(declarations, writer);
 				}
 			}
 		}
