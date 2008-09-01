@@ -1,4 +1,11 @@
 /*global JsonFx */
+/*---------------------------------------------------------------------------*\
+	JsonFx.DOM
+
+	Copyright (c)2008 Stephen M. McKamey
+	Created: 2008-08-11-2157
+	Modified: 2008-08-31-2127
+\*---------------------------------------------------------------------------*/
 
 /* namespace JsonFx.DOM */
 if ("undefined" === typeof JsonFx) {
