@@ -50,9 +50,20 @@ namespace JsonFx.JsonML.BST
 	{
 		#region Constants
 
-		private const string StatementFormat =
-			@"function() {{
-				{0}
+		private static readonly char[] ImportDelim = new char[] { ' ', ',' };
+
+		private const string AnonymousName = "$AnonymousJbst";
+
+		private const string DeclarationFormat =
+			@"try {{
+				// setup context for declarations
+				{0}[""$jbst.init""] = function() {{
+					{1}
+				}};
+				// execute in the context of template as ""this""
+				{0}[""$jbst.init""]();
+			}} finally {{
+				delete {0}[""$jbst.init""];
 			}}";
 
 		#endregion Constants
@@ -68,9 +79,9 @@ namespace JsonFx.JsonML.BST
 		private readonly HtmlDistiller parser = new HtmlDistiller();
 		private readonly StringBuilder Directives = new StringBuilder();
 		private readonly StringBuilder Declarations = new StringBuilder();
+		private readonly List<string> Imports = new List<string>();
 
-		private string name = String.Empty;
-		private bool isJsonp = false;
+		private string name = null;
 
 		#endregion Fields
 
@@ -103,6 +114,19 @@ namespace JsonFx.JsonML.BST
 		}
 
 		internal event EventHandler DocumentReady;
+
+		protected string Name
+		{
+			get
+			{
+				if (String.IsNullOrEmpty(this.name))
+				{
+					return AnonymousName;
+				}
+				return this.name;
+			}
+			set { this.name = value; }
+		}
 
 		#endregion Properties
 
@@ -385,40 +409,31 @@ namespace JsonFx.JsonML.BST
 			// add JSLINT directives
 			if (prettyPrint)
 			{
-				// TODO: allow import statements for better de-linting?
-				int dot = this.name.IndexOf('.');
-				string global = (dot < 0) ? this.name : this.name.Substring(0, dot);
-				writer.WriteLine("/*global JsonML, {0} */", global);
+				string globals = this.GetGlobals();
+				if (!String.IsNullOrEmpty(globals))
+				{
+					writer.WriteLine("/*global {0} */", globals);
+				}
 			}
 
-			// wrap in JsonP
-			if (!String.IsNullOrEmpty(this.name))
+			// wrap in ctor and assignment
+			writer.Write(this.Name);
+			if (prettyPrint)
 			{
-				writer.Write(name);
-				if (this.isJsonp)
-				{
-					writer.Write("(");
-				}
-				else
-				{
-					if (prettyPrint)
-					{
-						writer.Write(" = ");
-					}
-					else
-					{
-						writer.Write("=");
-					}
-				}
+				writer.Write(" = ");
+			}
+			else
+			{
+				writer.Write("=");
+			}
 
-				if (prettyPrint)
-				{
-					writer.WriteLine("new JsonML.BST(");
-				}
-				else
-				{
-					writer.Write("new JsonML.BST(");
-				}
+			if (prettyPrint)
+			{
+				writer.WriteLine("new JsonML.BST(");
+			}
+			else
+			{
+				writer.Write("new JsonML.BST(");
 			}
 
 			JsonFx.Json.JsonWriter jw = new JsonFx.Json.JsonWriter(writer);
@@ -452,28 +467,22 @@ namespace JsonFx.JsonML.BST
 				jw.Write(control);
 			}
 
-			if (!String.IsNullOrEmpty(this.name))
+			if (prettyPrint)
 			{
-				// close out JSONP
-				if (this.isJsonp)
-				{
-					writer.Write(')');
-				}
-
-				if (prettyPrint)
-				{
-					writer.WriteLine(");");
-				}
-				else
-				{
-					writer.Write(");");
-				}
+				writer.WriteLine(");");
+			}
+			else
+			{
+				writer.Write(");");
 			}
 
 			// render any declarations
 			if (this.Declarations.Length > 0)
 			{
-				string declarations = this.Declarations.ToString();
+				string declarations = String.Format(
+					JbstCompiler.DeclarationFormat,
+					this.Name,
+					this.Declarations.ToString());
 
 				if (prettyPrint)
 				{
@@ -655,24 +664,88 @@ namespace JsonFx.JsonML.BST
 
 		private void ProcessDirective(string directiveName, IDictionary<string, string> attribs, int lineNumber)
 		{
-			string name = attribs.ContainsKey("Name") ? attribs["Name"] : null;
-			if (!String.IsNullOrEmpty(name))
+			if (String.IsNullOrEmpty(directiveName))
 			{
-				this.name = name;
-				this.isJsonp = false;
 				return;
 			}
 
-			string method = attribs.ContainsKey("Callback") ? attribs["Callback"] : null;
-			if (!String.IsNullOrEmpty(method))
+			switch (directiveName.ToLowerInvariant())
 			{
-				this.name = method;
-				this.isJsonp = true;
-				return;
+				case "page":
+				case "control":
+				{
+					this.Name = attribs.ContainsKey("name") ?
+						this.EnsureIdent(attribs["name"]) :
+						null;
+
+					string package = attribs.ContainsKey("import") ? attribs["import"] : null;
+					if (!String.IsNullOrEmpty(package))
+					{
+						string[] packages = package.Split(ImportDelim, StringSplitOptions.RemoveEmptyEntries);
+						this.Imports.AddRange(packages);
+					}
+					break;
+				}
+				case "import":
+				{
+					string package = attribs.ContainsKey("namespace") ? attribs["namespace"] : null;
+					if (!String.IsNullOrEmpty(package))
+					{
+						this.Imports.Add(package);
+					}
+					break;
+				}
+				case "include":
+				case "taglib":
+				default:
+				{
+					// not implemented
+					break;
+				}
+			}
+		}
+
+		/// <summary>
+		/// Validates that the value is a valid JavaScript identifier.
+		/// </summary>
+		/// <param name="ident"></param>
+		/// <returns></returns>
+		private string EnsureIdent(string ident)
+		{
+			// TODO: scrub name for valid identifier
+			return ident;
+		}
+
+		/// <summary>
+		/// Generates a globals list from import directives
+		/// </summary>
+		/// <returns></returns>
+		private string GetGlobals()
+		{
+			StringBuilder globals = new StringBuilder();
+
+			this.Imports.Insert(0, "JsonML.BST");
+			this.Imports.Add(this.Name);
+
+			foreach (string import in this.Imports)
+			{
+				string ident = this.EnsureIdent(import);
+
+				if (String.IsNullOrEmpty(ident))
+				{
+					continue;
+				}
+
+				if (globals.Length > 0)
+				{
+					globals.Append(", ");
+				}
+
+				int dot = ident.IndexOf('.');
+				globals.Append((dot < 0) ? ident : ident.Substring(0, dot));
 			}
 
-			this.name = "throw new Error";
-			this.isJsonp = true;
+			return globals.ToString();
 		}
 
 		#endregion Directive Methods
