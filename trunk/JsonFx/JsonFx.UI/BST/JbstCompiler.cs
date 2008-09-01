@@ -393,7 +393,7 @@ namespace JsonFx.JsonML.BST
 			}
 
 			// wrap in JsonP
-			if (!String.IsNullOrEmpty(name))
+			if (!String.IsNullOrEmpty(this.name))
 			{
 				writer.Write(name);
 				if (this.isJsonp)
@@ -440,32 +440,34 @@ namespace JsonFx.JsonML.BST
 					// found 2 or more in root
 					// render with document wrapper
 					jw.Write(this.document);
-					return;
+					control = null;
+					break;
 				}
 
 				control = child;
 			}
 
-			// only render single node found (null is OK)
-			jw.Write(control);
+			if (control != null)
+			{
+				// only render single node found (null is OK)
+				jw.Write(control);
+			}
 
-			if (!String.IsNullOrEmpty(name))
+			if (!String.IsNullOrEmpty(this.name))
 			{
 				// close out JSONP
 				if (this.isJsonp)
 				{
-					writer.Write("));");
+					writer.Write(')');
+				}
+
+				if (prettyPrint)
+				{
+					writer.WriteLine(");");
 				}
 				else
 				{
-					if (prettyPrint)
-					{
-						writer.WriteLine(");");
-					}
-					else
-					{
-						writer.Write(");");
-					}
+					writer.Write(");");
 				}
 			}
 
