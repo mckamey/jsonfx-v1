@@ -1010,7 +1010,9 @@ namespace JsonFx.Json
 		void IDisposable.Dispose()
 		{
 			if (this.writer != null)
+			{
 				this.writer.Dispose();
+			}
 		}
 
 		#endregion IDisposable Members
