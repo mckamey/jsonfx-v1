@@ -143,11 +143,11 @@ namespace JsonFx.JsonML.BST
 					// executed each time template is bound
 
 					// add legacy support for those coming from ASP/JSP
-					if ((this.Code.IndexOf("Response.write") >= 0) || (this.Code.IndexOf("Response.Write") >= 0))
+					if (this.Code.IndexOf("Response.") >= 0)
 					{
 						codeBlock = String.Format(StatementLegacyFormat, this.Code, "Response");
 					}
-					else if (this.Code.IndexOf("out.print") >= 0)
+					else if (this.Code.IndexOf("out.") >= 0)
 					{
 						codeBlock = String.Format(StatementLegacyFormat, this.Code, "out");
 					}
