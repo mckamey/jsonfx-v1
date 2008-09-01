@@ -51,7 +51,10 @@ namespace JsonFx.JsonML.BST
 	{
 		#region Constants
 
-		private static readonly Regex RegexWhitespace = new Regex(@"\s{2,}", RegexOptions.Compiled);
+		private const string StatementFormat =
+			@"function() {{
+				{0}
+			}}";
 
 		#endregion Constants
 
@@ -179,9 +182,6 @@ namespace JsonFx.JsonML.BST
 			{
 				literal.Text += text;
 			}
-
-			// normalize whitespace
-			literal.Text = RegexWhitespace.Replace(literal.Text, JbstLiteral.Whitespace);
 		}
 
 		internal void AppendChild(IJbstControl child)
@@ -430,7 +430,7 @@ namespace JsonFx.JsonML.BST
 			{
 				// tally non-whitespace controls
 				JbstLiteral lit = child as JbstLiteral;
-				if (lit != null && lit.Text == JbstLiteral.Whitespace)
+				if (lit != null && lit.IsWhitespace)
 				{
 					continue;
 				}
@@ -474,6 +474,8 @@ namespace JsonFx.JsonML.BST
 			// render any declarations
 			if (this.Declarations.Length > 0)
 			{
+				string declarations = this.Declarations.ToString();
+
 				if (prettyPrint)
 				{
 					writer.WriteLine(this.Declarations.ToString());
