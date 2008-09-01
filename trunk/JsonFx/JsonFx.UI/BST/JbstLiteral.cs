@@ -41,7 +41,8 @@ namespace JsonFx.JsonML.BST
 	{
 		#region Constants
 
-		public const string Whitespace = " ";
+		private const string Whitespace = " ";
+		private static readonly Regex RegexWhitespace = new Regex(@"\s{2,}", RegexOptions.Compiled);
 
 		#endregion Constants
 
@@ -55,7 +56,7 @@ namespace JsonFx.JsonML.BST
 
 		public JbstLiteral(string text)
 		{
-			this.text = text;
+			this.Text = text;
 		}
 
 		#endregion Init
@@ -68,7 +69,16 @@ namespace JsonFx.JsonML.BST
 		public string Text
 		{
 			get { return this.text; }
-			set { this.text = value; }
+			set
+			{
+				// normalize whitespace
+				this.text = RegexWhitespace.Replace(value, JbstLiteral.Whitespace);
+			}
+		}
+
+		public bool IsWhitespace
+		{
+			get { return (this.Text == JbstLiteral.Whitespace); }
 		}
 
 		#endregion Properties
