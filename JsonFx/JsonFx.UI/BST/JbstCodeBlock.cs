@@ -190,7 +190,7 @@ namespace JsonFx.JsonML.BST
 				// signal to JSMin that isn't linted so
 				// doesn't break users code if they leave
 				// off semicolons, etc.
-				new JSMin().Run(codeBlock, writer.TextWriter, false, true);
+				new JSMin().Run(codeBlock, writer.TextWriter);
 			}
 		}
 
