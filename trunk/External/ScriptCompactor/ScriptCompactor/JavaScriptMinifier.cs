@@ -48,17 +48,21 @@ namespace JavaScriptSupport
 		int lastWritten = EOF;
 		bool suppress(int c)
 		{
-			if (isSafe && c == '\n')
+			if (c == '\n')
 			{
 				switch (lastWritten)
 				{
 					case EOF:
-					case ',':
-					case '.':
-					case ';':
-					case ':':
 					case '{':
 					case '}':
+					case ';':
+					{
+						// these are safe sync points
+						return true;
+					}
+					case ',':
+					case '.':
+					case ':':
 					case '(':
 					case '[':
 					case '=':
@@ -76,9 +80,13 @@ namespace JavaScriptSupport
 					case '|':
 					case '&':
 					{
-						// suppress unnecessary line endings
-						// (as per http://jslint.com/lint.html)
-						return true;
+						if (isSafe)
+						{
+							// suppress unnecessary line endings
+							// (as per http://jslint.com/lint.html)
+							return true;
+						}
+						break;
 					}
 				}
 			}
