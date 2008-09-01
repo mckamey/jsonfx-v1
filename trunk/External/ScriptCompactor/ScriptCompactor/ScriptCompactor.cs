@@ -88,7 +88,6 @@ namespace BuildTools.ScriptCompactor
 			// verify
 			JSLint jslint = new JSLint();
 			jslint.Run(inputFile, inputSource);
-			bool isLinted = jslint.Errors.Count > 0;
 
 			// compact and write out results
 			try
@@ -96,11 +95,11 @@ namespace BuildTools.ScriptCompactor
 				JSMin jsmin = new JSMin();
 				if (String.IsNullOrEmpty(inputSource))
 				{
-					jsmin.Run(File.OpenText(inputFile), output, isLinted);
+					jsmin.Run(File.OpenText(inputFile), output);
 				}
 				else
 				{
-					jsmin.Run(inputSource, output, isLinted);
+					jsmin.Run(inputSource, output);
 				}
 			}
 			catch (Exception ex)

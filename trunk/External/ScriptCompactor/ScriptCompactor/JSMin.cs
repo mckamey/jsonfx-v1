@@ -48,29 +48,19 @@ namespace BuildTools.ScriptCompactor
 
 		#region Public Methods
 
-		public void Run(string inputSource, TextWriter output, bool isLinted)
-		{
-			this.Run(inputSource, output, isLinted, false);
-		}
-
-		public void Run(string inputSource, TextWriter output, bool isLinted, bool keepOpen)
+		public void Run(string inputSource, TextWriter output)
 		{
 			using (StringReader reader = new StringReader(inputSource))
 			{
-				this.Run(reader, output, isLinted, keepOpen);
+				this.Run(reader, output);
 			}
 		}
 
-		public void Run(TextReader input, TextWriter output, bool isLinted)
-		{
-			this.Run(input, output, isLinted, false);
-		}
-
-		public void Run(TextReader input, TextWriter output, bool isLinted, bool keepOpen)
+		public void Run(TextReader input, TextWriter output)
 		{
 			lock (this.jsmin = new JavaScriptSupport.JavaScriptMinifier())
 			{
-				this.jsmin.Minify(input, output, isLinted, keepOpen);
+				this.jsmin.Minify(input, output);
 			}
 		}
 

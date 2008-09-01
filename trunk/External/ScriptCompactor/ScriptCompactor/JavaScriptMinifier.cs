@@ -43,9 +43,8 @@ namespace JavaScriptSupport
 		int theA;
 		int theB;
 		int theLookahead = EOF;
-
-		bool isSafe = false;
 		int lastWritten = EOF;
+
 		bool suppress(int c)
 		{
 			if (c == '\n')
@@ -53,16 +52,12 @@ namespace JavaScriptSupport
 				switch (lastWritten)
 				{
 					case EOF:
-					case '{':
-					case '}':
-					case ';':
-					{
-						// these are safe sync points
-						return true;
-					}
 					case ',':
 					case '.':
+					case ';':
 					case ':':
+					case '{':
+					case '}':
 					case '(':
 					case '[':
 					case '=':
@@ -80,13 +75,9 @@ namespace JavaScriptSupport
 					case '|':
 					case '&':
 					{
-						if (isSafe)
-						{
-							// suppress unnecessary line endings
-							// (as per http://jslint.com/lint.html)
-							return true;
-						}
-						break;
+						// suppress unnecessary line endings
+						// (as per http://jslint.com/lint.html)
+						return true;
 					}
 				}
 			}
@@ -104,9 +95,8 @@ namespace JavaScriptSupport
 		//    new JavaScriptMinifier().Minify(args[0], args[1]);
 		//}
 
-		public void Minify(TextReader src, TextWriter dst, bool isLinted, bool keepOpen)
+		public void Minify(TextReader src, TextWriter dst)
 		{
-			isSafe = isLinted;
 			using (sr = src)
 			{
 				// don't dispose the dst since may be incrementally writing
@@ -117,14 +107,7 @@ namespace JavaScriptSupport
 				}
 				finally
 				{
-					if (keepOpen)
-					{
-						dst.Flush();
-					}
-					else
-					{
-						dst.Dispose();
-					}
+					dst.Flush();
 				}
 			}
 		}
