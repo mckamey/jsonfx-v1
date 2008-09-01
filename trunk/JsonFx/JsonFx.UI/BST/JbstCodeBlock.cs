@@ -72,6 +72,10 @@ namespace JsonFx.JsonML.BST
 				return ({0});
 			}}";
 
+		private const string AspResponse = "Reponse";
+		private const string JspResponse = "out";
+		private const string JspResponseVar = "System = {}; System.out";
+
 		private const string CommentFormat = "/* {0} */ \"\"";
 
 		#endregion Constants
@@ -143,13 +147,20 @@ namespace JsonFx.JsonML.BST
 					// executed each time template is bound
 
 					// add legacy support for those coming from ASP/JSP
-					if (this.Code.IndexOf("Response.") >= 0)
+					if (this.Code.IndexOf(AspResponse+'.') >= 0)
 					{
-						codeBlock = String.Format(StatementLegacyFormat, this.Code, "Response");
+						// Response.write
+						codeBlock = String.Format(StatementLegacyFormat, this.Code, AspResponse);
 					}
-					else if (this.Code.IndexOf("out.") >= 0)
+					else if (this.Code.IndexOf("System.out.") >= 0)
 					{
-						codeBlock = String.Format(StatementLegacyFormat, this.Code, "out");
+						// System.out.print
+						codeBlock = String.Format(StatementLegacyFormat, this.Code, JspResponseVar);
+					}
+					else if (this.Code.IndexOf(JspResponse+'.') >= 0)
+					{
+						// out.print
+						codeBlock = String.Format(StatementLegacyFormat, this.Code, JspResponse);
 					}
 					else
 					{
