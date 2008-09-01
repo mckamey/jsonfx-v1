@@ -29,6 +29,7 @@
 #endregion License
 
 using System;
+using System.Text.RegularExpressions;
 
 using JsonFx.Json;
 
