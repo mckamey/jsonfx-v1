@@ -86,14 +86,14 @@ namespace JsonFx.JsonML.BST
 
 		#region IJsonSerializable Members
 
-		void IJsonSerializable.ReadJson(JsonReader reader)
-		{
-			throw new NotImplementedException("IJsonSerializable.ReadJson is not implemented.");
-		}
-
 		void IJsonSerializable.WriteJson(JsonWriter writer)
 		{
 			writer.Write(this.Text);
+		}
+
+		void IJsonSerializable.ReadJson(JsonReader reader)
+		{
+			throw new NotImplementedException("IJsonSerializable.ReadJson is not implemented.");
 		}
 
 		#endregion IJsonSerializable Members
