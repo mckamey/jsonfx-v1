@@ -60,6 +60,13 @@ namespace JsonFx.JsonML.BST
 				{0}
 			}}";
 
+		private const string StatementLegacyFormat =
+			@"function() {{
+				var {1} = new JsonML.Response();
+				{0}
+				return {1}.render();
+			}}";
+
 		private const string ExpressionFormat =
 			@"function() {{
 				return ({0});
@@ -134,7 +141,20 @@ namespace JsonFx.JsonML.BST
 				{
 					// analogous to instance code, or JSP scriptlets
 					// executed each time template is bound
-					codeBlock = String.Format(StatementFormat, this.Code);
+
+					// add legacy support for those coming from ASP/JSP
+					if ((this.Code.IndexOf("Response.write") >= 0) || (this.Code.IndexOf("Response.Write") >= 0))
+					{
+						codeBlock = String.Format(StatementLegacyFormat, this.Code, "Response");
+					}
+					else if (this.Code.IndexOf("out.print") >= 0)
+					{
+						codeBlock = String.Format(StatementLegacyFormat, this.Code, "out");
+					}
+					else
+					{
+						codeBlock = String.Format(StatementFormat, this.Code);
+					}
 					break;
 				}
 				default:
