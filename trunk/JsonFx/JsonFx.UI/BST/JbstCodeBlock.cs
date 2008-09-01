@@ -55,6 +55,13 @@ namespace JsonFx.JsonML.BST
 	{
 		#region Constants
 
+		private const string CommentFormat = "/* {0} */ \"\"";
+
+		private const string ExpressionFormat =
+			@"function() {{
+				return ({0});
+			}}";
+
 		private const string StatementFormat =
 			@"function() {{
 				{0}
@@ -67,16 +74,9 @@ namespace JsonFx.JsonML.BST
 				return {1}.render();
 			}}";
 
-		private const string ExpressionFormat =
-			@"function() {{
-				return ({0});
-			}}";
-
 		private const string AspResponse = "Reponse";
 		private const string JspResponse = "out";
 		private const string JspResponseVar = "System = {}; System.out";
-
-		private const string CommentFormat = "/* {0} */ \"\"";
 
 		#endregion Constants
 
