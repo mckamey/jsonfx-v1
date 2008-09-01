@@ -219,14 +219,6 @@ namespace BuildTools.ScriptCompactor
 
 		#endregion Fields
 
-		#region Init
-
-		public JSLint()
-		{
-		}
-
-		#endregion Init
-
 		#region Properties
 
 		/// <summary>
