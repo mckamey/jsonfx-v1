@@ -463,7 +463,9 @@ namespace JsonFx.Json
 				{
 					flagNames[i] = JsonNameAttribute.GetJsonName(flags[i]);
 					if (String.IsNullOrEmpty(flagNames[i]))
+					{
 						flagNames[i] = flags[i].ToString("f");
+					}
 				}
 				enumName = String.Join(", ", flagNames);
 			}
@@ -471,7 +473,9 @@ namespace JsonFx.Json
 			{
 				enumName = JsonNameAttribute.GetJsonName(value);
 				if (String.IsNullOrEmpty(enumName))
+				{
 					enumName = value.ToString("f");
+				}
 			}
 
 			this.Write(enumName);
