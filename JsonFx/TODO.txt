@@ -1,6 +1,7 @@
 2008-08-31 @ 11:04
 
 - create documentation
+	see: http://msdn.microsoft.com/en-us/library/ms524716.aspx
 	see: http://www.jsptut.com/
 	see: http://java.sun.com/products/jsp/pdf/card11.pdf
 	see: http://domscripting.com/presentations/fowa07/slides/03_data_formats.html
