@@ -194,6 +194,27 @@ namespace JsonFx.Json
 
 		#endregion Properties
 
+		#region Static Methods
+
+		/// <summary>
+		/// A fast method for serializing an object to JSON
+		/// </summary>
+		/// <param name="value"></param>
+		/// <returns></returns>
+		public static string Serialize(object value)
+		{
+			StringBuilder output = new StringBuilder();
+
+			using (JsonWriter writer = new JsonWriter(output))
+			{
+				writer.Write(value);
+			}
+
+			return output.ToString();
+		}
+
+		#endregion Static Methods
+
 		#region Public Methods
 
 		public virtual void Write(object value)

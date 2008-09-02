@@ -183,7 +183,7 @@ namespace JsonFx.Json
 		/// <returns></returns>
 		public object Deserialize()
 		{
-			return this.Deserialize(null);
+			return this.Deserialize((Type)null);
 		}
 
 		/// <summary>
@@ -763,6 +763,31 @@ namespace JsonFx.Json
 		}
 
 		#endregion Parsing Methods
+
+		#region Static Methods
+
+		/// <summary>
+		/// A fast method for deserializing an object from JSON
+		/// </summary>
+		/// <param name="value"></param>
+		/// <returns></returns>
+		public static object Deserialize(string value)
+		{
+			return (new JsonReader(value)).Deserialize();
+		}
+
+		/// <summary>
+		/// A fast method for deserializing an object from JSON
+		/// </summary>
+		/// <param name="value"></param>
+		/// <param name="type"></param>
+		/// <returns></returns>
+		public static object Deserialize(string value, Type type)
+		{
+			return (new JsonReader(value)).Deserialize(type);
+		}
+
+		#endregion Static Methods
 
 		#region Object Methods
 
