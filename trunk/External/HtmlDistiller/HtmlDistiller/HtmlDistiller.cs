@@ -341,6 +341,7 @@ namespace BuildTools.HtmlDistiller
 			lock (this.SyncLock)
 			{
 				this.Init(html);
+				this.Parse();
 			}
 		}
 
