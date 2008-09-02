@@ -97,7 +97,7 @@ namespace JsonFx.JsonML.BST
 			this.isTemplate = isTemplate;
 
 			this.parser.EncodeNonAscii = false;
-			this.parser.BalanceTags = false;
+			this.parser.BalanceTags = true;
 			this.parser.NormalizeWhitespace = false;
 			this.parser.HtmlFilter = new UnsafeHtmlFilter();
 			this.parser.HtmlWriter = this;
@@ -260,8 +260,13 @@ namespace JsonFx.JsonML.BST
 			this.current = control;
 		}
 
-		internal void PopTag()
+		internal void PopTag(string tagName)
 		{
+			if (tagName == null)
+			{
+				tagName = String.Empty;
+			}
+
 			// flush any accumulated literals
 			this.Flush();
 
@@ -275,12 +280,18 @@ namespace JsonFx.JsonML.BST
 				throw new InvalidOperationException("Push/Pop mismatch? (Current is null)");
 			}
 
-			this.current = this.current.Parent;
+			if (!String.IsNullOrEmpty(tagName) &&
+				!tagName.Equals(this.current.TagName, StringComparison.InvariantCultureIgnoreCase))
+			{
+				throw new InvalidOperationException("Push/Pop mismatch? (tag names do not match)");
+			}
 
 			if (this.current == null)
 			{
-				throw new InvalidOperationException("Push/Pop mismatch? (Current is null)");
+				throw new InvalidOperationException("Push/Pop mismatch? (Current.Parent is null)");
 			}
+
+			this.current = this.current.Parent;
 
 			if (this.current == this.document &&
 				this.DocumentReady != null)
@@ -592,13 +603,13 @@ namespace JsonFx.JsonML.BST
 
 					if (tag.TagType == HtmlTagType.FullTag)
 					{
-						this.PopTag();
+						this.PopTag(tag.RawName);
 					}
 					break;
 				}
 				case HtmlTagType.EndTag:
 				{
-					this.PopTag();
+					this.PopTag(tag.RawName);
 					break;
 				}
 				case HtmlTagType.Unparsed:

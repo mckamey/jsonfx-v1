@@ -288,7 +288,7 @@ namespace JsonFx.JsonML
 
 		public override void RenderEndTag()
 		{
-			this.builder.PopTag();
+			this.builder.PopTag(String.Empty);
 		}
 
 		public override void Write(bool value)
@@ -427,13 +427,13 @@ namespace JsonFx.JsonML
 
 		public override void WriteEndTag(string tagName)
 		{
-			this.builder.PopTag();
+			this.builder.PopTag(tagName);
 		}
 
 		public override void WriteFullBeginTag(string tagName)
 		{
 			this.builder.PushTag(tagName);
-			this.builder.PopTag();
+			this.builder.PopTag(tagName);
 		}
 
 		public override void WriteLine()
