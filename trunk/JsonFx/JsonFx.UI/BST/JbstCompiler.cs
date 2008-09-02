@@ -130,7 +130,7 @@ namespace JsonFx.JsonML.BST
 
 		#endregion Properties
 
-		#region Builder Methods
+		#region Parse Methods
 
 		/// <summary>
 		/// Parses markup.
@@ -393,7 +393,7 @@ namespace JsonFx.JsonML.BST
 			this.document.ChildControls.Clear();
 		}
 
-		#endregion Builder Methods
+		#endregion Parse Methods
 
 		#region Render Methods
 
@@ -416,7 +416,7 @@ namespace JsonFx.JsonML.BST
 				}
 			}
 
-			// wrap in ctor and assignment
+			// wrap with ctor and assign
 			writer.Write(this.Name);
 			if (prettyPrint)
 			{
@@ -453,19 +453,15 @@ namespace JsonFx.JsonML.BST
 				{
 					// found 2 or more in root
 					// render with document wrapper
-					jw.Write(this.document);
-					control = null;
+					control = this.document;
 					break;
 				}
 
 				control = child;
 			}
 
-			if (control != null)
-			{
-				// only render single node found (null is OK)
-				jw.Write(control);
-			}
+			// render root node of content (null is OK)
+			jw.Write(control);
 
 			if (prettyPrint)
 			{
