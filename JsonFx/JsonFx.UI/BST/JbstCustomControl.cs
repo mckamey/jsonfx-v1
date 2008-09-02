@@ -42,6 +42,8 @@ namespace JsonFx.JsonML.BST
 	{
 		#region Constants
 
+		public const string JbstPrefix = "jbst"+JbstControl.PrefixDelim;
+
 		private const string ControlStart =
 			@"function(){var t=new JsonML.BST(";
 
@@ -81,8 +83,9 @@ namespace JsonFx.JsonML.BST
 		/// </summary>
 		/// <param name="controlName"></param>
 		public JbstCustomControl(string controlName)
-			: base(JbstCompiler.EnsureIdent(controlName))
+			: base(controlName)
 		{
+			this.TagName = JbstCompiler.EnsureIdent(this.TagName);
 		}
 
 		#endregion Init

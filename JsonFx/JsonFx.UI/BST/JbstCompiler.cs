@@ -231,11 +231,10 @@ namespace JsonFx.JsonML.BST
 			this.Flush();
 
 			JbstControl control;
-			int prefix = String.IsNullOrEmpty(tagName) ? -1 : tagName.IndexOf(':');
-			if (prefix > 0 &&
-				tagName.Substring(0, prefix).Equals("jbst", StringComparison.InvariantCultureIgnoreCase))
+			if (tagName != null &&
+				tagName.StartsWith(JbstCustomControl.JbstPrefix, StringComparison.InvariantCultureIgnoreCase))
 			{
-				control = new JbstCustomControl(tagName.Substring(prefix+1));
+				control = new JbstCustomControl(tagName);
 			}
 			else
 			{
@@ -281,7 +280,7 @@ namespace JsonFx.JsonML.BST
 			}
 
 			if (!String.IsNullOrEmpty(tagName) &&
-				!tagName.Equals(this.current.TagName, StringComparison.InvariantCultureIgnoreCase))
+				!tagName.Equals(this.current.RawName, StringComparison.InvariantCultureIgnoreCase))
 			{
 				throw new InvalidOperationException("Push/Pop mismatch? (tag names do not match)");
 			}

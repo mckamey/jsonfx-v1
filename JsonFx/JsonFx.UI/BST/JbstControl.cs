@@ -42,8 +42,15 @@ namespace JsonFx.JsonML.BST
 	/// </summary>
 	internal class JbstControl : IJbstControl, IEnumerable
 	{
+		#region Constants
+
+		public const string PrefixDelim = ":";
+
+		#endregion Constants
+
 		#region Fields
 
+		private string prefix;
 		private string tagName;
 		private Dictionary<String, Object> attributes = new Dictionary<String, Object>();
 		private JbstControlCollection childControls;
@@ -67,19 +74,55 @@ namespace JsonFx.JsonML.BST
 		/// <param name="tagName"></param>
 		public JbstControl(string tagName)
 		{
-			this.tagName = tagName;
 			this.childControls = new JbstControlCollection(this);
+
+			if (tagName == null)
+			{
+				tagName = String.Empty;
+			}
+
+			int index = tagName.IndexOf(PrefixDelim);
+			if (index < 0)
+			{
+				this.prefix = String.Empty;
+				this.tagName = tagName;
+			}
+			else
+			{
+				this.prefix = tagName.Substring(0, index);
+				this.tagName = tagName.Substring(index+1);
+			}
 		}
 
 		#endregion Init
 
 		#region Properties
 
-		[JsonName("tag")]
+		[JsonName("tagName")]
 		public string TagName
 		{
 			get { return this.tagName; }
 			set { this.tagName = value; }
+		}
+
+		[JsonName("prefix")]
+		public string Prefix
+		{
+			get { return this.prefix; }
+			set { this.prefix = value; }
+		}
+
+		[JsonName("rawName")]
+		public string RawName
+		{
+			get
+			{
+				if (String.IsNullOrEmpty(this.prefix))
+				{
+					return this.TagName;
+				}
+				return this.Prefix + PrefixDelim + this.TagName;
+			}
 		}
 
 		[JsonName("attributes")]
