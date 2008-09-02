@@ -52,7 +52,7 @@ namespace JsonFx.JsonML.BST
 
 		private static readonly char[] ImportDelim = new char[] { ' ', ',' };
 
-		private const string AnonymousName = "$AnonymousJbst";
+		private const string AnonymousName = "Anonymous_";
 
 		private const string DeclarationFormat =
 			@"try {{
@@ -121,7 +121,7 @@ namespace JsonFx.JsonML.BST
 			{
 				if (String.IsNullOrEmpty(this.name))
 				{
-					return AnonymousName;
+					this.name = AnonymousName+Guid.NewGuid().ToString("n");
 				}
 				return this.name;
 			}
