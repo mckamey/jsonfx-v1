@@ -67,7 +67,7 @@ namespace JsonFx.JsonML
 			: base(new NullTextWriter(writer.Encoding))
 		{
 			this.writer = writer;
-			this.builder = new JbstCompiler();
+			this.builder = new JbstCompiler(false);
 			this.builder.DocumentReady += new EventHandler(this.OnDocumentReady);
 		}
 
@@ -80,7 +80,7 @@ namespace JsonFx.JsonML
 			: base(new NullTextWriter(writer.Encoding), tabString)
 		{
 			this.writer = writer;
-			this.builder = new JbstCompiler();
+			this.builder = new JbstCompiler(false);
 			this.builder.DocumentReady += new EventHandler(this.OnDocumentReady);
 		}
 
