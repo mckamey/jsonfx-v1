@@ -1078,7 +1078,10 @@ namespace BuildTools.HtmlDistiller
 					this.taxonomy |= tag.Taxonomy;
 				}
 			}
-			catch {}
+			catch (Exception ex)
+			{
+				try { this.htmlWriter.WriteLiteral("Error in HtmlWriter: "+ex.Message); } catch { }
+			}
 		}
 
 		private void RenderCloseTag(HtmlTag tag)
