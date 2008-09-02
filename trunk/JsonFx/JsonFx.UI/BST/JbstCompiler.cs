@@ -97,7 +97,7 @@ namespace JsonFx.JsonML.BST
 			this.isTemplate = isTemplate;
 
 			this.parser.EncodeNonAscii = false;
-			this.parser.BalanceTags = true;
+			this.parser.BalanceTags = false;
 			this.parser.NormalizeWhitespace = false;
 			this.parser.HtmlFilter = new UnsafeHtmlFilter();
 			this.parser.HtmlWriter = this;
