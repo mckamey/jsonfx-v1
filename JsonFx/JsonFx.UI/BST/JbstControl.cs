@@ -56,7 +56,8 @@ namespace JsonFx.JsonML.BST
 		/// <summary>
 		/// Ctor
 		/// </summary>
-		protected internal JbstControl() : this(String.Empty)
+		public JbstControl()
+			: this(String.Empty)
 		{
 		}
 
