@@ -328,7 +328,7 @@ namespace BuildTools.HtmlDistiller
 			lock (this.SyncLock)
 			{
 				this.incrementalParsing = false;
-				this.Parse(null);
+				this.Parse();
 			}
 		}
 
@@ -340,10 +340,16 @@ namespace BuildTools.HtmlDistiller
 		{
 			lock (this.SyncLock)
 			{
+				this.Init(html);
+			}
+		}
+
+		private void Parse()
+		{
+			lock (this.SyncLock)
+			{
 				try
 				{
-					this.Init(html);
-
 					while (!this.IsEOF)
 					{
 						// store syncPoint
@@ -1065,10 +1071,14 @@ namespace BuildTools.HtmlDistiller
 
 		private void RenderTag(HtmlTag tag)
 		{
-			if (this.htmlWriter.WriteTag(tag, this.htmlFilter))
+			try
 			{
-				this.taxonomy |= tag.Taxonomy;
+				if (this.htmlWriter.WriteTag(tag, this.htmlFilter))
+				{
+					this.taxonomy |= tag.Taxonomy;
+				}
 			}
+			catch {}
 		}
 
 		private void RenderCloseTag(HtmlTag tag)
