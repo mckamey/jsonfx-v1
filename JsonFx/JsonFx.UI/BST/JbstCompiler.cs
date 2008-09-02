@@ -404,6 +404,8 @@ namespace JsonFx.JsonML.BST
 
 		public void Render(TextWriter writer, bool prettyPrint)
 		{
+			this.Flush();
+
 			this.ProcessDirectives();
 
 			// add JSLINT directives
@@ -623,6 +625,7 @@ namespace JsonFx.JsonML.BST
 							break;
 						}
 						case "%--":
+						case "!--":
 						{
 							// Comments are emitted directly into JBST
 							JbstCodeBlock code = new JbstCodeBlock(tag.Content, JbstCodeBlockType.Comment);
@@ -631,7 +634,9 @@ namespace JsonFx.JsonML.BST
 						}
 						default:
 						{
-							throw new ParseError("Unknown tag syntax: <"+tag.TagName+"..."+tag.EndDelim, "", 1, 1);
+							JbstLiteral literal = new JbstLiteral(tag.ToString());
+							this.AppendChild(literal);
+							break;
 						}
 					}
 					break;
