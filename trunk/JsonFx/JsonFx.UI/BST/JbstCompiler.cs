@@ -75,6 +75,7 @@ namespace JsonFx.JsonML.BST
 		private JbstControl current = null;
 		private JbstControl next = null;
 
+		private bool isTemplate = false;
 		private bool isParsing = false;
 		private readonly HtmlDistiller parser = new HtmlDistiller();
 		private readonly StringBuilder Directives = new StringBuilder();
@@ -90,9 +91,11 @@ namespace JsonFx.JsonML.BST
 		/// <summary>
 		/// Ctor
 		/// </summary>
-		/// <param name="writer"></param>
-		internal JbstCompiler()
+		/// <param name="isJbst">JsonML+BST</param>
+		internal JbstCompiler(bool isTemplate)
 		{
+			this.isTemplate = isTemplate;
+
 			this.parser.EncodeNonAscii = false;
 			this.parser.BalanceTags = false;
 			this.parser.NormalizeWhitespace = false;
@@ -408,34 +411,37 @@ namespace JsonFx.JsonML.BST
 
 			this.ProcessDirectives();
 
-			// add JSLINT directives
-			if (prettyPrint)
+			if (this.isTemplate)
 			{
-				string globals = this.GetGlobals();
-				if (!String.IsNullOrEmpty(globals))
+				// add JSLINT directives
+				if (prettyPrint)
 				{
-					writer.WriteLine("/*global {0} */", globals);
+					string globals = this.GetGlobals();
+					if (!String.IsNullOrEmpty(globals))
+					{
+						writer.WriteLine("/*global {0} */", globals);
+					}
 				}
-			}
 
-			// wrap with ctor and assign
-			writer.Write(this.Name);
-			if (prettyPrint)
-			{
-				writer.Write(" = ");
-			}
-			else
-			{
-				writer.Write("=");
-			}
+				// wrap with ctor and assign
+				writer.Write(this.Name);
+				if (prettyPrint)
+				{
+					writer.Write(" = ");
+				}
+				else
+				{
+					writer.Write("=");
+				}
 
-			if (prettyPrint)
-			{
-				writer.WriteLine("new JsonML.BST(");
-			}
-			else
-			{
-				writer.Write("new JsonML.BST(");
+				if (prettyPrint)
+				{
+					writer.WriteLine("new JsonML.BST(");
+				}
+				else
+				{
+					writer.Write("new JsonML.BST(");
+				}
 			}
 
 			JsonFx.Json.JsonWriter jw = new JsonFx.Json.JsonWriter(writer);
@@ -465,34 +471,37 @@ namespace JsonFx.JsonML.BST
 			// render root node of content (null is OK)
 			jw.Write(control);
 
-			if (prettyPrint)
+			if (this.isTemplate)
 			{
-				writer.WriteLine(");");
-			}
-			else
-			{
-				writer.Write(");");
-			}
-
-			// render any declarations
-			if (this.Declarations.Length > 0)
-			{
-				string declarations = String.Format(
-					JbstCompiler.DeclarationFormat,
-					this.Name,
-					this.Declarations.ToString());
-
 				if (prettyPrint)
 				{
-					writer.WriteLine(declarations);
+					writer.WriteLine(");");
 				}
 				else
 				{
-					// min the output for better compaction
-					// signal to JSMin that isn't linted so
-					// doesn't break users code if they leave
-					// off semicolons, etc.
-					new JSMin().Run(declarations, writer);
+					writer.Write(");");
+				}
+
+				// render any declarations
+				if (this.Declarations.Length > 0)
+				{
+					string declarations = String.Format(
+						JbstCompiler.DeclarationFormat,
+						this.Name,
+						this.Declarations.ToString());
+
+					if (prettyPrint)
+					{
+						writer.WriteLine(declarations);
+					}
+					else
+					{
+						// min the output for better compaction
+						// signal to JSMin that isn't linted so
+						// doesn't break users code if they leave
+						// off semicolons, etc.
+						new JSMin().Run(declarations, writer);
+					}
 				}
 			}
 		}
