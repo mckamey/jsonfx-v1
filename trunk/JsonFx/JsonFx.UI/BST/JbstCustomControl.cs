@@ -29,27 +29,52 @@
 #endregion License
 
 using System;
+using JsonFx.Json;
 
 namespace JsonFx.JsonML.BST
 {
 	/// <summary>
 	/// Internal representation of a nested JsonML+BST control.
 	/// </summary>
-	internal class JbstCustomControl : JbstControl, Json.IJsonSerializable
+	internal class JbstCustomControl : JbstControl, IJsonSerializable
 	{
 		#region Constants
 
-		// TODO: find out why content after this is being suppressed
-		// TODO: add pretty printing
-		private const string StartFormat = "function() {{ var t = new JsonML.BST(";
-		private const string EndFormat = "); t.prototype = this; return ({0}).dataBind({{ \"jbst\": t, \"data\": this.data, \"index\": this.index }}); }}";
-		public const string CustomControlPlaceholder = "if (this.data && this.data.jbst instanceof JsonML.BST) { return this.data.jbst.dataBind(this.data.data, this.data.item); }";
+		private const string ControlStart =
+			@"function(){var t=new JsonML.BST(";
+
+		private const string ControlStartDebug =
+			@"function() {
+				var t = new JsonML.BST(";
+
+		private const string ControlEndFormat =
+			@");t.prototype=this;return {0}.dataBind({{jbst:t,args:{1},data:this.data,index:this.index}});}}";
+
+		private const string ControlEndFormatDebug =
+			@"	);
+				t.prototype = this;
+				return {0}.dataBind(
+					{{
+						jbst: t,
+						args: {1},
+						data: this.data,
+						index: this.index
+					}});
+			}}";
+
+		public const string CustomControlPlaceholder =
+			@"if(this.data&&this.data.jbst&&""function""===typeof this.data.jbst.databind){return this.data.jbst.dataBind(this.data.data,this.data.item);}";
+
+		public const string CustomControlPlaceholderDebug =
+			@"if (this.data && this.data.jbst && ""function"" === typeof this.data.jbst.databind) {
+				return this.data.jbst.dataBind(this.data.data, this.data.item);
+			}";
 
 		#endregion Constants
 
 		#region Fields
 
-		private readonly JbstControl content;
+		private readonly JbstControl content = new JbstControl();
 
 		#endregion Fields
 
@@ -58,11 +83,10 @@ namespace JsonFx.JsonML.BST
 		/// <summary>
 		/// Ctor
 		/// </summary>
-		/// <param name="code"></param>
-		public JbstCustomControl(string template)
-			: base(template)
+		/// <param name="controlName"></param>
+		public JbstCustomControl(string controlName)
+			: base(JbstCompiler.EnsureIdent(controlName))
 		{
-			this.content = new JbstControl(String.Empty);
 		}
 
 		#endregion Init
@@ -81,9 +105,26 @@ namespace JsonFx.JsonML.BST
 
 		void JsonFx.Json.IJsonSerializable.WriteJson(JsonFx.Json.JsonWriter writer)
 		{
-			writer.TextWriter.Write(StartFormat, "");
+			if (writer.PrettyPrint)
+			{
+				writer.TextWriter.Write(ControlStartDebug);
+			}
+			else
+			{
+				writer.TextWriter.Write(ControlStart);
+			}
+
 			writer.Write(this.content);
-			writer.TextWriter.Write(EndFormat, this.TagName);
+
+			string args = JsonWriter.Serialize(this.Attributes);
+			if (writer.PrettyPrint)
+			{
+				writer.TextWriter.Write(ControlEndFormatDebug, this.TagName, args);
+			}
+			else
+			{
+				writer.TextWriter.Write(ControlEndFormat, this.TagName, args);
+			}
 		}
 
 		void JsonFx.Json.IJsonSerializable.ReadJson(JsonFx.Json.JsonReader reader)

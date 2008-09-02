@@ -675,7 +675,7 @@ namespace JsonFx.JsonML.BST
 				case "control":
 				{
 					this.Name = attribs.ContainsKey("name") ?
-						this.EnsureIdent(attribs["name"]) :
+						JbstCompiler.EnsureIdent(attribs["name"]) :
 						null;
 
 					string package = attribs.ContainsKey("import") ? attribs["import"] : null;
@@ -710,7 +710,7 @@ namespace JsonFx.JsonML.BST
 		/// </summary>
 		/// <param name="ident"></param>
 		/// <returns></returns>
-		private string EnsureIdent(string ident)
+		public static string EnsureIdent(string ident)
 		{
 			// TODO: scrub name for valid identifier
 			return ident;
@@ -729,7 +729,7 @@ namespace JsonFx.JsonML.BST
 
 			foreach (string import in this.Imports)
 			{
-				string ident = this.EnsureIdent(import);
+				string ident = JbstCompiler.EnsureIdent(import);
 
 				if (String.IsNullOrEmpty(ident))
 				{
