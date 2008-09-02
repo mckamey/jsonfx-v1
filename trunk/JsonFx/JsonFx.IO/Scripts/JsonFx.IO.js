@@ -321,7 +321,9 @@ JsonFx.IO = {};
 		// decode response as JSON
 		var json = xhr ? xhr.responseText : null;
 		try {
-			json = ("string" === typeof json) ? JSON.parse(json, JsonFx.IO.jsonReviver) : null;
+			json = (json && "string" === typeof json) ?
+				JSON.parse(json, JsonFx.IO.jsonReviver) :
+				null;
 
 			if ("function" === typeof onSuccess) {
 				onSuccess(json, context);
