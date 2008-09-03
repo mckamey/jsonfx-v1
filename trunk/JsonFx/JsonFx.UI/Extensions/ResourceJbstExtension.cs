@@ -19,7 +19,6 @@ namespace JsonFx.Extensions
 
 		protected override string Eval(string value)
 		{
-
 			return String.Format(
 				ResourceLookupFormat,
 				JsonWriter.Serialize(value),
