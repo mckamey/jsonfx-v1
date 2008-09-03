@@ -38,6 +38,11 @@ namespace JsonFx.Extensions
 			// lookup the corresponding extension evaluator
 			switch (kvp.Key)
 			{
+				case "AppSettings":
+				{
+					extension = new AppSettingsJbstExtension();
+					break;
+				}
 				case "Resources":
 				{
 					extension = new ResourceJbstExtension();
