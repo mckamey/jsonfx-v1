@@ -187,13 +187,18 @@ namespace BuildTools.HtmlDistiller.Writers
 
 				if (filter.FilterAttribute(tag.TagName, key, ref val))
 				{
-					if (String.IsNullOrEmpty(key) || String.IsNullOrEmpty(val))
+					this.writer.Write(' ');
+					if (String.IsNullOrEmpty(key))
 					{
-						this.writer.Write(" {0}{1}", key, val);
+						this.writer.Write(HtmlAttributeEncode(val));
+					}
+					else if (String.IsNullOrEmpty(val))
+					{
+						this.writer.Write(HtmlAttributeEncode(key));
 					}
 					else
 					{
-						this.writer.Write(" {0}=\"{1}\"", key, val);
+						this.writer.Write(" {0}=\"{1}\"", HtmlAttributeEncode(key), HtmlAttributeEncode(val));
 					}
 				}
 			}
@@ -215,12 +220,27 @@ namespace BuildTools.HtmlDistiller.Writers
 				{
 					if (!String.IsNullOrEmpty(key) && !String.IsNullOrEmpty(val))
 					{
-						this.writer.Write("{0}:{1};", key, val);
+						this.writer.Write("{0}:{1};", HtmlAttributeEncode(key), HtmlAttributeEncode(val));
 					}
 				}
 			}
 
 			this.writer.Write('\"');
+		}
+
+		private string HtmlAttributeEncode(string value)
+		{
+			if (value == null)
+			{
+				return String.Empty;
+			}
+
+			if (value.IndexOf('"') < 0)
+			{
+				return value;
+			}
+
+			return value.Replace("\"", "&quot;");
 		}
 
 		#endregion Methods
