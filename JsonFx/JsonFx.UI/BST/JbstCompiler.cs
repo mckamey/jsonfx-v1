@@ -271,7 +271,8 @@ namespace JsonFx.JsonML.BST
 
 			if (this.next != null)
 			{
-				throw new InvalidOperationException("Push/Pop mismatch? (Next is not null)");
+				//throw new InvalidOperationException("Push/Pop mismatch? (Next is not null)");
+				this.next = null;
 			}
 
 			if (this.current == null)
@@ -282,7 +283,8 @@ namespace JsonFx.JsonML.BST
 			if (!String.IsNullOrEmpty(tagName) &&
 				!tagName.Equals(this.current.RawName, StringComparison.InvariantCultureIgnoreCase))
 			{
-				throw new InvalidOperationException("Push/Pop mismatch? (tag names do not match)");
+				//throw new InvalidOperationException("Push/Pop mismatch? (tag names do not match)");
+				return;
 			}
 
 			if (this.current == null)
