@@ -482,7 +482,6 @@ namespace BuildTools.HtmlDistiller
 				case "basefont":
 				case "br":
 				case "col":
-				case "embed":
 				case "frame":
 				case "hr":
 				case "img":
@@ -515,6 +514,7 @@ namespace BuildTools.HtmlDistiller
 				case "colgroup":
 				case "dd":
 				case "dt":
+				case "embed":
 				case "head":
 				case "html":
 				case "li":
