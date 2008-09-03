@@ -42,6 +42,7 @@
       <HintPath>..\SolnItems\HtmlDistiller\HtmlDistiller.dll</HintPath>
     </Reference>
     <Reference Include="System" />
+    <Reference Include="System.configuration" />
     <Reference Include="System.Web" />
     <Reference Include="System.Xml" />
   </ItemGroup>
@@ -56,6 +57,7 @@
     <Compile Include="Compilation\JbstCodeProvider.cs">
       <SubType>Component</SubType>
     </Compile>
+    <Compile Include="Extensions\AppSettingsJbstExtension.cs" />
     <Compile Include="Extensions\JbstExtension.cs" />
     <Compile Include="Extensions\ResourceJbstExtension.cs" />
     <Compile Include="JsonFxBrowserCapabilities.cs" />

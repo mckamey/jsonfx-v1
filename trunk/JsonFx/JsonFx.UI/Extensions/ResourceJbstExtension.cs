@@ -17,12 +17,12 @@ namespace JsonFx.Extensions
 
 		#region JbstExtension Members
 
-		protected override string Eval(string value)
+		protected override string Eval(string expression)
 		{
 			return String.Format(
 				ResourceLookupFormat,
-				JsonWriter.Serialize(value),
-				JsonWriter.Serialize("$$"+value+"$$"));
+				JsonWriter.Serialize(expression),
+				JsonWriter.Serialize("$$"+expression+"$$"));
 		}
 
 		#endregion JbstExtension Members
