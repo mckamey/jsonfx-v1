@@ -31,6 +31,7 @@
 using System;
 
 using BuildTools.ScriptCompactor;
+using JsonFx.Extensions;
 
 namespace JsonFx.JsonML.BST
 {
@@ -43,7 +44,8 @@ namespace JsonFx.JsonML.BST
 		Directive,
 		Declaration,
 		Expression,
-		Statement
+		Statement,
+		Extension
 	}
 
 	#endregion JbstCodeBlockType
@@ -168,9 +170,15 @@ namespace JsonFx.JsonML.BST
 					}
 					break;
 				}
+				case JbstCodeBlockType.Extension:
+				{
+					// execute the corresponding extension evaluator
+					codeBlock = JbstExtension.Evaluate(this.Code);
+					break;
+				}
 				default:
 				{
-					// not supported inline
+					// others not supported inline
 					return;
 				}
 			}

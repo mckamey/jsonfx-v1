@@ -577,6 +577,14 @@ namespace JsonFx.JsonML.BST
 										this.AddAttribute(key, code);
 										break;
 									}
+									case '$':
+									{
+										JbstCodeBlock code = new JbstCodeBlock(
+											value.Substring(3, value.Length-5),
+											JbstCodeBlockType.Extension);
+										this.AddAttribute(key, code);
+										break;
+									}
 									default:
 									{
 										JbstCodeBlock code = new JbstCodeBlock(
@@ -635,6 +643,13 @@ namespace JsonFx.JsonML.BST
 						{
 							// expressions are emitted directly into JBST
 							JbstCodeBlock code = new JbstCodeBlock(tag.Content, JbstCodeBlockType.Expression);
+							this.AppendChild(code);
+							break;
+						}
+						case "%$":
+						{
+							// expressions are emitted directly into JBST
+							JbstCodeBlock code = new JbstCodeBlock(tag.Content, JbstCodeBlockType.Extension);
 							this.AppendChild(code);
 							break;
 						}
