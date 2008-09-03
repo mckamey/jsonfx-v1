@@ -1259,9 +1259,35 @@ namespace BuildTools.HtmlDistiller
 		/// <returns></returns>
 		public static string EncodeHtmlEntity(char ch)
 		{
-			return String.Format(
-				(ch > (char)0xFF) ? "&#x{0:X4};" : "&#x{0:X2};",
-				(int)ch);
+			switch (ch)
+			{
+				case '&':
+				{
+					return "&amp;";
+				}
+				case '<':
+				{
+					return "&lt;";
+				}
+				case '>':
+				{
+					return "&gt;";
+				}
+				case '"':
+				{
+					return "&quot;";
+				}
+				case '\'':
+				{
+					return "&apos;";
+				}
+				default:
+				{
+					return String.Format(
+						(ch > (char)0xFF) ? "&#x{0:X4};" : "&#x{0:X2};",
+						(int)ch);
+				}
+			}
 		}
 
 		public static string DecodeHtmlEntities(string source)
