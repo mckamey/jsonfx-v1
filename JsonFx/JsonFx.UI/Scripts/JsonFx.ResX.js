@@ -14,7 +14,8 @@ if ("undefined" === typeof JsonFx) {
 
 if ("undefined" === typeof JsonFx.ResX) {
 
-	JsonFx.ResX = (function(){
+	/* ctor */
+	JsonFx.ResX = function() {
 		// create private member via closure
 		var resx = {};
 
@@ -38,5 +39,7 @@ if ("undefined" === typeof JsonFx.ResX) {
 
 			return resx.hasOwnProperty(k) ? resx[k] : d;
 		};
-	})();
+	};
+	/*singleton, destroy the ctor*/
+	JsonFx.ResX = new JsonFx.ResX();
 }
