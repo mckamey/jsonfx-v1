@@ -50,7 +50,7 @@ namespace JsonFx.JsonML.BST
 	{
 		#region Constants
 
-		private static readonly char[] ImportDelim = new char[] { ' ', ',' };
+		private static readonly char[] ImportDelim = { ' ', ',' };
 
 		private const string AnonymousPrefix = "anonymous_";
 
