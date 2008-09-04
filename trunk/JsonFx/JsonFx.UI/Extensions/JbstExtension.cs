@@ -10,7 +10,7 @@ namespace JsonFx.Extensions
 	{
 		#region Constants
 
-		private static readonly char[] PrefixDelim = new char[] { ':' };
+		private static readonly char[] PrefixDelim = { ':' };
 
 		private const string PrefixNotFoundError =
 			@"if (window.confirm(""Error \""{0}\"" is an unknown JbstExtension prefix. Debug?"")) {{

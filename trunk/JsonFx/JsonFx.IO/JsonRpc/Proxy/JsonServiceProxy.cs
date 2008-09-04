@@ -49,7 +49,7 @@ namespace JsonFx.JsonRpc.Proxy
 		private Regex Regex_Identifier = new Regex(Pattern_Identifier, RegexOptions.Compiled|RegexOptions.CultureInvariant);
 
 		private const char NamespaceDelim = '.';
-		private static readonly char[] NamespaceDelims = new char[] { '.' };
+		private static readonly char[] NamespaceDelims = { '.' };
 
 		#endregion Constants
 
