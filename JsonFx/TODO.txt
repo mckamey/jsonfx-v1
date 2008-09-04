@@ -1,6 +1,6 @@
 2008-08-31 @ 11:04
 
-- create JsonFx.ResX hashtable
+- specify JsonFx.ResX hashtable contents
 
 - Plug-Ins via reflection
 	http://msdn.microsoft.com/en-us/magazine/cc163759.aspx
