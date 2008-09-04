@@ -66,7 +66,7 @@ namespace JsonFx.Handlers
 			return fields.ClassKey.ToLowerInvariant() + ',' + fields.ResourceKey.ToLowerInvariant();
 		}
 
-		protected virtual IDictionary<string, object> GetResourceStrings(IList<string> keys)
+		protected virtual IDictionary<string, object> GetResourceStrings(IList<string> keys, string path)
 		{
 			if (keys == null)
 			{
@@ -81,12 +81,28 @@ namespace JsonFx.Handlers
 				{
 					continue;
 				}
-				object value = HttpContext.GetGlobalResourceObject(fields.ClassKey, fields.ResourceKey);
+
+				object value;
+				try
+				{
+					if (String.IsNullOrEmpty(fields.ClassKey))
+					{
+						value = HttpContext.GetLocalResourceObject(path, fields.ResourceKey);
+					}
+					else
+					{
+						value = HttpContext.GetGlobalResourceObject(fields.ClassKey, fields.ResourceKey);
+					}
+				}
+				catch (Exception ex)
+				{
+					value = ex.Message;
+				}
+
 				if (value == null)
 				{
 					continue;
 				}
-
 				resx[GetKey(fields)] = value;
 			}
 
@@ -104,6 +120,7 @@ namespace JsonFx.Handlers
 
 			// TODO: provide mechanism for easily defining this list
 			string[] keys = {
+				"thismustbelocal",
 				"global, test",
 				"global, copyright",
 				"global, foo",
@@ -114,7 +131,7 @@ namespace JsonFx.Handlers
 				"global, empty"
 			};
 
-			IDictionary<string, object> resx = this.GetResourceStrings(keys);
+			IDictionary<string, object> resx = this.GetResourceStrings(keys, context.Request.AppRelativeCurrentExecutionFilePath);
 
 			HttpResponse response = context.Response;
 			response.ContentType = "text/javascript";
