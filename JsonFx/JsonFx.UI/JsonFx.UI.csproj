@@ -47,6 +47,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Jbst\Extensions\AppSettingsJbstExtension.cs" />
+    <Compile Include="Jbst\Extensions\JbstExtension.cs" />
+    <Compile Include="Jbst\Extensions\ResourceJbstExtension.cs" />
     <Compile Include="Jbst\IJbstControl.cs" />
     <Compile Include="Jbst\JbstCodeBlock.cs" />
     <Compile Include="Jbst\JbstCompiler.cs" />
@@ -57,9 +60,6 @@
     <Compile Include="Compilation\JbstCodeProvider.cs">
       <SubType>Component</SubType>
     </Compile>
-    <Compile Include="Extensions\AppSettingsJbstExtension.cs" />
-    <Compile Include="Extensions\JbstExtension.cs" />
-    <Compile Include="Extensions\ResourceJbstExtension.cs" />
     <Compile Include="Handlers\ResxHandler.cs" />
     <Compile Include="JsonFxBrowserCapabilities.cs" />
     <Compile Include="JsonMLBrowserModule.cs" />
