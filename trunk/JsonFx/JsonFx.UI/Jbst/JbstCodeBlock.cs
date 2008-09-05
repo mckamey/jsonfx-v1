@@ -33,7 +33,7 @@ using System;
 using BuildTools.ScriptCompactor;
 using JsonFx.Extensions;
 
-namespace JsonFx.JsonML.BST
+namespace JsonFx.UI.Jbst
 {
 	#region JbstCodeBlockType
 

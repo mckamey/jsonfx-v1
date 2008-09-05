@@ -33,7 +33,7 @@ using System.Text.RegularExpressions;
 
 using JsonFx.Json;
 
-namespace JsonFx.JsonML.BST
+namespace JsonFx.UI.Jbst
 {
 	/// <summary>
 	/// Represents literal text in a JsonML+BST document

@@ -37,7 +37,7 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("JsonFx.JsonML")]
+[assembly: AssemblyTitle("JsonFx.UI")]
 [assembly: AssemblyDescription("JsonFx.NET JsonML Support")]
 [assembly: AssemblyProduct("JsonFx.NET")]
 [assembly: AssemblyCopyright("Copyright © 2006-2008 Stephen M. McKamey. All rights reserved.")]

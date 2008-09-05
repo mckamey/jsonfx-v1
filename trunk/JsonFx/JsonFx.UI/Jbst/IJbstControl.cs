@@ -30,7 +30,7 @@
 
 using System;
 
-namespace JsonFx.JsonML.BST
+namespace JsonFx.UI.Jbst
 {
 	/// <summary>
 	/// Common base for all JsonML+BST nodes.

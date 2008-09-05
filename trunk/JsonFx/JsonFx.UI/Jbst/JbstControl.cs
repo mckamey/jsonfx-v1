@@ -35,7 +35,7 @@ using System.Web;
 
 using JsonFx.Json;
 
-namespace JsonFx.JsonML.BST
+namespace JsonFx.UI.Jbst
 {
 	/// <summary>
 	/// Internal representation of a JsonML+BST element.
