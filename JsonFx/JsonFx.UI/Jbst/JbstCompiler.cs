@@ -134,6 +134,14 @@ namespace JsonFx.UI.Jbst
 			set { this.name = value; }
 		}
 
+		/// <summary>
+		/// Gets the document root
+		/// </summary>
+		public JbstControl Document
+		{
+			get { return this.document; }
+		}
+
 		#endregion Properties
 
 		#region Parse Methods

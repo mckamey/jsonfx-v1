@@ -47,6 +47,13 @@ namespace JsonFx.UI.Jbst.Extensions
 
 		#endregion Constants
 
+		#region Fields
+
+		private readonly ResourceExpressionFields ResxKey;
+		private string globalizationKey = null;
+
+		#endregion Fields
+
 		#region Init
 
 		/// <summary>
@@ -57,21 +64,37 @@ namespace JsonFx.UI.Jbst.Extensions
 		protected internal ResourceJbstExtension(string value, string path)
 			: base(value, path)
 		{
+			this.ResxKey = ResourceExpressionBuilder.ParseExpression(this.Value);
 		}
 
 		#endregion Init
+
+		#region Properties
+
+		public string GlobalizationKey
+		{
+			get
+			{
+				if (this.globalizationKey == null)
+				{
+					this.globalizationKey = ResxHandler.GetKey(this.ResxKey, this.Path);
+				}
+				return this.globalizationKey;
+			}
+		}
+
+		#endregion Properties
 
 		#region JbstExtension Members
 
 		protected internal override string Eval()
 		{
-			ResourceExpressionFields resxKey = ResourceExpressionBuilder.ParseExpression(this.Value);
-			if (resxKey == null)
+			if (this.ResxKey == null)
 			{
 				return String.Empty;
 			}
 
-			string key = ResxHandler.GetKey(resxKey, this.Path);
+			string key = this.GlobalizationKey;
 
 			return String.Format(
 				ResourceLookupFormat,

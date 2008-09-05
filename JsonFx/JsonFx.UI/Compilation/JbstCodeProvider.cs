@@ -36,6 +36,7 @@ using System.CodeDom;
 
 using BuildTools;
 using JsonFx.UI.Jbst;
+using JsonFx.UI.Jbst.Extensions;
 
 namespace JsonFx.Compilation
 {
@@ -66,7 +67,7 @@ namespace JsonFx.Compilation
 
 		#endregion ResourceCodeProvider Properties
 
-		#region ResourceCodeProvider Methods
+		#region CodeDom Methods
 
 		protected override void GenerateCodeExtensions(CodeTypeDeclaration resourceType)
 		{
@@ -106,6 +107,10 @@ namespace JsonFx.Compilation
 			#endregion public override string[] GlobalizationKeys { get; }
 		}
 
+		#endregion CodeDom Methods
+
+		#region Compilation Methods
+
 		protected override void ProcessResource(
 			IResourceBuildHelper helper,
 			string virtualPath,
@@ -117,6 +122,8 @@ namespace JsonFx.Compilation
 			// parse JBST markup
 			JbstCompiler parser = new JbstCompiler(virtualPath, true);
 			parser.Parse(sourceText);
+
+			this.ExtractGlobalizationKeys(parser.Document);
 
 			using (StringWriter sw = new StringWriter())
 			{
@@ -135,6 +142,42 @@ namespace JsonFx.Compilation
 			}
 		}
 
-		#endregion ResourceCodeProvider Methods
+		private void ExtractGlobalizationKeys(JbstControl root)
+		{
+			List<IJbstControl> queue = new List<IJbstControl>();
+			queue.Add(root);
+
+			while (queue.Count > 0)
+			{
+				// pop and cast
+				IJbstControl control = queue[0];
+				queue.RemoveAt(0);
+
+				// queue up children
+				JbstControl container = control as JbstControl;
+				if (container != null && container.ChildControlsSpecified)
+				{
+					queue.AddRange(container.ChildControls);
+					continue;
+				}
+
+				// queue up children
+				JbstExtensionBlock extension = control as JbstExtensionBlock;
+				if (extension == null)
+				{
+					continue;
+				}
+
+				ResourceJbstExtension resx = extension.Extension as ResourceJbstExtension;
+				if (resx == null)
+				{
+					continue;
+				}
+
+				this.g11nKeys.Add(resx.GlobalizationKey);
+			}
+		}
+
+		#endregion Compilation Methods
 	}
 }
