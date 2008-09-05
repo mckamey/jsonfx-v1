@@ -70,6 +70,40 @@ namespace JsonFx.Compilation
 
 		protected override void GenerateCodeExtensions(CodeTypeDeclaration resourceType)
 		{
+			#region private static readonly string[] g11nKeys
+
+			CodeMemberField field = new CodeMemberField();
+			field.Name = "g11nKeys";
+			field.Type = new CodeTypeReference(typeof(string[]));
+			field.Attributes = MemberAttributes.Private|MemberAttributes.Static|MemberAttributes.Final;
+
+			CodeArrayCreateExpression arrayInit = new CodeArrayCreateExpression(field.Type, this.g11nKeys.Count);
+			foreach (string key in this.g11nKeys)
+			{
+				arrayInit.Initializers.Add(new CodePrimitiveExpression(key));
+			}
+			field.InitExpression = arrayInit;
+
+			resourceType.Members.Add(field);
+
+			#endregion private static readonly string[] g11nKeys
+
+			#region public override string[] GlobalizationKeys { get; }
+
+			// add a readonly property returning the static data
+			CodeMemberProperty property = new CodeMemberProperty();
+			property.Name = "GlobalizationKeys";
+			property.Type = field.Type;
+			property.Attributes = MemberAttributes.Public|MemberAttributes.Override;
+			property.HasGet = true;
+			// get { return g11nKeys; }
+			property.GetStatements.Add(new CodeMethodReturnStatement(
+				new CodeFieldReferenceExpression(
+					new CodeTypeReferenceExpression(resourceType.Name),
+					field.Name)));
+			resourceType.Members.Add(property);
+
+			#endregion public override string[] GlobalizationKeys { get; }
 		}
 
 		protected override void ProcessResource(
