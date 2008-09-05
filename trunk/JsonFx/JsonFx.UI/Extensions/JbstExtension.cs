@@ -61,12 +61,12 @@ namespace JsonFx.Extensions
 
 		internal static string Evaluate(string source, string virtualPath)
 		{
-			KeyValuePair<string, string> kvp = JbstExtension.ParseExpression(source);
+			KeyValuePair<string, string> expr = JbstExtension.ParseExpression(source);
 
 			JbstExtension extension = null;
 
 			// lookup the corresponding extension evaluator
-			switch (kvp.Key)
+			switch (expr.Key)
 			{
 				case "AppSettings":
 				{
@@ -84,11 +84,11 @@ namespace JsonFx.Extensions
 			if (extension == null)
 			{
 				// output error
-				result = String.Format(JbstExtension.PrefixNotFoundError, kvp.Value, source);
+				result = String.Format(JbstExtension.PrefixNotFoundError, expr.Value, source);
 			}
 			else
 			{
-				result = extension.Eval(kvp.Value, virtualPath);
+				result = extension.Eval(expr.Value, virtualPath);
 			}
 
 			return result;
