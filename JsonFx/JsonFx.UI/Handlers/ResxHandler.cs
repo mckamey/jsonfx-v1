@@ -143,6 +143,10 @@ namespace JsonFx.Handlers
 
 			// TODO: provide mechanism for easily defining this target
 			JbstCompiledBuildResult target = BuildManager.CreateInstanceFromVirtualPath(targetPath, typeof(object)) as JbstCompiledBuildResult;
+			if (target == null)
+			{
+				// TODO:
+			}
 
 			IDictionary<string, object> resx = this.GetResourceStrings(target.GlobalizationKeys, context.Request.FilePath);
 
