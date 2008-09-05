@@ -33,7 +33,7 @@ using System.Collections;
 
 using JsonFx.Json;
 
-namespace JsonFx.JsonML.BST
+namespace JsonFx.UI.Jbst
 {
 	/// <summary>
 	/// Internal representation of a nested JsonML+BST control.

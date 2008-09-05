@@ -31,7 +31,7 @@
 using System;
 using System.Web;
 
-namespace JsonFx.JsonML
+namespace JsonFx.UI
 {
 	/// <summary>
 	/// HttpModule which augments the HttpRequest.Browser object to signal

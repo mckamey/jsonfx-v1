@@ -47,13 +47,13 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="BST\IJbstControl.cs" />
-    <Compile Include="BST\JbstCodeBlock.cs" />
-    <Compile Include="BST\JbstCompiler.cs" />
-    <Compile Include="BST\JbstControl.cs" />
-    <Compile Include="BST\JbstControlCollection.cs" />
-    <Compile Include="BST\JbstCustomControl.cs" />
-    <Compile Include="BST\JbstLiteral.cs" />
+    <Compile Include="Jbst\IJbstControl.cs" />
+    <Compile Include="Jbst\JbstCodeBlock.cs" />
+    <Compile Include="Jbst\JbstCompiler.cs" />
+    <Compile Include="Jbst\JbstControl.cs" />
+    <Compile Include="Jbst\JbstControlCollection.cs" />
+    <Compile Include="Jbst\JbstCustomControl.cs" />
+    <Compile Include="Jbst\JbstLiteral.cs" />
     <Compile Include="Compilation\JbstCodeProvider.cs">
       <SubType>Component</SubType>
     </Compile>

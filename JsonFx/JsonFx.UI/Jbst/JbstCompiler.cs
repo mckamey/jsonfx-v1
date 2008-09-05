@@ -41,7 +41,7 @@ using BuildTools.HtmlDistiller.Writers;
 using BuildTools.ScriptCompactor;
 using JsonFx.Compilation;
 
-namespace JsonFx.JsonML.BST
+namespace JsonFx.UI.Jbst
 {
 	/// <summary>
 	/// JsonML+BST Template Compiler

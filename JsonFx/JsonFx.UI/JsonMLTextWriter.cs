@@ -35,9 +35,9 @@ using System.Web.UI;
 using System.Text;
 using System.Text.RegularExpressions;
 
-using JsonFx.JsonML.BST;
+using JsonFx.UI.Jbst;
 
-namespace JsonFx.JsonML
+namespace JsonFx.UI
 {
 	/// <summary>
 	/// Adapter between HtmlTextWriter interface and JbstCompiler internals

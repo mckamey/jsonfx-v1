@@ -34,7 +34,7 @@ using System.Collections.Generic;
 using System.Web.Compilation;
 
 using BuildTools;
-using JsonFx.JsonML.BST;
+using JsonFx.UI.Jbst;
 
 namespace JsonFx.Compilation
 {

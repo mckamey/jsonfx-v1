@@ -31,7 +31,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace JsonFx.JsonML.BST
+namespace JsonFx.UI.Jbst
 {
 	/// <summary>
 	/// Control collection for JsonML+BST nodes.

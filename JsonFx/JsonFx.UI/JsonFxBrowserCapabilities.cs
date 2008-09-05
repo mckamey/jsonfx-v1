@@ -33,9 +33,7 @@ using System.Collections;
 using System.Web;
 using System.Net.Mime;
 
-using JsonFx.JsonML;
-
-namespace JsonFx.JsonML
+namespace JsonFx.UI
 {
 	/// <summary>
 	/// Manually augments Browser object to produce strongly-typed HttpBrowserCapabilities
