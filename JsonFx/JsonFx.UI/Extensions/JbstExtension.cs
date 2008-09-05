@@ -31,7 +31,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace JsonFx.Extensions
+namespace JsonFx.UI.Jbst.Extensions
 {
 	/// <summary>
 	/// Base class for extending JBST with custom declarations

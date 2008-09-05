@@ -31,7 +31,7 @@
 using System;
 
 using BuildTools.ScriptCompactor;
-using JsonFx.Extensions;
+using JsonFx.UI.Jbst.Extensions;
 
 namespace JsonFx.UI.Jbst
 {
