@@ -207,7 +207,7 @@ namespace JsonFx.Compilation
 			resourceType.IsClass = true;
 			resourceType.Name = this.ResourceTypeName;
 			resourceType.Attributes = MemberAttributes.Public|MemberAttributes.Final;
-			resourceType.BaseTypes.Add(typeof(CompiledBuildResult));
+			resourceType.BaseTypes.Add(provider.GetCompiledBuildResultType());
 			ns.Types.Add(resourceType);
 
 			#endregion public sealed class ResourceTypeName
@@ -359,6 +359,9 @@ namespace JsonFx.Compilation
 			resourceType.Members.Add(property);
 
 			#endregion public override Guid MD5 { get; }
+
+			// allow the code provider to extend with additional properties
+			provider.GenerateCodeExtensions(resourceType);
 
 			assemblyBuilder.AddCodeCompileUnit(this, generatedUnit);
 		}

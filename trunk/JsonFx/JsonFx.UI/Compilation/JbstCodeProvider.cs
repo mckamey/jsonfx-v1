@@ -32,6 +32,7 @@ using System;
 using System.IO;
 using System.Collections.Generic;
 using System.Web.Compilation;
+using System.CodeDom;
 
 using BuildTools;
 using JsonFx.UI.Jbst;
@@ -40,7 +41,13 @@ namespace JsonFx.Compilation
 {
 	public class JbstCodeProvider : JsonFx.Compilation.ResourceCodeProvider
 	{
-		#region ResourceCodeProvider
+		#region Fields
+
+		private List<string> g11nKeys = new List<string>();
+
+		#endregion Fields
+
+		#region ResourceCodeProvider Properties
 
 		public override string ContentType
 		{
@@ -50,6 +57,19 @@ namespace JsonFx.Compilation
 		public override string FileExtension
 		{
 			get { return "js"; }
+		}
+
+		protected override Type CompiledBuildResultType
+		{
+			get { return typeof(JbstCompiledBuildResult); }
+		}
+
+		#endregion ResourceCodeProvider Properties
+
+		#region ResourceCodeProvider Methods
+
+		protected override void GenerateCodeExtensions(CodeTypeDeclaration resourceType)
+		{
 		}
 
 		protected override void ProcessResource(
@@ -81,6 +101,6 @@ namespace JsonFx.Compilation
 			}
 		}
 
-		#endregion ResourceCodeProvider
+		#endregion ResourceCodeProvider Methods
 	}
 }

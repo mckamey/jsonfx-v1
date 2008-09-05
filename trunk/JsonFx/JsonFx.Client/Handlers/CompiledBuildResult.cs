@@ -56,8 +56,8 @@ namespace JsonFx.Handlers
 		#region Constants
 
 		private const string RootNamespace = "__JsonFx";
-		public const string GzipContentEncoding = "gzip";
-		public const string DeflateContentEncoding = "deflate";
+		internal const string GzipContentEncoding = "gzip";
+		internal const string DeflateContentEncoding = "deflate";
 
 		#endregion Constants
 

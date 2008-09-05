@@ -29,91 +29,74 @@
 #endregion License
 
 using System;
-using System.Collections.Generic;
 
 namespace JsonFx.UI.Jbst.Extensions
 {
 	/// <summary>
 	/// Base class for extending JBST with custom declarations
 	/// </summary>
-	public abstract class JbstExtension
+	public class JbstExtension
 	{
 		#region Constants
 
-		private static readonly char[] PrefixDelim = { ':' };
-
 		private const string PrefixNotFoundError =
-			@"if (window.confirm(""Error \""{0}\"" is an unknown JbstExtension prefix. Debug?"")) {{
+			@"if (window.confirm(""Error unknown JbstExtension prefix: \""{0}\"". Debug?"")) {{
 				/*jslint evil:true */
 				debugger;
-				/* oringinal value = ""{1}"" */
 			}}";
 
 		#endregion Constants
 
+		#region Fields
+
+		private readonly string value;
+		private readonly string path;
+
+		#endregion Fields
+
+		#region Init
+
+		/// <summary>
+		/// Ctor
+		/// </summary>
+		/// <param name="value"></param>
+		/// <param name="virtualPath"></param>
+		protected internal JbstExtension(string value, string path)
+		{
+			this.value = value;
+			this.path = path;
+		}
+
+		#endregion Init
+
+		#region Properties
+
+		/// <summary>
+		/// Gets the extension content
+		/// </summary>
+		protected string Value
+		{
+			get { return this.value; }
+		}
+
+		/// <summary>
+		/// Gets the virtual path
+		/// </summary>
+		protected string Path
+		{
+			get { return this.path; }
+		}
+
+		#endregion Properties
+
 		#region JbstExtension Members
 
-		protected abstract string Eval(string value, string virtualPath);
+		protected internal virtual string Eval()
+		{
+			// output error
+			return String.Format(JbstExtension.PrefixNotFoundError, this.Value);
+		}
 
 		#endregion JbstExtension Members
-
-		#region Methods
-
-		internal static string Evaluate(string source, string virtualPath)
-		{
-			KeyValuePair<string, string> expr = JbstExtension.ParseExpression(source);
-
-			JbstExtension extension = null;
-
-			// lookup the corresponding extension evaluator
-			switch (expr.Key)
-			{
-				case "AppSettings":
-				{
-					extension = new AppSettingsJbstExtension();
-					break;
-				}
-				case "Resources":
-				{
-					extension = new ResourceJbstExtension();
-					break;
-				}
-			}
-
-			string result;
-			if (extension == null)
-			{
-				// output error
-				result = String.Format(JbstExtension.PrefixNotFoundError, expr.Value, source);
-			}
-			else
-			{
-				result = extension.Eval(expr.Value, virtualPath);
-			}
-
-			return result;
-		}
-
-		private static KeyValuePair<string, string> ParseExpression(string extension)
-		{
-			string key = String.Empty;
-			string value = String.Empty;
-
-			if (!String.IsNullOrEmpty(extension))
-			{
-				// split on first ':'
-				string[] parts = extension.Split(JbstExtension.PrefixDelim, 2, StringSplitOptions.RemoveEmptyEntries);
-				if (parts.Length > 1)
-				{
-					value = parts[1].Trim();
-				}
-
-				key = parts[0].Trim();
-			}
-
-			return new KeyValuePair<string, string>(key, value);
-		}
-
-		#endregion Methods
 	}
 }

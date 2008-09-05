@@ -47,17 +47,31 @@ namespace JsonFx.UI.Jbst.Extensions
 
 		#endregion Constants
 
+		#region Init
+
+		/// <summary>
+		/// Ctor
+		/// </summary>
+		/// <param name="value"></param>
+		/// <param name="path"></param>
+		protected internal ResourceJbstExtension(string value, string path)
+			: base(value, path)
+		{
+		}
+
+		#endregion Init
+
 		#region JbstExtension Members
 
-		protected override string Eval(string expression, string virtualPath)
+		protected internal override string Eval()
 		{
-			ResourceExpressionFields resxKey = ResourceExpressionBuilder.ParseExpression(expression);
+			ResourceExpressionFields resxKey = ResourceExpressionBuilder.ParseExpression(this.Value);
 			if (resxKey == null)
 			{
 				return String.Empty;
 			}
 
-			string key = ResxHandler.GetKey(resxKey, virtualPath);
+			string key = ResxHandler.GetKey(resxKey, this.Path);
 
 			return String.Format(
 				ResourceLookupFormat,
