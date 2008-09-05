@@ -61,7 +61,7 @@ namespace JsonFx.Compilation
 			List<ParseException> errors)
 		{
 			// parse JBST markup
-			JbstCompiler parser = new JbstCompiler(true);
+			JbstCompiler parser = new JbstCompiler(virtualPath, true);
 			parser.Parse(sourceText);
 
 			using (StringWriter sw = new StringWriter())

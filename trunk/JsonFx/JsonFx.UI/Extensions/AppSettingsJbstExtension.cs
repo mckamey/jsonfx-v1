@@ -39,7 +39,7 @@ namespace JsonFx.Extensions
 	{
 		#region JbstExtension Members
 
-		protected override string Eval(string expression)
+		protected override string Eval(string expression, string virtualPath)
 		{
 			return JsonWriter.Serialize(ConfigurationManager.AppSettings[expression]);
 		}

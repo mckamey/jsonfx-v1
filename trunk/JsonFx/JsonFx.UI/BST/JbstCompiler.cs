@@ -77,6 +77,7 @@ namespace JsonFx.JsonML.BST
 
 		private bool isTemplate = false;
 		private bool isParsing = false;
+		private readonly string path;
 		private readonly HtmlDistiller parser = new HtmlDistiller();
 		private readonly StringBuilder Directives = new StringBuilder();
 		private readonly StringBuilder Declarations = new StringBuilder();
@@ -91,9 +92,11 @@ namespace JsonFx.JsonML.BST
 		/// <summary>
 		/// Ctor
 		/// </summary>
-		/// <param name="isJbst">JsonML+BST</param>
-		internal JbstCompiler(bool isTemplate)
+		/// <param name="virtualPath"></param>
+		/// <param name="isTemplate">JsonML+BST</param>
+		internal JbstCompiler(string virtualPath, bool isTemplate)
 		{
+			this.path = virtualPath;
 			this.isTemplate = isTemplate;
 
 			this.parser.EncodeNonAscii = false;
@@ -572,24 +575,27 @@ namespace JsonFx.JsonML.BST
 									case '=':
 									{
 										JbstCodeBlock code = new JbstCodeBlock(
+											JbstCodeBlockType.Expression, 
 											value.Substring(3, value.Length-5),
-											JbstCodeBlockType.Expression);
+											this.path);
 										this.AddAttribute(key, code);
 										break;
 									}
 									case '$':
 									{
 										JbstCodeBlock code = new JbstCodeBlock(
+											JbstCodeBlockType.Extension,
 											value.Substring(3, value.Length-5),
-											JbstCodeBlockType.Extension);
+											this.path);
 										this.AddAttribute(key, code);
 										break;
 									}
 									default:
 									{
 										JbstCodeBlock code = new JbstCodeBlock(
+											JbstCodeBlockType.Statement,
 											value.Substring(2, value.Length-4),
-											JbstCodeBlockType.Statement);
+											this.path);
 										this.AddAttribute(key, code);
 										break;
 									}
@@ -642,21 +648,30 @@ namespace JsonFx.JsonML.BST
 						case "%=":
 						{
 							// expressions are emitted directly into JBST
-							JbstCodeBlock code = new JbstCodeBlock(tag.Content, JbstCodeBlockType.Expression);
+							JbstCodeBlock code = new JbstCodeBlock(
+								JbstCodeBlockType.Expression,
+								tag.Content,
+								this.path);
 							this.AppendChild(code);
 							break;
 						}
 						case "%$":
 						{
 							// expressions are emitted directly into JBST
-							JbstCodeBlock code = new JbstCodeBlock(tag.Content, JbstCodeBlockType.Extension);
+							JbstCodeBlock code = new JbstCodeBlock(
+								JbstCodeBlockType.Extension,
+								tag.Content,
+								this.path);
 							this.AppendChild(code);
 							break;
 						}
 						case "%":
 						{
 							// statements are emitted directly into JBST
-							JbstCodeBlock code = new JbstCodeBlock(tag.Content, JbstCodeBlockType.Statement);
+							JbstCodeBlock code = new JbstCodeBlock(
+								JbstCodeBlockType.Statement,
+								tag.Content,
+								this.path);
 							this.AppendChild(code);
 							break;
 						}
@@ -664,7 +679,10 @@ namespace JsonFx.JsonML.BST
 						case "!--":
 						{
 							// Comments are emitted directly into JBST
-							JbstCodeBlock code = new JbstCodeBlock(tag.Content, JbstCodeBlockType.Comment);
+							JbstCodeBlock code = new JbstCodeBlock(
+								JbstCodeBlockType.Comment,
+								tag.Content,
+								this.path);
 							this.AppendChild(code);
 							break;
 						}

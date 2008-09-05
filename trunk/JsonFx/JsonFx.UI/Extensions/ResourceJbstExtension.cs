@@ -49,7 +49,7 @@ namespace JsonFx.Extensions
 
 		#region JbstExtension Members
 
-		protected override string Eval(string expression)
+		protected override string Eval(string expression, string virtualPath)
 		{
 			ResourceExpressionFields resxKey = ResourceExpressionBuilder.ParseExpression(expression);
 			if (resxKey == null)
@@ -57,7 +57,7 @@ namespace JsonFx.Extensions
 				return String.Empty;
 			}
 
-			string key = ResxHandler.GetKey(resxKey);
+			string key = ResxHandler.GetKey(resxKey, virtualPath);
 
 			return String.Format(
 				ResourceLookupFormat,

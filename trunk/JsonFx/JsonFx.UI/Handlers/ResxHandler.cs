@@ -52,7 +52,7 @@ namespace JsonFx.Handlers
 
 		#region Methods
 
-		public static string GetKey(ResourceExpressionFields fields)
+		public static string GetKey(ResourceExpressionFields fields, string path)
 		{
 			if (fields == null)
 			{
@@ -60,7 +60,16 @@ namespace JsonFx.Handlers
 			}
 			if (String.IsNullOrEmpty(fields.ClassKey))
 			{
-				return fields.ResourceKey.ToLowerInvariant();
+				if (String.IsNullOrEmpty(path))
+				{
+					return fields.ResourceKey.ToLowerInvariant();
+				}
+				else if (path.StartsWith("~"))
+				{
+					path = path.Substring(1);
+				}
+
+				return path.ToLowerInvariant() + ',' + fields.ResourceKey.ToLowerInvariant();
 			}
 
 			return fields.ClassKey.ToLowerInvariant() + ',' + fields.ResourceKey.ToLowerInvariant();
@@ -85,8 +94,19 @@ namespace JsonFx.Handlers
 				object value;
 				try
 				{
-					if (String.IsNullOrEmpty(fields.ClassKey))
+					bool isLocal = String.IsNullOrEmpty(fields.ClassKey);
+					if (!isLocal && fields.ClassKey.IndexOf(Path.AltDirectorySeparatorChar) >= 0)
 					{
+						path = fields.ClassKey;
+						isLocal = true;
+					}
+
+					if (isLocal)
+					{
+						if (path.StartsWith("~"))
+						{
+							path = path.Substring(1);
+						}
 						value = HttpContext.GetLocalResourceObject(path, fields.ResourceKey);
 					}
 					else
@@ -103,7 +123,7 @@ namespace JsonFx.Handlers
 				{
 					continue;
 				}
-				resx[GetKey(fields)] = value;
+				resx[GetKey(fields, path)] = value;
 			}
 
 			return resx;
@@ -120,7 +140,7 @@ namespace JsonFx.Handlers
 
 			// TODO: provide mechanism for easily defining this list
 			string[] keys = {
-				"thismustbelocal",
+				"/Templating/BandTable.jbst, thismustbelocal",
 				"global, test",
 				"global, copyright",
 				"global, foo",
@@ -131,7 +151,7 @@ namespace JsonFx.Handlers
 				"global, empty"
 			};
 
-			IDictionary<string, object> resx = this.GetResourceStrings(keys, context.Request.AppRelativeCurrentExecutionFilePath);
+			IDictionary<string, object> resx = this.GetResourceStrings(keys, context.Request.FilePath);
 
 			HttpResponse response = context.Response;
 			response.ContentType = "text/javascript";

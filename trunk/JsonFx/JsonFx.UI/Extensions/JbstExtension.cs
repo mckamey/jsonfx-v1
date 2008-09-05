@@ -53,13 +53,13 @@ namespace JsonFx.Extensions
 
 		#region JbstExtension Members
 
-		protected abstract string Eval(string value);
+		protected abstract string Eval(string value, string virtualPath);
 
 		#endregion JbstExtension Members
 
 		#region Methods
 
-		internal static string Evaluate(string source)
+		internal static string Evaluate(string source, string virtualPath)
 		{
 			KeyValuePair<string, string> kvp = JbstExtension.ParseExpression(source);
 
@@ -88,7 +88,7 @@ namespace JsonFx.Extensions
 			}
 			else
 			{
-				result = extension.Eval(kvp.Value);
+				result = extension.Eval(kvp.Value, virtualPath);
 			}
 
 			return result;
