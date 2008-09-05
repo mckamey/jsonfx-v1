@@ -35,6 +35,7 @@ using System.Web;
 using System.Web.Compilation;
 
 using JsonFx.Json;
+using JsonFx.Compilation;
 
 namespace JsonFx.Handlers
 {
@@ -138,20 +139,12 @@ namespace JsonFx.Handlers
 			string cacheKey = context.Request.QueryString[null];
 			bool isDebug = "debug".Equals(cacheKey, StringComparison.InvariantCultureIgnoreCase);
 
-			// TODO: provide mechanism for easily defining this list
-			string[] keys = {
-				"/Templating/BandTable.jbst, thismustbelocal",
-				"global, test",
-				"global, copyright",
-				"global, foo",
-				"global, charsinalphabet",
-				"global, trueorfalse",
-				"global, randomguid",
-				"global, pi",
-				"global, empty"
-			};
+			string targetPath = "/Templating/CustomControl.jbst";
 
-			IDictionary<string, object> resx = this.GetResourceStrings(keys, context.Request.FilePath);
+			// TODO: provide mechanism for easily defining this target
+			JbstCompiledBuildResult target = BuildManager.CreateInstanceFromVirtualPath(targetPath, typeof(object)) as JbstCompiledBuildResult;
+
+			IDictionary<string, object> resx = this.GetResourceStrings(target.GlobalizationKeys, context.Request.FilePath);
 
 			HttpResponse response = context.Response;
 			response.ContentType = "text/javascript";
