@@ -2,6 +2,9 @@
 
 - specify JsonFx.ResX hashtable contents
 
+- enumerate available languages:
+	http://blogs.msdn.com/michkap/archive/2006/03/25/560838.aspx
+
 - Plug-Ins via reflection
 	http://msdn.microsoft.com/en-us/magazine/cc163759.aspx
 
