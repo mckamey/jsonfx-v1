@@ -84,8 +84,9 @@ namespace JsonFx.JsonML.BST
 
 		#region Field
 
-		private readonly string code;
 		private readonly JbstCodeBlockType type;
+		private readonly string code;
+		private readonly string path;
 
 		#endregion Field
 
@@ -94,12 +95,14 @@ namespace JsonFx.JsonML.BST
 		/// <summary>
 		/// Ctor
 		/// </summary>
-		/// <param name="code"></param>
 		/// <param name="type"></param>
-		public JbstCodeBlock(string code, JbstCodeBlockType type)
+		/// <param name="code"></param>
+		/// <param name="path"></param>
+		public JbstCodeBlock(JbstCodeBlockType type, string code, string path)
 		{
-			this.code = (code == null) ? String.Empty : code;
 			this.type = type;
+			this.code = (code == null) ? String.Empty : code;
+			this.path = (path == null) ? String.Empty : path;
 		}
 
 		#endregion Init
@@ -173,7 +176,7 @@ namespace JsonFx.JsonML.BST
 				case JbstCodeBlockType.Extension:
 				{
 					// execute the corresponding extension evaluator
-					codeBlock = JbstExtension.Evaluate(this.Code);
+					codeBlock = JbstExtension.Evaluate(this.Code, this.path);
 					break;
 				}
 				default:

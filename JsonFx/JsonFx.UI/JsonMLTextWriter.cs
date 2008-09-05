@@ -30,6 +30,7 @@
 
 using System;
 using System.IO;
+using System.Web;
 using System.Web.UI;
 using System.Text;
 using System.Text.RegularExpressions;
@@ -66,8 +67,14 @@ namespace JsonFx.JsonML
 		public JsonMLTextWriter(TextWriter writer)
 			: base(new NullTextWriter(writer.Encoding))
 		{
+			HttpContext context = HttpContext.Current;
+			string virtualPath =
+				(context != null) ?
+				context.Request.AppRelativeCurrentExecutionFilePath :
+				String.Empty;
+
 			this.writer = writer;
-			this.builder = new JbstCompiler(false);
+			this.builder = new JbstCompiler(virtualPath, false);
 			this.builder.DocumentReady += new EventHandler(this.OnDocumentReady);
 		}
 
@@ -79,8 +86,14 @@ namespace JsonFx.JsonML
 		public JsonMLTextWriter(TextWriter writer, string tabString)
 			: base(new NullTextWriter(writer.Encoding), tabString)
 		{
+			HttpContext context = HttpContext.Current;
+			string virtualPath =
+				(context != null) ?
+				context.Request.AppRelativeCurrentExecutionFilePath :
+				String.Empty;
+
 			this.writer = writer;
-			this.builder = new JbstCompiler(false);
+			this.builder = new JbstCompiler(virtualPath, false);
 			this.builder.DocumentReady += new EventHandler(this.OnDocumentReady);
 		}
 
