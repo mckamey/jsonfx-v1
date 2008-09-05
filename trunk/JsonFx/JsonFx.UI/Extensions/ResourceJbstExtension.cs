@@ -34,7 +34,7 @@ using System.Web.Compilation;
 using JsonFx.Json;
 using JsonFx.Handlers;
 
-namespace JsonFx.Extensions
+namespace JsonFx.UI.Jbst.Extensions
 {
 	public class ResourceJbstExtension : JbstExtension
 	{

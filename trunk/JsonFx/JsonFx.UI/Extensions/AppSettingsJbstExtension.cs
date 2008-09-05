@@ -33,7 +33,7 @@ using System.Configuration;
 
 using JsonFx.Json;
 
-namespace JsonFx.Extensions
+namespace JsonFx.UI.Jbst.Extensions
 {
 	public class AppSettingsJbstExtension : JbstExtension
 	{
