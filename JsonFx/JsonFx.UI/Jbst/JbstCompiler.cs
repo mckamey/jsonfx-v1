@@ -574,8 +574,7 @@ namespace JsonFx.UI.Jbst
 									}
 									case '=':
 									{
-										JbstCodeBlock code = new JbstCodeBlock(
-											JbstCodeBlockType.Expression, 
+										JbstExpressionBlock code = new JbstExpressionBlock(
 											value.Substring(3, value.Length-5),
 											this.path);
 										this.AddAttribute(key, code);
@@ -583,8 +582,7 @@ namespace JsonFx.UI.Jbst
 									}
 									case '$':
 									{
-										JbstCodeBlock code = new JbstCodeBlock(
-											JbstCodeBlockType.Extension,
+										JbstExtensionBlock code = new JbstExtensionBlock(
 											value.Substring(3, value.Length-5),
 											this.path);
 										this.AddAttribute(key, code);
@@ -592,8 +590,7 @@ namespace JsonFx.UI.Jbst
 									}
 									default:
 									{
-										JbstCodeBlock code = new JbstCodeBlock(
-											JbstCodeBlockType.Statement,
+										JbstStatementBlock code = new JbstStatementBlock(
 											value.Substring(2, value.Length-4),
 											this.path);
 										this.AddAttribute(key, code);
@@ -648,8 +645,7 @@ namespace JsonFx.UI.Jbst
 						case "%=":
 						{
 							// expressions are emitted directly into JBST
-							JbstCodeBlock code = new JbstCodeBlock(
-								JbstCodeBlockType.Expression,
+							JbstExpressionBlock code = new JbstExpressionBlock(
 								tag.Content,
 								this.path);
 							this.AppendChild(code);
@@ -658,8 +654,7 @@ namespace JsonFx.UI.Jbst
 						case "%$":
 						{
 							// expressions are emitted directly into JBST
-							JbstCodeBlock code = new JbstCodeBlock(
-								JbstCodeBlockType.Extension,
+							JbstExtensionBlock code = new JbstExtensionBlock(
 								tag.Content,
 								this.path);
 							this.AppendChild(code);
@@ -668,8 +663,7 @@ namespace JsonFx.UI.Jbst
 						case "%":
 						{
 							// statements are emitted directly into JBST
-							JbstCodeBlock code = new JbstCodeBlock(
-								JbstCodeBlockType.Statement,
+							JbstStatementBlock code = new JbstStatementBlock(
 								tag.Content,
 								this.path);
 							this.AppendChild(code);
@@ -679,8 +673,7 @@ namespace JsonFx.UI.Jbst
 						case "!--":
 						{
 							// Comments are emitted directly into JBST
-							JbstCodeBlock code = new JbstCodeBlock(
-								JbstCodeBlockType.Comment,
+							JbstCommentBlock code = new JbstCommentBlock(
 								tag.Content,
 								this.path);
 							this.AppendChild(code);

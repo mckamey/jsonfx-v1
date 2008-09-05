@@ -78,9 +78,33 @@ namespace JsonFx.Compilation
 			get { return base.FileExtension; }
 		}
 
+		/// <summary>
+		/// Gets the Type which is ultimately built
+		/// </summary>
+		protected internal virtual Type CompiledBuildResultType
+		{
+			get { return typeof(CompiledBuildResult); }
+		}
+
 		#endregion Properties
 
 		#region Methods
+
+		internal Type GetCompiledBuildResultType()
+		{
+			Type type = this.CompiledBuildResultType;
+			if (type == null)
+			{
+				throw new NullReferenceException("CompiledBuildResultType is null.");
+			}
+
+			if (!typeof(CompiledBuildResult).IsAssignableFrom(type))
+			{
+				throw new ArgumentException(type.Name + "does not inherit from CompiledBuildResult");
+			}
+
+			return type;
+		}
 
 		/// <summary>
 		/// Delegates compilation to the compiler implementation
@@ -128,6 +152,10 @@ namespace JsonFx.Compilation
 		#endregion Methods
 
 		#region CodeDomProvider Methods
+
+		protected internal virtual void GenerateCodeExtensions(CodeTypeDeclaration resourceType)
+		{
+		}
 
 		public override CompilerResults CompileAssemblyFromFile(CompilerParameters options, params string[] fileNames)
 		{

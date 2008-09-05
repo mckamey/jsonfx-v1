@@ -29,14 +29,17 @@
 #endregion License
 
 using System;
+using System.Collections.Generic;
 
 using BuildTools.ScriptCompactor;
+using JsonFx.Json;
 using JsonFx.UI.Jbst.Extensions;
 
 namespace JsonFx.UI.Jbst
 {
 	#region JbstCodeBlockType
 
+	/*
 	internal enum JbstCodeBlockType
 	{
 		None,
@@ -47,48 +50,21 @@ namespace JsonFx.UI.Jbst
 		Statement,
 		Extension
 	}
+	*/
 
 	#endregion JbstCodeBlockType
 
 	/// <summary>
 	/// Internal representation of a JsonML+BST code block.
 	/// </summary>
-	internal class JbstCodeBlock : IJbstControl, Json.IJsonSerializable
+	internal abstract class JbstCodeBlock : IJbstControl, Json.IJsonSerializable
 	{
-		#region Constants
+		#region Fields
 
-		private const string CommentFormat = "/* {0} */ \"\"";
-
-		private const string ExpressionFormat =
-			@"function() {{
-				return ({0});
-			}}";
-
-		private const string StatementFormat =
-			@"function() {{
-				{0}
-			}}";
-
-		private const string StatementLegacyFormat =
-			@"function() {{
-				var {1} = new JsonML.Response();
-				{0}
-				return {1}.render();
-			}}";
-
-		private const string AspResponse = "Reponse";
-		private const string JspResponse = "out";
-		private const string JspResponseVar = "System = {}; System.out";
-
-		#endregion Constants
-
-		#region Field
-
-		private readonly JbstCodeBlockType type;
 		private readonly string code;
 		private readonly string path;
 
-		#endregion Field
+		#endregion Fields
 
 		#region Init
 
@@ -98,9 +74,8 @@ namespace JsonFx.UI.Jbst
 		/// <param name="type"></param>
 		/// <param name="code"></param>
 		/// <param name="path"></param>
-		public JbstCodeBlock(JbstCodeBlockType type, string code, string path)
+		protected JbstCodeBlock(string code, string path)
 		{
-			this.type = type;
 			this.code = (code == null) ? String.Empty : code;
 			this.path = (path == null) ? String.Empty : path;
 		}
@@ -117,74 +92,19 @@ namespace JsonFx.UI.Jbst
 			get { return this.code; }
 		}
 
-		/// <summary>
-		/// Gets the code block type
-		/// </summary>
-		public JbstCodeBlockType Type
-		{
-			get { return this.type; }
-		}
-
 		#endregion Properties
+
+		#region Methods
+
+		protected abstract string GetCodeBlock();
+
+		#endregion Methods
 
 		#region IJsonSerializable Members
 
-		void JsonFx.Json.IJsonSerializable.WriteJson(JsonFx.Json.JsonWriter writer)
+		void JsonFx.Json.IJsonSerializable.WriteJson(JsonWriter writer)
 		{
-			string codeBlock;
-			switch (this.type)
-			{
-				case JbstCodeBlockType.Comment:
-				{
-					// comments are only emitted for pretty-print
-					codeBlock = String.Format(CommentFormat, this.Code.Replace("*/", "*\\/"));
-					break;
-				}
-				case JbstCodeBlockType.Expression:
-				{
-					// output expressions are the core of the syntax
-					codeBlock = String.Format(ExpressionFormat, this.Code);
-					break;
-				}
-				case JbstCodeBlockType.Statement:
-				{
-					// analogous to instance code, or JSP scriptlets
-					// executed each time template is bound
-
-					// add legacy support for those coming from ASP/JSP
-					if (this.Code.IndexOf(AspResponse+'.') >= 0)
-					{
-						// Response.write
-						codeBlock = String.Format(StatementLegacyFormat, this.Code, AspResponse);
-					}
-					else if (this.Code.IndexOf("System.out.") >= 0)
-					{
-						// System.out.print
-						codeBlock = String.Format(StatementLegacyFormat, this.Code, JspResponseVar);
-					}
-					else if (this.Code.IndexOf(JspResponse+'.') >= 0)
-					{
-						// out.print
-						codeBlock = String.Format(StatementLegacyFormat, this.Code, JspResponse);
-					}
-					else
-					{
-						codeBlock = String.Format(StatementFormat, this.Code);
-					}
-					break;
-				}
-				case JbstCodeBlockType.Extension:
-				{
-					// execute the corresponding extension evaluator
-					codeBlock = JbstExtension.Evaluate(this.Code, this.path);
-					break;
-				}
-				default:
-				{
-					// others not supported inline
-					return;
-				}
-			}
+			string codeBlock = this.GetCodeBlock();
 
 			if (String.IsNullOrEmpty(codeBlock))
 			{
@@ -211,5 +131,239 @@ namespace JsonFx.UI.Jbst
 		}
 
 		#endregion IJsonSerializable Members
+	}
+
+	internal class JbstCommentBlock : JbstCodeBlock
+	{
+		#region Constants
+
+		private const string CommentFormat = "/* {0} */ \"\"";
+
+		#endregion Constants
+
+		#region Init
+
+		/// <summary>
+		/// Ctor
+		/// </summary>
+		/// <param name="code"></param>
+		/// <param name="path"></param>
+		public JbstCommentBlock(string code, string path)
+			: base(code, path)
+		{
+		}
+
+		#endregion Init
+
+		#region JbstCodeBlock Members
+
+		protected override string GetCodeBlock()
+		{
+			// comments are only emitted for pretty-print
+			return String.Format(CommentFormat, this.Code.Replace("*/", "*\\/"));
+		}
+
+		#endregion JbstCodeBlock Members
+	}
+
+	internal class JbstExpressionBlock : JbstCodeBlock
+	{
+		#region Constants
+
+		private const string ExpressionFormat =
+			@"function() {{
+				return ({0});
+			}}";
+
+		#endregion Constants
+
+		#region Init
+
+		/// <summary>
+		/// Ctor
+		/// </summary>
+		/// <param name="code"></param>
+		/// <param name="path"></param>
+		public JbstExpressionBlock(string code, string path)
+			: base(code, path)
+		{
+		}
+
+		#endregion Init
+
+		#region JbstCodeBlock Members
+
+		protected override string GetCodeBlock()
+		{
+			// output expressions are the core of the syntax
+			return String.Format(ExpressionFormat, this.Code);
+		}
+
+		#endregion JbstCodeBlock Members
+	}
+
+	internal class JbstStatementBlock : JbstCodeBlock
+	{
+		#region Constants
+
+		private const string StatementFormat =
+			@"function() {{
+				{0}
+			}}";
+
+		private const string StatementLegacyFormat =
+			@"function() {{
+				var {1} = new JsonML.Response();
+				{0}
+				return {1}.render();
+			}}";
+
+		private const string AspResponse = "Reponse";
+		private const string JspResponse = "out";
+		private const string JspResponseVar = "System = {}; System.out";
+
+		#endregion Constants
+
+		#region Init
+
+		/// <summary>
+		/// Ctor
+		/// </summary>
+		/// <param name="code"></param>
+		/// <param name="path"></param>
+		public JbstStatementBlock(string code, string path)
+			: base(code, path)
+		{
+		}
+
+		#endregion Init
+
+		#region JbstCodeBlock Members
+
+		protected override string GetCodeBlock()
+		{
+
+			// analogous to instance code, or JSP scriptlets
+			// executed each time template is bound
+
+			// add legacy support for those coming from ASP/JSP
+			if (this.Code.IndexOf(AspResponse+'.') >= 0)
+			{
+				// Response.write
+				return String.Format(StatementLegacyFormat, this.Code, AspResponse);
+			}
+			else if (this.Code.IndexOf("System.out.") >= 0)
+			{
+				// System.out.print
+				return String.Format(StatementLegacyFormat, this.Code, JspResponseVar);
+			}
+			else if (this.Code.IndexOf(JspResponse+'.') >= 0)
+			{
+				// out.print
+				return String.Format(StatementLegacyFormat, this.Code, JspResponse);
+			}
+			else
+			{
+				return String.Format(StatementFormat, this.Code);
+			}
+		}
+
+		#endregion JbstCodeBlock Members
+	}
+
+	internal class JbstExtensionBlock : JbstCodeBlock
+	{
+		#region Constants
+
+		private static readonly char[] PrefixDelim = { ':' };
+
+		#endregion Constants
+
+		#region Fields
+
+		private readonly JbstExtension extension = null;
+
+		#endregion Fields
+
+		#region Init
+
+		/// <summary>
+		/// Ctor
+		/// </summary>
+		/// <param name="code"></param>
+		/// <param name="path"></param>
+		public JbstExtensionBlock(string code, string path)
+			: base(code, path)
+		{
+			KeyValuePair<string, string> expr = JbstExtensionBlock.ParseExpression(code);
+
+			// TODO: lookup the corresponding extension evaluator from web.config
+			switch (expr.Key)
+			{
+				case "AppSettings":
+				{
+					this.extension = new AppSettingsJbstExtension(expr.Value, path);
+					break;
+				}
+				case "Resources":
+				{
+					this.extension = new ResourceJbstExtension(expr.Value, path);
+					break;
+				}
+				default:
+				{
+					this.extension = new JbstExtension(code, path);
+					break;
+				}
+			}
+		}
+
+		#endregion Init
+
+		#region Properties
+
+		/// <summary>
+		/// Gets the extension represented by this block
+		/// </summary>
+		public JbstExtension Extension
+		{
+			get { return this.extension; }
+		}
+
+		#endregion Properties
+
+		#region JbstCodeBlock Members
+
+		protected override string GetCodeBlock()
+		{
+			// execute the corresponding extension evaluator
+			return this.Extension.Eval();
+		}
+
+		#endregion JbstCodeBlock Members
+
+		#region Utility Methods
+
+		private static KeyValuePair<string, string> ParseExpression(string extension)
+		{
+			string key = String.Empty;
+			string value = String.Empty;
+
+			if (!String.IsNullOrEmpty(extension))
+			{
+				// split on first ':'
+				string[] parts = extension.Split(JbstExtensionBlock.PrefixDelim, 2, StringSplitOptions.RemoveEmptyEntries);
+				if (parts.Length > 1)
+				{
+					value = parts[1].Trim();
+				}
+
+				key = parts[0].Trim();
+			}
+
+			return new KeyValuePair<string, string>(key, value);
+		}
+
+		#endregion Utility Methods
 	}
 }

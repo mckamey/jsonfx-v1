@@ -37,11 +37,25 @@ namespace JsonFx.UI.Jbst.Extensions
 {
 	public class AppSettingsJbstExtension : JbstExtension
 	{
+		#region Init
+
+		/// <summary>
+		/// Ctor
+		/// </summary>
+		/// <param name="value"></param>
+		/// <param name="path"></param>
+		protected internal AppSettingsJbstExtension(string value, string path)
+			: base(value, path)
+		{
+		}
+
+		#endregion Init
+
 		#region JbstExtension Members
 
-		protected override string Eval(string expression, string virtualPath)
+		protected internal override string Eval()
 		{
-			return JsonWriter.Serialize(ConfigurationManager.AppSettings[expression]);
+			return JsonWriter.Serialize(ConfigurationManager.AppSettings[this.Value]);
 		}
 
 		#endregion JbstExtension Members
