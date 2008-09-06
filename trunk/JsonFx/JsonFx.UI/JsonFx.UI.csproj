@@ -87,7 +87,7 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="License.txt" />
-    <EmbeddedResource Include="Scripts\JsonFx.ResX.js" />
+    <EmbeddedResource Include="Scripts\JsonFx.Lang.js" />
     <EmbeddedResource Include="Scripts\JsonFx.DOM.js" />
     <EmbeddedResource Include="Scripts\JsonML_DOM.js" />
     <EmbeddedResource Include="Scripts\JsonFx.UA.js" />
