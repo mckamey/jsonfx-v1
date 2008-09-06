@@ -29,6 +29,7 @@
 #endregion License
 
 using System;
+using System.IO;
 using System.Web;
 using System.Web.Compilation;
 
@@ -40,7 +41,7 @@ namespace JsonFx.Handlers
 
 		IHttpHandler IHttpHandlerFactory.GetHandler(HttpContext context, string verb, string url, string path)
 		{
-			string setting = context.Request.PathInfo;
+			string setting = Path.GetExtension(context.Request.FilePath);
 			bool isStrings = ResourceHandler.GlobalizationSetting.Equals(setting, StringComparison.InvariantCultureIgnoreCase);
 			if (isStrings)
 			{

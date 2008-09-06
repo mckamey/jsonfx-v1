@@ -42,7 +42,7 @@ namespace JsonFx.Handlers
 		#region Constants
 
 		public const string DebugSetting = "debug";
-		public const string GlobalizationSetting = "/i18n";
+		public const string GlobalizationSetting = ".i18n";
 
 		#endregion Constants
 
@@ -188,7 +188,7 @@ namespace JsonFx.Handlers
 			CompiledBuildResult info = CompiledBuildResult.Create(virtualPath);
 			if (info == null)
 			{
-				return null;
+				throw new HttpException(404, "Resource not found.");
 			}
 
 			// check if client has cached copy
