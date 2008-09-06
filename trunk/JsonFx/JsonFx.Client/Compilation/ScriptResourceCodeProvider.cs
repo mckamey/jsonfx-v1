@@ -31,9 +31,12 @@
 using System;
 using System.IO;
 using System.Collections.Generic;
+using System.Text.RegularExpressions;
 
 using BuildTools;
 using BuildTools.ScriptCompactor;
+using JsonFx.Json;
+using JsonFx.Handlers;
 
 namespace JsonFx.Compilation
 {
@@ -82,6 +85,33 @@ namespace JsonFx.Compilation
 
 				resource = sourceText;
 				compacted = writer.ToString();
+
+				this.ExtractGlobalizationKeys(compacted);
+			}
+		}
+
+		private void ExtractGlobalizationKeys(string compacted)
+		{
+			int i = 0;
+
+			while ((i = compacted.IndexOf(GlobalizedResourceHandler.LookupStart, i)) >= 0)
+			{
+				i += GlobalizedResourceHandler.LookupStart.Length;
+
+				try
+				{
+					string key = JsonReader.Deserialize(compacted, i) as string;
+					if (String.IsNullOrEmpty(key))
+					{
+						continue;
+					}
+
+					this.GlobalizationKeys.Add(key);
+				}
+				catch
+				{
+					continue;
+				}
 			}
 		}
 
