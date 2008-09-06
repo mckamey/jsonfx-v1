@@ -39,12 +39,19 @@ namespace JsonFx.Handlers
 {
 	public class ResourceHandler : IHttpHandler
 	{
+		#region Constants
+
+		public const string DebugSetting = "debug";
+		public const string GlobalizationSetting = "i18n";
+
+		#endregion Constants
+
 		#region IHttpHandler Members
 
 		void IHttpHandler.ProcessRequest(HttpContext context)
 		{
 			string cacheKey = context.Request.QueryString[null];
-			bool isDebug = "debug".Equals(cacheKey, StringComparison.InvariantCultureIgnoreCase);
+			bool isDebug = ResourceHandler.DebugSetting.Equals(cacheKey, StringComparison.InvariantCultureIgnoreCase);
 
 			context.Response.ClearHeaders();
 			context.Response.BufferOutput = true;
@@ -110,6 +117,17 @@ namespace JsonFx.Handlers
 
 		#region ResourceHandler Members
 
+		public static string GetStringsUrl(string path)
+		{
+			int index = path.IndexOf('?');
+			if (index >= 0)
+			{
+				path = path.Substring(0, index);
+			}
+
+			return path+'?'+GlobalizationSetting;
+		}
+
 		public static string GetDebugUrl(string path)
 		{
 			return GetCacheUrl(path, true);
@@ -131,7 +149,7 @@ namespace JsonFx.Handlers
 			string cache;
 			if (isDebug)
 			{
-				cache = "?debug";
+				cache = '?'+DebugSetting;
 			}
 			else
 			{
