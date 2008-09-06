@@ -119,16 +119,10 @@ namespace JsonFx.Handlers
 
 		public static string GetStringsUrl(string path)
 		{
-			int index = path.IndexOf('?');
-			if (index >= 0)
-			{
-				path = path.Substring(0, index);
-			}
-
-			return path+ResourceHandler.GlobalizationSetting;
+			return GetStringsUrl(path, false);
 		}
 
-		public static string GetDebugStringsUrl(string path)
+		public static string GetStringsUrl(string path, bool isDebug)
 		{
 			int index = path.IndexOf('?');
 			if (index >= 0)
@@ -136,7 +130,12 @@ namespace JsonFx.Handlers
 				path = path.Substring(0, index);
 			}
 
-			return path+ResourceHandler.GlobalizationSetting+'?'+ResourceHandler.DebugSetting;
+			string query = null;
+			if (isDebug)
+			{
+				query = '?'+ResourceHandler.DebugSetting;
+			}
+			return path+ResourceHandler.GlobalizationSetting+query;
 		}
 
 		public static string GetDebugUrl(string path)
