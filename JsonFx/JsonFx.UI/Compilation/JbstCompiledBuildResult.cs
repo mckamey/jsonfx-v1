@@ -24,7 +24,7 @@ namespace JsonFx.Compilation
 		#region Factory Methods
 
 		/// <summary>
-		/// CompiledBuildResult Factory method
+		/// JbstCompiledBuildResult Factory method
 		/// </summary>
 		/// <param name="virtualPath"></param>
 		/// <returns></returns>
