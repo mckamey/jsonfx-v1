@@ -140,6 +140,11 @@ namespace JsonFx.Handlers
 			bool isDebug = "debug".Equals(cacheKey, StringComparison.InvariantCultureIgnoreCase);
 
 			string targetPath = context.Request.QueryString["src"];
+			if (targetPath == null)
+			{
+				// TODO: handle this more gracefully
+				return;
+			}
 
 			// TODO: provide mechanism for easily defining this target
 			JbstCompiledBuildResult target = BuildManager.CreateInstanceFromVirtualPath(targetPath, typeof(object)) as JbstCompiledBuildResult;
@@ -161,6 +166,12 @@ namespace JsonFx.Handlers
 			if (isDebug)
 			{
 				response.Write(JslintDirective);
+			}
+
+			if (resx.Count < 1)
+			{
+				// don't output call
+				return;
 			}
 
 			response.Write(ResxStart);
