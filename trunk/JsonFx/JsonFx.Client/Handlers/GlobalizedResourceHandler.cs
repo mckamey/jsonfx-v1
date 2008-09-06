@@ -135,14 +135,20 @@ namespace JsonFx.Handlers
 
 		void IHttpHandler.ProcessRequest(HttpContext context)
 		{
-			// TODO: provide a mechanism for disabling compression?
-			CompiledBuildResult.EnableStreamCompression(context);
-
 			string setting = context.Request.QueryString[null];
 			bool isDebug = ResourceHandler.DebugSetting.Equals(setting, StringComparison.InvariantCultureIgnoreCase);
+			if (!isDebug)
+			{
+				// TODO: provide a mechanism for disabling compression?
+				CompiledBuildResult.EnableStreamCompression(context);
+			}
 
 			// get the target
 			string targetPath = context.Request.FilePath;
+			if (targetPath.EndsWith(ResourceHandler.GlobalizationSetting))
+			{
+				targetPath = targetPath.Substring(0, targetPath.Length-ResourceHandler.GlobalizationSetting.Length);
+			}
 
 			// TODO: provide mechanism for easily defining this target
 			GlobalizedCompiledBuildResult target = CompiledBuildResult.Create(targetPath) as GlobalizedCompiledBuildResult;
