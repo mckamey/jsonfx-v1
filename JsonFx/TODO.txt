@@ -1,6 +1,6 @@
-2008-08-31 @ 11:04
+2008-09-05 @ 22:59
 
-- specify JsonFx.ResX hashtable contents
+- auto add JsonFx.Lang references from scripts
 
 - enumerate available languages:
 	http://blogs.msdn.com/michkap/archive/2006/03/25/560838.aspx

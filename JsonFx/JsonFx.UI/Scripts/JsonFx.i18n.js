@@ -1,23 +1,23 @@
 /*global JsonFx */
 /*---------------------------------------------------------------------------*\
-	JsonFx.ResX
+	JsonFx.Lang
 
 	Copyright (c)2008 Stephen M. McKamey
 	Created: 2008-09-04-0845
-	Modified: 2008-09-04-0845
+	Modified: 2008-09-05-2250
 \*---------------------------------------------------------------------------*/
 
-/* namespace JsonFx.ResX */
+/* namespace JsonFx.Lang */
 if ("undefined" === typeof JsonFx) {
 	window.JsonFx = {};
 }
 
-if ("undefined" === typeof JsonFx.ResX) {
+if ("undefined" === typeof JsonFx.Lang) {
 
 	/* ctor */
-	JsonFx.ResX = function() {
+	JsonFx.Lang = function() {
 		// create private member via closure
-		var resx = {};
+		var rsrc = {};
 
 		/*void*/ this.add = function(/*object*/ r) {
 			if (!r) {
@@ -27,7 +27,7 @@ if ("undefined" === typeof JsonFx.ResX) {
 			// merge in the new values
 			for (var k in r) {
 				if (r.hasOwnProperty(k)) {
-					resx[k] = r[k];
+					rsrc[k] = r[k];
 				}
 			}
 		};
@@ -37,9 +37,9 @@ if ("undefined" === typeof JsonFx.ResX) {
 				return d;
 			}
 
-			return resx.hasOwnProperty(k) ? resx[k] : d;
+			return rsrc.hasOwnProperty(k) ? rsrc[k] : d;
 		};
 	};
 	/*singleton, destroy the ctor*/
-	JsonFx.ResX = new JsonFx.ResX();
+	JsonFx.Lang = new JsonFx.Lang();
 }

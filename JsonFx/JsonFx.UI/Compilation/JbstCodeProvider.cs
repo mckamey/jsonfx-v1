@@ -168,13 +168,13 @@ namespace JsonFx.Compilation
 					continue;
 				}
 
-				ResourceJbstExtension resx = extension.Extension as ResourceJbstExtension;
-				if (resx == null)
+				ResourceJbstExtension res = extension.Extension as ResourceJbstExtension;
+				if (res == null)
 				{
 					continue;
 				}
 
-				this.g11nKeys.Add(resx.GlobalizationKey);
+				this.g11nKeys.Add(res.GlobalizationKey);
 			}
 		}
 

@@ -42,14 +42,14 @@ namespace JsonFx.UI.Jbst.Extensions
 
 		private const string ResourceLookupFormat =
 			@"function() {{
-				return JsonFx.ResX && JsonFx.ResX.get({0}, {1});
+				return JsonFx.Lang && JsonFx.Lang.get({0}, {1});
 			}}";
 
 		#endregion Constants
 
 		#region Fields
 
-		private readonly ResourceExpressionFields ResxKey;
+		private readonly ResourceExpressionFields ResKey;
 		private string globalizationKey = null;
 
 		#endregion Fields
@@ -64,7 +64,7 @@ namespace JsonFx.UI.Jbst.Extensions
 		protected internal ResourceJbstExtension(string value, string path)
 			: base(value, path)
 		{
-			this.ResxKey = ResourceExpressionBuilder.ParseExpression(this.Value);
+			this.ResKey = ResourceExpressionBuilder.ParseExpression(this.Value);
 		}
 
 		#endregion Init
@@ -77,7 +77,7 @@ namespace JsonFx.UI.Jbst.Extensions
 			{
 				if (this.globalizationKey == null)
 				{
-					this.globalizationKey = GlobalizedResourceHandler.GetKey(this.ResxKey, this.Path);
+					this.globalizationKey = GlobalizedResourceHandler.GetKey(this.ResKey, this.Path);
 				}
 				return this.globalizationKey;
 			}
@@ -89,7 +89,7 @@ namespace JsonFx.UI.Jbst.Extensions
 
 		protected internal override string Eval()
 		{
-			if (this.ResxKey == null)
+			if (this.ResKey == null)
 			{
 				return String.Empty;
 			}
