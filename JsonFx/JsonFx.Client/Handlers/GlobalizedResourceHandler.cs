@@ -39,20 +39,14 @@ using JsonFx.Compilation;
 
 namespace JsonFx.Handlers
 {
-	public interface IGlobalized
-	{
-		string[] GlobalizationKeys { get; }
-	}
-
-	public class ResxHandler : System.Web.IHttpHandler
+	public class GlobalizedResourceHandler : System.Web.IHttpHandler
 	{
 		#region Constants
 
 		private const string JslintDirective = "/*global JsonFx */\r\n";
-
-		private const string ResxStart = "JsonFx.ResX.add(";
-
-		private const string ResxEnd = ");";
+		public const string LookupStart = "JsonFx.Lang.get(";
+		private const string ResStart = "JsonFx.Lang.add(";
+		private const string ResEnd = ");";
 
 		#endregion Constants
 
@@ -88,7 +82,7 @@ namespace JsonFx.Handlers
 				return null;
 			}
 
-			Dictionary<string, object> resx = new Dictionary<string, object>(keys.Count);
+			Dictionary<string, object> res = new Dictionary<string, object>(keys.Count);
 			foreach (string key in keys)
 			{
 				ResourceExpressionFields fields = ResourceExpressionBuilder.ParseExpression(key);
@@ -129,10 +123,10 @@ namespace JsonFx.Handlers
 				{
 					continue;
 				}
-				resx[GetKey(fields, path)] = value;
+				res[GetKey(fields, path)] = value;
 			}
 
-			return resx;
+			return res;
 		}
 
 		#endregion Methods
@@ -141,25 +135,24 @@ namespace JsonFx.Handlers
 
 		void IHttpHandler.ProcessRequest(HttpContext context)
 		{
-			string cacheKey = context.Request.QueryString[null];
-			bool isDebug = "debug".Equals(cacheKey, StringComparison.InvariantCultureIgnoreCase);
+			// TODO: provide a mechanism for disabling compression?
+			CompiledBuildResult.EnableStreamCompression(context);
 
-			string targetPath = context.Request.QueryString["src"];
-			if (targetPath == null)
-			{
-				// TODO: handle this more gracefully
-				return;
-			}
+			string setting = context.Request.QueryString[null];
+			bool isDebug = ResourceHandler.DebugSetting.Equals(setting, StringComparison.InvariantCultureIgnoreCase);
+
+			// get the target
+			string targetPath = context.Request.FilePath;
 
 			// TODO: provide mechanism for easily defining this target
-			IGlobalized target = JbstCompiledBuildResult.Create(targetPath) as IGlobalized;
+			GlobalizedCompiledBuildResult target = CompiledBuildResult.Create(targetPath) as GlobalizedCompiledBuildResult;
 			if (target == null)
 			{
 				// TODO: handle this more gracefully
 				return;
 			}
 
-			IDictionary<string, object> resx = this.GetResourceStrings(target.GlobalizationKeys, context.Request.FilePath);
+			IDictionary<string, object> res = this.GetResourceStrings(target.GlobalizationKeys, context.Request.FilePath);
 
 			HttpResponse response = context.Response;
 			response.ContentType = "text/javascript";
@@ -173,19 +166,19 @@ namespace JsonFx.Handlers
 				response.Write(JslintDirective);
 			}
 
-			if (resx.Count < 1)
+			if (res.Count < 1)
 			{
 				// don't output call
 				return;
 			}
 
-			response.Write(ResxStart);
+			response.Write(ResStart);
 
 			JsonWriter writer = new JsonWriter(response.Output);
 			writer.PrettyPrint = isDebug;
-			writer.Write(resx);
+			writer.Write(res);
 
-			response.Write(ResxEnd);
+			response.Write(ResEnd);
 		}
 
 		bool IHttpHandler.IsReusable
