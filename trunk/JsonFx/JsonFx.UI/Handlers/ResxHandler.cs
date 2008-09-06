@@ -161,7 +161,7 @@ namespace JsonFx.Handlers
 
 			response.AppendHeader(
 				"Content-Disposition",
-				"inline;filename="+Path.GetFileNameWithoutExtension(context.Request.FilePath)+".js");
+				"inline;filename="+Path.GetFileNameWithoutExtension(targetPath)+".js");
 
 			if (isDebug)
 			{
