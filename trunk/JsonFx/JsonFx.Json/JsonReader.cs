@@ -187,12 +187,35 @@ namespace JsonFx.Json
 		}
 
 		/// <summary>
+		/// Convert from JSON string to Object graph
+		/// </summary>
+		/// <returns></returns>
+		public object Deserialize(int start)
+		{
+			this.index = start;
+			return this.Deserialize((Type)null);
+		}
+
+		/// <summary>
 		/// Convert from JSON string to Object graph of specific Type
 		/// </summary>
 		/// <param name="type"></param>
 		/// <returns></returns>
 		public object Deserialize(Type type)
 		{
+			// should this run through a preliminary test here?
+			return this.Read(type, false);
+		}
+
+		/// <summary>
+		/// Convert from JSON string to Object graph of specific Type
+		/// </summary>
+		/// <param name="type"></param>
+		/// <returns></returns>
+		public object Deserialize(int start, Type type)
+		{
+			this.index = start;
+
 			// should this run through a preliminary test here?
 			return this.Read(type, false);
 		}
@@ -773,7 +796,17 @@ namespace JsonFx.Json
 		/// <returns></returns>
 		public static object Deserialize(string value)
 		{
-			return (new JsonReader(value)).Deserialize();
+			return JsonReader.Deserialize(value, 0, null);
+		}
+
+		/// <summary>
+		/// A fast method for deserializing an object from JSON
+		/// </summary>
+		/// <param name="value"></param>
+		/// <returns></returns>
+		public static object Deserialize(string value, int start)
+		{
+			return JsonReader.Deserialize(value, start, null);
 		}
 
 		/// <summary>
@@ -784,7 +817,19 @@ namespace JsonFx.Json
 		/// <returns></returns>
 		public static object Deserialize(string value, Type type)
 		{
-			return (new JsonReader(value)).Deserialize(type);
+			return JsonReader.Deserialize(value, 0, type);
+		}
+
+		/// <summary>
+		/// A fast method for deserializing an object from JSON
+		/// </summary>
+		/// <param name="value">source text</param>
+		/// <param name="start">starting position</param>
+		/// <param name="type">expected type</param>
+		/// <returns></returns>
+		public static object Deserialize(string value, int start, Type type)
+		{
+			return (new JsonReader(value)).Deserialize(start, type);
 		}
 
 		#endregion Static Methods
