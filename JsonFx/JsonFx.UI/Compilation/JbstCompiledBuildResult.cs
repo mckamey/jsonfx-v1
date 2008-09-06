@@ -1,5 +1,7 @@
 using System;
 
+using JsonFx.Handlers;
+
 namespace JsonFx.Compilation
 {
 	/// <summary>
@@ -18,5 +20,19 @@ namespace JsonFx.Compilation
 		}
 
 		#endregion Properties
+
+		#region Factory Methods
+
+		/// <summary>
+		/// CompiledBuildResult Factory method
+		/// </summary>
+		/// <param name="virtualPath"></param>
+		/// <returns></returns>
+		protected internal static JbstCompiledBuildResult Create(string virtualPath)
+		{
+			return CompiledBuildResult.Create(virtualPath) as JbstCompiledBuildResult;
+		}
+
+		#endregion Factory Methods
 	}
 }

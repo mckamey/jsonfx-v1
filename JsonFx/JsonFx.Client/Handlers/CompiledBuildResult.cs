@@ -194,7 +194,7 @@ namespace JsonFx.Handlers
 		/// </summary>
 		/// <param name="virtualPath"></param>
 		/// <returns></returns>
-		internal static CompiledBuildResult Create(string virtualPath)
+		protected internal static CompiledBuildResult Create(string virtualPath)
 		{
 			try
 			{

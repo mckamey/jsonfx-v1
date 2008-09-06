@@ -147,7 +147,7 @@ namespace JsonFx.Handlers
 			}
 
 			// TODO: provide mechanism for easily defining this target
-			JbstCompiledBuildResult target = BuildManager.CreateInstanceFromVirtualPath(targetPath, typeof(object)) as JbstCompiledBuildResult;
+			JbstCompiledBuildResult target = JbstCompiledBuildResult.Create(targetPath);
 			if (target == null)
 			{
 				// TODO: handle this more gracefully
