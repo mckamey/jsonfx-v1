@@ -198,6 +198,11 @@ namespace JsonFx.Handlers
 		{
 			try
 			{
+				if (virtualPath.StartsWith("/"))
+				{
+					virtualPath = "~"+virtualPath;
+				}
+
 				return (CompiledBuildResult)BuildManager.CreateInstanceFromVirtualPath(virtualPath, typeof(CompiledBuildResult));
 			}
 			catch
