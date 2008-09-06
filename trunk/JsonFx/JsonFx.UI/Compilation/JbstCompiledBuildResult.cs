@@ -28,7 +28,7 @@ namespace JsonFx.Compilation
 		/// </summary>
 		/// <param name="virtualPath"></param>
 		/// <returns></returns>
-		protected internal static JbstCompiledBuildResult Create(string virtualPath)
+		protected internal static new JbstCompiledBuildResult Create(string virtualPath)
 		{
 			return CompiledBuildResult.Create(virtualPath) as JbstCompiledBuildResult;
 		}
