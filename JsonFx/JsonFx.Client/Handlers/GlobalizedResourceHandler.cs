@@ -143,6 +143,9 @@ namespace JsonFx.Handlers
 				CompiledBuildResult.EnableStreamCompression(context);
 			}
 
+			// TODO: ensure varies by language
+			context.Response.Cache.SetCacheability(HttpCacheability.ServerAndNoCache);
+
 			// get the target
 			string targetPath = context.Request.FilePath;
 			if (targetPath.EndsWith(ResourceHandler.GlobalizationSetting))
