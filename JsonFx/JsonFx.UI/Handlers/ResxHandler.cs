@@ -39,6 +39,11 @@ using JsonFx.Compilation;
 
 namespace JsonFx.Handlers
 {
+	public interface IGlobalized
+	{
+		string[] GlobalizationKeys { get; }
+	}
+
 	public class ResxHandler : System.Web.IHttpHandler
 	{
 		#region Constants
@@ -147,7 +152,7 @@ namespace JsonFx.Handlers
 			}
 
 			// TODO: provide mechanism for easily defining this target
-			JbstCompiledBuildResult target = JbstCompiledBuildResult.Create(targetPath);
+			IGlobalized target = JbstCompiledBuildResult.Create(targetPath) as IGlobalized;
 			if (target == null)
 			{
 				// TODO: handle this more gracefully

@@ -37,7 +37,7 @@ namespace JsonFx.Compilation
 	/// <summary>
 	/// The compilation result for JBSTs adds additional information.
 	/// </summary>
-	public abstract class JbstCompiledBuildResult : JsonFx.Handlers.CompiledBuildResult
+	public abstract class JbstCompiledBuildResult : CompiledBuildResult, IGlobalized
 	{
 		#region Properties
 
