@@ -64,9 +64,6 @@ namespace JsonFx.Compilation
 		private const string ErrorUnkownDirective = "The directive \"{0}\" is unknown.";
 		private const string ErrorMissingAttrib = "The directive is missing a '{0}' attribute.";
 
-		private static readonly Regex Regex_Directive = new Regex(Pattern_Directive, RegexOptions.Singleline|RegexOptions.Multiline|RegexOptions.Compiled);
-		private const string Pattern_Directive = "<%\\s*@(\\s*(?<attrname>\\w[\\w:]*(?=\\W))(\\s*(?<equal>=)\\s*\"(?<attrval>[^\"]*)\"|\\s*(?<equal>=)\\s*'(?<attrval>[^']*)'|\\s*(?<equal>=)\\s*(?<attrval>[^\\s%>]*)|(?<equal>)(?<attrval>\\s*?)))*\\s*?%>";
-
 		#endregion Constants
 
 		#region Fields
