@@ -62,7 +62,7 @@ namespace JsonFx.Compilation
 
 		protected override Type CompiledBuildResultType
 		{
-			get { return typeof(JbstCompiledBuildResult); }
+			get { return typeof(GlobalizedCompiledBuildResult); }
 		}
 
 		#endregion ResourceCodeProvider Properties

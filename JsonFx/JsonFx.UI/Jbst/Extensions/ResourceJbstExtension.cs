@@ -77,7 +77,7 @@ namespace JsonFx.UI.Jbst.Extensions
 			{
 				if (this.globalizationKey == null)
 				{
-					this.globalizationKey = ResxHandler.GetKey(this.ResxKey, this.Path);
+					this.globalizationKey = GlobalizedResourceHandler.GetKey(this.ResxKey, this.Path);
 				}
 				return this.globalizationKey;
 			}

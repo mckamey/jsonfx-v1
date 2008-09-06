@@ -46,6 +46,7 @@
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Web" />
+    <Reference Include="System.XML" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Compilation\CssResourceCodeProvider.cs">
@@ -66,12 +67,20 @@
     <Compile Include="Handlers\CompressedFileHandler.cs" />
     <Compile Include="Handlers\ETag.cs" />
     <Compile Include="Handlers\CompiledBuildResult.cs" />
+    <Compile Include="Handlers\GlobalizedCompiledBuildResult.cs" />
     <Compile Include="Handlers\ResourceHandler.cs" />
+    <Compile Include="Handlers\GlobalizedResourceHandler.cs" />
     <Compile Include="Properties\AssemblyVersion.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="License.txt" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\JsonFx.Json\JsonFx.Json.csproj">
+      <Project>{ABA23F14-7E47-43FE-A3E7-1FF97840C3FB}</Project>
+      <Name>JsonFx.Json</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
