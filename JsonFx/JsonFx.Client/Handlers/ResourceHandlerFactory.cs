@@ -40,7 +40,7 @@ namespace JsonFx.Handlers
 
 		IHttpHandler IHttpHandlerFactory.GetHandler(HttpContext context, string verb, string url, string path)
 		{
-			string setting = context.Request.QueryString[null];
+			string setting = context.Request.PathInfo;
 			bool isStrings = ResourceHandler.GlobalizationSetting.Equals(setting, StringComparison.InvariantCultureIgnoreCase);
 			if (isStrings)
 			{
