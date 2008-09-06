@@ -139,13 +139,14 @@ namespace JsonFx.Handlers
 			string cacheKey = context.Request.QueryString[null];
 			bool isDebug = "debug".Equals(cacheKey, StringComparison.InvariantCultureIgnoreCase);
 
-			string targetPath = "/Templating/CustomControl.jbst";
+			string targetPath = context.Request.QueryString["src"];
 
 			// TODO: provide mechanism for easily defining this target
 			JbstCompiledBuildResult target = BuildManager.CreateInstanceFromVirtualPath(targetPath, typeof(object)) as JbstCompiledBuildResult;
 			if (target == null)
 			{
-				// TODO:
+				// TODO: handle this more gracefully
+				return;
 			}
 
 			IDictionary<string, object> resx = this.GetResourceStrings(target.GlobalizationKeys, context.Request.FilePath);
