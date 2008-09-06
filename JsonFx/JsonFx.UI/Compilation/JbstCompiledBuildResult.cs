@@ -50,19 +50,5 @@ namespace JsonFx.Compilation
 		}
 
 		#endregion Properties
-
-		#region Factory Methods
-
-		/// <summary>
-		/// JbstCompiledBuildResult Factory method
-		/// </summary>
-		/// <param name="virtualPath"></param>
-		/// <returns></returns>
-		protected internal static new JbstCompiledBuildResult Create(string virtualPath)
-		{
-			return CompiledBuildResult.Create(virtualPath) as JbstCompiledBuildResult;
-		}
-
-		#endregion Factory Methods
 	}
 }
