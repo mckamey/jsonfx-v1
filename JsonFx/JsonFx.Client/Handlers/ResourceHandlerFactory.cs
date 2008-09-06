@@ -29,62 +29,33 @@
 #endregion License
 
 using System;
-using System.IO;
-using System.Collections.Generic;
+using System.Web;
+using System.Web.Compilation;
 
-using BuildTools;
-using BuildTools.ScriptCompactor;
-
-namespace JsonFx.Compilation
+namespace JsonFx.Handlers
 {
-	public class ScriptResourceCodeProvider : JsonFx.Compilation.ResourceCodeProvider
+	public class ResourceHandlerFactory : IHttpHandlerFactory
 	{
-		#region ResourceCodeProvider Properties
+		#region IHttpHandlerFactory Methods
 
-		public override string ContentType
+		IHttpHandler IHttpHandlerFactory.GetHandler(HttpContext context, string verb, string url, string path)
 		{
-			get { return "text/javascript"; }
-		}
-
-		public override string FileExtension
-		{
-			get { return "js"; }
-		}
-
-		#endregion ResourceCodeProvider Properties
-
-		#region ResourceCodeProvider Methods
-
-		protected internal override void ProcessResource(
-			IResourceBuildHelper helper,
-			string virtualPath,
-			string sourceText,
-			out string resource,
-			out string compacted,
-			List<ParseException> errors)
-		{
-			using (StringWriter writer = new StringWriter())
+			string setting = context.Request.QueryString[null];
+			bool isStrings = ResourceHandler.GlobalizationSetting.Equals(setting, StringComparison.InvariantCultureIgnoreCase);
+			if (isStrings)
 			{
-				IList<ParseException> parseErrors = ScriptCompactor.Compact(
-					virtualPath,
-					sourceText,
-					writer,
-					null,
-					null,
-					ScriptCompactor.Options.None);
-
-				if (parseErrors != null && parseErrors.Count > 0)
-				{
-					errors.AddRange(parseErrors);
-				}
-
-				writer.Flush();
-
-				resource = sourceText;
-				compacted = writer.ToString();
+				// output resource strings used by the handler
+				return new GlobalizedResourceHandler();
 			}
+
+			// output resource content
+			return new ResourceHandler();
 		}
 
-		#endregion ResourceCodeProvider Methods
+		void IHttpHandlerFactory.ReleaseHandler(IHttpHandler handler)
+		{
+		}
+
+		#endregion IHttpHandlerFactory Methods
 	}
 }

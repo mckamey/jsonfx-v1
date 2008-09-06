@@ -68,6 +68,7 @@
     <Compile Include="Handlers\ETag.cs" />
     <Compile Include="Handlers\CompiledBuildResult.cs" />
     <Compile Include="Handlers\GlobalizedCompiledBuildResult.cs" />
+    <Compile Include="Handlers\ResourceHandlerFactory.cs" />
     <Compile Include="Handlers\ResourceHandler.cs" />
     <Compile Include="Handlers\GlobalizedResourceHandler.cs" />
     <Compile Include="Properties\AssemblyVersion.cs" />

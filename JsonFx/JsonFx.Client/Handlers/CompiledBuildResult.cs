@@ -158,7 +158,8 @@ namespace JsonFx.Handlers
 		/// <returns></returns>
 		private static CompiledBuildResultType GetOutputEncoding(HttpContext context)
 		{
-			bool isDebug = "debug".Equals(context.Request.QueryString[null], StringComparison.InvariantCultureIgnoreCase);
+			string setting = context.Request.QueryString[null];
+			bool isDebug = ResourceHandler.DebugSetting.Equals(setting, StringComparison.InvariantCultureIgnoreCase);
 			if (isDebug)
 			{
 				return CompiledBuildResultType.PrettyPrint;

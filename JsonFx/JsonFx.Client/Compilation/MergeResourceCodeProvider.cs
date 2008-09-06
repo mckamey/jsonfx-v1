@@ -53,7 +53,6 @@ namespace JsonFx.Compilation
 
 		#region Fields
 
-		private readonly List<string> g11nKeys = new List<string>();
 		private string contentType = "text/plain";
 		private string fileExtension = "txt";
 		private bool isMimeSet = false;
@@ -70,19 +69,6 @@ namespace JsonFx.Compilation
 		public override string ContentType
 		{
 			get { return this.contentType; }
-		}
-
-		protected internal override Type CompiledBuildResultType
-		{
-			get
-			{
-				if (this.g11nKeys.Count > 0)
-				{
-					return typeof(GlobalizedCompiledBuildResult);
-				}
-
-				return base.CompiledBuildResultType;
-			}
 		}
 
 		#endregion ResourceCodeProvider Properties
@@ -153,7 +139,7 @@ namespace JsonFx.Compilation
 
 						if (result is GlobalizedCompiledBuildResult)
 						{
-							this.g11nKeys.AddRange(((GlobalizedCompiledBuildResult)result).GlobalizationKeys);
+							this.GlobalizationKeys.AddRange(((GlobalizedCompiledBuildResult)result).GlobalizationKeys);
 						}
 
 						helper.AddVirtualPathDependency(files[i]);
@@ -265,54 +251,6 @@ namespace JsonFx.Compilation
 		}
 
 		#endregion ResourceCodeProvider Methods
-
-		#region CodeDom Methods
-
-		protected internal override void GenerateCodeExtensions(CodeTypeDeclaration resourceType)
-		{
-			if (this.CompiledBuildResultType != typeof(GlobalizedCompiledBuildResult))
-			{
-				// no globalization strings were needed so don't gen code for the property
-				return;
-			}
-
-			#region private static readonly string[] g11nKeys
-
-			CodeMemberField field = new CodeMemberField();
-			field.Name = "g11nKeys";
-			field.Type = new CodeTypeReference(typeof(string[]));
-			field.Attributes = MemberAttributes.Private|MemberAttributes.Static|MemberAttributes.Final;
-
-			CodeArrayCreateExpression arrayInit = new CodeArrayCreateExpression(field.Type, this.g11nKeys.Count);
-			foreach (string key in this.g11nKeys)
-			{
-				arrayInit.Initializers.Add(new CodePrimitiveExpression(key));
-			}
-			field.InitExpression = arrayInit;
-
-			resourceType.Members.Add(field);
-
-			#endregion private static readonly string[] g11nKeys
-
-			#region public override string[] GlobalizationKeys { get; }
-
-			// add a readonly property returning the static data
-			CodeMemberProperty property = new CodeMemberProperty();
-			property.Name = "GlobalizationKeys";
-			property.Type = field.Type;
-			property.Attributes = MemberAttributes.Public|MemberAttributes.Override;
-			property.HasGet = true;
-			// get { return g11nKeys; }
-			property.GetStatements.Add(new CodeMethodReturnStatement(
-				new CodeFieldReferenceExpression(
-					new CodeTypeReferenceExpression(resourceType.Name),
-					field.Name)));
-			resourceType.Members.Add(property);
-
-			#endregion public override string[] GlobalizationKeys { get; }
-		}
-
-		#endregion CodeDom Methods
 
 		#region Utility Methods
 
