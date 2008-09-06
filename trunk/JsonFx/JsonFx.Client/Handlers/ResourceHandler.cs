@@ -42,7 +42,7 @@ namespace JsonFx.Handlers
 		#region Constants
 
 		public const string DebugSetting = "debug";
-		public const string GlobalizationSetting = "i18n";
+		public const string GlobalizationSetting = "/i18n";
 
 		#endregion Constants
 
@@ -125,7 +125,18 @@ namespace JsonFx.Handlers
 				path = path.Substring(0, index);
 			}
 
-			return path+'?'+GlobalizationSetting;
+			return path+ResourceHandler.GlobalizationSetting;
+		}
+
+		public static string GetDebugStringsUrl(string path)
+		{
+			int index = path.IndexOf('?');
+			if (index >= 0)
+			{
+				path = path.Substring(0, index);
+			}
+
+			return path+ResourceHandler.GlobalizationSetting+'?'+ResourceHandler.DebugSetting;
 		}
 
 		public static string GetDebugUrl(string path)
@@ -149,7 +160,7 @@ namespace JsonFx.Handlers
 			string cache;
 			if (isDebug)
 			{
-				cache = '?'+DebugSetting;
+				cache = '?'+ResourceHandler.DebugSetting;
 			}
 			else
 			{
