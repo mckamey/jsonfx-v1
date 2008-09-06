@@ -35,9 +35,9 @@ using JsonFx.Handlers;
 namespace JsonFx.Compilation
 {
 	/// <summary>
-	/// The compilation result for JBSTs adds additional information.
+	/// A globalized compilation result which specifies the keys it needs.
 	/// </summary>
-	public abstract class JbstCompiledBuildResult : CompiledBuildResult, IGlobalized
+	public abstract class GlobalizedCompiledBuildResult : CompiledBuildResult
 	{
 		#region Properties
 
