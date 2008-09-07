@@ -51,7 +51,6 @@
   <ItemGroup>
     <Content Include="License.txt" />
     <Content Include="Readme.txt" />
-    <EmbeddedResource Include="Scripts\json2.js" />
     <EmbeddedResource Include="Scripts\JsonFx.History.js" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
