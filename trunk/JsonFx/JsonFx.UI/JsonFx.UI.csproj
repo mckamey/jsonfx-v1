@@ -77,13 +77,11 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Scripts\json2.js" />
     <EmbeddedResource Include="Scripts\JsonFx.JsonML.js" />
     <EmbeddedResource Include="Scripts\JsonML2.js" />
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Scripts\JsonFx.Bindings.js" />
-    <EmbeddedResource Include="Scripts\JsonFx.IO.js" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="License.txt" />
