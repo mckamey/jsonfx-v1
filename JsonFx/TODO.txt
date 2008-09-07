@@ -1,6 +1,4 @@
-2008-09-06 @ 22:56
-
-- Implement JSON-RPC 2.0
+2008-09-07 @ 16:58
 
 - add delay signing of JsonFx assemblies
 
