@@ -64,7 +64,9 @@ namespace JsonFx.JsonRpc.Discovery
 				return;
 
 			if (!JsonMethodAttribute.IsJsonMethod(method))
-				throw new JsonServiceException("Specified method is not marked as a JsonMethod.");
+			{
+				throw new InvalidMethodException("Specified method is not marked as a JsonMethod.");
+			}
 
 			this.Name = JsonMethodAttribute.GetJsonName(method);
 			if (String.IsNullOrEmpty(this.Name))

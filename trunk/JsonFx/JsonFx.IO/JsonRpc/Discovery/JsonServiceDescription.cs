@@ -69,7 +69,9 @@ namespace JsonFx.JsonRpc.Discovery
 				return;
 
 			if (!JsonServiceAttribute.IsJsonService(serviceType))
-				throw new JsonServiceException("Specified type is not marked as a JsonService.");
+			{
+				throw new InvalidRequestException("Specified type is not marked as a JsonService.");
+			}
 
 			this.Namespace = JsonServiceAttribute.GetNamespace(serviceType);
 			if (String.IsNullOrEmpty(this.Namespace))

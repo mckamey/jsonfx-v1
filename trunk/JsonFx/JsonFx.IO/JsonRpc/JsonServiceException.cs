@@ -49,4 +49,25 @@ namespace JsonFx.JsonRpc
 
 		#endregion Init
 	}
+
+	public class InvalidMethodException : JsonServiceException
+	{
+		public InvalidMethodException(string message) : base(message) { }
+
+		public InvalidMethodException(string message, Exception innerException) : base(message, innerException) { }
+	}
+
+	public class InvalidParamsException : JsonServiceException
+	{
+		public InvalidParamsException(string message) : base(message) { }
+
+		public InvalidParamsException(string message, Exception innerException) : base(message, innerException) { }
+	}
+
+	public class InvalidRequestException : JsonServiceException
+	{
+		public InvalidRequestException(string message) : base(message) { }
+
+		public InvalidRequestException(string message, Exception innerException) : base(message, innerException) { }
+	}
 }

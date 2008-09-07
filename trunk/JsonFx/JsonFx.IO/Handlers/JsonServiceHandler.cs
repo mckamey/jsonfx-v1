@@ -187,7 +187,7 @@ namespace JsonFx.Handlers
 				}
 				catch (TargetParameterCountException ex)
 				{
-					throw new JsonServiceException(
+					throw new InvalidParamsException(
 						String.Format(
 							"Method \"{0}\" expects {1} parameters, {2} provided",
 							method.Name,
@@ -209,7 +209,7 @@ namespace JsonFx.Handlers
 			}
 			else
 			{
-				throw new JsonServiceException("Invalid method name.");
+				throw new InvalidMethodException("Invalid method name: "+request.Method);
 			}
 		}
 
@@ -240,22 +240,46 @@ namespace JsonFx.Handlers
 
 				if (request == null)
 				{
-					throw new JsonServiceException("The JSON-RPC Request was empty.");
+					throw new InvalidRequestException("The JSON-RPC Request was empty.");
 				}
 
 				this.HandleRequest(context, request, ref response);
+			}
+			catch (InvalidRequestException ex)
+			{
+				context.Response.ClearContent();
+				response.Result = null;
+				response.Error = new JsonError(ex, JsonRpcErrors.InvalidRequest);
+			}
+			catch (InvalidMethodException ex)
+			{
+				context.Response.ClearContent();
+				response.Result = null;
+				response.Error = new JsonError(ex, JsonRpcErrors.MethodNotFound);
+			}
+			catch (InvalidParamsException ex)
+			{
+				context.Response.ClearContent();
+				response.Result = null;
+				response.Error = new JsonError(ex, JsonRpcErrors.InvalidParams);
 			}
 			catch (JsonServiceException ex)
 			{
 				context.Response.ClearContent();
 				response.Result = null;
-				response.Error = new JsonError((ex.InnerException != null) ? ex.InnerException : ex);
+				response.Error = new JsonError(ex, JsonRpcErrors.InvalidRequest);
+			}
+			catch (JsonDeserializationException ex)
+			{
+				context.Response.ClearContent();
+				response.Result = null;
+				response.Error = new JsonError(ex, JsonRpcErrors.ParseError);
 			}
 			catch (Exception ex)
 			{
 				context.Response.ClearContent();
 				response.Result = null;
-				response.Error = new JsonError(ex);
+				response.Error = new JsonError(ex, JsonRpcErrors.InternalError);
 			}
 			finally
 			{
