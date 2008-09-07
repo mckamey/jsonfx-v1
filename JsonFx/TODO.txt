@@ -1,6 +1,4 @@
-2008-09-05 @ 22:59
-
-- auto add JsonFx.Lang references from scripts
+2008-09-06 @ 22:56
 
 - enumerate available languages:
 	http://blogs.msdn.com/michkap/archive/2006/03/25/560838.aspx
