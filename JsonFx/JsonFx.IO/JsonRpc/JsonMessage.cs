@@ -49,27 +49,17 @@ namespace JsonFx.JsonRpc
 
 		#endregion Constants
 
-		#region Init
-
-		/// <summary>
-		/// Ctor.
-		/// </summary>
-		public JsonMessage()
-		{
-		}
-
-		#endregion Init
-
 		#region Properties
 
 		/// <summary>
 		/// Gets and sets an identifier which may be used to correlate a response with its request.
 		/// </summary>
 		/// <remarks>
-		/// OPTIONAL. A request identifier that can be of any JSON type. This member is essentially
-		/// maintained for backward compatibility with version 1.0 of the specification where it was
-		/// used to correlate a response with its request. If this member is present then the server
-		/// MUST repeat it verbatim on the response.
+		/// A Request identifier that SHOULD be a JSON scalar (String, Number, True, False),
+		/// but SHOULD normally not be Null. If omitted, the Request is a Notification.
+		/// 
+		/// This id can be used to correlate a Response with its Request. The server MUST
+		/// repeat it verbatim on the Response.
 		/// </remarks>
 		[JsonName("id")]
 		public virtual object ID
@@ -82,16 +72,24 @@ namespace JsonFx.JsonRpc
 		/// Gets and sets the version of the JSON-RPC specification to which this conforms.
 		/// </summary>
 		/// <remarks>
-		/// REQUIRED. A String specifying the version of the JSON-RPC protocol to which the client
-		/// conforms. An implementation conforming to this specification MUST use the exact String
-		/// value of "1.1" for this member. The absence of this member can effectively be taken to
-		/// mean that the remote server implement version 1.0 of the JSON-RPC protocol.
+		/// A String specifying the version of the JSON-RPC protocol. MUST be exactly "2.0". 
+		/// 
+		/// If jsonrpc is missing, the server MAY handle the Request as JSON-RPC V1.0-Request.
 		/// </remarks>
-		[JsonName("version")]
+		[JsonName("jsonrpc")]
 		public virtual string Version
 		{
 			get { return this.version; }
 			set { this.version = value; }
+		}
+
+		/// <summary>
+		/// Gets if the version is missing indicating this is a v1.0 message.
+		/// </summary>
+		[JsonIgnore]
+		public virtual bool IsJsonRpc10
+		{
+			get { return String.IsNullOrEmpty(this.version); }
 		}
 
 		#endregion Properties

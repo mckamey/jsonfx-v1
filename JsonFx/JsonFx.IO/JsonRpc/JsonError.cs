@@ -35,14 +35,57 @@ using JsonFx.Json;
 
 namespace JsonFx.JsonRpc
 {
+	#region Error Codes
+
+	/// <summary>
+	/// The error-codes -32768 .. -32000 (inclusive) are reserved for pre-defined errors.
+	/// Any error-code within this range not defined explicitly below is reserved for future use.
+	/// </summary>
+	public enum JsonRpcErrors : int
+	{
+		Unknown = 0x0,
+
+		/// <summary>
+		/// Invalid JSON. An error occurred on the server while parsing the JSON text.
+		/// </summary>
+		ParseError = -32700,
+
+		/// <summary>
+		/// The received JSON not a valid JSON-RPC Request.
+		/// </summary>
+		InvalidRequest = -32600,
+
+		/// <summary>
+		/// The requested remote-procedure does not exist / is not available.
+		/// </summary>
+		MethodNotFound = -32601,
+
+		/// <summary>
+		/// Invalid method parameters.
+		/// </summary>
+		InvalidParams = -32602,
+
+		/// <summary>
+		/// Internal JSON-RPC error.
+		/// </summary>
+		InternalError = -32603,
+
+		/// <summary>
+		/// Reserved for implementation-defined server-errors.
+		/// </summary>
+		ServerErrorStart = -32099,
+		ServerErrorEnd = -32000
+	}
+
+	#endregion Error Codes
+
 	public class JsonError
 	{
 		#region Constants
 
-		private string name = "JSONRPCError";
 		private int code = 0x0;
 		private string message = null;
-		private object error = null;
+		private object data = null;
 
 		#endregion Constants
 
@@ -52,6 +95,7 @@ namespace JsonFx.JsonRpc
 		/// Ctor.
 		/// </summary>
 		public JsonError()
+			: this(null)
 		{
 		}
 
@@ -59,7 +103,16 @@ namespace JsonFx.JsonRpc
 		/// Ctor.
 		/// </summary>
 		/// <param name="ex"></param>
-		public JsonError(Exception ex) : this()
+		public JsonError(Exception ex)
+			: this(ex, JsonRpcErrors.Unknown)
+		{
+		}
+
+		/// <summary>
+		/// Ctor.
+		/// </summary>
+		/// <param name="ex"></param>
+		public JsonError(Exception ex, JsonRpcErrors code)
 		{
 			if (ex != null)
 			{
@@ -69,8 +122,10 @@ namespace JsonFx.JsonRpc
 #if DEBUG
 			innerError["StackTrace"] = ex.StackTrace;
 #endif
-				this.Error = innerError;
+				this.Data = innerError;
 			}
+
+			this.code = (int)code;
 		}
 
 		#endregion Init
@@ -78,24 +133,10 @@ namespace JsonFx.JsonRpc
 		#region Properties
 
 		/// <summary>
-		/// Gets the JSON-RPC error name.
-		/// </summary>
-		/// <remarks>
-		/// REQUIRED. A String value that MUST read "JSONRPCError".
-		/// </remarks>
-		[JsonName("name")]
-		public string Name
-		{
-			get { return this.name; }
-			set { this.name = value; }
-		}
-
-		/// <summary>
 		/// Gets and sets a Number value that indicates the actual error that occurred.
 		/// </summary>
 		/// <remarks>
-		/// REQUIRED. A Number value that indicates the actual error
-		/// that occurred. This MUST be an integer between 100 and 999.
+		/// A Number that indicates the actual error that occurred. This MUST be an integer.
 		/// </remarks>
 		[JsonName("code")]
 		public int Code
@@ -108,8 +149,8 @@ namespace JsonFx.JsonRpc
 		/// Gets and sets a short description of the error.
 		/// </summary>
 		/// <remarks>
-		/// REQUIRED. A String value that provides a short description of the
-		/// error. The message SHOULD be limited to a single sentence.
+		/// A String providing a short description of the error.
+		/// The message SHOULD be limited to a concise single sentence.
 		/// </remarks>
 		[JsonName("message")]
 		public string Message
@@ -119,18 +160,17 @@ namespace JsonFx.JsonRpc
 		}
 
 		/// <summary>
-		/// Gets and sets a short description of the error.
+		/// Gets and sets data about the error.
 		/// </summary>
 		/// <remarks>
-		/// OPTIONAL. A JSON Null, Number, String or Object value that carries
-		/// custom and application-specific error information. Error objects
-		/// MAY be nested using this property.
+		/// Additional information, may be omitted. Its contents is entirely defined by
+		/// the application (e.g. detailed error information, nested errors etc.).
 		/// </remarks>
-		[JsonName("error")]
-		public object Error
+		[JsonName("data")]
+		public object Data
 		{
-			get { return this.error; }
-			set { this.error = value; }
+			get { return this.data; }
+			set { this.data = value; }
 		}
 
 		#endregion Properties

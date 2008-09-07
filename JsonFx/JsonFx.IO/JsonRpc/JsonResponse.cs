@@ -46,47 +46,54 @@ namespace JsonFx.JsonRpc
 
 		#endregion Constants
 
-		#region Init
-
-		/// <summary>
-		/// Ctor.
-		/// </summary>
-		public JsonResponse()
-		{
-		}
-
-		#endregion Init
-
 		#region Properties
 
 		/// <summary>
 		/// Gets and sets the answer for a successful call.
 		/// </summary>
 		/// <remarks>
-		/// REQUIRED on success. The value that was returned by the procedure upon a
-		/// successful invocation. This member MUST be entirely omitted in case there
-		/// was an error invoking the procedure.
+		/// Required on success, omitted on failure.
+		/// The Value that was returned by the procedure. Its contents is entirely defined by the procedure.
+		/// This member MUST be entirely omitted if there was an error invoking the procedure.
+		/// 
+		/// Exactly one of result or error MUST be specified. It's not allowed to specify both or none.
 		/// </remarks>
 		[JsonName("result")]
+		[JsonSpecifiedProperty("ResultSpecified")]
 		public virtual object Result
 		{
 			get { return this.result; }
 			set { this.result = value; }
 		}
 
+		[JsonIgnore]
+		public virtual bool ResultSpecified
+		{
+			get { return (this.error == null); }
+		}
+
 		/// <summary>
 		/// Gets and sets the answer for a failed call.
 		/// </summary>
 		/// <remarks>
-		/// REQUIRED on error. An Object containing error information about the fault
-		/// that occured before, during or after the call. This member MUST be entirely
-		/// omitted if there was no error.
+		/// Required on error, omitted on success.
+		/// An Object containing error information about the fault that occurred before, during or after the call.
+		/// This member MUST be entirely omitted if there was no such fault.
+		/// 
+		/// Exactly one of result or error MUST be specified. It's not allowed to specify both or none.
 		/// </remarks>
 		[JsonName("error")]
+		[JsonSpecifiedProperty("ErrorSpecified")]
 		public virtual object Error
 		{
 			get { return this.error; }
 			set { this.error = value; }
+		}
+
+		[JsonIgnore]
+		public virtual bool ErrorSpecified
+		{
+			get { return (this.error != null); }
 		}
 
 		#endregion Properties

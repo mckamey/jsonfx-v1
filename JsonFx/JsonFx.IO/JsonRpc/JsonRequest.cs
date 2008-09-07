@@ -47,26 +47,16 @@ namespace JsonFx.JsonRpc
 
 		#endregion Fields
 
-		#region Init
-
-		/// <summary>
-		/// Ctor.
-		/// </summary>
-		public JsonRequest()
-		{
-		}
-
-		#endregion Init
-
 		#region Properties
 
 		/// <summary>
 		/// Gets and sets the named operation on a service that is the target of this remote procedure call.
 		/// </summary>
 		/// <remarks>
-		/// REQUIRED. A String containing the name of the procedure to be invoked. Procedure names that
-		/// begin with the word system followed by a period character (U+002E or ASCII 46) are reserved.
-		/// In other words, a procedure named system.foobar is considered to have reserved semantics.
+		/// A String containing the name of the procedure to be invoked.
+		/// 
+		/// Procedure names that begin with the word system followed by a period character (U+002E or ASCII 46)
+		/// are reserved for system description / introspection.
 		/// </remarks>
 		[JsonName("method")]
 		public virtual string Method
@@ -75,6 +65,13 @@ namespace JsonFx.JsonRpc
 			set { this.method = value; }
 		}
 
+		/// <summary>
+		/// Gets and sets the actual parameter values for the invocation of the procedure.
+		/// </summary>
+		/// <remarks>
+		/// An Array or Object, that holds the actual parameter values for the invocation of
+		/// the procedure. Can be omitted if empty.
+		/// </remarks>
 		[JsonName("params")]
 		public virtual Object Params
 		{
@@ -83,11 +80,13 @@ namespace JsonFx.JsonRpc
 		}
 
 		/// <summary>
-		/// Gets and sets the named parameters for this remote procedure call.
+		/// Gets and sets the named parameter values for this remote procedure call.
 		/// Mutually exclusive with <see cref="PositionalParams">PositionalParams</see>.
 		/// </summary>
 		/// <remarks>
-		/// OPTIONAL. An Array or Object that holds the actual parameter values for the invocation of the procedure.
+		/// MUST be an Object, containing the parameter-names and its values.
+		/// The names MUST match exactly (including case) the names defined by the formal arguments.
+		/// The order of the name/value-pairs is insignificant.
 		/// </remarks>
 		[JsonIgnore]
 		public virtual Dictionary<String, Object> NamedParams
@@ -97,17 +96,34 @@ namespace JsonFx.JsonRpc
 		}
 
 		/// <summary>
-		/// Gets and sets the positional parameters for this remote procedure call.
+		/// Gets and sets the positional parameter values for this remote procedure call.
 		/// Mutually exclusive with <see cref="NamedParams">NamedParams</see>.
 		/// </summary>
 		/// <remarks>
-		/// OPTIONAL. An Array or Object that holds the actual parameter values for the invocation of the procedure.
+		/// MUST be an Array, containing the parameters in the right order (like in JSON-RPC 1.0).
 		/// </remarks>
 		[JsonIgnore]
 		public virtual Array PositionalParams
 		{
 			get { return this.Params as Array; }
 			set { this.Params = value; }
+		}
+
+		/// <summary>
+		/// Gets if this request is a notification.
+		/// </summary>
+		/// <remarks>
+		/// A Notification is a special Request, without id and without Response.
+		/// The server MUST NOT reply to a Notification.
+		/// 
+		/// Note that Notifications are unreliable by definition, since they do not have a Response,
+		/// and so you cannot detect errors (like e.g. "Invalid params.", "Internal error.",
+		/// timeouts or maybe even lost packets on the wire).
+		/// </remarks>
+		[JsonIgnore]
+		public virtual bool IsNotification
+		{
+			get { return this.ID == null; }
 		}
 
 		#endregion Properties

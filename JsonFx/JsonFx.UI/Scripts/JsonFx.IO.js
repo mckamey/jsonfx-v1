@@ -458,9 +458,10 @@ JsonFx.IO = {};
 	} else {
 		// POST RPC is encoded as a JSON body
 		rpcRequest = {
-				version : "1.1",
+				jsonrpc : "2.0",
 				method : rpcMethod,
-				params : rpcParams
+				params : rpcParams,
+				id : new Date().valueOf()
 			};
 
 		try {
