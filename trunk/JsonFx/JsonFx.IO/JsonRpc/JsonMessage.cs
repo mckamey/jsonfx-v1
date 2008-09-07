@@ -38,7 +38,7 @@ namespace JsonFx.JsonRpc
 	{
 		#region Constants
 
-		public const string JsonRpcVersion = "1.1";
+		public const string JsonRpcVersion = "2.0";
 
 		#endregion Constants
 
