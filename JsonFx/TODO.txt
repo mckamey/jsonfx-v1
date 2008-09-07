@@ -1,5 +1,9 @@
 2008-09-06 @ 22:56
 
+- Implement JSON-RPC 2.0
+
+- add delay signing of JsonFx assemblies
+
 - enumerate available languages:
 	http://blogs.msdn.com/michkap/archive/2006/03/25/560838.aspx
 
@@ -11,8 +15,6 @@
 	see: http://www.jsptut.com/
 	see: http://java.sun.com/products/jsp/pdf/card11.pdf
 	see: http://domscripting.com/presentations/fowa07/slides/03_data_formats.html
-
-- Implement JSON-RPC 2.0
 
 - define mechanism for loading scripts with dependencies
 
