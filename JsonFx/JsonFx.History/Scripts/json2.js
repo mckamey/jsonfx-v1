@@ -152,7 +152,7 @@
 // methods in a closure to avoid creating global variables.
 
 if (!this.JSON) {
-    JSON = {};
+    this.JSON = {};
 }
 (function () {
 
