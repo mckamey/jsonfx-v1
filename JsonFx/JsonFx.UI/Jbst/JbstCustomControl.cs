@@ -76,6 +76,12 @@ namespace JsonFx.UI.Jbst
 
 		#endregion Constants
 
+		#region Fields
+
+		private string controlName;
+
+		#endregion Fields
+
 		#region Init
 
 		/// <summary>
@@ -85,10 +91,24 @@ namespace JsonFx.UI.Jbst
 		public JbstCustomControl(string controlName)
 			: base(controlName)
 		{
-			this.TagName = JbstCompiler.EnsureIdent(this.TagName);
+			this.controlName = JbstCompiler.EnsureIdent(this.TagName);
+			this.TagName = String.Empty;
 		}
 
 		#endregion Init
+
+		#region Properties
+
+		/// <summary>
+		/// Gets and sets the identifier of this control
+		/// </summary>
+		protected string ControlName
+		{
+			get { return this.controlName; }
+			set { this.controlName = value; }
+		}
+
+		#endregion Properties
 
 		#region IJsonSerializable Members
 
@@ -108,11 +128,11 @@ namespace JsonFx.UI.Jbst
 			string args = JsonWriter.Serialize(this.Attributes);
 			if (writer.PrettyPrint)
 			{
-				writer.TextWriter.Write(ControlEndFormatDebug, this.TagName, args);
+				writer.TextWriter.Write(ControlEndFormatDebug, this.ControlName, args);
 			}
 			else
 			{
-				writer.TextWriter.Write(ControlEndFormat, this.TagName, args);
+				writer.TextWriter.Write(ControlEndFormat, this.ControlName, args);
 			}
 		}
 
