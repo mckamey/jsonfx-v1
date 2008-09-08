@@ -49,7 +49,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Compilation\JsonServiceBuildProvider.cs" />
-    <Compile Include="Handlers\ETag.cs" />
     <Compile Include="Handlers\JsonServiceHandler.cs">
       <SubType>Code</SubType>
     </Compile>
