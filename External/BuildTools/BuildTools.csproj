@@ -42,6 +42,10 @@
     <Compile Include="CssCompactor\CssCompactor.cs" />
     <Compile Include="CssCompactor\CssParser.cs" />
     <Compile Include="CssCompactor\CssSyntax.cs" />
+    <Compile Include="HtmlDistiller\HtmlDistiller.cs" />
+    <Compile Include="HtmlDistiller\HtmlFilter.cs" />
+    <Compile Include="HtmlDistiller\HtmlTag.cs" />
+    <Compile Include="HtmlDistiller\HtmlWriter.cs" />
     <Compile Include="IO\FileUtility.cs" />
     <Compile Include="IO\FilterTrie.cs" />
     <Compile Include="IO\LineReader.cs" />
