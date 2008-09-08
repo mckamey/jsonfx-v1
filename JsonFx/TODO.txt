@@ -1,6 +1,8 @@
 2008-09-07 @ 16:58
 
 - add delay signing of JsonFx assemblies
+	http://bloggingabout.net/blogs/ramon/archive/2005/12/26/sign-assembly-with-microsoft-visual-csharp-2005-express-edition.aspx
+	http://dougrohm.com/blog/post/2006/06/17/Visual-Studio-2005-amp3b-AssemblyKeyFile-Warnings.aspx
 
 - enumerate available languages:
 	http://blogs.msdn.com/michkap/archive/2006/03/25/560838.aspx
