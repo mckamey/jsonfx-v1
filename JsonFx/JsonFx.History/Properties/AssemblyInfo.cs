@@ -1,7 +1,7 @@
-﻿#region BuildTools License
+﻿#region License
 /*---------------------------------------------------------------------------------*\
 
-	BuildTools distributed under the terms of an MIT-style license:
+	Distributed under the terms of an MIT-style license:
 
 	The MIT License
 
@@ -26,23 +26,25 @@
 	THE SOFTWARE.
 
 \*---------------------------------------------------------------------------------*/
-#endregion BuildTools License
+#endregion License
 
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
+[assembly: AssemblyFileVersion("1.0.0.0")]
 [assembly: AssemblyTitle("JsonFx.History")]
 [assembly: AssemblyDescription("JsonFx.NET Ajax History")]
-[assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("")]
 [assembly: AssemblyProduct("JsonFx.NET")]
 [assembly: AssemblyCopyright("Copyright © 2006-2008 Stephen M. McKamey. All rights reserved.")]
-[assembly: AssemblyTrademark("")]
-[assembly: AssemblyCulture("")]
-
+[assembly: AssemblyCompany("http://jsonfx.net")]
+#if DEBUG
+[assembly: AssemblyConfiguration("Debug")]
+#elif STRONG
+[assembly: AssemblyConfiguration("Signed")]
+#else
+[assembly: AssemblyConfiguration("Release")]
+#endif
 [assembly: ComVisible(false)]
-
 [assembly: Guid("ADE02DEB-A98B-48f6-B348-40426EF353A8")]
-
-[assembly: AssemblyFileVersion("1.0.0.0")]
+[assembly: ObfuscateAssembly(false, StripAfterObfuscation=false)]

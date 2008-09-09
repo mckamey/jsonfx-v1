@@ -32,17 +32,19 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
-[assembly: AssemblyTitle("JsonFx.JsonRpc")]
-[assembly: AssemblyDescription("JsonFx.NET JSON-RPC Services")]
-[assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("")]
+[assembly: AssemblyFileVersion("1.0.0.0")]
+[assembly: AssemblyTitle("JsonFx.IO")]
+[assembly: AssemblyDescription("JsonFx.NET IO")]
 [assembly: AssemblyProduct("JsonFx.NET")]
 [assembly: AssemblyCopyright("Copyright © 2006-2008 Stephen M. McKamey. All rights reserved.")]
-[assembly: AssemblyTrademark("")]
-[assembly: AssemblyCulture("")]
-
+[assembly: AssemblyCompany("http://jsonfx.net")]
+#if DEBUG
+[assembly: AssemblyConfiguration("Debug")]
+#elif STRONG
+[assembly: AssemblyConfiguration("Signed")]
+#else
+[assembly: AssemblyConfiguration("Release")]
+#endif
 [assembly: ComVisible(false)]
-
 [assembly: Guid("FA689363-65D4-4411-BC8D-9C0F2573DBEB")]
-
-[assembly: AssemblyFileVersion("1.0.0.0")]
+[assembly: ObfuscateAssembly(false, StripAfterObfuscation=false)]
