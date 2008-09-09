@@ -159,7 +159,7 @@ namespace JsonFx.Handlers
 		private static CompiledBuildResultType GetOutputEncoding(HttpContext context)
 		{
 			string setting = context.Request.QueryString[null];
-			bool isDebug = ResourceHandler.DebugSetting.Equals(setting, StringComparison.InvariantCultureIgnoreCase);
+			bool isDebug = ResourceHandler.DebugFlag.Equals(setting, StringComparison.InvariantCultureIgnoreCase);
 			if (isDebug)
 			{
 				return CompiledBuildResultType.PrettyPrint;

@@ -41,8 +41,8 @@ namespace JsonFx.Handlers
 	{
 		#region Constants
 
-		public const string DebugSetting = "debug";
-		public const string GlobalizationSetting = ".i18n";
+		public const string DebugFlag = "debug";
+		public const string GlobalizationExtension = ".i18n";
 
 		#endregion Constants
 
@@ -51,7 +51,7 @@ namespace JsonFx.Handlers
 		void IHttpHandler.ProcessRequest(HttpContext context)
 		{
 			string cacheKey = context.Request.QueryString[null];
-			bool isDebug = ResourceHandler.DebugSetting.Equals(cacheKey, StringComparison.InvariantCultureIgnoreCase);
+			bool isDebug = ResourceHandler.DebugFlag.Equals(cacheKey, StringComparison.InvariantCultureIgnoreCase);
 
 			context.Response.ClearHeaders();
 			context.Response.BufferOutput = true;
@@ -117,12 +117,7 @@ namespace JsonFx.Handlers
 
 		#region ResourceHandler Members
 
-		public static string GetStringsUrl(string path)
-		{
-			return GetStringsUrl(path, false);
-		}
-
-		public static string GetStringsUrl(string path, bool isDebug)
+		protected internal static string GetLocalizationUrl(string path, bool isDebug)
 		{
 			int index = path.IndexOf('?');
 			if (index >= 0)
@@ -133,22 +128,12 @@ namespace JsonFx.Handlers
 			string query = null;
 			if (isDebug)
 			{
-				query = '?'+ResourceHandler.DebugSetting;
+				query = '?'+ResourceHandler.DebugFlag;
 			}
-			return path+ResourceHandler.GlobalizationSetting+query;
+			return path+ResourceHandler.GlobalizationExtension+query;
 		}
 
-		public static string GetDebugUrl(string path)
-		{
-			return GetCacheUrl(path, true);
-		}
-
-		public static string GetCacheUrl(string path)
-		{
-			return GetCacheUrl(path, false);
-		}
-
-		private static string GetCacheUrl(string path, bool isDebug)
+		protected internal static string GetResourceUrl(string path, bool isDebug)
 		{
 			CompiledBuildResult info = CompiledBuildResult.Create(path);
 			if (info == null)
@@ -159,7 +144,7 @@ namespace JsonFx.Handlers
 			string cache;
 			if (isDebug)
 			{
-				cache = '?'+ResourceHandler.DebugSetting;
+				cache = '?'+ResourceHandler.DebugFlag;
 			}
 			else
 			{

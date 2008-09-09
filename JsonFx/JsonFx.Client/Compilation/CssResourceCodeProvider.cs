@@ -39,11 +39,17 @@ namespace JsonFx.Compilation
 {
 	public class CssResourceCodeProvider : JsonFx.Compilation.ResourceCodeProvider
 	{
+		#region Constants
+
+		public const string MimeType = "text/css";
+
+		#endregion Constants
+
 		#region ResourceCodeProvider Members
 
 		public override string ContentType
 		{
-			get { return "text/css"; }
+			get { return CssResourceCodeProvider.MimeType; }
 		}
 
 		public override string FileExtension

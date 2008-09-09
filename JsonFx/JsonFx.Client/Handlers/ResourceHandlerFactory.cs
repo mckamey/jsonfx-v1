@@ -42,7 +42,7 @@ namespace JsonFx.Handlers
 		IHttpHandler IHttpHandlerFactory.GetHandler(HttpContext context, string verb, string url, string path)
 		{
 			string setting = Path.GetExtension(context.Request.FilePath);
-			bool isStrings = ResourceHandler.GlobalizationSetting.Equals(setting, StringComparison.InvariantCultureIgnoreCase);
+			bool isStrings = ResourceHandler.GlobalizationExtension.Equals(setting, StringComparison.InvariantCultureIgnoreCase);
 			if (isStrings)
 			{
 				// output resource strings used by the handler
