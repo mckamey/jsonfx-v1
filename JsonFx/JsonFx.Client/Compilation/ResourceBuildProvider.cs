@@ -370,7 +370,7 @@ namespace JsonFx.Compilation
 		{
 			if (String.IsNullOrEmpty(source))
 			{
-				gzipped = deflated = null;
+				gzipped = deflated = new byte[0];
 				return;
 			}
 
