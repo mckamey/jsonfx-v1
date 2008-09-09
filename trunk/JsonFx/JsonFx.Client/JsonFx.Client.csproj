@@ -72,6 +72,7 @@
     <Compile Include="Compilation\ScriptResourceCodeProvider.cs">
       <SubType>Component</SubType>
     </Compile>
+    <Compile Include="Client\ResourceInclude.cs" />
     <Compile Include="Handlers\CompressedFileHandler.cs" />
     <Compile Include="Handlers\ETag.cs" />
     <Compile Include="Handlers\CompiledBuildResult.cs" />

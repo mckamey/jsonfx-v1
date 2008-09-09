@@ -42,11 +42,17 @@ namespace JsonFx.Compilation
 {
 	public class ScriptResourceCodeProvider : JsonFx.Compilation.ResourceCodeProvider
 	{
+		#region Constants
+
+		public const string MimeType = "text/javascript";
+
+		#endregion Constants
+
 		#region ResourceCodeProvider Properties
 
 		public override string ContentType
 		{
-			get { return "text/javascript"; }
+			get { return MimeType; }
 		}
 
 		public override string FileExtension
