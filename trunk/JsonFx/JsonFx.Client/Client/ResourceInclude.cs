@@ -65,15 +65,16 @@ namespace JsonFx.Client
 
 		protected override void Render(HtmlTextWriter writer)
 		{
-			CompiledBuildResult info = CompiledBuildResult.Create(this.SourceUrl);
+			string url = this.SourceUrl;
+			CompiledBuildResult info = CompiledBuildResult.Create(url);
 			if (info == null)
 			{
 				throw new ArgumentException(String.Format(
 					"Path \"{0}\" does not resolve to a ResourceHandler result.",
-					this.SourceUrl));
+					url));
 			}
 
-			string url = ResourceHandler.GetResourceUrl(this.SourceUrl, this.isDebug);
+			url = ResourceHandler.GetResourceUrl(url, this.isDebug);
 			url = this.ResolveUrl(url);
 			string type =
 				String.IsNullOrEmpty(info.ContentType) ?
