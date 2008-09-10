@@ -74,6 +74,7 @@ namespace JsonFx.Client
 			}
 
 			string url = ResourceHandler.GetResourceUrl(this.SourceUrl, this.isDebug);
+			url = this.ResolveUrl(url);
 			string type =
 				String.IsNullOrEmpty(info.ContentType) ?
 				String.Empty :
