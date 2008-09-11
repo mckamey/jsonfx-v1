@@ -66,6 +66,14 @@ namespace JsonFx.UI.Jbst
 				delete {0}[""$jbst.init""];
 			}}";
 
+		private const string NamespaceFormatPrettyPrint = 
+			@"/* namespace {0} */
+			if (""undefined"" === typeof {0}) {{
+				{0} = {{}};
+			}}";
+
+		private const string NamespaceFormat = @"if(""undefined""===typeof {0}){{{0}={{}};}}";
+
 		#endregion Constants
 
 		#region Fields
@@ -443,6 +451,22 @@ namespace JsonFx.UI.Jbst
 					if (!String.IsNullOrEmpty(globals))
 					{
 						writer.WriteLine("/*global {0} */", globals);
+					}
+				}
+
+				string[] namespaces = this.Name.Split(new char[] { '.' }, StringSplitOptions.RemoveEmptyEntries);
+				for (int i=0; i<namespaces.Length-1; i++)
+				{
+					string ident = (i == 0) ?
+						"window."+namespaces[i] :
+						String.Join(".", namespaces, 0, i+1);
+					if (prettyPrint)
+					{
+						writer.WriteLine(NamespaceFormatPrettyPrint, ident);
+					}
+					else
+					{
+						writer.Write(NamespaceFormat, ident);
 					}
 				}
 
