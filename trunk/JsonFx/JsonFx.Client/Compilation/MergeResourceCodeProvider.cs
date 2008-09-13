@@ -144,6 +144,24 @@ namespace JsonFx.Compilation
 
 						helper.AddVirtualPathDependency(files[i]);
 
+						ICollection dependencies = BuildManager.GetVirtualPathDependencies(files[i]);
+						if (dependencies != null)
+						{
+							foreach (string dependency in dependencies)
+							{
+								helper.AddVirtualPathDependency(dependency);
+							}
+						}
+
+						dependencies = result.VirtualPathDependencies;
+						if (dependencies != null)
+						{
+							foreach (string dependency in dependencies)
+							{
+								helper.AddVirtualPathDependency(dependency);
+							}
+						}
+
 						resources.Append(result.PrettyPrinted);
 						compacts.Append(result.Compacted);
 						continue;

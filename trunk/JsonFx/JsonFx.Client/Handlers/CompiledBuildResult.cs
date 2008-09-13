@@ -64,6 +64,14 @@ namespace JsonFx.Handlers
 		#region Properties
 
 		/// <summary>
+		/// Gets the virtual paths which this resource is dependent upon
+		/// </summary>
+		protected internal abstract string[] VirtualPathDependencies
+		{
+			get;
+		}
+
+		/// <summary>
 		/// Gets the pretty-printed resource data
 		/// </summary>
 		public abstract string PrettyPrinted { get; }
