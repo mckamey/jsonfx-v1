@@ -44,6 +44,14 @@ namespace JsonFx.UI.Jbst
 
 		public const string JbstPrefix = "jbst"+JbstControl.PrefixDelim;
 
+		private const string ControlSimple =
+			@"function(){{return {0}.dataBind(this.data,this.index);}}";
+
+		private const string ControlSimpleDebug =
+			@"function() {{
+				return {0}.dataBind(this.data, this.index);
+			}}";
+
 		private const string ControlStart =
 			@"function(){var t=new JsonML.BST(";
 
@@ -121,6 +129,19 @@ namespace JsonFx.UI.Jbst
 
 		void JsonFx.Json.IJsonSerializable.WriteJson(JsonFx.Json.JsonWriter writer)
 		{
+			if (!this.ChildControlsSpecified)
+			{
+				if (writer.PrettyPrint)
+				{
+					writer.TextWriter.Write(ControlSimpleDebug, this.ControlName);
+				}
+				else
+				{
+					writer.TextWriter.Write(ControlSimple, this.ControlName);
+				}
+				return;
+			}
+
 			if (writer.PrettyPrint)
 			{
 				writer.TextWriter.Write(ControlStartDebug);
