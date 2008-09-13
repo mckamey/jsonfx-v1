@@ -67,10 +67,10 @@ namespace JsonFx.UI.Jbst
 			}}";
 
 		private const string NamespaceFormatPrettyPrint = 
-			@"/* namespace {0} */
-			if (""undefined"" === typeof {0}) {{
-				{0} = {{}};
-			}}";
+@"/* namespace {0} */
+if (""undefined"" === typeof {0}) {{
+	{0} = {{}};
+}}";
 
 		private const string NamespaceFormat = @"if(""undefined""===typeof {0}){{{0}={{}};}}";
 
@@ -462,7 +462,9 @@ namespace JsonFx.UI.Jbst
 						String.Join(".", namespaces, 0, i+1);
 					if (prettyPrint)
 					{
+						writer.WriteLine();
 						writer.WriteLine(NamespaceFormatPrettyPrint, ident);
+						writer.WriteLine();
 					}
 					else
 					{
