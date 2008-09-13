@@ -52,26 +52,21 @@ namespace JsonFx.UI.Jbst
 				var t = new JsonML.BST(";
 
 		private const string ControlEndFormat =
-			@");t.prototype=this;return {0}.dataBind({{jbst:t,args:{1},data:this.data,index:this.index}});}}";
+			@");t.prototype=this;t.args={1};return {0}.dataBind(this.data,this.index,t,{1});}}";
 
 		private const string ControlEndFormatDebug =
 			@");
 				t.prototype = this;
-				return {0}.dataBind(
-					{{
-						jbst: t,
-						args: {1},
-						data: this.data,
-						index: this.index
-					}});
+				t.args = {1};
+				return {0}.dataBind(this.data, this.index, t);
 			}}";
 
 		public const string CustomControlPlaceholder =
-			@"if(this.data&&this.data.jbst&&""function""===typeof this.data.jbst.databind){return this.data.jbst.dataBind(this.data.data,this.data.item);}";
+			@"if(this.jbst&&""function""===typeof this.jbst.databind){return this.jbst.dataBind(this.data,this.index);}";
 
 		public const string CustomControlPlaceholderDebug =
-			@"if (this.data && this.data.jbst && ""function"" === typeof this.data.jbst.databind) {
-				return this.data.jbst.dataBind(this.data.data, this.data.item);
+			@"if (this.jbst && ""function"" === typeof this.jbst.databind) {
+				return this.jbst.dataBind(this.data, this.index);
 			}";
 
 		#endregion Constants
@@ -108,6 +103,18 @@ namespace JsonFx.UI.Jbst
 			set { this.controlName = value; }
 		}
 
+		public override string RawName
+		{
+			get
+			{
+				if (String.IsNullOrEmpty(this.Prefix))
+				{
+					return this.ControlName;
+				}
+				return this.Prefix + PrefixDelim + this.ControlName;
+			}
+		}
+
 		#endregion Properties
 
 		#region IJsonSerializable Members
@@ -123,9 +130,12 @@ namespace JsonFx.UI.Jbst
 				writer.TextWriter.Write(ControlStart);
 			}
 
+			// TODO: flesh out story for nested template args
+			string args = JsonWriter.Serialize(this.Attributes);
+			this.Attributes.Clear();
+
 			writer.Write(new EnumerableAdapter(this));
 
-			string args = JsonWriter.Serialize(this.Attributes);
 			if (writer.PrettyPrint)
 			{
 				writer.TextWriter.Write(ControlEndFormatDebug, this.ControlName, args);
