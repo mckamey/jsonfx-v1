@@ -113,7 +113,7 @@ namespace JsonFx.UI.Jbst
 		}
 
 		[JsonName("rawName")]
-		public string RawName
+		public virtual string RawName
 		{
 			get
 			{
