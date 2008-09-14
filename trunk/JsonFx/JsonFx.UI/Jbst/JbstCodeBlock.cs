@@ -172,7 +172,7 @@ namespace JsonFx.UI.Jbst
 
 		private const string ExpressionFormat =
 			@"function() {{
-				return ({0});
+				return {0};
 			}}";
 
 		#endregion Constants
