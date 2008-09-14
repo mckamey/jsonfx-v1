@@ -237,14 +237,32 @@ namespace JsonFx.Compilation
 
 			#endregion public sealed class ResourceTypeName : CompiledBuildResult
 
-			#region private static readonly byte[] GzippedBytes
+			#region private static readonly string[] vpathDependencies
 
 			CodeMemberField field = new CodeMemberField();
+			field.Name = "vpathDependencies";
+			field.Type = new CodeTypeReference(typeof(string[]));
+			field.Attributes = MemberAttributes.Private|MemberAttributes.Static|MemberAttributes.Final;
+
+			CodeArrayCreateExpression arrayInit = new CodeArrayCreateExpression(field.Type, this.VirtualPathDependencies.Count);
+			foreach (string key in this.VirtualPathDependencies)
+			{
+				arrayInit.Initializers.Add(new CodePrimitiveExpression(key));
+			}
+			field.InitExpression = arrayInit;
+
+			resourceType.Members.Add(field);
+
+			#endregion private static readonly string[] vpathDependencies
+
+			#region private static readonly byte[] GzippedBytes
+
+			field = new CodeMemberField();
 			field.Name = "GzippedBytes";
 			field.Type = new CodeTypeReference(typeof(byte[]));
 			field.Attributes = MemberAttributes.Private|MemberAttributes.Static|MemberAttributes.Final;
 
-			CodeArrayCreateExpression arrayInit = new CodeArrayCreateExpression(field.Type, gzippedBytes.Length);
+			arrayInit = new CodeArrayCreateExpression(field.Type, gzippedBytes.Length);
 			foreach (byte b in gzippedBytes)
 			{
 				arrayInit.Initializers.Add(new CodePrimitiveExpression(b));
@@ -273,10 +291,27 @@ namespace JsonFx.Compilation
 
 			#endregion private static readonly byte[] DeflatedBytes
 
+			#region protected override string[] VirtualPathDependencies { get; }
+
+			// add a readonly property returning the static data
+			CodeMemberProperty property = new CodeMemberProperty();
+			property.Name = "VirtualPathDependencies";
+			property.Type = new CodeTypeReference(typeof(string[]));
+			property.Attributes = MemberAttributes.Family|MemberAttributes.Override;
+			property.HasGet = true;
+			// get { return vpathDependencies; }
+			property.GetStatements.Add(new CodeMethodReturnStatement(
+				new CodeFieldReferenceExpression(
+					new CodeTypeReferenceExpression(resourceType.Name),
+					"vpathDependencies")));
+			resourceType.Members.Add(property);
+
+			#endregion protected override string[] VirtualPathDependencies { get; }
+
 			#region public override string PrettyPrinted { get; }
 
 			// add a readonly property with the debug proxy code string
-			CodeMemberProperty property = new CodeMemberProperty();
+			property = new CodeMemberProperty();
 			property.Name = "PrettyPrinted";
 			property.Type = new CodeTypeReference(typeof(String));
 			property.Attributes = MemberAttributes.Public|MemberAttributes.Override;
