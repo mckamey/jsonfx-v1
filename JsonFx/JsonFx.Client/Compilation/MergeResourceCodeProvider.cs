@@ -57,6 +57,7 @@ namespace JsonFx.Compilation
 		private string contentType = "text/plain";
 		private string fileExtension = "txt";
 		private bool isMimeSet = false;
+		private bool buildAboutScript = false;
 
 		#endregion Fields
 
@@ -196,6 +197,13 @@ namespace JsonFx.Compilation
 				}
 			}
 
+			if (this.buildAboutScript)
+			{
+				string aboutDebug, about;
+				AboutScriptProvider.GetAboutScript(out aboutDebug, out about);
+				compacts.Append(about);
+				resources.Append(aboutDebug);
+			}
 			resource = resources.ToString();
 			compacted = compacts.ToString();
 		}
@@ -223,6 +231,13 @@ namespace JsonFx.Compilation
 			// load resources from Assembly
 			Assembly assembly = Assembly.Load(parts[1]);
 			helper.AddAssemblyDependency(assembly);
+
+			// TODO: improve the robustness of this logic
+			// perhaps the public key?
+			if (assembly.FullName.StartsWith("JsonFx"))
+			{
+				this.buildAboutScript = true;
+			}
 
 			ManifestResourceInfo info = assembly.GetManifestResourceInfo(parts[0]);
 			if (info == null)

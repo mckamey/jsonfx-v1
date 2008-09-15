@@ -57,6 +57,8 @@
     <Reference Include="System.XML" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Compilation\AboutScriptProvider.cs">
+    </Compile>
     <Compile Include="Compilation\CssResourceCodeProvider.cs">
       <SubType>Component</SubType>
     </Compile>
