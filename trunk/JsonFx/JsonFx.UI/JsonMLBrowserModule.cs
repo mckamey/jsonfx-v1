@@ -85,7 +85,7 @@ namespace JsonFx.UI
 				application.Request.Browser = new JsonFxBrowserCapabilities(application.Request.Browser);
 			}
 
-			application.Response.AddHeader(JsonFxHeader, JsonFx.About.Version.ToString());
+			application.Response.AddHeader(JsonFxHeader, JsonFx.About.Fx.Version.ToString());
 		}
 
 		#endregion Application Events
