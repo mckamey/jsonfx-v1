@@ -17,12 +17,10 @@ if ("undefined" === typeof JsonFx.UI) {
 	JsonFx.UI = {};
 }
 
-/*Hastable*/ JsonFx.userAgent = {
-		jsonfx : "1.0"
-	};
+/*Dictionary<string,string>*/ JsonFx.userAgent = {};
 
-/*Hastable*/ JsonFx.parseUserAgent = function(/*string*/ ua) {
-	/*Hastable*/ var fxua = {};
+/*Dictionary<string,string>*/ JsonFx.parseUserAgent = function(/*string*/ ua) {
+	/*Dictionary<string,string>*/ var fxua = {};
 
 	if (!ua) {
 		return fxua;
@@ -77,7 +75,7 @@ if ("undefined" === typeof JsonFx.UI) {
 	return fxua;
 };
 
-/*void*/ JsonFx.formatCssUserAgent = function (/*Hastable*/ fxua) {
+/*void*/ JsonFx.formatCssUserAgent = function (/*Dictionary<string,string>*/ fxua) {
 	/*string*/ function format(/*string*/ b, /*string*/ v) {
 		/*const string*/ var PREFIX = " ua-", i;
 
@@ -114,7 +112,7 @@ if ("undefined" === typeof JsonFx.UI) {
 	// variables and helper functions only available via JavaScript closures
 
 	// calculate userAgent immediately, poll until can apply them
-	/*Hastable*/ var fxua = JsonFx.parseUserAgent(navigator.userAgent);
+	/*Dictionary<string,string>*/ var fxua = JsonFx.parseUserAgent(navigator.userAgent);
 
 	/*	Dynamically appends CSS classes to document.body based upon user-agent.*/
 	/*void*/ JsonFx.UI.setCssUserAgent = function() {
