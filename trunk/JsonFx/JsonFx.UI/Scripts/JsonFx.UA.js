@@ -124,7 +124,12 @@ if ("undefined" === typeof JsonFx.UI) {
 			if (!document.body) {
 				setTimeout(appendCssPoll, 10);
 			} else {
-				document.body.className += JsonFx.formatCssUserAgent(fxua);
+				fxua = JsonFx.formatCssUserAgent(fxua);
+				if (document.body.className) {
+					document.body.className += fxua;
+				} else {
+					document.body.className = fxua.substr(1);
+				}
 			}
 		}
 
