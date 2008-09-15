@@ -649,7 +649,7 @@ if (""undefined"" === typeof {0}) {{
 
 					if (tag.TagType == HtmlTagType.FullTag)
 					{
-						this.PopTag(tag.RawName);
+						goto case HtmlTagType.EndTag;
 					}
 					break;
 				}
