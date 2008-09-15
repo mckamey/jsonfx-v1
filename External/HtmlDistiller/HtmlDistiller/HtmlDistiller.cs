@@ -860,6 +860,12 @@ namespace BuildTools.HtmlDistiller
 				ch != OpenTagChar)
 			{
 				string name = this.ParseAttributeName();
+				if (name.Length == 1 &&
+					name[0] == EndTagChar)
+				{
+					tag.SetFullTag();
+					name = String.Empty;
+				}
 
 				this.ParseSyncPoint();
 
@@ -900,7 +906,7 @@ namespace BuildTools.HtmlDistiller
 			if (ch == EndTagChar)
 			{
 				this.EmptyBuffer(1);
-				return String.Empty;
+				return EndTagChar.ToString();
 			}
 
 			while (!this.IsEOF)
