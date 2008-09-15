@@ -201,7 +201,7 @@ namespace BuildTools.HtmlDistiller
 
 		#region Fields
 
-		private readonly HtmlTagType tagType = HtmlTagType.Unknown;
+		private HtmlTagType tagType = HtmlTagType.Unknown;
 		private HtmlTaxonomy taxonomy = HtmlTaxonomy.None;
 		private readonly string rawName;
 		private string tagName;
@@ -224,18 +224,18 @@ namespace BuildTools.HtmlDistiller
 			}
 			this.rawName = name.Trim();
 
-			if (this.rawName.StartsWith("/"))
-			{
-				this.tagType = HtmlTagType.EndTag;
-				this.rawName = this.rawName.Substring(1);
-			}
-			else if (this.rawName.StartsWith("!") ||
+			if (this.rawName.StartsWith("!") ||
 				this.rawName.StartsWith("?") ||
 				this.rawName.StartsWith("%"))
 			{
 				this.tagType = HtmlTagType.Unparsed;
 			}
-			else if (HtmlTag.IsFullTag(this.TagName)) // this.TagName is lowercase
+			else if (this.rawName.StartsWith("/"))
+			{
+				this.tagType = HtmlTagType.EndTag;
+				this.rawName = this.rawName.Substring(1);
+			}
+			else if (HtmlTag.FullTagRequired(this.TagName)) // this.TagName is lowercase
 			{
 				this.tagType = HtmlTagType.FullTag;
 			}
@@ -386,6 +386,19 @@ namespace BuildTools.HtmlDistiller
 		#region Methods
 
 		/// <summary>
+		/// Changes a BeginTag to a FullTag
+		/// </summary>
+		protected internal void SetFullTag()
+		{
+			if (this.TagType != HtmlTagType.BeginTag)
+			{
+				return;
+			}
+
+			this.tagType = HtmlTagType.FullTag;
+		}
+
+		/// <summary>
 		/// Generates a closing tag which matches this tag
 		/// </summary>
 		/// <returns></returns>
@@ -473,7 +486,7 @@ namespace BuildTools.HtmlDistiller
 		/// http://www.w3.org/TR/xhtml-modularization/abstract_modules.html#sec_5.2.
 		/// http://www.w3.org/TR/WD-html40-970917/index/elements.html
 		/// </remarks>
-		protected static bool IsFullTag(string tag)
+		protected static bool FullTagRequired(string tag)
 		{
 			switch (tag)
 			{
