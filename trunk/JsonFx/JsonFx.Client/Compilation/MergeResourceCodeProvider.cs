@@ -47,6 +47,7 @@ namespace JsonFx.Compilation
 	{
 		#region Constants
 
+		private static readonly char[] LineDelims = { '\r', '\n' };
 		private static readonly char[] TypeDelims = { ',' };
 
 		#endregion Constants
@@ -92,7 +93,7 @@ namespace JsonFx.Compilation
 
 			StringBuilder resources = new StringBuilder();
 			StringBuilder compacts = new StringBuilder();
-			string[] files = sourceText.Replace("\r\n", "\n").Split('\n');
+			string[] files = sourceText.Split(LineDelims, StringSplitOptions.RemoveEmptyEntries);
 
 			for (int i=0; i<files.Length; i++)
 			{
