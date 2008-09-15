@@ -1704,7 +1704,7 @@ namespace BuildTools.HtmlDistiller
 		/// <returns>the filtered text</returns>
 		public static string Parse(string html, IHtmlFilter filter)
 		{
-			return HtmlDistiller.Parse(html, filter);
+			return HtmlDistiller.Parse(html, filter, 0);
 		}
 
 		/// <summary>
