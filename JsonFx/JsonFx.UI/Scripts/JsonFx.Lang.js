@@ -8,7 +8,7 @@
 \*---------------------------------------------------------------------------*/
 
 /* namespace JsonFx.Lang */
-if ("undefined" === typeof JsonFx) {
+if ("undefined" === typeof window.JsonFx) {
 	window.JsonFx = {};
 }
 

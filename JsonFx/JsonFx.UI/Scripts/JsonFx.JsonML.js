@@ -7,10 +7,10 @@
 \*---------------------------------------------------------*/
 
 // dependency checks
-if ("undefined" === typeof JSON) {
+if ("undefined" === typeof window.JSON) {
 	throw new Error("JsonFx.JsonML requires json2.js");
 }
-if ("undefined" === typeof JsonML) {
+if ("undefined" === typeof window.JsonML) {
 	throw new Error("JsonFx.JsonML requires JsonML2.js");
 }
 if ("undefined" === typeof JsonFx.IO) {
@@ -23,7 +23,7 @@ if ("undefined" === typeof JsonFx.Bindings) {
 /* Namespace JsonFx.JsonML ----------------------------------------------------*/
 
 /* namespace JsonFx */
-if ("undefined" === typeof JsonFx) {
+if ("undefined" === typeof window.JsonFx) {
 	window.JsonFx = {};
 }
 

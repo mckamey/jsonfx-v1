@@ -8,7 +8,7 @@
 \*---------------------------------------------------------------------------*/
 
 /* namespace JsonFx.DOM */
-if ("undefined" === typeof JsonFx) {
+if ("undefined" === typeof window.JsonFx) {
 	window.JsonFx = {};
 }
 if ("undefined" === typeof JsonFx.DOM) {

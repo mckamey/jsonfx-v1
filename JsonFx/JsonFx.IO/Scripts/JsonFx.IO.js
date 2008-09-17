@@ -11,7 +11,7 @@
 */
 
 // dependency checks
-if ("undefined" === typeof JSON) {
+if ("undefined" === typeof window.JSON) {
 	throw new Error("JsonFx.IO requires json2.js");
 }
 
@@ -56,7 +56,7 @@ if ("undefined" === typeof JSON) {
 /* ----------------------------------------------------*/
 
 /* namespace JsonFx */
-if ("undefined" === typeof JsonFx) {
+if ("undefined" === typeof window.JsonFx) {
 	window.JsonFx = {};
 }
 
