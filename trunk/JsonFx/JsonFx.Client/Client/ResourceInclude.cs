@@ -15,7 +15,8 @@ namespace JsonFx.Client
 	{
 		#region Constants
 
-		private const string StyleImportDirective = "@import url({0});";
+		private const string StyleImport = "<style type=\"{0}\">@import url({1});</style>";
+		private const string ScriptInclude = "<script type=\"{0}\" src=\"{1}\"></script>";
 
 		#endregion Constants
 
@@ -104,24 +105,12 @@ namespace JsonFx.Client
 
 		private void RenderStyleImport(HtmlTextWriter writer, string url, string mimeType)
 		{
-			if (!String.IsNullOrEmpty(mimeType))
-			{
-				writer.AddAttribute(HtmlTextWriterAttribute.Type, mimeType);
-			}
-			writer.RenderBeginTag(HtmlTextWriterTag.Style);
-			writer.Write(StyleImportDirective, url);
-			writer.RenderEndTag();
+			writer.Write(StyleImport, mimeType, url);
 		}
 
 		private void RenderScriptInclude(HtmlTextWriter writer, string url, string mimeType)
 		{
-			if (!String.IsNullOrEmpty(mimeType))
-			{
-				writer.AddAttribute(HtmlTextWriterAttribute.Type, mimeType);
-			}
-			writer.AddAttribute(HtmlTextWriterAttribute.Src, url);
-			writer.RenderBeginTag(HtmlTextWriterTag.Script);
-			writer.RenderEndTag();
+			writer.Write(ScriptInclude, mimeType, url);
 		}
 
 		#endregion Page Event Handlers
