@@ -48,10 +48,17 @@
 		<capabilities>
 			<capability name="browser" value="W3C Validator" />
 			<capability name="version" value="${version}" />
-			<capability name="ecmaScriptVersion" value="1.4" />
+            <capability name="type" value="W3CValidator${version}" />
+			<capability name="ecmaScriptVersion" value="1.5" />
+            <capability name="jscriptversion" value="5.6" />
 			<capability name="javaScript" value="true" />
+            <capability name="cookies" value="true" />
 			<capability name="supportsCss" value="true" />
+            <capability name="css1" value="true" />
+            <capability name="css2" value="true" />
+            <capability name="frames" value="true" />
 			<capability name="tables" value="true" />
+            <capability name="isColor" value="true" />
 			<capability name="w3cDomVersion" value="1.0" />
 			<capability name="htmlTextWriter" value="System.Web.UI.XhtmlTextWriter" />
 			<capability name="tagWriter" value="System.Web.UI.XhtmlTextWriter" />
