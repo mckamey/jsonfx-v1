@@ -314,7 +314,7 @@ namespace JsonFx.JsonRpc.Proxy
 
 		internal override string ClassBeginFormat
 		{
-			get { return "if(\"undefined\"===typeof {0}{1}){{{0}{1}=function(url){{if(url){{this.address=url;}}}};{0}{1}.prototype=new JsonFx.IO.JsonRpcService();"; }
+			get { return "if(\"undefined\"===typeof {0}{1}){{{0}{1}=function(url){{if(url){{this.address=url;}}}};{0}{1}.prototype=new JsonFx.IO.Service();"; }
 		}
 
 		internal override string ClassEnd
@@ -381,7 +381,7 @@ namespace JsonFx.JsonRpc.Proxy
 
 		internal override string ClassBeginFormat
 		{
-			get { return "if (\"undefined\" === typeof {0}{1}) {{\r\n\r\n\t/*ctor*/\r\n\t{0}{1} = function(/*string*/ serviceUrl) {{\r\n\t\tif (serviceUrl) {{\r\n\t\t\tthis.address = serviceUrl;\r\n\t\t}}\r\n\t}};\r\n\r\n\t/*base*/\r\n\t{0}{1}.prototype = new JsonFx.IO.JsonRpcService();\r\n\r\n"; }
+			get { return "if (\"undefined\" === typeof {0}{1}) {{\r\n\r\n\t/*ctor*/\r\n\t{0}{1} = function(/*string*/ serviceUrl) {{\r\n\t\tif (serviceUrl) {{\r\n\t\t\tthis.address = serviceUrl;\r\n\t\t}}\r\n\t}};\r\n\r\n\t/*base*/\r\n\t{0}{1}.prototype = new JsonFx.IO.Service();\r\n\r\n"; }
 		}
 
 		internal override string ClassEnd
