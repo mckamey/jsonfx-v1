@@ -487,16 +487,38 @@ JsonFx.IO = {};
 /* JsonRpcService ----------------------------------------------------*/
 
 /* Base type for generated JSON Services */
-if ("undefined" === typeof JsonFx.IO.JsonRpcService) {
+if ("undefined" === typeof JsonFx.IO.Service) {
 
 	/* Ctor */
-	JsonFx.IO.JsonRpcService = function() {};
+	JsonFx.IO.Service = function() {};
 
-	/*event*/ JsonFx.IO.JsonRpcService.prototype.onBeginRequest = null;
+	/*string*/ JsonFx.IO.Service.appRoot = "";
+	/*void*/ JsonFx.IO.Service.setAppRoot = function(/*string*/ root) {
+		if (!root) {
+			JsonFx.IO.Service.appRoot = "";
+			return;
+		}
 
-	/*event*/ JsonFx.IO.JsonRpcService.prototype.onEndRequest = null;
+		if (root.charAt(root.length-1) === '/') {
+			root = root.substr(0, root.length-1);
+		}
 
-	/*void*/ JsonFx.IO.JsonRpcService.prototype.callService = function(
+		JsonFx.IO.Service.appRoot = root;
+	};
+
+	/*event*/ JsonFx.IO.Service.prototype.onBeginRequest = null;
+
+	/*event*/ JsonFx.IO.Service.prototype.onEndRequest = null;
+
+	/*string*/ JsonFx.IO.Service.prototype.getAddress = function() {
+		if (JsonFx.IO.Service.appRoot) {
+			return JsonFx.IO.Service.appRoot + this.address;
+		} else {
+			return this.address;
+		}
+	};
+
+	/*void*/ JsonFx.IO.Service.prototype.callService = function(
 		/*string*/ rpcMethod,
 		/*object*/ rpcParams,
 		/*RequestOptions*/ options) {
@@ -524,11 +546,11 @@ if ("undefined" === typeof JsonFx.IO.JsonRpcService) {
 			this.onBeginRequest(options.context);
 		}
 
-		JsonFx.IO.sendJsonRpc(this.address, rpcMethod, rpcParams, options);
+		JsonFx.IO.sendJsonRpc(this.getAddress(), rpcMethod, rpcParams, options);
 	};
 
 	// service description is callable via two methods
-	/*string*/ JsonFx.IO.JsonRpcService.prototype["system.describe"] = JsonFx.IO.JsonRpcService.prototype.$describe = function(
+	/*string*/ JsonFx.IO.Service.prototype["system.describe"] = JsonFx.IO.Service.prototype.$describe = function(
 		/*RequestOptions*/ options) {
 
 		this.callService("system.describe", null, options);
