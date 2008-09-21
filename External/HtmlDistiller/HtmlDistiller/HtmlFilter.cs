@@ -453,6 +453,7 @@ namespace BuildTools.HtmlDistiller.Filters
 		/// <returns></returns>
 		/// <remarks>
 		/// http://www.w3.org/TR/html401/index/elements.html
+		/// http://webdesign.about.com/od/htmltags/a/bl_index.htm
 		/// </remarks>
 		public override bool FilterTag(HtmlTag tag)
 		{
