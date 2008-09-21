@@ -70,11 +70,13 @@ namespace JsonFx.UI.Jbst
 			}}";
 
 		public const string CustomControlPlaceholder =
-			@"if(this.jbst&&""function""===typeof this.jbst.databind){return this.jbst.dataBind(this.data,this.index);}";
+			@"if(this.jbst&&""function""===typeof this.jbst.databind){return this.jbst.dataBind(this.data,this.index);}else{return this.data;}";
 
 		public const string CustomControlPlaceholderDebug =
 			@"if (this.jbst && ""function"" === typeof this.jbst.databind) {
 				return this.jbst.dataBind(this.data, this.index);
+			} else {
+				return this.data;
 			}";
 
 		#endregion Constants
