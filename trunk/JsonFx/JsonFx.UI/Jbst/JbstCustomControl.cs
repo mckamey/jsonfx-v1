@@ -43,6 +43,16 @@ namespace JsonFx.UI.Jbst
 		#region Constants
 
 		public const string JbstPrefix = "jbst"+JbstControl.PrefixDelim;
+		public const string PlaceholderCommand = "placeholder";
+
+		private const string PlaceholderStatement =
+			@"if (this.jbst instanceof JsonML.BST) {
+				return this.jbst.dataBind(this.data, this.index);
+			} else {
+				return this.data;
+			}";
+
+		public const string ControlCommand = "control";
 
 		private const string ControlSimple =
 			@"function(){{return {0}.dataBind(this.data,this.index);}}";
@@ -69,21 +79,12 @@ namespace JsonFx.UI.Jbst
 				return {0}.dataBind(this.data, this.index, t);
 			}}";
 
-		public const string CustomControlPlaceholder =
-			@"if(this.jbst&&""function""===typeof this.jbst.databind){return this.jbst.dataBind(this.data,this.index);}else{return this.data;}";
-
-		public const string CustomControlPlaceholderDebug =
-			@"if (this.jbst && ""function"" === typeof this.jbst.databind) {
-				return this.jbst.dataBind(this.data, this.index);
-			} else {
-				return this.data;
-			}";
-
 		#endregion Constants
 
 		#region Fields
 
-		private string controlName;
+		private string commandName = null;
+		private IJbstControl renderProxy = null;
 
 		#endregion Fields
 
@@ -92,12 +93,9 @@ namespace JsonFx.UI.Jbst
 		/// <summary>
 		/// Ctor
 		/// </summary>
-		/// <param name="controlName"></param>
-		public JbstCustomControl(string controlName)
-			: base(controlName)
+		private JbstCustomControl()
+			: base(String.Empty)
 		{
-			this.ControlName = JbstCompiler.EnsureIdent(this.TagName);
-			this.TagName = String.Empty;
 		}
 
 		#endregion Init
@@ -107,39 +105,63 @@ namespace JsonFx.UI.Jbst
 		/// <summary>
 		/// Gets and sets the identifier of this control
 		/// </summary>
-		protected string ControlName
+		protected string CommandName
 		{
-			get { return this.controlName; }
-			set { this.controlName = value; }
+			get { return this.commandName; }
 		}
 
 		public override string RawName
 		{
-			get
-			{
-				if (String.IsNullOrEmpty(this.Prefix))
-				{
-					return this.ControlName;
-				}
-				return this.Prefix + PrefixDelim + this.ControlName;
-			}
+			get { return JbstCustomControl.JbstPrefix + this.CommandName; }
 		}
 
 		#endregion Properties
 
-		#region IJsonSerializable Members
+		#region Factory Method
 
-		void JsonFx.Json.IJsonSerializable.WriteJson(JsonFx.Json.JsonWriter writer)
+		public static JbstControl Create(string rawName, string path)
+		{
+			JbstCustomControl control = new JbstCustomControl();
+
+			string prefix = SplitPrefix(rawName, out control.commandName);
+
+			switch (control.commandName.ToLowerInvariant())
+			{
+				case JbstCustomControl.PlaceholderCommand:
+				{
+					control.renderProxy = new JbstStatementBlock(JbstCustomControl.PlaceholderStatement, path);
+					break;
+				}
+				case JbstCustomControl.ControlCommand:
+				{
+					control.renderProxy = null;
+					break;
+				}
+				default:
+				{
+					//throw new NotSupportedException("Unknown JBST control: "+control.commandName);
+					break;
+				}
+			}
+
+			return control;
+		}
+
+		#endregion Factory Method
+
+		#region Render Methods
+
+		private void RenderCustomControl(JsonWriter writer)
 		{
 			if (!this.ChildControlsSpecified)
 			{
 				if (writer.PrettyPrint)
 				{
-					writer.TextWriter.Write(ControlSimpleDebug, this.ControlName);
+					writer.TextWriter.Write(ControlSimpleDebug, this.CommandName);
 				}
 				else
 				{
-					writer.TextWriter.Write(ControlSimple, this.ControlName);
+					writer.TextWriter.Write(ControlSimple, this.CommandName);
 				}
 				return;
 			}
@@ -161,15 +183,30 @@ namespace JsonFx.UI.Jbst
 
 			if (writer.PrettyPrint)
 			{
-				writer.TextWriter.Write(ControlEndFormatDebug, this.ControlName, args);
+				writer.TextWriter.Write(ControlEndFormatDebug, this.CommandName, args);
 			}
 			else
 			{
-				writer.TextWriter.Write(ControlEndFormat, this.ControlName, args);
+				writer.TextWriter.Write(ControlEndFormat, this.CommandName, args);
 			}
 		}
 
-		void JsonFx.Json.IJsonSerializable.ReadJson(JsonFx.Json.JsonReader reader)
+		#endregion Render Methods
+
+		#region IJsonSerializable Members
+
+		void IJsonSerializable.WriteJson(JsonWriter writer)
+		{
+			if (this.renderProxy != null)
+			{
+				writer.Write(this.renderProxy);
+				return;
+			}
+
+			this.RenderCustomControl(writer);
+		}
+
+		void IJsonSerializable.ReadJson(JsonReader reader)
 		{
 			throw new NotImplementedException("JbstCodeBlock deserialization is not yet implemented.");
 		}
