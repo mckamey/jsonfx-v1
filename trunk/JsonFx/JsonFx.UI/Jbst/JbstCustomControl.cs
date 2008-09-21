@@ -53,6 +53,7 @@ namespace JsonFx.UI.Jbst
 			}";
 
 		public const string ControlCommand = "control";
+		public const string ControlNameKey = JbstCustomControl.JbstPrefix+"Name";
 
 		private const string ControlSimple =
 			@"function(){{return {0}.dataBind(this.data,this.index);}}";
@@ -83,36 +84,18 @@ namespace JsonFx.UI.Jbst
 
 		#region Fields
 
-		private string commandName = null;
 		private IJbstControl renderProxy = null;
+		private string commandName = null;
+		private string controlName = null;
+		private string args = null;
 
 		#endregion Fields
 
-		#region Init
-
-		/// <summary>
-		/// Ctor
-		/// </summary>
-		private JbstCustomControl()
-			: base(String.Empty)
-		{
-		}
-
-		#endregion Init
-
 		#region Properties
-
-		/// <summary>
-		/// Gets and sets the identifier of this control
-		/// </summary>
-		protected string CommandName
-		{
-			get { return this.commandName; }
-		}
 
 		public override string RawName
 		{
-			get { return JbstCustomControl.JbstPrefix + this.CommandName; }
+			get { return JbstCustomControl.JbstPrefix + this.commandName; }
 		}
 
 		#endregion Properties
@@ -139,8 +122,7 @@ namespace JsonFx.UI.Jbst
 				}
 				default:
 				{
-					//throw new NotSupportedException("Unknown JBST control: "+control.commandName);
-					break;
+					throw new NotSupportedException("Unknown JBST control: "+control.commandName);
 				}
 			}
 
@@ -151,17 +133,47 @@ namespace JsonFx.UI.Jbst
 
 		#region Render Methods
 
+		private void EnsureControl()
+		{
+			if (!this.AttributesSpecified)
+			{
+				return;
+			}
+
+			if (this.Attributes.ContainsKey(ControlNameKey))
+			{
+				this.controlName = this.Attributes[ControlNameKey] as string;
+				controlName = JbstCompiler.EnsureIdent(controlName);
+				this.Attributes.Remove(ControlNameKey);
+			}
+
+			this.args = JsonWriter.Serialize(this.Attributes);
+			if (String.IsNullOrEmpty(this.args))
+			{
+				this.args = "{}";
+			}
+
+			this.Attributes.Clear();
+		}
+
 		private void RenderCustomControl(JsonWriter writer)
 		{
+			this.EnsureControl();
+			if (String.IsNullOrEmpty(this.controlName))
+			{
+				// TODO: handle this more gracefully
+				return;
+			}
+
 			if (!this.ChildControlsSpecified)
 			{
 				if (writer.PrettyPrint)
 				{
-					writer.TextWriter.Write(ControlSimpleDebug, this.CommandName);
+					writer.TextWriter.Write(ControlSimpleDebug, controlName);
 				}
 				else
 				{
-					writer.TextWriter.Write(ControlSimple, this.CommandName);
+					writer.TextWriter.Write(ControlSimple, controlName);
 				}
 				return;
 			}
@@ -175,19 +187,15 @@ namespace JsonFx.UI.Jbst
 				writer.TextWriter.Write(ControlStart);
 			}
 
-			// TODO: flesh out story for nested template args
-			string args = JsonWriter.Serialize(this.Attributes);
-			this.Attributes.Clear();
-
 			writer.Write(new EnumerableAdapter(this));
 
 			if (writer.PrettyPrint)
 			{
-				writer.TextWriter.Write(ControlEndFormatDebug, this.CommandName, args);
+				writer.TextWriter.Write(ControlEndFormatDebug, controlName, this.args);
 			}
 			else
 			{
-				writer.TextWriter.Write(ControlEndFormat, this.CommandName, args);
+				writer.TextWriter.Write(ControlEndFormat, controlName, this.args);
 			}
 		}
 
