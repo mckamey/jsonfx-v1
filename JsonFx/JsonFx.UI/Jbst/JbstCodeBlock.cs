@@ -57,7 +57,7 @@ namespace JsonFx.UI.Jbst
 	/// <summary>
 	/// Internal representation of a JsonML+BST code block.
 	/// </summary>
-	internal abstract class JbstCodeBlock : IJbstControl, Json.IJsonSerializable
+	internal abstract class JbstCodeBlock : IJbstControl, IJsonSerializable
 	{
 		#region Fields
 
@@ -137,7 +137,7 @@ namespace JsonFx.UI.Jbst
 	{
 		#region Constants
 
-		private const string CommentFormat = "/* {0} */ \"\"";
+		private const string CommentFormat = "\"\"/* {0} */";
 
 		#endregion Constants
 

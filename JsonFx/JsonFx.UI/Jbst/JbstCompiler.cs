@@ -253,7 +253,7 @@ if (""undefined"" === typeof {0}) {{
 			if (tagName != null &&
 				tagName.StartsWith(JbstCustomControl.JbstPrefix, StringComparison.InvariantCultureIgnoreCase))
 			{
-				control = new JbstCustomControl(tagName);
+				control = JbstCustomControl.Create(tagName, this.path);
 			}
 			else
 			{

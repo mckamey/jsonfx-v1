@@ -81,17 +81,7 @@ namespace JsonFx.UI.Jbst
 				tagName = String.Empty;
 			}
 
-			int index = tagName.IndexOf(PrefixDelim);
-			if (index < 0)
-			{
-				this.prefix = String.Empty;
-				this.tagName = tagName;
-			}
-			else
-			{
-				this.prefix = tagName.Substring(0, index);
-				this.tagName = tagName.Substring(index+1);
-			}
+			this.prefix = SplitPrefix(tagName, out this.tagName);
 		}
 
 		#endregion Init
@@ -176,6 +166,31 @@ namespace JsonFx.UI.Jbst
 		}
 
 		#endregion Properties
+
+		#region Methods
+
+		/// <summary>
+		/// Splits the prefix and tag name
+		/// </summary>
+		/// <param name="rawName"></param>
+		/// <param name="tagName"></param>
+		/// <returns></returns>
+		protected internal static string SplitPrefix(string rawName, out string tagName)
+		{
+			int index = rawName.IndexOf(PrefixDelim);
+			if (index < 0)
+			{
+				tagName = rawName;
+				return String.Empty;
+			}
+			else
+			{
+				tagName = rawName.Substring(index+1);
+				return rawName.Substring(0, index);
+			}
+		}
+
+		#endregion Methods
 
 		#region IEnumerable Members
 
