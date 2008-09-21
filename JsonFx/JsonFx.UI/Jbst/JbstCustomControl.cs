@@ -96,7 +96,7 @@ namespace JsonFx.UI.Jbst
 		public JbstCustomControl(string controlName)
 			: base(controlName)
 		{
-			this.controlName = JbstCompiler.EnsureIdent(this.TagName);
+			this.ControlName = JbstCompiler.EnsureIdent(this.TagName);
 			this.TagName = String.Empty;
 		}
 
