@@ -45,6 +45,7 @@
 			<userAgent match="^W3C_Validator/(?'version'(?'major'\d+)\.(?'minor'\d+)(\.\d+)*)" />
 		</capture>
 
+		<!-- pretend supports everything to see correct output -->
 		<capabilities>
 			<capability name="browser" value="W3C Validator" />
 			<capability name="version" value="${version}" />
@@ -60,6 +61,7 @@
 			<capability name="tables" value="true" />
             <capability name="isColor" value="true" />
 			<capability name="w3cDomVersion" value="1.0" />
+			<capability name="supportsXmlHttp" value="true" />
 			<capability name="htmlTextWriter" value="System.Web.UI.XhtmlTextWriter" />
 			<capability name="tagWriter" value="System.Web.UI.XhtmlTextWriter" />
 			<capability name="preferredRenderingMime" value="application/xhtml+xml" />
