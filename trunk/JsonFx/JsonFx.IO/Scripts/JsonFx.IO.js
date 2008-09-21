@@ -431,7 +431,9 @@ JsonFx.IO = {};
 
 		var json = xhr ? xhr.responseText : null;
 		try {
-			json = ("string" === typeof json) ? JSON.parse(json, JsonFx.IO.jsonReviver) : null;
+			json = (json && "string" === typeof json) ?
+				JSON.parse(json, JsonFx.IO.jsonReviver) :
+				null;
 
 			if (onFailure) {
 				onFailure(json, cx, ex);
