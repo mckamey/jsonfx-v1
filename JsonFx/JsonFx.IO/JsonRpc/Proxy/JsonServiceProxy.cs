@@ -309,7 +309,7 @@ namespace JsonFx.JsonRpc.Proxy
 
 		internal override string NamespaceFormat
 		{
-			get { return "if(\"undefined\"===typeof {0}){{window.{0}={{}};}}"; }
+			get { return "if(\"undefined\"===typeof window.{0}){{window.{0}={{}};}}"; }
 		}
 
 		internal override string ClassBeginFormat
@@ -376,7 +376,7 @@ namespace JsonFx.JsonRpc.Proxy
 
 		internal override string NamespaceFormat
 		{
-			get { return "if (\"undefined\" === typeof {0}) {{\r\n\twindow.{0} = {{}};\r\n}}\r\n"; }
+			get { return "if (\"undefined\" === typeof window.{0}) {{\r\n\twindow.{0} = {{}};\r\n}}\r\n"; }
 		}
 
 		internal override string ClassBeginFormat
