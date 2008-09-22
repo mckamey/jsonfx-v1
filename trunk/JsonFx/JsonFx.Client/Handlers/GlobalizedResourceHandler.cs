@@ -44,9 +44,9 @@ namespace JsonFx.Handlers
 		#region Constants
 
 		private const string JslintDirective = "/*global JsonFx */\r\n";
-		public const string LookupStart = "JsonFx.Lang.get(";
 		private const string ResStart = "JsonFx.Lang.add(";
 		private const string ResEnd = ");";
+		public const string LookupStart = "JsonFx.Lang.get(";
 
 		#endregion Constants
 

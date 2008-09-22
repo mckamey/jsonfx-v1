@@ -23,7 +23,6 @@ namespace JsonFx.Client
 		#region Fields
 
 		private bool isDebug = false;
-		private bool isLocalized = false;
 		private string sourceUrl = String.Empty;
 
 		#endregion Fields
@@ -38,16 +37,6 @@ namespace JsonFx.Client
 		{
 			get { return this.isDebug; }
 			set { this.isDebug = value; }
-		}
-
-		/// <summary>
-		/// Gets and sets if should render reference to a localized strings resource.
-		/// </summary>
-		[DefaultValue(false)]
-		public bool IsLocalized
-		{
-			get { return this.isLocalized; }
-			set { this.isLocalized = value; }
 		}
 
 		/// <summary>
@@ -71,7 +60,7 @@ namespace JsonFx.Client
 			if (info == null)
 			{
 				throw new ArgumentException(String.Format(
-					"Path \"{0}\" does not resolve to a ResourceHandler result.",
+					"Error loading \"{0}\".  Either not found or a build error occurred.",
 					url));
 			}
 
@@ -96,10 +85,11 @@ namespace JsonFx.Client
 				}
 			}
 
-			if (this.isLocalized)
+			if (info is GlobalizedCompiledBuildResult)
 			{
-				string i18n = ResourceHandler.GetLocalizationUrl(this.SourceUrl, this.isDebug);
-				this.RenderScriptInclude(writer, i18n, ScriptResourceCodeProvider.MimeType);
+				url = ResourceHandler.GetLocalizationUrl(this.SourceUrl, this.isDebug);
+				url = this.ResolveUrl(url);
+				this.RenderScriptInclude(writer, url, ScriptResourceCodeProvider.MimeType);
 			}
 		}
 
