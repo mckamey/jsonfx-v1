@@ -37,6 +37,9 @@ if ("undefined" === typeof JsonFx.Lang) {
 				return d;
 			}
 
+			k = k.split(' ').join('');
+			k = k.toLowerCase();
+
 			return rsrc.hasOwnProperty(k) ? rsrc[k] : d;
 		};
 	};
