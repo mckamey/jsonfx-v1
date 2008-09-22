@@ -46,11 +46,36 @@ namespace JsonFx.Handlers
 		private const string JslintDirective = "/*global JsonFx */\r\n";
 		private const string ResStart = "JsonFx.Lang.add(";
 		private const string ResEnd = ");";
-		public const string LookupStart = "JsonFx.Lang.get(";
+		private const string LookupStart = "JsonFx.Lang.get(";
 
 		#endregion Constants
 
 		#region Methods
+
+		public static void ExtractGlobalizationKeys(string script, IList<string> globalizationKeys)
+		{
+			int i = 0;
+
+			while ((i = script.IndexOf(GlobalizedResourceHandler.LookupStart, i)) >= 0)
+			{
+				i += GlobalizedResourceHandler.LookupStart.Length;
+
+				try
+				{
+					string key = JsonReader.Deserialize(script, i) as string;
+					if (String.IsNullOrEmpty(key))
+					{
+						continue;
+					}
+
+					globalizationKeys.Add(key);
+				}
+				catch
+				{
+					continue;
+				}
+			}
+		}
 
 		public static string GetKey(ResourceExpressionFields fields, string path)
 		{

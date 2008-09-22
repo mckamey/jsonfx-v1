@@ -35,6 +35,7 @@ using System.Web.Compilation;
 using System.CodeDom;
 
 using BuildTools;
+using JsonFx.Handlers;
 using JsonFx.UI.Jbst;
 using JsonFx.UI.Jbst.Extensions;
 
@@ -108,7 +109,21 @@ namespace JsonFx.Compilation
 					continue;
 				}
 
-				// queue up children
+				// parse expression blocks
+				if (control is JbstExpressionBlock)
+				{
+					GlobalizedResourceHandler.ExtractGlobalizationKeys(((JbstExpressionBlock)control).Code, this.GlobalizationKeys);
+					continue;
+				}
+
+				// parse statement blocks
+				if (control is JbstStatementBlock)
+				{
+					GlobalizedResourceHandler.ExtractGlobalizationKeys(((JbstStatementBlock)control).Code, this.GlobalizationKeys);
+					continue;
+				}
+
+				// look up declarative resource string expressions
 				JbstExtensionBlock extension = control as JbstExtensionBlock;
 				if (extension == null)
 				{
