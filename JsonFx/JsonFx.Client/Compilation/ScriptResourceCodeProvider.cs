@@ -98,27 +98,7 @@ namespace JsonFx.Compilation
 
 		private void ExtractGlobalizationKeys(string compacted)
 		{
-			int i = 0;
-
-			while ((i = compacted.IndexOf(GlobalizedResourceHandler.LookupStart, i)) >= 0)
-			{
-				i += GlobalizedResourceHandler.LookupStart.Length;
-
-				try
-				{
-					string key = JsonReader.Deserialize(compacted, i) as string;
-					if (String.IsNullOrEmpty(key))
-					{
-						continue;
-					}
-
-					this.GlobalizationKeys.Add(key);
-				}
-				catch
-				{
-					continue;
-				}
-			}
+			GlobalizedResourceHandler.ExtractGlobalizationKeys(compacted, this.GlobalizationKeys);
 		}
 
 		#endregion ResourceCodeProvider Methods
