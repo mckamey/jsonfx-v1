@@ -2,4 +2,4 @@
 
 <%-- If your configuration is not correct then this will not show. --%>
 <p class="ReadMe">Congratulations! Setup appears to be configured correctly on <strong><%= this.data.hostName %></strong>.</p>
-<p class="ReadMe">For configuration details visit: <a href="http://starterkit.jsonfx.net/instructions.aspx">http://starterkit.jsonfx.net/instructions.aspx</a></p>
+<p class="ReadMe">See <a href="http://starterkit.jsonfx.net/instructions.aspx">http://starterkit.jsonfx.net/instructions.aspx</a> for JsonFx customizations to Visual Studio.</p>

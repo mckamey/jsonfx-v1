@@ -18,7 +18,7 @@
 <form id="F" runat="server">
 <div class="js-MessageArea">
 
-	<p class="ReadMe">View <a href="http://starterkit.jsonfx.net/instructions.aspx">http://starterkit.jsonfx.net/instructions.aspx</a> for configuration help.</p>
+	<p class="ReadMe">See <a href="http://starterkit.jsonfx.net/instructions.aspx">http://starterkit.jsonfx.net/instructions.aspx</a> for configuration help.</p>
     
 </div>
 </form>
