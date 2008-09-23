@@ -7,6 +7,6 @@ body
 
 .HelloWorld
 {
-	color: #009900;
-	padding: 1em;
+	font-size: 2em;
+	text-align: center;
 }
