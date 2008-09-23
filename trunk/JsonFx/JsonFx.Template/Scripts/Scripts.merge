@@ -35,4 +35,5 @@ JsonFx.Scripts.JsonFx.DOM.js, JsonFx.UI
 JsonFx.Scripts.JsonFx.History.js, JsonFx.History
 
 # put your script references here
+~/Controls/Example.jbst
 ~/Scripts/MyScript.js

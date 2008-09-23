@@ -16,7 +16,7 @@
 	<JsonFx:ResourceInclude ID="ScriptInclude" runat="server" SourceUrl="~/Scripts/Scripts.merge" />
 
 <form id="F" runat="server">
-<div>
+<div class="js-MessageArea">
 
 	<p class="ReadMe">View <a href="http://starterkit.jsonfx.net/instructions.aspx">http://starterkit.jsonfx.net/instructions.aspx</a> for configuration help.</p>
     
