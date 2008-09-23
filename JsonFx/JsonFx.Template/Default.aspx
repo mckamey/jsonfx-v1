@@ -19,6 +19,7 @@
 <div>
 
 	<p class="HelloWorld">Hello world.</p>
+	<p style="text-align:center;">View <a href="http://starterkit.jsonfx.net/instructions.aspx">http://starterkit.jsonfx.net/instructions.aspx</a> for configuration help.</p>
     
 </div>
 </form>
