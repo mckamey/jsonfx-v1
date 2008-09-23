@@ -7,4 +7,4 @@
 # finally, if the browser supports it the resulting resource will be GZipped or Deflated
 # resources can be directly in the project or embedded in linked assemblies
 
-~/Scripts/MyScript.css
+~/Scripts/MyScript.js
