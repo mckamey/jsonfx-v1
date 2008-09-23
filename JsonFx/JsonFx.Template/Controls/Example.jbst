@@ -1,0 +1,5 @@
+<%@ Control Name="Example.congats" Language="JavaScript" %>
+
+<%-- If your configuration is not correct then this will not show. --%>
+<p class="ReadMe">Congratulations! Setup appears to be configured correctly on <strong><%= this.data.hostName %></strong>.</p>
+<p class="ReadMe">For configuration details visit: <a href="http://starterkit.jsonfx.net/instructions.aspx">http://starterkit.jsonfx.net/instructions.aspx</a></p>
