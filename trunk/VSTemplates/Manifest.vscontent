@@ -12,7 +12,7 @@
 		</Attributes>
 	</Content>
 	<Content>
-		<FileName>JbstControlFile_VSItemTemplate.zip</FileName>
+		<FileName>JbstControl_VSItemTemplate.zip</FileName>
 		<DisplayName>JBST Control</DisplayName>
 		<Description>JsonML+Browser-Side Template control</Description>
 		<FileContentType>VSTemplate</FileContentType>
