@@ -1,4 +1,7 @@
-2008-09-07 @ 16:58
+2008-09-25 @ 08:36
+
+- customize VS templates
+	http://msdn.microsoft.com/en-us/magazine/cc188697.aspx
 
 - add delay signing of JsonFx assemblies
 	http://blogs.msdn.com/shawnfa/archive/2006/04/24/582278.aspx
