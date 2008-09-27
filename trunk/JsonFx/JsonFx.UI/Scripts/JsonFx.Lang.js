@@ -19,6 +19,8 @@ if ("undefined" === typeof JsonFx.Lang) {
 		// create private member via closure
 		var rsrc = {};
 
+		this.culture = "";
+
 		/*void*/ this.add = function(/*object*/ r) {
 			if (!r) {
 				return;
