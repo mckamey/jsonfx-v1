@@ -1,4 +1,4 @@
-/*global JsonFx, JSON, JsonML */
+/*global JSON, JsonML, JsonFx */
 /*---------------------------------------------------------*\
 	JsonFx.JsonML
 	Copyright (c)2006-2007 Stephen M. McKamey

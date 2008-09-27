@@ -44,6 +44,9 @@ if ("undefined" === typeof JsonFx.DOM) {
 	if (!elem) {
 		return;
 	}
+	// unbind to prevent memory leaks
+	JsonFx.Bindings.unbind(elem);
+
 	while (elem.lastChild) {
 		elem.removeChild(elem.lastChild);
 	}
