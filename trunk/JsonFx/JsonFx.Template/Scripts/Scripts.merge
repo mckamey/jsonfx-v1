@@ -28,8 +28,8 @@ JsonFx.Scripts.JsonFx.Bindings.js, JsonFx.UI
 # client-side globalization support
 JsonFx.Scripts.JsonFx.Lang.js, JsonFx.UI
 
-# CssUserAgent support
-JsonFx.Scripts.JsonFx.DOM.js, JsonFx.UI
+# DOM utilities
+JsonFx.Scripts.JsonFx.UI.js, JsonFx.UI
 
 # Ajax History support
 JsonFx.Scripts.JsonFx.History.js, JsonFx.History
