@@ -29,7 +29,7 @@ if ("undefined" === typeof JsonFx.Bindings) {
 	throw new Error("JsonFx.UI.js requires JsonFx.Bindings.js");
 }
 
-/* JsonFx.UI ----------------------------------------------------*/
+/* DOM utilities ------------------------------------------------*/
 
 /*bool*/ JsonFx.UI.clear = function(/*DOM*/ elem) {
 	if (!elem) {
@@ -154,6 +154,8 @@ if ("undefined" === typeof JsonFx.Bindings) {
 	return null;
 };
 
+/* Event utilities ----------------------------------------------*/
+
 /*void*/ JsonFx.UI.clearEvent = function(/*Event*/ evt) {
 	evt = evt || window.event;
 	if (evt) {
@@ -179,13 +181,15 @@ if ("undefined" === typeof JsonFx.Bindings) {
 	return Number(evt.keyCode || evt.charCode || -1);
 };
 
-/*	creates DOM elements from JsonML and binds them accordingly */
+/* JsonML utilities ---------------------------------------------*/
+
+/*	builds JsonML binding behaviors */
 /*DOM*/ JsonFx.UI.bindJsonML = function(/*JsonML*/ jml) {
-	if (jml) {
-		return JsonML.parse(jml, JsonFx.Bindings.bindOne);
-	} else {
+	if (!jml) {
 		return null;
 	}
+
+	return JsonML.parse(jml, JsonFx.Bindings.bindOne);
 };
 
 /* JBST + JSON => JsonML => DOM */
@@ -195,11 +199,6 @@ if ("undefined" === typeof JsonFx.Bindings) {
 	/*object*/ data,
 	/*bool*/ append) {
 
-	// ensure template is JBST
-	if (!(template instanceof JsonML.BST)) {
-		throw new Error("template is not a JBST");
-	}
-
 	// ensure container exists
 	if ("string" === typeof container) {
 		container = document.getElementById(container);
@@ -208,8 +207,14 @@ if ("undefined" === typeof JsonFx.Bindings) {
 		throw new Error("container is not a DOM element");
 	}
 
-	// databind JSON data to a JBST template, resulting in a JsonML representation
-	var result = template.dataBind(data);
+	var result;
+	if (template instanceof JsonML.BST) {
+		// databind JSON data to a JBST template, resulting in a JsonML representation
+		result = template.dataBind(data);
+	} else {
+		// assume template already is JsonML
+		result = template;
+	}
 
 	if (result) {
 		// hydrate the resulting JsonML, binding any dynamic behaviors to elements
@@ -225,58 +230,4 @@ if ("undefined" === typeof JsonFx.Bindings) {
 		// add the resulting DOM elements to the container
 		container.appendChild(result);
 	}
-};
-
-/*	if container is null then uses ID(s) to replace page elements
-	returns the container element if one was specified */
-/*DOM*/ JsonFx.UI.displayJsonML = function(
-	/*JsonML*/ jml,
-	/*DOM*/ container,
-	/*bool*/ append) {
-
-	// either DOM element or id
-	container = ("string" === typeof container) ?
-		document.getElementById(container) : container;
-
-	jml = JsonFx.UI.bindJsonML(jml);
-	if (jml) {
-		if (container) {
-			if (!append) {
-				JsonFx.UI.clear(container);
-			}
-			container.appendChild(jml);
-		} else if (jml.id) {
-			container = document.getElementById(jml.id);
-			if (container && container.parentNode) {
-				// unbind to prevent memory leaks
-				JsonFx.Bindings.unbind(container);
-				container.parentNode.replaceChild(jml, container);
-			} else {
-				// can't add to document, so unbind
-				JsonFx.Bindings.unbind(jml);
-				jml = null;
-			}
-		} else if (jml.childNodes) {
-			while (jml.firstChild) {
-				if (!jml.firstChild.id) {
-					// unbind to prevent memory leaks
-					JsonFx.Bindings.unbind(jml.firstChild);
-					jml.removeChild(jml.firstChild);
-					continue;
-				}
-				container = document.getElementById(jml.firstChild.id);
-				if (container && container.parentNode) {
-					// unbind to prevent memory leaks
-					JsonFx.Bindings.unbind(container);
-					container.parentNode.replaceChild(jml.firstChild, container);
-				} else {
-					// unbind to prevent memory leaks
-					JsonFx.Bindings.unbind(jml.firstChild);
-					jml.removeChild(jml.firstChild);
-				}
-			}
-			container = null;
-		}
-	}
-	return container;
 };
