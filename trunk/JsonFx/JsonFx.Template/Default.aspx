@@ -15,6 +15,17 @@
 	<%-- one tag to include all the client scripts --%>
 	<JsonFx:ResourceInclude ID="ScriptInclude" runat="server" SourceUrl="~/Scripts/Scripts.merge" />
 
+	<%--
+		Service proxies are generated at build time
+		if application is being run as a virtual directory
+		then we need to let the JSON-RPC marshalling system
+		know it needs to adjust the end-point URLs
+		NOTE: you can remove this when app root is always "/"
+	--%>
+	<% if (HttpRuntime.AppDomainAppVirtualPath.Length > 1) { %>
+		<script type="text/javascript">JsonFx.IO.Service.setAppRoot("<%= HttpRuntime.AppDomainAppVirtualPath %>");</script>
+	<% } %>
+
 <form id="F" runat="server">
 <div class="js-MessageArea">
 

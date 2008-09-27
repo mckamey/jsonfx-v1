@@ -19,16 +19,16 @@ if ("undefined" === typeof window.Example) {
 	var data = { "hostName" : window.location.host };
 
 	// this databinds the data to the template
-	var jbst = Example.congats.dataBind( data );
+	var jbst = Example.congrats.dataBind( data );
 
 	// this hydrates the resulting markup allowing dynamic behaviors to be bound to elements
 	jbst = JsonML.parse(jbst, JsonFx.Bindings.bindOne);
 
-	// clear the container contents
-	JsonFx.DOM.clear(elem);
-
 	// add the result to the container
 	if (elem && jbst) {
+		// clear the container contents
+		JsonFx.DOM.clear(elem);
+
 		elem.appendChild(jbst);
 	}
 };
@@ -39,4 +39,3 @@ JsonFx.Bindings.register(
 	"js-MessageArea",
 	Example.initDisplay,
 	null);
-

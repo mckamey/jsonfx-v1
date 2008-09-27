@@ -1,0 +1,13 @@
+<%@ Control Name="Example.results" Language="JavaScript" %>
+
+This is the data that the service returned:
+<dl style="text-align:left;width:50%;margin:auto;">
+	<dt>TimeStamp:</dt>
+	<dd><%= this.data.timestamp.toString() %></dd>
+
+	<dt>Machine:</dt>
+	<dd><%= this.data.machine %></dd>
+
+	<dt>Number:</dt>
+	<dd><%= this.data.number %></dd>
+</dl>
