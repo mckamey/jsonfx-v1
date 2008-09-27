@@ -10,6 +10,9 @@
 # client-side JSON serialization
 JsonFx.Scripts.json2.js, JsonFx.Json
 
+# JSON-RPC support
+JsonFx.Scripts.JsonFx.IO.js, JsonFx.IO
+
 # JsonML support
 JsonFx.Scripts.JsonML2.js, JsonFx.UI
 
@@ -18,9 +21,6 @@ JsonFx.Scripts.JsonML_BST.js, JsonFx.UI
 
 # CssUserAgent support
 JsonFx.Scripts.JsonFx.UA.js, JsonFx.UI
-
-# JSON-RPC support
-JsonFx.Scripts.JsonFx.IO.js, JsonFx.IO
 
 # JavaScript behavior binding support
 JsonFx.Scripts.JsonFx.Bindings.js, JsonFx.UI
