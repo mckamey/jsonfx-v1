@@ -2,6 +2,8 @@ using System;
 using System.ComponentModel;
 using System.Web;
 using System.Web.UI;
+using System.Globalization;
+using System.Threading;
 
 using JsonFx.Handlers;
 using JsonFx.Compilation;
@@ -23,6 +25,7 @@ namespace JsonFx.Client
 		#region Fields
 
 		private bool isDebug = false;
+		private bool usePageCulture = true;
 		private string sourceUrl = String.Empty;
 
 		#endregion Fields
@@ -47,6 +50,16 @@ namespace JsonFx.Client
 		{
 			get { return this.sourceUrl; }
 			set { this.sourceUrl = value; }
+		}
+
+		/// <summary>
+		/// Gets and sets if page determines the culture or
+		/// if uses CurrentUICulture
+		/// </summary>
+		public bool UsePageCulture
+		{
+			get { return this.usePageCulture; }
+			set { this.usePageCulture = value; }
 		}
 
 		#endregion Properties
@@ -87,7 +100,11 @@ namespace JsonFx.Client
 
 			if (info is GlobalizedCompiledBuildResult)
 			{
-				url = ResourceHandler.GetLocalizationUrl(this.SourceUrl, this.isDebug);
+				string culture = this.UsePageCulture ?
+					Thread.CurrentThread.CurrentUICulture.Name :
+					String.Empty;
+
+				url = ResourceHandler.GetLocalizationUrl(this.SourceUrl, this.isDebug, culture);
 				url = this.ResolveUrl(url);
 				this.RenderScriptInclude(writer, url, ScriptResourceCodeProvider.MimeType);
 			}

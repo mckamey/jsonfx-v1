@@ -42,7 +42,10 @@ namespace JsonFx.UI.Jbst.Extensions
 
 		private const string ResourceLookupFormat =
 			@"function() {{
-				return JsonFx.Lang && JsonFx.Lang.get({0});
+				if (!JsonFx.Lang) {{
+					return ""$$""+{0}+""$$"";
+				}}
+				return JsonFx.Lang.get({0});
 			}}";
 
 		#endregion Constants

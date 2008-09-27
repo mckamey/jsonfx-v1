@@ -33,6 +33,8 @@ using System.IO;
 using System.Collections.Generic;
 using System.Web;
 using System.Web.Compilation;
+using System.Globalization;
+using System.Threading;
 
 using JsonFx.Json;
 using JsonFx.Compilation;
@@ -168,15 +170,26 @@ namespace JsonFx.Handlers
 				CompiledBuildResult.EnableStreamCompression(context);
 			}
 
-			// TODO: ensure varies by language
+			string userCulture = context.Request.PathInfo;
+			if (userCulture != null && userCulture.Length > 2)
+			{
+				userCulture = userCulture.Substring(1);
+				try
+				{
+					Thread.CurrentThread.CurrentUICulture = new CultureInfo(userCulture);
+				}
+				catch { }
+				try
+				{
+					Thread.CurrentThread.CurrentCulture = CultureInfo.CreateSpecificCulture(userCulture);
+				}
+				catch { }
+			}
+
 			context.Response.Cache.SetCacheability(HttpCacheability.ServerAndNoCache);
 
 			// get the target
 			string targetPath = context.Request.FilePath;
-			if (targetPath.EndsWith(ResourceHandler.GlobalizationExtension))
-			{
-				targetPath = targetPath.Substring(0, targetPath.Length-ResourceHandler.GlobalizationExtension.Length);
-			}
 
 			// TODO: provide mechanism for easily defining this target
 			GlobalizedCompiledBuildResult target = CompiledBuildResult.Create(targetPath) as GlobalizedCompiledBuildResult;
