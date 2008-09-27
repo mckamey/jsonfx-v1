@@ -1,6 +1,6 @@
 ﻿/*global JsonFx */
 /*---------------------------------------------------------------------------*\
-	JsonFx.UI.setCssUserAgent
+	JsonFx.UA.setCssUserAgent
 
 	Copyright (c)2006-2007 Stephen M. McKamey
 	Created: 2006-06-10-1635
@@ -12,14 +12,14 @@ if ("undefined" === typeof window.JsonFx) {
 	window.JsonFx = {};
 }
 
-/* namespace JsonFx.UI */
-if ("undefined" === typeof JsonFx.UI) {
-	JsonFx.UI = {};
+/* namespace JsonFx.UA */
+if ("undefined" === typeof JsonFx.UA) {
+	JsonFx.UA = {};
 }
 
 /*Dictionary<string,string>*/ JsonFx.userAgent = {};
 
-/*Dictionary<string,string>*/ JsonFx.parseUserAgent = function(/*string*/ ua) {
+/*Dictionary<string,string>*/ JsonFx.UA.parseUserAgent = function(/*string*/ ua) {
 	/*Dictionary<string,string>*/ var fxua = {};
 
 	if (!ua) {
@@ -75,7 +75,7 @@ if ("undefined" === typeof JsonFx.UI) {
 	return fxua;
 };
 
-/*void*/ JsonFx.formatCssUserAgent = function (/*Dictionary<string,string>*/ fxua) {
+/*void*/ JsonFx.UA.formatCssUserAgent = function (/*Dictionary<string,string>*/ fxua) {
 	/*string*/ function format(/*string*/ b, /*string*/ v) {
 		/*const string*/ var PREFIX = " ua-", i;
 
@@ -107,32 +107,30 @@ if ("undefined" === typeof JsonFx.UI) {
 	return uaCss;
 };
 
-(function() {
-	// anonymous function doesn't affect global namespace and can't be called externally
-	// variables and helper functions only available via JavaScript closures
+// anonymous function doesn't affect global namespace and can't be called externally
+// variables and helper functions only available via JavaScript closures
+
+/*	Dynamically appends CSS classes to document.body based upon user-agent.*/
+/*void*/ JsonFx.UA.setCssUserAgent = function() {
 
 	// calculate userAgent immediately, poll until can apply them
-	/*Dictionary<string,string>*/ var fxua = JsonFx.parseUserAgent(navigator.userAgent);
+	/*Dictionary<string,string>*/ var fxua = JsonFx.UA.parseUserAgent(navigator.userAgent);
 
-	/*	Dynamically appends CSS classes to document.body based upon user-agent.*/
-	/*void*/ JsonFx.UI.setCssUserAgent = function() {
+	// using JavaScript closures to access the parsed UA
+	// using setTimeout to poll until body exists
+	/*void*/ function appendCssPoll() {
 
-		// using JavaScript closures to access the parsed UA
-		// using setTimeout to poll until body exists
-		/*void*/ function appendCssPoll() {
-
-			if (!document.body) {
-				setTimeout(appendCssPoll, 10);
+		if (!document.body) {
+			setTimeout(appendCssPoll, 10);
+		} else {
+			fxua = JsonFx.UA.formatCssUserAgent(fxua);
+			if (document.body.className) {
+				document.body.className += fxua;
 			} else {
-				fxua = JsonFx.formatCssUserAgent(fxua);
-				if (document.body.className) {
-					document.body.className += fxua;
-				} else {
-					document.body.className = fxua.substr(1);
-				}
+				document.body.className = fxua.substr(1);
 			}
 		}
+	}
 
-		appendCssPoll();
-	};
-})();
+	appendCssPoll();
+};

@@ -1,7 +1,7 @@
 ﻿/*global JsonFx, JsonML, Example */
 
 /* enable valid CSS to target browsers without reverting to CSS hacks */
-JsonFx.UI.setCssUserAgent();
+JsonFx.UA.setCssUserAgent();
 
 /*
 	it is a best practice to not clutter the global namespace
