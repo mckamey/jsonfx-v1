@@ -34,6 +34,9 @@ JsonFx.Scripts.JsonFx.DOM.js, JsonFx.UI
 # Ajax History support
 JsonFx.Scripts.JsonFx.History.js, JsonFx.History
 
-# put your script references here
-~/Controls/Example.jbst
+# put all your references here
+~/Services/Services.merge
+~/Controls/Controls.merge
+
 ~/Scripts/MyScript.js
+~/Scripts/ServiceTest.js
