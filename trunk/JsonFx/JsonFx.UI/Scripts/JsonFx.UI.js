@@ -1,11 +1,11 @@
 /*global JSON, JsonML, JsonFx */
 
 /*---------------------------------------------------------*\
-	JsonFx.UI
+	JsonFx.UI.js
 
 	Copyright (c)2006-2008 Stephen M. McKamey
 	Created: 2006-11-11-1759
-	Modified: 2008-09-27-1441
+	Modified: 2008-09-27-1617
 \*---------------------------------------------------------*/
 
 /* namespace JsonFx */
@@ -24,9 +24,6 @@ if ("undefined" === typeof window.JSON) {
 }
 if ("undefined" === typeof window.JsonML) {
 	throw new Error("JsonFx.UI.js requires JsonML2.js");
-}
-if ("undefined" === typeof JsonFx.IO) {
-	throw new Error("JsonFx.UI.js requires JsonFx.IO.js");
 }
 if ("undefined" === typeof JsonFx.Bindings) {
 	throw new Error("JsonFx.UI.js requires JsonFx.Bindings.js");
@@ -280,76 +277,4 @@ if ("undefined" === typeof JsonFx.Bindings) {
 		}
 	}
 	return container;
-};
-
-/*void*/ JsonFx.UI.loadJsonML = function (
-	/*string*/ url,
-	/*DOM*/ container,
-	/*RequestOptions*/ options) {
-
-	options = JsonFx.IO.validateOptions(options);
-
-	var onCreate;
-	if (options.onCreate) {
-		onCreate = options.onCreate;
-		options.onCreate = function (/*JSON*/ jml, /*object*/ cx) {
-			// create callback
-			onCreate(cx);
-
-			// free closure references
-			onCreate = null;
-		};
-	}
-
-	var onSuccess = options.onSuccess;
-	options.onSuccess = function (/*JSON*/ jml, /*object*/ cx) {
-		// display UI
-		JsonFx.UI.displayJsonML(jml, container);
-
-		// success callback
-		if (onSuccess) { onSuccess(cx); }
-
-		// free closure references
-		onSuccess = container = null;
-	};
-
-	var onFailure;
-	if (options.onFailure) {
-		onFailure = options.onFailure;
-		options.onFailure = function (/*JSON*/ jml, /*object*/ cx, /*Error*/ ex) {
-			ex.$error = jml;
-		
-			// failure callback
-			onFailure(cx, ex);
-
-			// free closure references
-			onFailure = null;
-		};
-	}
-
-	var onTimeout;
-	if (options.onTimeout) {
-		onTimeout = options.onTimeout;
-		options.onTimeout = function (/*JSON*/ jml, /*object*/ cx, /*Error*/ ex) {
-			// timeout callback
-			onTimeout(cx, ex);
-
-			// free closure references
-			onTimeout = null;
-		};
-	}
-
-	var onComplete;
-	if (options.onComplete) {
-		onComplete = options.onComplete;
-		options.onComplete = function (/*JSON*/ jml, /*object*/ cx) {
-			// complete callback
-			onComplete(cx);
-
-			// free closure references
-			onComplete = 1;
-		};
-	}
-
-	JsonFx.IO.sendJsonRequest(url, options);
 };
