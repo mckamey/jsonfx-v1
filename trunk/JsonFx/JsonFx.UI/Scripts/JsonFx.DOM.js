@@ -1,21 +1,21 @@
 /*global JsonFx */
 /*---------------------------------------------------------------------------*\
-	JsonFx.DOM
+	JsonFx.UI
 
 	Copyright (c)2008 Stephen M. McKamey
 	Created: 2008-08-11-2157
 	Modified: 2008-08-31-2127
 \*---------------------------------------------------------------------------*/
 
-/* namespace JsonFx.DOM */
+/* namespace JsonFx.UI */
 if ("undefined" === typeof window.JsonFx) {
 	window.JsonFx = {};
 }
-if ("undefined" === typeof JsonFx.DOM) {
-	JsonFx.DOM = {};
+if ("undefined" === typeof JsonFx.UI) {
+	JsonFx.UI = {};
 }
 
-/*void*/ JsonFx.DOM.clearEvent = function(/*Event*/ evt) {
+/*void*/ JsonFx.UI.clearEvent = function(/*Event*/ evt) {
 	evt = evt || window.event;
 	if (evt) {
 		if (evt.stopPropagation) {
@@ -32,7 +32,7 @@ if ("undefined" === typeof JsonFx.DOM) {
 	}
 };
 
-/*int*/ JsonFx.DOM.getKeyCode = function(/*Event*/ evt) {
+/*int*/ JsonFx.UI.getKeyCode = function(/*Event*/ evt) {
 	evt = evt || window.event;
 	if (!evt) {
 		return -1;
@@ -40,7 +40,7 @@ if ("undefined" === typeof JsonFx.DOM) {
 	return Number(evt.keyCode || evt.charCode || -1);
 };
 
-/*bool*/ JsonFx.DOM.clear = function(/*DOM*/ elem) {
+/*bool*/ JsonFx.UI.clear = function(/*DOM*/ elem) {
 	if (!elem) {
 		return;
 	}
@@ -52,12 +52,12 @@ if ("undefined" === typeof JsonFx.DOM) {
 	}
 };
 
-/*bool*/ JsonFx.DOM.hasClass = function(/*DOM*/ elem, /*string*/ cssClass) {
+/*bool*/ JsonFx.UI.hasClass = function(/*DOM*/ elem, /*string*/ cssClass) {
 	return elem && elem.className && cssClass &&
 		!!elem.className.match(new RegExp("(^|\\s)"+cssClass+"(\\s|$)"));
 };
 
-/*void*/ JsonFx.DOM.addClass = function(/*DOM*/ elem, /*string*/ cssClass) {
+/*void*/ JsonFx.UI.addClass = function(/*DOM*/ elem, /*string*/ cssClass) {
 	if (!elem || !cssClass) {
 		return;
 	}
@@ -65,7 +65,7 @@ if ("undefined" === typeof JsonFx.DOM) {
 	elem.className += ' '+cssClass;
 };
 
-/*void*/ JsonFx.DOM.removeClass = function(/*DOM*/ elem, /*string*/ cssClass) {
+/*void*/ JsonFx.UI.removeClass = function(/*DOM*/ elem, /*string*/ cssClass) {
 	if (!elem || !cssClass) {
 		return;
 	}
@@ -73,7 +73,7 @@ if ("undefined" === typeof JsonFx.DOM) {
 	elem.className = elem.className.replace(new RegExp("(^|\\s+)"+cssClass+"(\\s+|$)"), " ");
 };
 
-/*DOM*/ JsonFx.DOM.findParent = function(/*DOM*/ elem, /*string*/ cssClass, /*bool*/ skipRoot) {
+/*DOM*/ JsonFx.UI.findParent = function(/*DOM*/ elem, /*string*/ cssClass, /*bool*/ skipRoot) {
 	if (!cssClass) {
 		return null;
 	}
@@ -84,7 +84,7 @@ if ("undefined" === typeof JsonFx.DOM) {
 
 	// search up the ancestors
 	while (elem) {
-		if (JsonFx.DOM.hasClass(elem, cssClass)) {
+		if (JsonFx.UI.hasClass(elem, cssClass)) {
 			return elem;
 		}
 
@@ -93,7 +93,7 @@ if ("undefined" === typeof JsonFx.DOM) {
 	return null;
 };
 
-/*DOM*/ JsonFx.DOM.findChild = function(/*DOM*/ elem, /*string*/ cssClass, /*bool*/ skipRoot) {
+/*DOM*/ JsonFx.UI.findChild = function(/*DOM*/ elem, /*string*/ cssClass, /*bool*/ skipRoot) {
 	if (!cssClass) {
 		return null;
 	}
@@ -113,7 +113,7 @@ if ("undefined" === typeof JsonFx.DOM) {
 
 	while (queue.length) {
 		elem = queue.shift();
-		if (JsonFx.DOM.hasClass(elem, cssClass)) {
+		if (JsonFx.UI.hasClass(elem, cssClass)) {
 			return elem;
 		}
 		if (elem && elem.childNodes) {
@@ -125,7 +125,7 @@ if ("undefined" === typeof JsonFx.DOM) {
 	return null;
 };
 
-/*DOM*/ JsonFx.DOM.findPrev = function(/*DOM*/ elem, /*string*/ cssClass, /*bool*/ skipRoot) {
+/*DOM*/ JsonFx.UI.findPrev = function(/*DOM*/ elem, /*string*/ cssClass, /*bool*/ skipRoot) {
 	if (!cssClass) {
 		return null;
 	}
@@ -136,7 +136,7 @@ if ("undefined" === typeof JsonFx.DOM) {
 
 	// search up siblings in order
 	while (elem) {
-		if (JsonFx.DOM.hasClass(elem, cssClass)) {
+		if (JsonFx.UI.hasClass(elem, cssClass)) {
 			return elem;
 		}
 		elem = elem.previousSibling;
@@ -144,7 +144,7 @@ if ("undefined" === typeof JsonFx.DOM) {
 	return null;
 };
 
-/*DOM*/ JsonFx.DOM.findNext = function(/*DOM*/ elem, /*string*/ cssClass, /*bool*/ skipRoot) {
+/*DOM*/ JsonFx.UI.findNext = function(/*DOM*/ elem, /*string*/ cssClass, /*bool*/ skipRoot) {
 	if (!cssClass) {
 		return null;
 	}
@@ -155,7 +155,7 @@ if ("undefined" === typeof JsonFx.DOM) {
 
 	// search down siblings in order
 	while (elem) {
-		if (JsonFx.DOM.hasClass(elem, cssClass)) {
+		if (JsonFx.UI.hasClass(elem, cssClass)) {
 			return elem;
 		}
 		elem = elem.nextSibling;

@@ -1,36 +1,36 @@
 /*global JSON, JsonML, JsonFx */
 /*---------------------------------------------------------*\
-	JsonFx.JsonML
-	Copyright (c)2006-2007 Stephen M. McKamey
+	JsonFx.UI
+	Copyright (c)2006-2008 Stephen M. McKamey
 	Created: 2006-11-11-1759
-	Modified: 2008-05-25-2253
+	Modified: 2008-09-27-1441
 \*---------------------------------------------------------*/
-
-// dependency checks
-if ("undefined" === typeof window.JSON) {
-	throw new Error("JsonFx.JsonML requires json2.js");
-}
-if ("undefined" === typeof window.JsonML) {
-	throw new Error("JsonFx.JsonML requires JsonML2.js");
-}
-if ("undefined" === typeof JsonFx.IO) {
-	throw new Error("JsonFx.JsonML requires JsonFx.IO.js");
-}
-if ("undefined" === typeof JsonFx.Bindings) {
-	throw new Error("JsonFx.JsonML requires JsonFx.Bindings.js");
-}
-
-/* Namespace JsonFx.JsonML ----------------------------------------------------*/
 
 /* namespace JsonFx */
 if ("undefined" === typeof window.JsonFx) {
 	window.JsonFx = {};
 }
-
 /* namespace JsonFx.UI */
 if ("undefined" === typeof JsonFx.UI) {
 	JsonFx.UI = {};
 }
+
+/* dependency checks --------------------------------------------*/
+
+if ("undefined" === typeof window.JSON) {
+	throw new Error("JsonFx.UI requires json2.js");
+}
+if ("undefined" === typeof window.JsonML) {
+	throw new Error("JsonFx.UI requires JsonML2.js");
+}
+if ("undefined" === typeof JsonFx.IO) {
+	throw new Error("JsonFx.UI requires JsonFx.IO.js");
+}
+if ("undefined" === typeof JsonFx.Bindings) {
+	throw new Error("JsonFx.UI requires JsonFx.Bindings.js");
+}
+
+/* JsonFx.UI ----------------------------------------------------*/
 
 /*void*/ JsonFx.UI.clear = function(/*element*/ elem) {
 	if (elem) {

@@ -33,7 +33,7 @@ if ("undefined" === typeof window.Example) {
 			elem = elem.parentNode;
 
 			// clear the container contents
-			JsonFx.DOM.clear(elem);
+			JsonFx.UI.clear(elem);
 
 			elem.appendChild(jbst);
 		}
