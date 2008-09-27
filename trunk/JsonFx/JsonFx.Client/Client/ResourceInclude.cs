@@ -101,7 +101,7 @@ namespace JsonFx.Client
 			if (info is GlobalizedCompiledBuildResult)
 			{
 				string culture = this.UsePageCulture ?
-					Thread.CurrentThread.CurrentUICulture.Name :
+					Thread.CurrentThread.CurrentCulture.Name :
 					String.Empty;
 
 				url = ResourceHandler.GetLocalizationUrl(this.SourceUrl, this.isDebug, culture);

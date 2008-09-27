@@ -18,12 +18,15 @@ if ("undefined" === typeof JsonFx.Lang) {
 	JsonFx.Lang = function() {
 		// create private member via closure
 		var rsrc = {};
+		var lang = "";
 
-		this.culture = "";
-
-		/*void*/ this.add = function(/*object*/ r) {
+		/*void*/ this.add = function(/*object*/ r, /*string*/ c) {
 			if (!r) {
 				return;
+			}
+
+			if ("string" === typeof c) {
+				lang = c;
 			}
 
 			// merge in the new values
@@ -45,6 +48,10 @@ if ("undefined" === typeof JsonFx.Lang) {
 			k = k.toLowerCase();
 
 			return rsrc.hasOwnProperty(k) ? rsrc[k] : "$$"+k+"$$";
+		};
+
+		/*void*/ this.getLang = function() {
+			return lang;
 		};
 	};
 	/*singleton, destroy the ctor*/
