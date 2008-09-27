@@ -86,7 +86,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="Scripts\JsonFx.JsonML.js" />
+    <EmbeddedResource Include="Scripts\JsonFx.UI.js" />
     <EmbeddedResource Include="Scripts\JsonML2.js" />
   </ItemGroup>
   <ItemGroup>
@@ -95,7 +95,6 @@
   <ItemGroup>
     <Content Include="License.txt" />
     <EmbeddedResource Include="Scripts\JsonFx.Lang.js" />
-    <EmbeddedResource Include="Scripts\JsonFx.DOM.js" />
     <EmbeddedResource Include="Scripts\JsonML_DOM.js" />
     <EmbeddedResource Include="Scripts\JsonFx.UA.js" />
     <EmbeddedResource Include="Scripts\JsonML_BST.js" />
