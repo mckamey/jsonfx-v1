@@ -32,15 +32,17 @@ if ("undefined" === typeof JsonFx.Lang) {
 			}
 		};
 
-		/*object*/ this.get = function(/*string*/ k, /*object*/ d) {
+		/*object*/ this.get = function(/*string*/ k) {
 			if ("string" !== typeof k) {
-				return d;
+				k = "";
 			}
 
-			k = k.split(' ').join('');
+			// normalize key
+			k = k.replace(/^\s+|\s+$/g, "");
+			k = k.replace(/\s+,|,\s+/g, ",");
 			k = k.toLowerCase();
 
-			return rsrc.hasOwnProperty(k) ? rsrc[k] : d;
+			return rsrc.hasOwnProperty(k) ? rsrc[k] : "$$"+k+"$$";
 		};
 	};
 	/*singleton, destroy the ctor*/
