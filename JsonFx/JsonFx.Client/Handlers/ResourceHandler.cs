@@ -42,7 +42,7 @@ namespace JsonFx.Handlers
 		#region Constants
 
 		public const string DebugFlag = "debug";
-		public const string GlobalizationExtension = ".i18n";
+		public const string GlobalizationExtension = "/";
 
 		#endregion Constants
 
@@ -117,7 +117,7 @@ namespace JsonFx.Handlers
 
 		#region ResourceHandler Members
 
-		protected internal static string GetLocalizationUrl(string path, bool isDebug)
+		protected internal static string GetLocalizationUrl(string path, bool isDebug, string culture)
 		{
 			int index = path.IndexOf('?');
 			if (index >= 0)
@@ -130,7 +130,7 @@ namespace JsonFx.Handlers
 			{
 				query = '?'+ResourceHandler.DebugFlag;
 			}
-			return path+ResourceHandler.GlobalizationExtension+query;
+			return path+ResourceHandler.GlobalizationExtension+culture+query;
 		}
 
 		protected internal static string GetResourceUrl(string path, bool isDebug)
