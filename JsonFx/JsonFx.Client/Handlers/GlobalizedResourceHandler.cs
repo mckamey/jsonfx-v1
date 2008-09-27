@@ -225,6 +225,12 @@ namespace JsonFx.Handlers
 			writer.PrettyPrint = isDebug;
 			writer.Write(res);
 
+			response.Write(",");
+
+			writer = new JsonWriter(response.Output);
+			writer.PrettyPrint = isDebug;
+			writer.Write(Thread.CurrentThread.CurrentCulture.Name);
+
 			response.Write(ResEnd);
 		}
 
