@@ -27,7 +27,7 @@ if ("undefined" === typeof window.Example) {
 	// add the result to the container
 	if (elem && jbst) {
 		// clear the container contents
-		JsonFx.DOM.clear(elem);
+		JsonFx.UI.clear(elem);
 
 		elem.appendChild(jbst);
 	}
