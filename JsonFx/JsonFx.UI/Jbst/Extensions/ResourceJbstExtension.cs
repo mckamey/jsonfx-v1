@@ -42,7 +42,7 @@ namespace JsonFx.UI.Jbst.Extensions
 
 		private const string ResourceLookupFormat =
 			@"function() {{
-				return JsonFx.Lang && JsonFx.Lang.get({0}, {1});
+				return JsonFx.Lang && JsonFx.Lang.get({0});
 			}}";
 
 		#endregion Constants
@@ -98,8 +98,7 @@ namespace JsonFx.UI.Jbst.Extensions
 
 			return String.Format(
 				ResourceLookupFormat,
-				JsonWriter.Serialize(key),
-				JsonWriter.Serialize("$$"+key+"$$"));
+				JsonWriter.Serialize(key));
 		}
 
 		#endregion JbstExtension Members
