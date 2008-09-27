@@ -179,6 +179,15 @@ if ("undefined" === typeof JsonFx.Bindings) {
 	return Number(evt.keyCode || evt.charCode || -1);
 };
 
+/*	creates DOM elements from JsonML and binds them accordingly */
+/*DOM*/ JsonFx.UI.bindJsonML = function(/*JsonML*/ jml) {
+	if (jml) {
+		return JsonML.parse(jml, JsonFx.Bindings.bindOne);
+	} else {
+		return null;
+	}
+};
+
 /* JBST + JSON => JsonML => DOM */
 /*DOM*/ JsonFx.UI.bindJBST = function(
 	/*DOM*/ container,
@@ -202,8 +211,10 @@ if ("undefined" === typeof JsonFx.Bindings) {
 	// databind JSON data to a JBST template, resulting in a JsonML representation
 	var result = template.dataBind(data);
 
-	// hydrate the resulting JsonML, binding any dynamic behaviors to elements
-	result = JsonML.parse(result, JsonFx.Bindings.bindOne);
+	if (result) {
+		// hydrate the resulting JsonML, binding any dynamic behaviors to elements
+		result = JsonML.parse(result, JsonFx.Bindings.bindOne);
+	}
 
 	if (!append) {
 		// clear the container contents, unbinding any applied dynamic behaviors
@@ -213,15 +224,6 @@ if ("undefined" === typeof JsonFx.Bindings) {
 	if (result) {
 		// add the resulting DOM elements to the container
 		container.appendChild(result);
-	}
-};
-
-/*	creates DOM elements from JsonML and binds them accordingly */
-/*DOM*/ JsonFx.UI.bindJsonML = function(/*JsonML*/ jml) {
-	if (jml) {
-		return JsonML.parse(jml, JsonFx.Bindings.bindOne);
-	} else {
-		return null;
 	}
 };
 
