@@ -1,10 +1,14 @@
 /*global JsonFx, JSON */
-/*---------------------------------------------------------*\
-	JsonFx.Bindings
-	Copyright (c)2006-2007 Stephen M. McKamey
+/*
+	JsonFx.Bindings.js
+	dynamic behavior binding support
+
 	Created: 2006-11-11-1759
 	Modified: 2008-05-25-2253
-\*---------------------------------------------------------*/
+
+	Copyright (c)2006-2008 Stephen M. McKamey
+	Released under an open-source license: http://jsonfx.net/license
+*/
 
 // dependency checks
 if ("undefined" === typeof window.JSON) {

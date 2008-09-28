@@ -1,12 +1,14 @@
 /*global JSON, JsonML, JsonFx */
-
-/*---------------------------------------------------------*\
+/*
 	JsonFx.UI.js
+	DOM utilities
 
-	Copyright (c)2006-2008 Stephen M. McKamey
 	Created: 2006-11-11-1759
 	Modified: 2008-09-27-1617
-\*---------------------------------------------------------*/
+
+	Copyright (c)2006-2008 Stephen M. McKamey
+	Released under an open-source license: http://jsonfx.net/license
+*/
 
 /* namespace JsonFx */
 if ("undefined" === typeof window.JsonFx) {

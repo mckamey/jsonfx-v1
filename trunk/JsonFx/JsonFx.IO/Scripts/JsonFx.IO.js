@@ -1,13 +1,13 @@
 /*global JSON, JsonFx */
 /*
 	JsonFx.IO.js
+	Ajax & JSON-RPC support
 
-	Copyright (c)2006-2008 Stephen M. McKamey
 	Created: 2006-11-09-0120
 	Modified: 2008-05-25-2253
 
-	Distributed under the terms of an MIT-style license:
-	http://jsonfx.net/BuildTools/License.txt
+	Copyright (c)2006-2008 Stephen M. McKamey
+	Released under an open-source license: http://jsonfx.net/license
 */
 
 // dependency checks
