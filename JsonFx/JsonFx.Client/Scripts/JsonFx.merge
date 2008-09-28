@@ -33,10 +33,3 @@ JsonFx.Scripts.JsonFx.Lang.js, JsonFx.UI
 
 # Ajax History support
 JsonFx.Scripts.JsonFx.History.js, JsonFx.History
-
-# put all your references here
-~/Services/Services.merge
-~/Controls/Controls.merge
-
-~/Scripts/MyScript.js
-~/Scripts/ServiceTest.js
