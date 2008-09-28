@@ -11,7 +11,7 @@
 JsonFx.Scripts.json2.js, JsonFx.Json
 
 # JSON-RPC support
-JsonFx.Scripts.JsonFx.IO.js, JsonFx.IO
+JsonFx.Scripts.JsonFx_IO.js, JsonFx.IO
 
 # JsonML support
 JsonFx.Scripts.JsonML2.js, JsonFx.UI
@@ -19,20 +19,20 @@ JsonFx.Scripts.JsonML2.js, JsonFx.UI
 # JBST support
 JsonFx.Scripts.JsonML_BST.js, JsonFx.UI
 
-# JavaScript behavior binding support
-JsonFx.Scripts.JsonFx.Bindings.js, JsonFx.UI
+# CssUserAgent support
+JsonFx.Scripts.JsonFx_UA.js, JsonFx.UI
+
+# dynamic behavior binding support
+JsonFx.Scripts.JsonFx_Bindings.js, JsonFx.UI
 
 # DOM utilities
-JsonFx.Scripts.JsonFx.UI.js, JsonFx.UI
-
-# CssUserAgent support
-JsonFx.Scripts.JsonFx.UA.js, JsonFx.UI
+JsonFx.Scripts.JsonFx_UI.js, JsonFx.UI
 
 # client-side globalization support
-JsonFx.Scripts.JsonFx.Lang.js, JsonFx.UI
+JsonFx.Scripts.JsonFx_Lang.js, JsonFx.UI
 
 # Ajax History support
-JsonFx.Scripts.JsonFx.History.js, JsonFx.History
+JsonFx.Scripts.JsonFx_History.js, JsonFx.History
 
 # put all your references here
 ~/Services/Services.merge

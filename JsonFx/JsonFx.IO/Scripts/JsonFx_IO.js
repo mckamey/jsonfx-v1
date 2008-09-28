@@ -1,6 +1,6 @@
 /*global JSON, JsonFx */
 /*
-	JsonFx.IO.js
+	JsonFx_IO.js
 	Ajax & JSON-RPC support
 
 	Created: 2006-11-09-0120
@@ -13,7 +13,7 @@
 /* dependency checks --------------------------------------------*/
 
 if ("undefined" === typeof window.JSON) {
-	throw new Error("JsonFx.IO.js requires json2.js");
+	throw new Error("JsonFx_IO.js requires json2.js");
 }
 
 /* ----------------------------------------------------*/

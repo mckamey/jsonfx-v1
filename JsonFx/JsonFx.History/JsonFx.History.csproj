@@ -64,7 +64,7 @@
   <ItemGroup>
     <Content Include="License.txt" />
     <Content Include="Readme.txt" />
-    <EmbeddedResource Include="Scripts\JsonFx.History.js" />
+    <EmbeddedResource Include="Scripts\JsonFx_History.js" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

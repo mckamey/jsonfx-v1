@@ -1,6 +1,6 @@
 /*global JSON, JsonFx */
 /*
-	JsonFx.History.js
+	JsonFx_History.js
 	Ajax history support
 
 	Created: 2006-11-11-1759
@@ -18,7 +18,7 @@ if ("undefined" === typeof window.JsonFx) {
 /* dependency checks --------------------------------------------*/
 
 if ("undefined" === typeof window.JSON) {
-	throw new Error("JsonFx.History.js requires json2.js");
+	throw new Error("JsonFx_History.js requires json2.js");
 }
 
 /* Utilities ----------------------------------------------------*/
