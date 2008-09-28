@@ -15,12 +15,26 @@ if ("undefined" === typeof window.JsonFx) {
 	window.JsonFx = {};
 }
 
-/* check dependencies */
+/* dependency checks --------------------------------------------*/
+
 if ("undefined" === typeof window.JSON) {
-	throw new Error("JsonFx.History requires json2.js");
+	throw new Error("JsonFx.History.js requires json2.js");
 }
 
 /* Utilities ----------------------------------------------------*/
+
+if ("undefined" === typeof JsonFx.jsonReviver) {
+	/*object*/ JsonFx.jsonReviver = function(/*string*/ key, /*object*/ value) {
+		var a;
+		if ("string" === typeof value) {
+			a = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2}(?:\.\d*)?)Z$/.exec(value);
+			if (a) {
+				return new Date(Date.UTC(+a[1], +a[2] - 1, +a[3], +a[4], +a[5], +a[6]));
+			}
+		}
+		return value;
+	};
+}
 
 /* namespace JsonFx.UI */
 if ("undefined" === typeof JsonFx.UI) {
@@ -119,7 +133,7 @@ JsonFx.History = {
 			return null;
 		}
 
-		return JSON.parse(info);
+		return JSON.parse(info, JsonFx.jsonReviver);
 	},
 
 	/*void*/ save: function(/*object*/ info) {
