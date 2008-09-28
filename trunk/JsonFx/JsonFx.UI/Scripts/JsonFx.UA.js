@@ -7,7 +7,7 @@
 	Modified: 2007-06-17-1302
 
 	Copyright (c)2006-2008 Stephen M. McKamey
-	Released under an open-source license: http://jsonfx.net/license
+	Distributed under an open-source license: http://jsonfx.net/license
 */
 
 /* namespace JsonFx */
