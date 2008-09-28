@@ -15,6 +15,10 @@ if ("undefined" === typeof window.Example) {
 }
 
 /*void*/ Example.initDisplay = function(/*DOM*/ elem) {
+	if (!elem) {
+		return;
+	}
+
 	// some example data
 	var data = { "hostName" : window.location.host };
 
@@ -25,7 +29,7 @@ if ("undefined" === typeof window.Example) {
 	jbst = JsonML.parse(jbst, JsonFx.Bindings.bindOne);
 
 	// add the result to the container
-	if (elem && jbst) {
+	if (jbst) {
 		// clear the container contents
 		JsonFx.UI.clear(elem);
 
