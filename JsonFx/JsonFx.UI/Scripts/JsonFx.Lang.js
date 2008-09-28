@@ -1,11 +1,14 @@
 /*global JsonFx */
-/*---------------------------------------------------------------------------*\
-	JsonFx.Lang
+/*
+	JsonFx.Lang.js
+	client-size globalization support
 
-	Copyright (c)2008 Stephen M. McKamey
 	Created: 2008-09-04-0845
 	Modified: 2008-09-05-2250
-\*---------------------------------------------------------------------------*/
+
+	Copyright (c)2006-2008 Stephen M. McKamey
+	Released under an open-source license: http://jsonfx.net/license
+*/
 
 /* namespace JsonFx.Lang */
 if ("undefined" === typeof window.JsonFx) {
