@@ -57,6 +57,7 @@ if ("undefined" === typeof JsonFx.Lang) {
 			return lang;
 		};
 	};
+
 	/*singleton, destroy the ctor*/
 	JsonFx.Lang = new JsonFx.Lang();
 }

@@ -10,11 +10,6 @@
 	Distributed under an open-source license: http://jsonfx.net/license
 */
 
-// dependency checks
-if ("undefined" === typeof window.JSON) {
-	throw new Error("JsonFx.Bindings requires json2.js");
-}
-
 /* namespace JsonFx */
 if ("undefined" === typeof window.JsonFx) {
 	window.JsonFx = {};
@@ -22,6 +17,12 @@ if ("undefined" === typeof window.JsonFx) {
 /* namespace JsonFx.UI */
 if ("undefined" === typeof JsonFx.UI) {
 	JsonFx.UI = {};
+}
+
+/* dependency checks --------------------------------------------*/
+
+if ("undefined" === typeof window.JSON) {
+	throw new Error("JsonFx.Bindings.js requires json2.js");
 }
 
 /*void*/ JsonFx.UI.attachHandler = function (/*DOM*/ obj, /*string*/ evtName, /*function*/ handler) {
@@ -59,16 +60,18 @@ if ("undefined" === typeof JsonFx.UI) {
 	}
 };
 
-/*object*/ JsonFx.UI.jsonReviver = function(/*string*/ key, /*object*/ value) {
-    var a;
-    if ("string" === typeof value) {
-        a = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2}(?:\.\d*)?)Z$/.exec(value);
-        if (a) {
-            return new Date(Date.UTC(+a[1], +a[2] - 1, +a[3], +a[4], +a[5], +a[6]));
-        }
-    }
-    return value;
-};
+if ("undefined" === typeof JsonFx.jsonReviver) {
+	/*object*/ JsonFx.jsonReviver = function(/*string*/ key, /*object*/ value) {
+		var a;
+		if ("string" === typeof value) {
+			a = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2}(?:\.\d*)?)Z$/.exec(value);
+			if (a) {
+				return new Date(Date.UTC(+a[1], +a[2] - 1, +a[3], +a[4], +a[5], +a[6]));
+			}
+		}
+		return value;
+	};
+}
 
 /* singleton JsonFx.Bindings */
 JsonFx.Bindings = function() {
@@ -129,7 +132,7 @@ JsonFx.Bindings = function() {
 						if (options && "string" === typeof options) {
 							try {
 								// treat string as JSON
-								options = JSON.parse(options, JsonFx.UI.jsonReviver);
+								options = JSON.parse(options, JsonFx.jsonReviver);
 							} catch (ex) { }
 						}
 
