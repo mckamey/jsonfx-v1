@@ -21,22 +21,25 @@ if ("undefined" === typeof window.Example) {
 	}
 
 	var elem = cx && cx.elem;
-	if (elem) {
-		// this databinds the data to the template
-		var jbst = Example.results.dataBind( data );
+	if (!elem || !elem.parentNode) {
+		return;
+	}
 
-		// this hydrates the resulting markup allowing dynamic behaviors to be bound to elements
-		jbst = JsonML.parse(jbst, JsonFx.Bindings.bindOne);
+	elem = elem.parentNode;
 
-		// add the result to the container
-		if (elem && elem.parentNode && jbst) {
-			elem = elem.parentNode;
+	// this databinds the data to the template
+	var jbst = Example.results.dataBind( data );
 
-			// clear the container contents
-			JsonFx.UI.clear(elem);
+	// this hydrates the resulting markup allowing dynamic behaviors to be bound to elements
+	jbst = JsonML.parse(jbst, JsonFx.Bindings.bindOne);
 
-			elem.appendChild(jbst);
-		}
+	// add the result to the container
+	if (jbst) {
+
+		// clear the container contents
+		JsonFx.UI.clear(elem);
+
+		elem.appendChild(jbst);
 	}
 };
 
