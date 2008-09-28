@@ -1,4 +1,4 @@
-# Merge file comments begin with "#"
+# NOTE: Merge file comments begin with "#"
 # this file contains the list of scripts, templates, and service proxies to be combined
 # typically order is important for scripts
 
