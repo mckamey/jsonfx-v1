@@ -1,6 +1,6 @@
 /*global JSON, JsonML, JsonFx */
 /*
-	JsonFx.UI.js
+	JsonFx_UI.js
 	DOM utilities
 
 	Created: 2006-11-11-1759
@@ -22,13 +22,13 @@ if ("undefined" === typeof JsonFx.UI) {
 /* dependency checks --------------------------------------------*/
 
 if ("undefined" === typeof window.JSON) {
-	throw new Error("JsonFx.UI.js requires json2.js");
+	throw new Error("JsonFx_UI.js requires json2.js");
 }
 if ("undefined" === typeof window.JsonML) {
-	throw new Error("JsonFx.UI.js requires JsonML2.js");
+	throw new Error("JsonFx_UI.js requires JsonML2.js");
 }
 if ("undefined" === typeof JsonFx.Bindings) {
-	throw new Error("JsonFx.UI.js requires JsonFx.Bindings.js");
+	throw new Error("JsonFx_UI.js requires JsonFx_Bindings.js");
 }
 
 /* DOM utilities ------------------------------------------------*/

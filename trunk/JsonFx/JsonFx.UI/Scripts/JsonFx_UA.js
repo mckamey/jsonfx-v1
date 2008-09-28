@@ -1,6 +1,6 @@
 ﻿/*global JsonFx */
 /*
-	JsonFx.UA.js
+	JsonFx_UA.js
 	user-agent specific CSS support
 
 	Created: 2006-06-10-1635

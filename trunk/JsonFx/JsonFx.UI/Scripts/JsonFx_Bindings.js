@@ -1,6 +1,6 @@
 /*global JsonFx, JSON */
 /*
-	JsonFx.Bindings.js
+	JsonFx_Bindings.js
 	dynamic behavior binding support
 
 	Created: 2006-11-11-1759
@@ -22,7 +22,7 @@ if ("undefined" === typeof JsonFx.UI) {
 /* dependency checks --------------------------------------------*/
 
 if ("undefined" === typeof window.JSON) {
-	throw new Error("JsonFx.Bindings.js requires json2.js");
+	throw new Error("JsonFx_Bindings.js requires json2.js");
 }
 
 /*void*/ JsonFx.UI.attachHandler = function (/*DOM*/ obj, /*string*/ evtName, /*function*/ handler) {

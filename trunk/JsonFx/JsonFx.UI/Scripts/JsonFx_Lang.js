@@ -1,6 +1,6 @@
 /*global JsonFx */
 /*
-	JsonFx.Lang.js
+	JsonFx_Lang.js
 	client-size globalization support
 
 	Created: 2008-09-04-0845
