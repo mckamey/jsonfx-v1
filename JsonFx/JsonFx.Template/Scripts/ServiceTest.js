@@ -58,6 +58,8 @@ if ("undefined" === typeof window.Example) {
 		context: { "elem": elem, "number": number }
 	};
 
-	// call the JSON-RPC service proxy with params in order and the options at the end
+	// call the JSON-RPC service proxy object with the method args in order and add an options object at the end
 	Example.MyServiceProxy.getInfo(number, options);
+	
+	// when the request completes, the appropriate callback will get called with the return value and the context object
 };
