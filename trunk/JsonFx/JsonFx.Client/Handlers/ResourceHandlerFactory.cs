@@ -41,7 +41,6 @@ namespace JsonFx.Handlers
 
 		IHttpHandler IHttpHandlerFactory.GetHandler(HttpContext context, string verb, string url, string path)
 		{
-			string setting = Path.GetExtension(context.Request.FilePath);
 			if (!String.IsNullOrEmpty(context.Request.PathInfo))
 			{
 				// output resource strings used by the handler
