@@ -136,7 +136,11 @@ namespace JsonFx.Compilation
 					continue;
 				}
 
-				this.GlobalizationKeys.Add(res.GlobalizationKey);
+				string key = res.GlobalizationKey.ToLowerInvariant();
+				if (!this.GlobalizationKeys.Contains(key))
+				{
+					this.GlobalizationKeys.Add(key);
+				}
 			}
 		}
 

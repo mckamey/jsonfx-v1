@@ -70,7 +70,11 @@ namespace JsonFx.Handlers
 						continue;
 					}
 
-					globalizationKeys.Add(key);
+					key = key.ToLowerInvariant();
+					if (!globalizationKeys.Contains(key))
+					{
+						globalizationKeys.Add(key);
+					}
 				}
 				catch
 				{
@@ -130,10 +134,6 @@ namespace JsonFx.Handlers
 
 					if (isLocal)
 					{
-						//if (path.StartsWith("~"))
-						//{
-						//    path = path.Substring(1);
-						//}
 						value = HttpContext.GetLocalResourceObject(path, fields.ResourceKey);
 					}
 					else
