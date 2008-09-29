@@ -133,7 +133,11 @@ JsonFx.History = {
 			return null;
 		}
 
-		return JSON.parse(info, JsonFx.jsonReviver);
+		try {
+			return JSON.parse(info, JsonFx.jsonReviver);
+		} catch (ex) {
+			return null;
+		}
 	},
 
 	/*void*/ save: function(/*object*/ info) {
