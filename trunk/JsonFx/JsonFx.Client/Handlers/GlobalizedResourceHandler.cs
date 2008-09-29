@@ -171,10 +171,9 @@ namespace JsonFx.Handlers
 				CompiledBuildResult.EnableStreamCompression(context);
 			}
 
-			string userCulture = context.Request.PathInfo;
-			if (userCulture != null && userCulture.Length > 2)
+			string userCulture = context.Request.QueryString[ResourceHandler.GlobalizationQuery];
+			if (userCulture != null && userCulture.Length > 1)
 			{
-				userCulture = userCulture.Substring(1);
 				try
 				{
 					Thread.CurrentThread.CurrentUICulture = new CultureInfo(userCulture);

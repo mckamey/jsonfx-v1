@@ -42,7 +42,7 @@ namespace JsonFx.Handlers
 		#region Constants
 
 		public const string DebugFlag = "debug";
-		public const string GlobalizationExtension = "/";
+		public const string GlobalizationQuery = "lang";
 
 		#endregion Constants
 
@@ -125,12 +125,12 @@ namespace JsonFx.Handlers
 				path = path.Substring(0, index);
 			}
 
-			string query = null;
+			string query = '?'+ResourceHandler.GlobalizationQuery+'='+culture;
 			if (isDebug)
 			{
-				query = '?'+ResourceHandler.DebugFlag;
+				query += '&'+ResourceHandler.DebugFlag;
 			}
-			return path+ResourceHandler.GlobalizationExtension+culture+query;
+			return path+query;
 		}
 
 		protected internal static string GetResourceUrl(string path, bool isDebug)

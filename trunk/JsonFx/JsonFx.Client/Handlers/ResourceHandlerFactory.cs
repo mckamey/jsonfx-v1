@@ -41,7 +41,7 @@ namespace JsonFx.Handlers
 
 		IHttpHandler IHttpHandlerFactory.GetHandler(HttpContext context, string verb, string url, string path)
 		{
-			if (!String.IsNullOrEmpty(context.Request.PathInfo))
+			if (context.Request.QueryString[ResourceHandler.GlobalizationQuery] != null)
 			{
 				// output resource strings used by the handler
 				return new GlobalizedResourceHandler();
