@@ -130,10 +130,10 @@ namespace JsonFx.Handlers
 
 					if (isLocal)
 					{
-						if (path.StartsWith("~"))
-						{
-							path = path.Substring(1);
-						}
+						//if (path.StartsWith("~"))
+						//{
+						//    path = path.Substring(1);
+						//}
 						value = HttpContext.GetLocalResourceObject(path, fields.ResourceKey);
 					}
 					else
@@ -189,7 +189,7 @@ namespace JsonFx.Handlers
 			context.Response.Cache.SetCacheability(HttpCacheability.ServerAndNoCache);
 
 			// get the target
-			string targetPath = context.Request.FilePath;
+			string targetPath = context.Request.AppRelativeCurrentExecutionFilePath;
 
 			// TODO: provide mechanism for easily defining this target
 			GlobalizedCompiledBuildResult target = CompiledBuildResult.Create(targetPath) as GlobalizedCompiledBuildResult;
@@ -199,7 +199,7 @@ namespace JsonFx.Handlers
 				return;
 			}
 
-			IDictionary<string, object> res = this.GetResourceStrings(target.GlobalizationKeys, context.Request.FilePath);
+			IDictionary<string, object> res = this.GetResourceStrings(target.GlobalizationKeys, targetPath);
 
 			HttpResponse response = context.Response;
 			response.ContentType = "text/javascript";
