@@ -4,7 +4,7 @@
 	Ajax history support
 
 	Created: 2006-11-11-1759
-	Modified: 2008-06-07-1202
+	Modified: 2008-09-30-0825
 
 	Copyright (c)2006-2008 Stephen M. McKamey
 	Released under an open-source license: http://jsonfx.net/license
@@ -136,6 +136,8 @@ JsonFx.History = {
 		try {
 			return JSON.parse(info, JsonFx.jsonReviver);
 		} catch (ex) {
+			// history failed. disable saving
+			h.elem = null;
 			return null;
 		}
 	},
