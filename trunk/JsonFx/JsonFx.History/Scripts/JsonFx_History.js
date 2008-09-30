@@ -65,7 +65,7 @@ if ("undefined" === typeof JsonFx.UI) {
 JsonFx.History = {
 	/*object*/ h: null,
 
-	load: function(/*DOM*/ elem, /*function*/ callback, /*bool*/ start, /*string*/ url) {
+	/*void*/ load: function(/*DOM*/ elem, /*function*/ callback, /*bool*/ start, /*string*/ url) {
 
 		if (!elem || "function" !== typeof callback) {
 			return;
@@ -142,11 +142,11 @@ JsonFx.History = {
 		}
 	},
 
-	/*void*/ save: function(/*object*/ info) {
+	/*bool*/ save: function(/*object*/ info) {
 
 		var h = JsonFx.History.h;
 		if (!h) {
-			return;
+			return false;
 		}
 
 		var doc = JsonFx.UI.getIFrameDocument(h.elem);
@@ -155,7 +155,7 @@ JsonFx.History = {
 			if ("function" === typeof h.callback) {
 				h.callback(info);
 			}
-			return;
+			return true;
 		}
 
 		info = JSON.stringify(info);
@@ -171,5 +171,6 @@ JsonFx.History = {
 				doc.close();
 			}
 		}
+		return true;
 	}
 };
