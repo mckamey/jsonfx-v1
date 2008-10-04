@@ -187,49 +187,23 @@ if ("undefined" === typeof JsonFx.Bindings) {
 
 /*	builds JsonML binding behaviors */
 /*DOM*/ JsonFx.UI.bindJsonML = function(/*JsonML*/ jml) {
-	if (!jml) {
-		return null;
-	}
-
 	return JsonML.parse(jml, JsonFx.Bindings.bindOne);
 };
 
 /* JBST + JSON => JsonML => DOM */
 /*DOM*/ JsonFx.UI.bindJBST = function(
-	/*DOM*/ container,
-	/*JBST*/ template,
-	/*object*/ data,
-	/*bool*/ append) {
+	/*JBST*/ jbst,
+	/*object*/ data) {
 
-	// ensure container exists
-	if ("string" === typeof container) {
-		container = document.getElementById(container);
-	}
-	if (!container) {
-		throw new Error("container is not a DOM element");
-	}
-
-	var result;
-	if (template instanceof JsonML.BST) {
+	var jml;
+	if (jbst instanceof JsonML.BST) {
 		// databind JSON data to a JBST template, resulting in a JsonML representation
-		result = template.dataBind(data);
+		jml = jbst.dataBind(data);
 	} else {
 		// assume template already is JsonML
-		result = template;
+		jml = jbst;
 	}
 
-	if (result) {
-		// hydrate the resulting JsonML, binding any dynamic behaviors to elements
-		result = JsonML.parse(result, JsonFx.Bindings.bindOne);
-	}
-
-	if (!append) {
-		// clear the container contents, unbinding any applied dynamic behaviors
-		JsonFx.UI.clear(container);
-	}
-
-	if (result) {
-		// add the resulting DOM elements to the container
-		container.appendChild(result);
-	}
+	// hydrate the resulting JsonML, binding any dynamic behaviors to elements
+	return JsonFx.UI.bindJsonML(jml);
 };
