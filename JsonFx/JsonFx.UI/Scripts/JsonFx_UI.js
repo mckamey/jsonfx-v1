@@ -4,7 +4,7 @@
 	DOM utilities
 
 	Created: 2006-11-11-1759
-	Modified: 2008-09-27-1617
+	Modified: 2008-10-04-0035
 
 	Copyright (c)2006-2008 Stephen M. McKamey
 	Distributed under an open-source license: http://jsonfx.net/license
