@@ -225,7 +225,7 @@ if ("undefined" === typeof JsonFx.Bindings) {
 
 	if (!append) {
 		// clear the container contents, unbinding any applied dynamic behaviors
-		JsonFx.DOM.clear(container);
+		JsonFx.UI.clear(container);
 	}
 
 	if (result) {
