@@ -185,13 +185,8 @@ if ("undefined" === typeof JsonFx.Bindings) {
 
 /* JsonML utilities ---------------------------------------------*/
 
-/*	builds JsonML binding behaviors */
-/*DOM*/ JsonFx.UI.bindJsonML = function(/*JsonML*/ jml) {
-	return JsonML.parse(jml, JsonFx.Bindings.bindOne);
-};
-
 /* JBST + JSON => JsonML => DOM */
-/*DOM*/ JsonFx.UI.bindJBST = function(
+/*DOM*/ JsonFx.UI.bind = function(
 	/*JBST*/ jbst,
 	/*object*/ data) {
 
@@ -205,5 +200,5 @@ if ("undefined" === typeof JsonFx.Bindings) {
 	}
 
 	// hydrate the resulting JsonML, binding any dynamic behaviors to elements
-	return JsonFx.UI.bindJsonML(jml);
+	return JsonML.parse(jml, JsonFx.Bindings.bindOne);
 };
