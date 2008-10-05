@@ -46,10 +46,6 @@
     <AssemblyOriginatorKeyFile>..\SolnItems\Keys\JsonFx_Key.pfx</AssemblyOriginatorKeyFile>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="BuildTools, Version=1.0.805.2922, Culture=neutral, PublicKeyToken=e190355fca396765, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\SolnItems\BuildTools\BuildTools.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.configuration" />
     <Reference Include="System.Web" />
@@ -76,6 +72,10 @@
     <Compile Include="Properties\AssemblyVersion.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\JsonFx.BuildTools\JsonFx.BuildTools.csproj">
+      <Project>{7E5F1250-473C-494F-BFBD-835A1CE9CC13}</Project>
+      <Name>JsonFx.BuildTools</Name>
+    </ProjectReference>
     <ProjectReference Include="..\JsonFx.Client\JsonFx.Client.csproj">
       <Project>{5A84EB39-D30B-4085-8365-E1C05590F3BF}</Project>
       <Name>JsonFx.Client</Name>

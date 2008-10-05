@@ -37,7 +37,7 @@
     <OutputPath>bin\Signed\</OutputPath>
     <DefineConstants>TRACE;STRONG</DefineConstants>
     <Optimize>true</Optimize>
-    <DebugType>pdbonly</DebugType>
+    <DebugType>none</DebugType>
     <PlatformTarget>AnyCPU</PlatformTarget>
     <UseVSHostingProcess>false</UseVSHostingProcess>
     <ErrorReport>prompt</ErrorReport>
@@ -70,11 +70,6 @@
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
     <EmbeddedResource Include="Scripts\json2.js" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="..\SolnItems\Keys\JsonFx_Key.pfx">
-      <Link>JsonFx_Key.pfx</Link>
-    </None>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
