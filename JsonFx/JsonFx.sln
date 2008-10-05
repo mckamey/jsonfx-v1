@@ -19,23 +19,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JsonFx.Client", "JsonFx.Cli
 		Release.AspNetCompiler.Debug = "False"
 	EndProjectSection
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Assemblies", "Assemblies", "{CF8A43D4-4262-40A2-AEE0-72AEF1C47DDE}"
-	ProjectSection(WebsiteProperties) = preProject
-		Debug.AspNetCompiler.Debug = "True"
-		Release.AspNetCompiler.Debug = "False"
-	EndProjectSection
-	ProjectSection(SolutionItems) = preProject
-		SolnItems\BuildTools\BuildTools.dll = SolnItems\BuildTools\BuildTools.dll
-		SolnItems\BuildTools\Interop.MSScriptControl.dll = SolnItems\BuildTools\Interop.MSScriptControl.dll
-		SolnItems\BuildTools\License.txt = SolnItems\BuildTools\License.txt
-	EndProjectSection
-EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{903DF829-63FD-4EF9-8D91-8A6AE47508F1}"
-	ProjectSection(WebsiteProperties) = preProject
-		Debug.AspNetCompiler.Debug = "True"
-		Release.AspNetCompiler.Debug = "False"
-	EndProjectSection
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JsonFx.UI", "JsonFx.UI\JsonFx.UI.csproj", "{17417DF0-B12F-4D5B-A9E7-8B7D894F93B4}"
 	ProjectSection(WebsiteProperties) = preProject
 		Debug.AspNetCompiler.Debug = "True"
@@ -54,7 +37,7 @@ Project("{E24C65DC-7377-472B-9ABA-BC803B73C61A}") = "D:\...\JsonFx.Template\", "
 		SccAuxPath = ""
 		SccLocalPath = ".."
 		SccProvider = "MSSCCI:Microsoft Visual SourceSafe"
-		ProjectReferences = "{ABA23F14-7E47-43FE-A3E7-1FF97840C3FB}|JsonFx.Json.dll;{6DC125A3-2C11-4FEA-B948-1C563B0FAE52}|JsonFx.IO.dll;{5A84EB39-D30B-4085-8365-E1C05590F3BF}|JsonFx.Client.dll;{241E7122-64CA-43B8-B3F0-5BC776FC37BC}|JsonFx.History.dll;{17417DF0-B12F-4D5B-A9E7-8B7D894F93B4}|JsonFx.UI.dll;"
+		ProjectReferences = "{ABA23F14-7E47-43FE-A3E7-1FF97840C3FB}|JsonFx.Json.dll;{6DC125A3-2C11-4FEA-B948-1C563B0FAE52}|JsonFx.IO.dll;{5A84EB39-D30B-4085-8365-E1C05590F3BF}|JsonFx.Client.dll;{241E7122-64CA-43B8-B3F0-5BC776FC37BC}|JsonFx.History.dll;{17417DF0-B12F-4D5B-A9E7-8B7D894F93B4}|JsonFx.UI.dll;{7E5F1250-473C-494F-BFBD-835A1CE9CC13}|JsonFx.BuildTools.dll;"
 		Debug.AspNetCompiler.VirtualPath = "/JsonFx.Template"
 		Debug.AspNetCompiler.PhysicalPath = "JsonFx.Template\"
 		Debug.AspNetCompiler.TargetPath = "PrecompiledWeb\JsonFx.Template\"
@@ -72,9 +55,15 @@ Project("{E24C65DC-7377-472B-9ABA-BC803B73C61A}") = "D:\...\JsonFx.Template\", "
 		VWDPort = "1446"
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JsonFx.BuildTools", "JsonFx.BuildTools\JsonFx.BuildTools.csproj", "{7E5F1250-473C-494F-BFBD-835A1CE9CC13}"
+	ProjectSection(WebsiteProperties) = preProject
+		Debug.AspNetCompiler.Debug = "True"
+		Release.AspNetCompiler.Debug = "False"
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SourceCodeControl) = preSolution
-		SccNumberOfProjects = 7
+		SccNumberOfProjects = 8
 		SccLocalPath0 = .
 		SccProjectUniqueName1 = JsonFx.Json\\JsonFx.Json.csproj
 		SccProjectName1 = \u0022$/PseudoCode/Dev/JsonFx/JsonFx.Json\u0022,\u0020SPDAAAAA
@@ -96,6 +85,9 @@ Global
 		SccLocalPath6 = .
 		SccProjectFilePathRelativizedFromConnection6 = JsonFx.Template\\
 		SccProjectEnlistmentChoice6 = 2
+		SccProjectUniqueName7 = JsonFx.BuildTools\\JsonFx.BuildTools.csproj
+		SccProjectName7 = \u0022$/PseudoCode/Dev/JsonFx/JsonFx.BuildTools\u0022,\u0020NHFAAAAA
+		SccLocalPath7 = JsonFx.BuildTools
 	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|.NET = Debug|.NET
@@ -199,11 +191,23 @@ Global
 		{E2D02617-1C99-4FC7-B94D-BD0A61099D28}.Signed|Any CPU.ActiveCfg = Debug|.NET
 		{E2D02617-1C99-4FC7-B94D-BD0A61099D28}.Signed|Mixed Platforms.ActiveCfg = Debug|.NET
 		{E2D02617-1C99-4FC7-B94D-BD0A61099D28}.Signed|Mixed Platforms.Build.0 = Debug|.NET
+		{7E5F1250-473C-494F-BFBD-835A1CE9CC13}.Debug|.NET.ActiveCfg = Debug|Any CPU
+		{7E5F1250-473C-494F-BFBD-835A1CE9CC13}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7E5F1250-473C-494F-BFBD-835A1CE9CC13}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7E5F1250-473C-494F-BFBD-835A1CE9CC13}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{7E5F1250-473C-494F-BFBD-835A1CE9CC13}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{7E5F1250-473C-494F-BFBD-835A1CE9CC13}.Release|.NET.ActiveCfg = Release|Any CPU
+		{7E5F1250-473C-494F-BFBD-835A1CE9CC13}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7E5F1250-473C-494F-BFBD-835A1CE9CC13}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7E5F1250-473C-494F-BFBD-835A1CE9CC13}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{7E5F1250-473C-494F-BFBD-835A1CE9CC13}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{7E5F1250-473C-494F-BFBD-835A1CE9CC13}.Signed|.NET.ActiveCfg = Release|Any CPU
+		{7E5F1250-473C-494F-BFBD-835A1CE9CC13}.Signed|Any CPU.ActiveCfg = Release|Any CPU
+		{7E5F1250-473C-494F-BFBD-835A1CE9CC13}.Signed|Any CPU.Build.0 = Release|Any CPU
+		{7E5F1250-473C-494F-BFBD-835A1CE9CC13}.Signed|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{7E5F1250-473C-494F-BFBD-835A1CE9CC13}.Signed|Mixed Platforms.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
-	EndGlobalSection
-	GlobalSection(NestedProjects) = preSolution
-		{CF8A43D4-4262-40A2-AEE0-72AEF1C47DDE} = {903DF829-63FD-4EF9-8D91-8A6AE47508F1}
 	EndGlobalSection
 EndGlobal
