@@ -44,10 +44,8 @@ v1.0.704.2210:
 - Added ~/Download/LatestBuild.ashx so download URL doesn't need to change
 
 v1.0.704.1900:
-- A bare bones example, but it shows just about everything
+- Created bare bones example, but it shows most concepts
 - Added Example pages ~/Services/ and ~/Effects/ with some light instructions on them
-- IIS Configuration (http://jsonfx.net/Download/JsonFx_Config.gif)
+- IIS Configuration (http://jsonfx.net/Download/IIS_Mapping.png)
 - You will need to register the extensions .css, .js, .merge, .jrpc, .jbst to be handled by ASP.NET
-- Eventually .css also, but that isn't quite finished
-- If you end up mapping services or handlers to other extensions, then you would obviously need to register those extensions as well/instead.
-- I think that is the only configuration that you need to do.
+- Eventually .css compaction but isn't quite finished
