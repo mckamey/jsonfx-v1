@@ -66,7 +66,7 @@
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="JsonFxBrowserCapabilities.cs" />
-    <Compile Include="JsonMLBrowserModule.cs" />
+    <Compile Include="JsonFxBrowserModule.cs" />
     <Compile Include="JsonMLTextWriter.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Properties\AssemblyVersion.cs" />
