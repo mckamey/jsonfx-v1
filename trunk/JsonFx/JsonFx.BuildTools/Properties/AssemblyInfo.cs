@@ -1,11 +1,11 @@
-﻿#region BuildTools License
+﻿#region License
 /*---------------------------------------------------------------------------------*\
 
-	BuildTools distributed under the terms of an MIT-style license:
+	Distributed under the terms of an MIT-style license:
 
 	The MIT License
 
-	Copyright (c) 2006-2007 Stephen M. McKamey
+	Copyright (c) 2006-2008 Stephen M. McKamey
 
 	Permission is hereby granted, free of charge, to any person obtaining a copy
 	of this software and associated documentation files (the "Software"), to deal
@@ -26,23 +26,25 @@
 	THE SOFTWARE.
 
 \*---------------------------------------------------------------------------------*/
-#endregion BuildTools License
+#endregion License
 
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
-[assembly: AssemblyTitle("BuildTools")]
-[assembly: AssemblyDescription("")]
-[assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("BuildTools")]
-[assembly: AssemblyCopyright("Copyright © 2006-2007 Stephen M. McKamey. All rights reserved.")]
-[assembly: AssemblyTrademark("")]
-[assembly: AssemblyCulture("")]
-
-[assembly: ComVisible(false)]
-
-[assembly: Guid("71eea0df-6b95-40b7-850d-0d69f602d6a0")]
-
 [assembly: AssemblyFileVersion("1.0.0.0")]
+[assembly: AssemblyTitle("JsonFx.BuildTools")]
+[assembly: AssemblyDescription("JsonFx BuildTools")]
+[assembly: AssemblyProduct("JsonFx.NET")]
+[assembly: AssemblyCopyright("Copyright © 2006-2008 Stephen M. McKamey. All rights reserved.")]
+[assembly: AssemblyCompany("http://jsonfx.net")]
+#if DEBUG
+[assembly: AssemblyConfiguration("Debug")]
+#elif STRONG
+[assembly: AssemblyConfiguration("Signed")]
+#else
+[assembly: AssemblyConfiguration("Release")]
+#endif
+[assembly: ComVisible(false)]
+[assembly: Guid("71eea0df-6b95-40b7-850d-0d69f602d6a0")]
+[assembly: ObfuscateAssembly(false, StripAfterObfuscation=false)]
