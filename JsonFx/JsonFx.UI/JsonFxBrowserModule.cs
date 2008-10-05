@@ -37,7 +37,7 @@ namespace JsonFx.UI
 	/// HttpModule which augments the HttpRequest.Browser object to signal
 	/// Request is being made from asynchronous JsonFx call.
 	/// </summary>
-	public class JsonMLBrowserModule : IHttpModule
+	public class JsonFxBrowserModule : IHttpModule
 	{
 		#region Constants
 
