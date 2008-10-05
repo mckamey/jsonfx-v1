@@ -1,22 +1,59 @@
 Release History
 
-v1.0.706.xxxx:
-- Fixed bugs where if new compacted resource was shorter would leave old content behind
-- Improved CssUserAgent for Safari 3 betas
-- added ETag support
+v1.0.0810.0513:
+- Added source for JsonFx.BuildTools (rather than including as assembly)
+- Renamed JsonMLBrowserModule to JsonFxBrowserModule and removed from Template web.config
 
-v1.0.705.1916:
+v1.0.0808.0316:
+- Added full JBST support
+
+v1.0.0801.2409:
+- Made number parsing more efficient (no try-catching)
+- Number parsing better obeys expected types
+
+v1.0.0712.1623:
+- Simplified object serialization to include any IDictionary with String keys
+- Made DateTime serialization conform to ISO-8601
+
+v1.0.0710.2409:
+- Fixed strong-type bug
+
+v1.0.0710.2305:
+- Fixed "-Infinity" causing "Unterminated Number" exception
+
+v1.0.0710.2017:
+- Improved literal parsing to not use Substring()
+
+v1.0.0710.2012:
+- Fixed bug in array auto-typing
+- Fixed bug with reading empty objects
+- Improved specificity of error messages
+- Added line/col numbers to errors
+
+v1.0.0710.2009:
+- Renaming namespace JsonFx.Serialization -> JsonFx.Json
+- Rename namespace JsonFx.Services -> JsonFx.JsonRpc
+
+v1.0.0710.1908:
+- Now encoding '<' as it can cause issues in script tags
+
+v1.0.0706.0000:
+- Fixed bugs where if new compacted resource was shorter would leave remnants of old content
+- Improved CssUserAgent for Safari 3 betas
+- Added ETag support
+
+v1.0.0705.1916:
 - Fixed bug where ResourceCodeProvider was being reused and resources were experiencing collisions
 
-v1.0.705.1608:
+v1.0.0705.1608:
 - Fixed bug where BuildManager fails when resources aren't prebuilt
 - Added "X-JsonFx-Version" response header
 
-v1.0.705.1501:
+v1.0.0705.1501:
 - Fixed bug in JsonMLTextWriter, where was outputting HTML comments
 - Suppressed error where BuildManager fails when resources aren't prebuilt
 
-v1.0.705.0801:
+v1.0.0705.0801:
 - Added basic History example
 - Now supports full error reporting and compaction of CSS & JavaScript
 - Cleaned up scripts based upon latest JSLint restrictions
@@ -24,17 +61,17 @@ v1.0.705.0801:
 - Trapping x64 exceptions in BuildTools (MSScriptControl requires x86)
 - Made JsonFx strongly signed enabling placement in the GAC
 
-v1.0.704.2321:
+v1.0.0704.2321:
 - Fixed bug in JsonMLTextWriter, where wouldn't write attributes of an empty element
 
-v1.0.704.2320:
+v1.0.0704.2320:
 - Removed need for .browser files by adding HttpModule:
 - Produces more consistent async request behavior across platforms
 - Simplifies integration by reducing feature to a single line in web.config
 - Moved ASP.NET .browser "fixes" into single Other.browser file
 - Pruned some obsolete/dormant classes
 
-v1.0.704.2210:
+v1.0.0704.2210:
 - Cleaned up display of JSON-RPC Service test
 - Added ability to specify the javascript proxy namespace on a JSON-RPC service
 - Made service proxy a true singleton, rather than an instance in a static field
@@ -43,9 +80,16 @@ v1.0.704.2210:
 - Fixed some minor bugs in edge case service errors
 - Added ~/Download/LatestBuild.ashx so download URL doesn't need to change
 
-v1.0.704.1900:
-- Created bare bones example, but it shows most concepts
+v1.0.0704.1900:
+- Added bare bones example but shows most concepts
 - Added Example pages ~/Services/ and ~/Effects/ with some light instructions on them
-- IIS Configuration (http://jsonfx.net/Download/IIS_Mapping.png)
-- You will need to register the extensions .css, .js, .merge, .jrpc, .jbst to be handled by ASP.NET
-- Eventually .css compaction but isn't quite finished
+- CSS compaction isn't quite finished
+
+v1.0.0703.1808:
+- Added auto-versioning to assembly and scripts
+- Update of script compactor to produce custom timestamps
+
+v1.0.0703.0319:
+- Fixed empty array deserialization bug
+- Fixed crash when bad JSON in ServiceTest
+- Beginning better exception messaging
