@@ -33,7 +33,7 @@ using System;
 namespace JsonFx.UI.Jbst
 {
 	/// <summary>
-	/// Common base for all JsonML+BST nodes.
+	/// Common base for all JBST nodes.
 	/// </summary>
 	internal interface IJbstControl
 	{

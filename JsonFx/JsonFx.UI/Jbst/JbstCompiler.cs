@@ -44,7 +44,7 @@ using JsonFx.Compilation;
 namespace JsonFx.UI.Jbst
 {
 	/// <summary>
-	/// JsonML+BST Template Compiler
+	/// JBST Template Compiler
 	/// </summary>
 	internal class JbstCompiler : IHtmlWriter
 	{
@@ -101,7 +101,7 @@ if (""undefined"" === typeof {0}) {{
 		/// Ctor
 		/// </summary>
 		/// <param name="virtualPath"></param>
-		/// <param name="isTemplate">JsonML+BST</param>
+		/// <param name="isTemplate">JBST</param>
 		internal JbstCompiler(string virtualPath, bool isTemplate)
 		{
 			this.path = virtualPath;

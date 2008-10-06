@@ -36,7 +36,7 @@ using JsonFx.Json;
 namespace JsonFx.UI.Jbst
 {
 	/// <summary>
-	/// Internal representation of a nested JsonML+BST control.
+	/// Internal representation of a nested JBST control.
 	/// </summary>
 	internal class JbstCustomControl : JbstControl, IJsonSerializable
 	{

@@ -34,7 +34,7 @@ using System.Collections.Generic;
 namespace JsonFx.UI.Jbst
 {
 	/// <summary>
-	/// Control collection for JsonML+BST nodes.
+	/// Control collection for JBST nodes.
 	/// </summary>
 	internal class JbstControlCollection : ICollection<IJbstControl>
 	{
