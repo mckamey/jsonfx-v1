@@ -36,7 +36,7 @@ using JsonFx.Json;
 namespace JsonFx.UI.Jbst
 {
 	/// <summary>
-	/// Represents literal text in a JsonML+BST document
+	/// Represents literal text in a JBST document
 	/// </summary>
 	internal class JbstLiteral : IJbstControl, IJsonSerializable
 	{
