@@ -7,14 +7,24 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JsonFx.Json", "JsonFx.Json\
 		Release.AspNetCompiler.Debug = "False"
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JsonFx.Json.UnitTests", "JsonFx.Json.UnitTests\JsonFx.Json.UnitTests.csproj", "{9F616133-A5C3-48C7-95F3-2DCC01F8B03F}"
+	ProjectSection(WebsiteProperties) = preProject
+		Debug.AspNetCompiler.Debug = "True"
+		Release.AspNetCompiler.Debug = "False"
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SourceCodeControl) = preSolution
-		SccNumberOfProjects = 2
-		SccProjectUniqueName0 = JsonFx.Json\\JsonFx.Json.csproj
-		SccProjectName0 = \u0022$/PseudoCode/Dev/JsonFx/JsonFx.Json\u0022,\u0020SPDAAAAA
-		SccLocalPath0 = JsonFx.Json
+		SccNumberOfProjects = 3
+		SccLocalPath0 = .
 		CanCheckoutShared = false
-		SccLocalPath1 = .
+		SccProjectUniqueName1 = JsonFx.Json\\JsonFx.Json.csproj
+		SccProjectName1 = \u0022$/PseudoCode/Dev/JsonFx/JsonFx.Json\u0022,\u0020SPDAAAAA
+		SccLocalPath1 = JsonFx.Json
+		CanCheckoutShared = false
+		SccProjectUniqueName2 = JsonFx.Json.UnitTests\\JsonFx.Json.UnitTests.csproj
+		SccProjectName2 = \u0022$/PseudoCode/Dev/JsonFx/JsonFx.Json.UnitTests\u0022,\u0020LJFAAAAA
+		SccLocalPath2 = JsonFx.Json.UnitTests
 		CanCheckoutShared = false
 	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -47,6 +57,21 @@ Global
 		{ABA23F14-7E47-43FE-A3E7-1FF97840C3FB}.Signed|Any CPU.Build.0 = Signed|Any CPU
 		{ABA23F14-7E47-43FE-A3E7-1FF97840C3FB}.Signed|Mixed Platforms.ActiveCfg = Signed|Any CPU
 		{ABA23F14-7E47-43FE-A3E7-1FF97840C3FB}.Signed|Mixed Platforms.Build.0 = Signed|Any CPU
+		{9F616133-A5C3-48C7-95F3-2DCC01F8B03F}.Debug|.NET.ActiveCfg = Debug|Any CPU
+		{9F616133-A5C3-48C7-95F3-2DCC01F8B03F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9F616133-A5C3-48C7-95F3-2DCC01F8B03F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9F616133-A5C3-48C7-95F3-2DCC01F8B03F}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{9F616133-A5C3-48C7-95F3-2DCC01F8B03F}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{9F616133-A5C3-48C7-95F3-2DCC01F8B03F}.Release|.NET.ActiveCfg = Release|Any CPU
+		{9F616133-A5C3-48C7-95F3-2DCC01F8B03F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9F616133-A5C3-48C7-95F3-2DCC01F8B03F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9F616133-A5C3-48C7-95F3-2DCC01F8B03F}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{9F616133-A5C3-48C7-95F3-2DCC01F8B03F}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{9F616133-A5C3-48C7-95F3-2DCC01F8B03F}.Signed|.NET.ActiveCfg = Release|Any CPU
+		{9F616133-A5C3-48C7-95F3-2DCC01F8B03F}.Signed|Any CPU.ActiveCfg = Release|Any CPU
+		{9F616133-A5C3-48C7-95F3-2DCC01F8B03F}.Signed|Any CPU.Build.0 = Release|Any CPU
+		{9F616133-A5C3-48C7-95F3-2DCC01F8B03F}.Signed|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{9F616133-A5C3-48C7-95F3-2DCC01F8B03F}.Signed|Mixed Platforms.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
