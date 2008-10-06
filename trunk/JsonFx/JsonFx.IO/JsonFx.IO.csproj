@@ -37,7 +37,7 @@
     <OutputPath>bin\Signed\</OutputPath>
     <DefineConstants>TRACE;STRONG</DefineConstants>
     <Optimize>true</Optimize>
-    <DebugType>pdbonly</DebugType>
+    <DebugType>none</DebugType>
     <PlatformTarget>AnyCPU</PlatformTarget>
     <UseVSHostingProcess>false</UseVSHostingProcess>
     <ErrorReport>prompt</ErrorReport>
