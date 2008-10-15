@@ -1,5 +1,8 @@
 Release History
 
+v1.0.0810.1508:
+- Made script errors warnings until expose a mechanism to choose
+
 v1.0.0810.0513:
 - Added source for JsonFx.BuildTools (rather than including as assembly)
 - Renamed JsonMLBrowserModule to JsonFxBrowserModule and removed from Template web.config
