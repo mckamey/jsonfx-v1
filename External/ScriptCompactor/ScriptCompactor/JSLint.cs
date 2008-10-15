@@ -476,24 +476,19 @@ namespace BuildTools.ScriptCompactor
 				int length = (int)sc.Eval("JSLINT.errors.length");
 				for (int i=0; i<length; i++)
 				{
-					bool fatal = (bool)sc.Eval("!JSLINT.errors["+i+"]");
+					// if JSLint finds a fatal error it adds null to the end
+					bool fatal = (i == length-1) && (bool)sc.Eval("!JSLINT.errors["+i+"]");
 					if (!fatal)
 					{
-						try
-						{
-							int line = 1+(int)sc.Eval("JSLINT.errors["+i+"].line");
-							int col = 1+(int)sc.Eval("JSLINT.errors["+i+"].character");
-							string reason = sc.Eval("JSLINT.errors["+i+"].reason") as string;
-							//string evidence = sc.Eval("JSLINT.errors["+i+"].evidence") as string;
+						int line = 1+(int)sc.Eval("JSLINT.errors["+i+"].line");
+						int col = 1+(int)sc.Eval("JSLINT.errors["+i+"].character");
+						string reason = sc.Eval("JSLINT.errors["+i+"].reason") as string;
+						//string evidence = sc.Eval("JSLINT.errors["+i+"].evidence") as string;
 
-							// could just add to errors collection here since this
-							// takes a performance hit to throw, but throwing sets stack dump too
-							throw new ParseError(reason, filename, line, col);
-						}
-						catch (ParseException ex)
-						{
-							this.errors.Add(ex);
-						}
+						// could throw to set stack dump too but
+						// just adding to errors collection here since
+						// throwing adds a performance hit
+						this.errors.Add(new ParseWarning(reason, filename, line, col));
 					}
 				}
 			}
