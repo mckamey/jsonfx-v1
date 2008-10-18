@@ -89,13 +89,17 @@ namespace BuildTools.Collections
 				}
 				return this.Children[key];
 			}
-			protected set { this.Children[key] = value; }
+			// had to add internal to get around change in C# 3.0 modifiers
+			// this worked fine in C# 2.0 but is possible they "fixed" that bug
+			protected internal set { this.Children[key] = value; }
 		}
 
 		public TValue Value
 		{
 			get { return this.value; }
-			protected set
+			// had to add internal to get around change in C# 3.0 modifiers
+			// this worked fine in C# 2.0 but is possible they "fixed" that bug
+			protected internal set
 			{
 				if (!EqualityComparer<TValue>.Default.Equals(this.value, default(TValue)))
 				{
