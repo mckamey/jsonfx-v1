@@ -655,7 +655,7 @@ namespace BuildTools.CssCompactor
 					case '}':
 					case ';':
 					{
-#warning Should this parse value further?
+						//Should this parse the value further?
 
 						CssString any = new CssString();
 						any.Value = this.Copy(start);
