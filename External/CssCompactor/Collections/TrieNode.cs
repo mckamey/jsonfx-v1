@@ -89,16 +89,20 @@ namespace BuildTools.Collections
 				}
 				return this.Children[key];
 			}
-			// had to add internal to get around change in C# 3.0 modifiers
-			// this worked fine in C# 2.0 but is possible they "fixed" that bug
+
+			// added "internal" to get around change in C# 3.0 modifiers
+			// this worked fine in C# 2.0 but they fixed that bug
+			// http://blogs.msdn.com/ericlippert/archive/2008/03/28/why-can-t-i-access-a-protected-member-from-a-derived-class-part-two-why-can-i.aspx
 			protected internal set { this.Children[key] = value; }
 		}
 
 		public TValue Value
 		{
 			get { return this.value; }
-			// had to add internal to get around change in C# 3.0 modifiers
-			// this worked fine in C# 2.0 but is possible they "fixed" that bug
+
+			// added "internal" to get around change in C# 3.0 modifiers
+			// this worked fine in C# 2.0 but they fixed that bug
+			// http://blogs.msdn.com/ericlippert/archive/2008/03/28/why-can-t-i-access-a-protected-member-from-a-derived-class-part-two-why-can-i.aspx
 			protected internal set
 			{
 				if (!EqualityComparer<TValue>.Default.Equals(this.value, default(TValue)))
