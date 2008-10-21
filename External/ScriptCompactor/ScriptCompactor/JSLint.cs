@@ -214,6 +214,7 @@ namespace BuildTools.ScriptCompactor
 
 		#region Fields
 
+		private static bool isDisabled = false;
 		private JSLint.Options options = new JSLint.Options();
 		private List<ParseException> errors = new List<ParseException>();
 
@@ -388,6 +389,19 @@ namespace BuildTools.ScriptCompactor
 
 		public void Run(string filename, string script)
 		{
+			Assembly assembly = Assembly.GetAssembly(typeof(JSLint));
+
+			// shortcut if previously failed
+			if (JSLint.isDisabled)
+			{
+				this.errors.Add(new ParseWarning(
+					"JSLint has been disabled.",
+					assembly.FullName,
+					-1,
+					-1));
+				return;
+			}
+
 			#region Microsoft Script Control References
 
 			// Microsoft Script Control 1.0
@@ -396,8 +410,10 @@ namespace BuildTools.ScriptCompactor
 			// http://msdn.microsoft.com/msdnmag/issues/02/08/VisualStudioforApplications/
 			// http://msdn2.microsoft.com/en-us/library/ms974586.aspx
 			// http://msdn2.microsoft.com/en-us/library/ms950396.aspx
+
 			// Must be built with x86 as Target (not Any CPU/x64/Itanium)
 			// http://forums.microsoft.com/MSDN/ShowPost.aspx?PostID=1406892&SiteID=1
+			// http://social.msdn.microsoft.com/Forums/en-US/netfx64bit/thread/338bb030-98d6-4b97-a182-562d985395d9/
 			// http://www.devarticles.com/c/a/C-Sharp/Using-Late-Bound-COM-Objects/2/
 
 			#endregion Microsoft Script Control References
@@ -412,8 +428,6 @@ namespace BuildTools.ScriptCompactor
 			}
 
 			string jsLintSource = null;
-
-			Assembly assembly = Assembly.GetAssembly(typeof(JSLint));
 
 			// JSLint.js stored as a resource file
 			string resourceName = /*assembly.GetName().Name+"."+*/JSLintScript;
@@ -431,66 +445,68 @@ namespace BuildTools.ScriptCompactor
 				}
 			}
 
-			MSScriptControl.ScriptControlClass sc;
 			try
 			{
-				sc = new MSScriptControl.ScriptControlClass();
+				MSScriptControl.ScriptControlClass sc = new MSScriptControl.ScriptControlClass();
+				sc.Language = "JScript";
+				sc.AddCode(jsLintSource);
+
+				this.IsBrowser = true;
+				this.AllowDebugger = true;
+				this.RequireStrictEquals = true;
+				this.NoUndefVars = true;
+
+				object[] p = new object[] { script, this.options };
+				bool result = false;
+
+				try
+				{
+					result = (bool)sc.Run("JSLINT", ref p);
+				}
+				catch (Exception ex)
+				{
+					this.errors.Add(new ParseWarning(ex.Message, filename, -1, -1, ex));
+				}
+
+				if (!result)
+				{
+					// Alternatively this could also import JSON.js
+					// but then it would need to parse on the C# side
+					// Just looping through with Eval is simpler/encapsulated
+					int length = (int)sc.Eval("JSLINT.errors.length");
+					for (int i=0; i<length; i++)
+					{
+						// if JSLint finds a fatal error it adds null to the end
+						bool fatal = (i == length-1) && (bool)sc.Eval("!JSLINT.errors["+i+"]");
+						if (!fatal)
+						{
+							int line = 1+(int)sc.Eval("JSLINT.errors["+i+"].line");
+							int col = 1+(int)sc.Eval("JSLINT.errors["+i+"].character");
+							string reason = sc.Eval("JSLINT.errors["+i+"].reason") as string;
+							//string evidence = sc.Eval("JSLINT.errors["+i+"].evidence") as string;
+
+							// could throw to set stack dump too but
+							// just adding to errors collection here since
+							// throwing adds a performance hit
+							this.errors.Add(new ParseWarning(reason, filename, line, col));
+						}
+					}
+				}
 			}
 			catch (COMException ex)
 			{
-				try
-				{
-					// could just add to errors collection here since this
-					// takes a performance hit to throw, but throwing sets stack dump too
-					throw new ParseWarning("JSLint cannot be run. Must run as x86 and install MSScriptControl COM component (http://www.microsoft.com/downloads/details.aspx?FamilyId=D7E31492-2595-49E6-8C02-1426FEC693AC)", filename, -1, -1, ex);
-				}
-				catch (ParseException ex2)
-				{
-					this.errors.Add(ex2);
-				}
+				JSLint.isDisabled = true;
+
+				// could throw to set stack dump too but
+				// just adding to errors collection here since
+				// throwing adds a performance hit
+				this.errors.Add(new ParseWarning(
+					"JSLint cannot be run. Must run as x86 with MSScriptControl COM component installed (http://www.microsoft.com/downloads/details.aspx?FamilyId=D7E31492-2595-49E6-8C02-1426FEC693AC)",
+					assembly.FullName,
+					-1,
+					-1,
+					ex));
 				return;
-			}
-			sc.Language = "JScript";
-			sc.AddCode(jsLintSource);
-
-			this.IsBrowser = true;
-			this.AllowDebugger = true;
-			this.RequireStrictEquals = true;
-			this.NoUndefVars = true;
-
-			object[] p = new object[] { script, this.options };
-			bool result = false;
-			try
-			{
-				result = (bool)sc.Run("JSLINT", ref p);
-			}
-			catch (Exception ex)
-			{
-				this.errors.Add(new ParseError(ex.Message, filename, -1, -1, ex));
-			}
-			if (!result)
-			{
-				// Alternatively this could also import JSON.js
-				// but then it would need to parse on the C# side
-				// Just looping through with Eval is simpler
-				int length = (int)sc.Eval("JSLINT.errors.length");
-				for (int i=0; i<length; i++)
-				{
-					// if JSLint finds a fatal error it adds null to the end
-					bool fatal = (i == length-1) && (bool)sc.Eval("!JSLINT.errors["+i+"]");
-					if (!fatal)
-					{
-						int line = 1+(int)sc.Eval("JSLINT.errors["+i+"].line");
-						int col = 1+(int)sc.Eval("JSLINT.errors["+i+"].character");
-						string reason = sc.Eval("JSLINT.errors["+i+"].reason") as string;
-						//string evidence = sc.Eval("JSLINT.errors["+i+"].evidence") as string;
-
-						// could throw to set stack dump too but
-						// just adding to errors collection here since
-						// throwing adds a performance hit
-						this.errors.Add(new ParseWarning(reason, filename, line, col));
-					}
-				}
 			}
 		}
 
