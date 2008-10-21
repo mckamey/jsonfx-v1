@@ -1,5 +1,8 @@
 Release History
 
+v1.0.0810.2108:
+- Making build-time JScript COM Interop more robust on Win2K8 x64
+
 v1.0.0810.1810:
 - Fixed breaking change in C# 3.0 access modifiers
 - Fixed typo in Visual Studio templates description
