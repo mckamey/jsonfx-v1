@@ -209,6 +209,7 @@ namespace BuildTools.ScriptCompactor
 		#region Constants
 
 		private const string JSLintScript = "BuildTools.ScriptCompactor.jslint.js";
+		private static string JSLintSource = null;
 
 		#endregion Constants
 
@@ -395,8 +396,10 @@ namespace BuildTools.ScriptCompactor
 			if (JSLint.isDisabled)
 			{
 				this.errors.Add(new ParseWarning(
-					"JSLint has been disabled.",
-					assembly.FullName,
+					"JSLint is disabled.\r\n"+
+					"Syntax checking requires MSScriptControl COM component be registered:\r\n"+
+					"http://www.microsoft.com/downloads/details.aspx?FamilyId=D7E31492-2595-49E6-8C02-1426FEC693AC",
+					assembly.GetName().Name,
 					-1,
 					-1));
 				return;
@@ -427,29 +430,30 @@ namespace BuildTools.ScriptCompactor
 				script = File.ReadAllText(filename);
 			}
 
-			string jsLintSource = null;
-
-			// JSLint.js stored as a resource file
-			string resourceName = /*assembly.GetName().Name+"."+*/JSLintScript;
-			if (assembly.GetManifestResourceInfo(resourceName) == null)
-			{
-				throw new FileNotFoundException("Cannot find the JSLint script file.", resourceName);
-			}
-
-			// output next to assembly
-			using (Stream input = assembly.GetManifestResourceStream(resourceName))
-			{
-				using (StreamReader reader = new StreamReader(input))
-				{
-					jsLintSource = reader.ReadToEnd();
-				}
-			}
-
 			try
 			{
+				if (JSLint.JSLintSource == null)
+				{
+					// JSLint.js stored as a resource file
+					string resourceName = JSLint.JSLintScript;
+					if (assembly.GetManifestResourceInfo(resourceName) == null)
+					{
+						throw new FileNotFoundException("Cannot find the JSLint script file.", resourceName);
+					}
+
+					// output next to assembly
+					using (Stream input = assembly.GetManifestResourceStream(resourceName))
+					{
+						using (StreamReader reader = new StreamReader(input))
+						{
+							JSLint.JSLintSource = reader.ReadToEnd();
+						}
+					}
+				}
+
 				MSScriptControl.ScriptControlClass sc = new MSScriptControl.ScriptControlClass();
 				sc.Language = "JScript";
-				sc.AddCode(jsLintSource);
+				sc.AddCode(JSLint.JSLintSource);
 
 				this.IsBrowser = true;
 				this.AllowDebugger = true;
@@ -457,8 +461,8 @@ namespace BuildTools.ScriptCompactor
 				this.NoUndefVars = true;
 
 				object[] p = new object[] { script, this.options };
-				bool result = false;
 
+				bool result = false;
 				try
 				{
 					result = (bool)sc.Run("JSLINT", ref p);
@@ -470,7 +474,7 @@ namespace BuildTools.ScriptCompactor
 
 				if (!result)
 				{
-					// Alternatively this could also import JSON.js
+					// Alternatively this could also import json2.js
 					// but then it would need to parse on the C# side
 					// Just looping through with Eval is simpler/encapsulated
 					int length = (int)sc.Eval("JSLINT.errors.length");
@@ -493,7 +497,7 @@ namespace BuildTools.ScriptCompactor
 					}
 				}
 			}
-			catch (COMException ex)
+			catch (Exception ex)
 			{
 				JSLint.isDisabled = true;
 
@@ -501,8 +505,10 @@ namespace BuildTools.ScriptCompactor
 				// just adding to errors collection here since
 				// throwing adds a performance hit
 				this.errors.Add(new ParseWarning(
-					"JSLint cannot be run. Must run as x86 with MSScriptControl COM component installed (http://www.microsoft.com/downloads/details.aspx?FamilyId=D7E31492-2595-49E6-8C02-1426FEC693AC)",
-					assembly.FullName,
+					(ex.GetType().Name)+" "+ex.Message+"\r\n"+
+					"Syntax checking requires MSScriptControl COM component be registered:\r\n"+
+					"http://www.microsoft.com/downloads/details.aspx?FamilyId=D7E31492-2595-49E6-8C02-1426FEC693AC",
+					assembly.GetName().Name,
 					-1,
 					-1,
 					ex));
