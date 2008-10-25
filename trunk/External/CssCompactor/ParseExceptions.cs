@@ -235,7 +235,7 @@ namespace BuildTools
 	}
 
 	[Serializable]
-	public class SyntaxError : ParseError
+	public class SyntaxError : ParseWarning
 	{
 		#region Init
 
