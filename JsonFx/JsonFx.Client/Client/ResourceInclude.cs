@@ -75,7 +75,7 @@ namespace JsonFx.Client
 				throw new ArgumentException(String.Format(
 					"Error loading resources for \"{0}\".\r\n"+
 					"This can be caused by an invalid path, build errors, or incorrect configuration.\r\n"+
-					"Check http://help.jsonfx.net/instructions/ for troubleshooting.",
+					"Check http://help.jsonfx.net/instructions for troubleshooting.",
 					url));
 			}
 
