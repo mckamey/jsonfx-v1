@@ -504,7 +504,7 @@ namespace BuildTools.ScriptCompactor
 				JSLint.isDisabled = true;
 
 				this.errors.Add(new ParseWarning(
-					JSLint.MSScriptError+"\r\n"+(ex.GetType().Name)+" "+ex.Message,
+					JSLint.MSScriptError+"\r\n"+ex.GetType().Name+": "+ex.Message,
 					assembly.GetName().Name,
 					-1,
 					-1,
