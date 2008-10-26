@@ -73,7 +73,9 @@ namespace JsonFx.Client
 			if (info == null)
 			{
 				throw new ArgumentException(String.Format(
-					"Error loading \"{0}\".  Either not found or a build error occurred.",
+					"Error loading resources for \"{0}\".\r\n"+
+					"This can be caused by an invalid path, build errors, or incorrect configuration.\r\n"+
+					"Check http://help.jsonfx.net/instructions/ for troubleshooting.",
 					url));
 			}
 
