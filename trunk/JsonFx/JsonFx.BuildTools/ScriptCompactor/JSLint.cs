@@ -210,6 +210,10 @@ namespace BuildTools.ScriptCompactor
 
 		private const string JSLintScript = "BuildTools.ScriptCompactor.jslint.js";
 		private static string JSLintSource = null;
+		private const string MSScriptError =
+			"JSLint is disabled.\r\n"+
+			"Syntax checking requires MSScriptControl COM component be registered:\r\n"+
+			"http://help.jsonfx.net/instructions";
 
 		#endregion Constants
 
@@ -396,9 +400,7 @@ namespace BuildTools.ScriptCompactor
 			if (JSLint.isDisabled)
 			{
 				this.errors.Add(new ParseWarning(
-					"JSLint is disabled.\r\n"+
-					"Syntax checking requires MSScriptControl COM component be registered:\r\n"+
-					"http://www.microsoft.com/downloads/details.aspx?FamilyId=D7E31492-2595-49E6-8C02-1426FEC693AC",
+					JSLint.MSScriptError,
 					assembly.GetName().Name,
 					-1,
 					-1));
@@ -501,13 +503,8 @@ namespace BuildTools.ScriptCompactor
 			{
 				JSLint.isDisabled = true;
 
-				// could throw to set stack dump too but
-				// just adding to errors collection here since
-				// throwing adds a performance hit
 				this.errors.Add(new ParseWarning(
-					(ex.GetType().Name)+" "+ex.Message+"\r\n"+
-					"Syntax checking requires MSScriptControl COM component be registered:\r\n"+
-					"http://www.microsoft.com/downloads/details.aspx?FamilyId=D7E31492-2595-49E6-8C02-1426FEC693AC",
+					JSLint.MSScriptError+"\r\n"+(ex.GetType().Name)+" "+ex.Message,
 					assembly.GetName().Name,
 					-1,
 					-1,
