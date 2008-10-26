@@ -42,7 +42,7 @@ namespace JsonFx.JsonRpc
 		#region Constants
 
 		private object result = null;
-		private object error = null;
+		private JsonError error = null;
 
 		#endregion Constants
 
@@ -84,7 +84,7 @@ namespace JsonFx.JsonRpc
 		/// </remarks>
 		[JsonName("error")]
 		[JsonSpecifiedProperty("ErrorSpecified")]
-		public virtual object Error
+		public virtual JsonError Error
 		{
 			get { return this.error; }
 			set { this.error = value; }

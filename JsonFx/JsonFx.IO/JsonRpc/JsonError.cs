@@ -117,12 +117,11 @@ namespace JsonFx.JsonRpc
 			if (ex != null)
 			{
 				this.Message = ex.Message;
-				Dictionary<String, Object> innerError = new Dictionary<String, Object>();
-				innerError["Type"] = ex.GetType().Name;
+				IDictionary<String, Object> data = this.DataDictionary;
+				data["Type"] = ex.GetType().Name;
 #if DEBUG
-			innerError["StackTrace"] = ex.StackTrace;
+				data["StackTrace"] = ex.StackTrace;
 #endif
-				this.Data = innerError;
 			}
 
 			this.code = (int)code;
@@ -171,6 +170,24 @@ namespace JsonFx.JsonRpc
 		{
 			get { return this.data; }
 			set { this.data = value; }
+		}
+
+		/// <summary>
+		/// Convenience property which gets the Data object as a typed dictionary.
+		/// </summary>
+		[JsonIgnore]
+		public IDictionary<String, Object> DataDictionary
+		{
+			get
+			{
+				if (this.data == null)
+				{
+					this.data = new Dictionary<String, Object>();
+				}
+
+				// this will throw an exception if data is assigned some other value
+				return (IDictionary<String, Object>)this.data;
+			}
 		}
 
 		#endregion Properties
