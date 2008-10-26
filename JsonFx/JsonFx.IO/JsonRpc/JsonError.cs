@@ -95,7 +95,7 @@ namespace JsonFx.JsonRpc
 		/// Ctor.
 		/// </summary>
 		public JsonError()
-			: this(null)
+			: this(null, JsonRpcErrors.Unknown, false)
 		{
 		}
 
@@ -109,19 +109,36 @@ namespace JsonFx.JsonRpc
 		}
 
 		/// <summary>
-		/// Ctor.
+		/// Ctor
 		/// </summary>
 		/// <param name="ex"></param>
+		/// <param name="code"></param>
 		public JsonError(Exception ex, JsonRpcErrors code)
+#if DEBUG
+			: this(ex, code, (ex != null))
+#else
+			: this(ex, code, false)
+#endif
+		{
+		}
+
+		/// <summary>
+		/// Ctor
+		/// </summary>
+		/// <param name="ex"></param>
+		/// <param name="code"></param>
+		/// <param name="showStackTrace"></param>
+		public JsonError(Exception ex, JsonRpcErrors code, bool showStackTrace)
 		{
 			if (ex != null)
 			{
 				this.Message = ex.Message;
 				IDictionary<String, Object> data = this.DataDictionary;
 				data["Type"] = ex.GetType().Name;
-#if DEBUG
-				data["StackTrace"] = ex.StackTrace;
-#endif
+				if (showStackTrace)
+				{
+					data["StackTrace"] = ex.StackTrace;
+				}
 			}
 
 			this.code = (int)code;
