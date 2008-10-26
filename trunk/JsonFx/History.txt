@@ -1,8 +1,10 @@
 Release History
 
-v1.0.0810.xxxx:
-- Strongly-typed some JSON-RPC parameters
+v1.0.0810.2617:
 - Improved error messaging
+
+v1.0.0810.2611:
+- Strongly-typed some JSON-RPC parameters
 - Improved setup documentation around MSScriptControl
 - Made build-time continue even when JScript COM Interop not registered
 
