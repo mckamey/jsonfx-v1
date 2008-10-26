@@ -1,7 +1,13 @@
 Release History
 
+v1.0.0810.xxxx:
+- Strongly-typed some JSON-RPC parameters
+- Improved error messaging
+- Improved setup documentation around MSScriptControl
+- Made build-time continue even when JScript COM Interop not registered
+
 v1.0.0810.2108:
-- Making build-time JScript COM Interop more robust on Win2K8 x64
+- Made build-time JScript COM Interop more robust on Win2K8 x64
 
 v1.0.0810.1810:
 - Fixed breaking change in C# 3.0 access modifiers
