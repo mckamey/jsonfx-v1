@@ -171,8 +171,8 @@ namespace JsonFx.Handlers
 							positionalParams[i] = request.NamedParams[i.ToString()];
 						}
 
-#warning This does not check the parameters for type compatibility.  e.g. using Double for Int32 throws exception
-						// will need to modify build to return type with paramMap
+						// TODO: check the parameters for type compatibility.  e.g. using Double for Int32 throws exception
+						// need to modify build to return type with paramMap
 						//positionalParams[i] = JsonReader.CoerceType(positionalParams[i], );
 					}
 				}
