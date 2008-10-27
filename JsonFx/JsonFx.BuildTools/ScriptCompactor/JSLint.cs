@@ -402,8 +402,8 @@ namespace BuildTools.ScriptCompactor
 				this.errors.Add(new ParseWarning(
 					JSLint.MSScriptError,
 					assembly.GetName().Name,
-					-1,
-					-1));
+					0,
+					0));
 				return;
 			}
 
@@ -506,8 +506,8 @@ namespace BuildTools.ScriptCompactor
 				this.errors.Add(new ParseWarning(
 					JSLint.MSScriptError+"\r\n"+ex.GetType().Name+": "+ex.Message,
 					assembly.GetName().Name,
-					-1,
-					-1,
+					0,
+					0,
 					ex));
 				return;
 			}
