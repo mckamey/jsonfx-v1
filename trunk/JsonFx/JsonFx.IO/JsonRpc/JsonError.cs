@@ -29,6 +29,7 @@
 #endregion License
 
 using System;
+using System.Web;
 using System.Collections.Generic;
 
 using JsonFx.Json;
@@ -95,7 +96,7 @@ namespace JsonFx.JsonRpc
 		/// Ctor.
 		/// </summary>
 		public JsonError()
-			: this(null, JsonRpcErrors.Unknown, false)
+			: this(null, JsonRpcErrors.Unknown)
 		{
 		}
 
@@ -114,27 +115,22 @@ namespace JsonFx.JsonRpc
 		/// <param name="ex"></param>
 		/// <param name="code"></param>
 		public JsonError(Exception ex, JsonRpcErrors code)
-#if DEBUG
-			: this(ex, code, (ex != null))
-#else
-			: this(ex, code, false)
-#endif
-		{
-		}
-
-		/// <summary>
-		/// Ctor
-		/// </summary>
-		/// <param name="ex"></param>
-		/// <param name="code"></param>
-		/// <param name="showStackTrace"></param>
-		public JsonError(Exception ex, JsonRpcErrors code, bool showStackTrace)
 		{
 			if (ex != null)
 			{
 				this.Message = ex.Message;
 				IDictionary<String, Object> data = this.DataDictionary;
 				data["Type"] = ex.GetType().Name;
+#if DEBUG
+				bool showStackTrace = true;
+#else
+				bool showStackTrace = false;
+				HttpContext context = HttpContext.Current;
+				if (context != null)
+				{
+					showStackTrace = context.IsDebuggingEnabled;
+				}
+#endif
 				if (showStackTrace)
 				{
 					data["StackTrace"] = ex.StackTrace;
