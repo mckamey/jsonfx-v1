@@ -1,5 +1,8 @@
 Release History
 
+v1.0.0811.01xx:
+- Improved debugging mode
+
 v1.0.0810.2617:
 - Improved error messaging
 
