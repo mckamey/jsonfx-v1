@@ -24,11 +24,23 @@ namespace JsonFx.Client
 
 		#region Fields
 
-		private bool isDebug = false;
+		private bool isDebug;
+		private string sourceUrl;
 		private bool usePageCulture = true;
-		private string sourceUrl = String.Empty;
 
 		#endregion Fields
+
+		#region Init
+
+		/// <summary>
+		/// Ctor
+		/// </summary>
+		public ResourceInclude()
+		{
+			this.isDebug = this.Context.IsDebuggingEnabled;
+		}
+
+		#endregion Init
 
 		#region Properties
 
@@ -48,7 +60,14 @@ namespace JsonFx.Client
 		[DefaultValue("")]
 		public string SourceUrl
 		{
-			get { return this.sourceUrl; }
+			get
+			{
+				if (this.sourceUrl == null)
+				{
+					return String.Empty;
+				}
+				return this.sourceUrl;
+			}
 			set { this.sourceUrl = value; }
 		}
 
