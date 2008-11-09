@@ -61,7 +61,6 @@ namespace JsonFx.Compilation
 	/// The compilation result is a CompiledBuildResult class which has references
 	/// to both resources.
 	/// </summary>
-	[BuildProviderAppliesTo(BuildProviderAppliesTo.Web)]
 	[PermissionSet(SecurityAction.Demand, Unrestricted=true)]
 	public class ResourceBuildProvider : System.Web.Compilation.BuildProvider, IResourceBuildHelper
 	{
