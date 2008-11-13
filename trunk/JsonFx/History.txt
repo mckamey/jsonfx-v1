@@ -1,6 +1,9 @@
 Release History
 
-v1.0.0811.01xx:
+v1.0.0811.1220:
+- Fixed JsonReader.CoerceType when converting from number to enum
+
+v1.0.0811.0112:
 - Improved debugging mode
 
 v1.0.0810.2617:
