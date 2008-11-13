@@ -1105,7 +1105,7 @@ namespace JsonFx.Json
 				}
 				else
 				{
-					return Convert.ChangeType(value, targetType);
+					return Enum.ToObject(targetType, value);
 				}
 			}
 
