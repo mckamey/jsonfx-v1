@@ -4,8 +4,9 @@
 
 # concatenating files reduces the number of downloads, each of which incurs a connection cost
 # compacting the files removes all comments and insignificant whitespace
-# finally, if the browser supports it the resulting resource will be GZipped or Deflated
-# resources can be directly in the project or embedded in linked assemblies
+# finally, if the browser supports it the resulting content will be GZipped or Deflated
+# content can be directly in the project or embedded in linked assemblies
+# merge files can even merge other merge files
 
 # NOTE: if you want all of this you can replace with a single reference to
 # JsonFx.Scripts.JsonFx.merge, JsonFx.Client
