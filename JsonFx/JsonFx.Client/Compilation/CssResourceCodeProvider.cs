@@ -45,7 +45,7 @@ namespace JsonFx.Compilation
 
 		#endregion Constants
 
-		#region ResourceCodeProvider Members
+		#region ResourceCodeProvider Properties
 
 		public override string ContentType
 		{
@@ -55,6 +55,15 @@ namespace JsonFx.Compilation
 		public override string FileExtension
 		{
 			get { return "css"; }
+		}
+
+		#endregion ResourceCodeProvider Properties
+
+		#region ResourceCodeProvider Methods
+
+		protected override void ResetCodeProvider()
+		{
+			// no state is actually stored
 		}
 
 		protected internal override void ProcessResource(

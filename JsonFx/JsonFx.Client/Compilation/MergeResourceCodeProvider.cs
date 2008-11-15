@@ -54,10 +54,10 @@ namespace JsonFx.Compilation
 
 		#region Fields
 
-		private string contentType = "text/plain";
-		private string fileExtension = "txt";
-		private bool isMimeSet = false;
-		private bool buildAboutScript = false;
+		private string contentType;
+		private string fileExtension;
+		private bool isMimeSet;
+		private bool buildAboutScript;
 
 		#endregion Fields
 
@@ -76,6 +76,14 @@ namespace JsonFx.Compilation
 		#endregion ResourceCodeProvider Properties
 
 		#region ResourceCodeProvider Methods
+
+		protected override void ResetCodeProvider()
+		{
+			this.contentType = "text/plain";
+			this.fileExtension = "txt";
+			this.isMimeSet = false;
+			this.buildAboutScript = false;
+		}
 
 		protected internal override void ProcessResource(
 			IResourceBuildHelper helper,
