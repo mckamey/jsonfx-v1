@@ -36,7 +36,7 @@
 		</Attributes>
 	</Content>
 	<Content>
-		<FileName>JbstControl_VSItemTemplate.zip</FileName>
+		<FileName>JbstControl_WAP_VSItemTemplate.zip</FileName>
 		<DisplayName>JBST Control</DisplayName>
 		<Description>JsonML + Browser-Side Templating (JBST) control</Description>
 		<FileContentType>VSTemplate</FileContentType>
@@ -60,7 +60,7 @@
 		</Attributes>
 	</Content>
 	<Content>
-		<FileName>JsonRpcService_VSItemTemplate.zip</FileName>
+		<FileName>JsonRpcService_WAP_VSItemTemplate.zip</FileName>
 		<DisplayName>JSON-RPC Service</DisplayName>
 		<Description>Service end-point for JSON-RPC</Description>
 		<FileContentType>VSTemplate</FileContentType>
@@ -84,7 +84,7 @@
 		</Attributes>
 	</Content>
 	<Content>
-		<FileName>JsonFxMergeFile_VSItemTemplate.zip</FileName>
+		<FileName>JsonFxMergeFile_WAP_VSItemTemplate.zip</FileName>
 		<DisplayName>JsonFx Merge File</DisplayName>
 		<Description>A configuration file used by JsonFx to compact and combine JavaScript or CSS</Description>
 		<FileContentType>VSTemplate</FileContentType>
