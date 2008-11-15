@@ -129,7 +129,7 @@
   <Target Name="AfterBuild">
   </Target>
   -->
-  <PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'Signed' ">
     <PreBuildEvent>IF EXIST "$(SolutionDir)SolnItems\AutoVersioning\AutoVersioning.exe" "$(SolutionDir)SolnItems\AutoVersioning\AutoVersioning.exe" "$(ProjectDir)Properties\AssemblyVersion.cs"</PreBuildEvent>
     <PostBuildEvent>
     </PostBuildEvent>
