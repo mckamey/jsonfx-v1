@@ -64,6 +64,18 @@ namespace JsonFx.Compilation
 
 		#endregion Fields
 
+		#region Init
+
+		/// <summary>
+		/// Ctor
+		/// </summary>
+		public ResourceCodeProvider()
+		{
+			this.ResetCodeProvider();
+		}
+
+		#endregion Init
+
 		#region Properties
 
 		/// <summary>
@@ -135,6 +147,11 @@ namespace JsonFx.Compilation
 			out string preProcessed,
 			out string compacted)
 		{
+			// clear any previously stored state
+			this.errors.Clear();
+			this.g11nKeys.Clear();
+			this.ResetCodeProvider();
+
 			// read the resource contents
 			using (TextReader reader = helper.OpenReader(virtualPath))
 			{
@@ -260,6 +277,11 @@ namespace JsonFx.Compilation
 			out string resource,
 			out string compacted,
 			List<ParseException> errors);
+
+		/// <summary>
+		/// Clear any state because code providers get reused by BuildManager
+		/// </summary>
+		protected abstract void ResetCodeProvider();
 
 		#endregion Compaction Methods
 	}
