@@ -12,6 +12,18 @@
 		</Attributes>
 	</Content>
 	<Content>
+		<FileName>JsonFxWebApp_VSProjectTemplate.zip</FileName>
+		<DisplayName>JsonFx WebApp Template</DisplayName>
+		<Description>ASP.NET Web Application Project Template configured to use JsonFx</Description>
+		<FileContentType>VSTemplate</FileContentType>
+		<ContentVersion>1.0</ContentVersion>
+		<Attributes>
+			<Attribute name="ProjectType" value="Visual C#"/>
+			<Attribute name="ProjectSubType" value="Web"/>
+			<Attribute name="TemplateType" value="Project"/>
+		</Attributes>
+	</Content>
+	<Content>
 		<FileName>JbstControl_VSItemTemplate.zip</FileName>
 		<DisplayName>JBST Control</DisplayName>
 		<Description>JsonML + Browser-Side Templating (JBST) control</Description>
@@ -19,6 +31,18 @@
 		<ContentVersion>1.0</ContentVersion>
 		<Attributes>
 			<Attribute name="ProjectType" value="Visual Web Developer"/>
+			<Attribute name="ProjectSubType" value="Web"/>
+			<Attribute name="TemplateType" value="Item"/>
+		</Attributes>
+	</Content>
+	<Content>
+		<FileName>JbstControl_VSItemTemplate.zip</FileName>
+		<DisplayName>JBST Control</DisplayName>
+		<Description>JsonML + Browser-Side Templating (JBST) control</Description>
+		<FileContentType>VSTemplate</FileContentType>
+		<ContentVersion>1.0</ContentVersion>
+		<Attributes>
+			<Attribute name="ProjectType" value="Visual C#"/>
 			<Attribute name="ProjectSubType" value="Web"/>
 			<Attribute name="TemplateType" value="Item"/>
 		</Attributes>
@@ -36,6 +60,18 @@
 		</Attributes>
 	</Content>
 	<Content>
+		<FileName>JsonRpcService_VSItemTemplate.zip</FileName>
+		<DisplayName>JSON-RPC Service</DisplayName>
+		<Description>Service end-point for JSON-RPC</Description>
+		<FileContentType>VSTemplate</FileContentType>
+		<ContentVersion>1.0</ContentVersion>
+		<Attributes>
+			<Attribute name="ProjectType" value="Visual C#"/>
+			<Attribute name="ProjectSubType" value="Web"/>
+			<Attribute name="TemplateType" value="Item"/>
+		</Attributes>
+	</Content>
+	<Content>
 		<FileName>JsonFxMergeFile_VSItemTemplate.zip</FileName>
 		<DisplayName>JsonFx Merge File</DisplayName>
 		<Description>A configuration file used by JsonFx to compact and combine JavaScript or CSS</Description>
@@ -43,6 +79,18 @@
 		<ContentVersion>1.0</ContentVersion>
 		<Attributes>
 			<Attribute name="ProjectType" value="Visual Web Developer"/>
+			<Attribute name="ProjectSubType" value="Web"/>
+			<Attribute name="TemplateType" value="Item"/>
+		</Attributes>
+	</Content>
+	<Content>
+		<FileName>JsonFxMergeFile_VSItemTemplate.zip</FileName>
+		<DisplayName>JsonFx Merge File</DisplayName>
+		<Description>A configuration file used by JsonFx to compact and combine JavaScript or CSS</Description>
+		<FileContentType>VSTemplate</FileContentType>
+		<ContentVersion>1.0</ContentVersion>
+		<Attributes>
+			<Attribute name="ProjectType" value="Visual C#"/>
 			<Attribute name="ProjectSubType" value="Web"/>
 			<Attribute name="TemplateType" value="Item"/>
 		</Attributes>
