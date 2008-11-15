@@ -1,5 +1,8 @@
 Release History
 
+v1.0.0811.1512:
+- Fixed bug where ResourceCodeProviders were bleeding data when reused by ASP.NET BuildManager
+
 v1.0.0811.1220:
 - Fixed JsonReader.CoerceType when converting from number to enum
 
