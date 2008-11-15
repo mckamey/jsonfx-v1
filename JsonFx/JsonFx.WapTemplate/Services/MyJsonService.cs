@@ -4,7 +4,7 @@ using System.Web;
 using JsonFx.Json;
 using JsonFx.JsonRpc;
 
-namespace MyApp
+namespace MyApp.Services
 {
 	[JsonService(Namespace="Example", Name="MyServiceProxy")]
 	public class MyJsonService
