@@ -7,6 +7,9 @@
 # finally, if the browser supports it the resulting resource will be GZipped or Deflated
 # resources can be directly in the project or embedded in linked assemblies
 
+# NOTE: if you want all of this you can replace with a single reference to
+# JsonFx.Scripts.JsonFx.merge, JsonFx.Client
+
 # client-side JSON serialization
 JsonFx.Scripts.json2.js, JsonFx.Json
 
