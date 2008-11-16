@@ -13,6 +13,7 @@ namespace JsonFx.Client
 	/// <summary>
 	/// Base control for referencing a ResourceHandler
 	/// </summary>
+	[ToolboxData("<{0}:ResourceInclude runat=\"server\"></{0}:ResourceInclude>")]
 	public class ResourceInclude : Control
 	{
 		#region Constants
