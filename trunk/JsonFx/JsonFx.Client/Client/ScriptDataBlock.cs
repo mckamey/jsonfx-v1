@@ -16,15 +16,16 @@ namespace JsonFx.Client
 	{
 		#region Constants
 
+		private static readonly char[] VariableDelims = new char[] { '.' };
 		private const string ScriptOpen = "<script type=\"text/javascript\">";
 		private const string ScriptClose = "</script>";
 		private const string NamespaceCheck = @"if(""undefined""===typeof {0}){{{0}={{}};}}";
 		private const string NamespaceCheckDebug = @"
-	if (""undefined"" === typeof {0}) {{
-		{0} = {{}};
-	}}";
-		private const string VarDeclarationDebug = "var {0} = ";
-		private const string VarDeclaration = "var {0}=";
+			if (""undefined"" === typeof {0}) {{
+				{0} = {{}};
+			}}";
+		private const string VarDeclarationDebug = "{0} = ";
+		private const string VarDeclaration = "{0}=";
 		private const string VarDeclarationEnd = ";";
 
 		#endregion Constants
@@ -67,7 +68,7 @@ namespace JsonFx.Client
 			}
 			set
 			{
-				value = this.EnsureEcmaScriptVar(varName);
+				varName = this.EnsureEcmaScriptVar(varName);
 				this.data[varName] = value;
 			}
 		}
@@ -98,64 +99,81 @@ namespace JsonFx.Client
 				return;
 			}
 
-			List<string> namespaces = new List<string>();
-
-			JsonWriter jsonWriter = new JsonWriter(writer);
-			jsonWriter.PrettyPrint = this.IsDebug;
-			jsonWriter.NewLine = Environment.NewLine;
-			jsonWriter.Tab = "\t";
-
-			writer.Write(ScriptOpen);
-
-			foreach (string key in this.data.Keys)
+			writer.BeginRender();
+			try
 			{
-				string ns = "";
-				string[] nsParts = key.Split('.');
-				for (int i = 0; i<nsParts.Length-1; i++)
+				List<string> namespaces = new List<string>();
+
+				JsonWriter jsonWriter = new JsonWriter(writer);
+				jsonWriter.PrettyPrint = this.IsDebug;
+				jsonWriter.NewLine = Environment.NewLine;
+				jsonWriter.Tab = "\t";
+
+				writer.Write(ScriptOpen);
+
+				foreach (string key in this.data.Keys)
 				{
-					ns += nsParts[i];
-					if (namespaces.Contains(ns))
+					string[] nsParts = key.Split(VariableDelims, StringSplitOptions.RemoveEmptyEntries);
+					for (int i = 0; i<nsParts.Length-1; i++)
 					{
-						// don't emit multiple checks for same namespace
-						continue;
+						string ns = String.Join(".", nsParts, 0, i+1);
+						if (namespaces.Contains(ns))
+						{
+							// don't emit multiple checks for same namespace
+							continue;
+						}
+
+						// make note that we've emitted this namespace before
+						namespaces.Add(ns);
+
+						if (i == 0)
+						{
+							ns = "window."+ns;
+						}
+
+						if (this.IsDebug)
+						{
+							writer.WriteLine(NamespaceCheckDebug, ns);
+						}
+						else
+						{
+							writer.Write(NamespaceCheck, ns);
+						}
 					}
 
-					// note that we've emitted this namespace before
-					namespaces.Add(ns);
+					string varName = key;
+					if (nsParts.Length == 1)
+					{
+						varName = "var "+varName;
+					}
 
 					if (this.IsDebug)
 					{
-						writer.WriteLine(NamespaceCheckDebug, ns);
+						writer.Indent += 3;
+						writer.WriteLine(VarDeclarationDebug, key);
+						writer.Indent -= 3;
 					}
 					else
 					{
-						writer.Write(NamespaceCheck, ns);
+						writer.Write(VarDeclaration, key);
+					}
+
+					// emit the value as JSON
+					jsonWriter.Write(this.data[key]);
+					writer.Write(VarDeclarationEnd);
+
+					if (this.IsDebug)
+					{
+						writer.WriteLine();
 					}
 				}
 
-				if (this.IsDebug)
-				{
-					writer.Write(VarDeclarationDebug, ns);
-				}
-				else
-				{
-					writer.Write(VarDeclaration, ns);
-				}
-
-				// emit the value as JSON
-				jsonWriter.Write(this.data[key]);
-
-				if (this.IsDebug)
-				{
-					writer.WriteLine(VarDeclarationEnd, ns);
-				}
-				else
-				{
-					writer.Write(VarDeclarationEnd, ns);
-				}
+				writer.Write(ScriptClose);
 			}
-
-			writer.Write(ScriptClose);
+			finally
+			{
+				writer.EndRender();
+			}
 		}
 
 		#endregion Page Event Handlers
