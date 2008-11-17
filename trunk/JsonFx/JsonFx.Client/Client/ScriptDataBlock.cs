@@ -153,8 +153,8 @@ namespace JsonFx.Client
 						writer.Indent += 3;
 						writer.Write(VarDeclarationDebug, key);
 						writer.Indent -= 3;
-						if (this.data[key] == null ||
-							!this.data[key].GetType().IsClass)
+						if (this.data[key] != null &&
+							this.data[key].GetType().IsClass)
 						{
 							writer.WriteLine();
 						}
