@@ -16,7 +16,7 @@
 	<JsonFx:ResourceInclude runat="server" SourceUrl="~/Scripts/Scripts.merge" />
 
 	<%-- one control to emit page data as JavaScript --%>
-	<JsonFx:ScriptDataBlock runat="server" Id="PageData" />
+	<JsonFx:ScriptDataBlock runat="server" ID="PageData" />
 
 	<%--
 		Service proxies are generated at build time
