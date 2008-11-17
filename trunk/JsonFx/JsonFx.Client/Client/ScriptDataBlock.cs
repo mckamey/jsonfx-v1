@@ -51,6 +51,7 @@ namespace JsonFx.Client
 
 		#region Properties
 
+		// TODO: create a custom TypeConverter to allow simple declarative assignment
 		/// <summary>
 		/// Gets and sets values in the JavaScript global namespace.
 		/// </summary>
