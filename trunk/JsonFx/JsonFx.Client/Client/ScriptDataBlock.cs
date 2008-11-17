@@ -142,16 +142,16 @@ namespace JsonFx.Client
 						}
 					}
 
-					string varName = key;
+					string declaration = key;
 					if (nsParts.Length == 1)
 					{
-						varName = "var "+varName;
+						declaration = "var "+declaration;
 					}
 
 					if (this.IsDebug)
 					{
 						writer.Indent += 3;
-						writer.Write(VarDeclarationDebug, key);
+						writer.Write(VarDeclarationDebug, declaration);
 						writer.Indent -= 3;
 						if (this.data[key] != null &&
 							this.data[key].GetType().IsClass)
@@ -161,7 +161,7 @@ namespace JsonFx.Client
 					}
 					else
 					{
-						writer.Write(VarDeclaration, key);
+						writer.Write(VarDeclaration, declaration);
 					}
 
 					// emit the value as JSON
@@ -198,9 +198,15 @@ namespace JsonFx.Client
 				throw new ArgumentException("Variable name is empty.");
 			}
 
-			// TODO: validate is valid EcmaScript var
+			// TODO: improve validation that is valid EcmaScript variable pattern, not keyword
+			foreach (char ch in varName)
+			{
+				if (!Char.IsLetterOrDigit(ch) && ch != '.' && ch != '$')
+				{
+					throw new ArgumentException("Variable \""+varName+"\" is invalid in JavaScript.");
+				}
+			}
 
-			//throw new ArgumentException("Variable name is invalid in JavaScript.");
 			return varName.Trim();
 		}
 
