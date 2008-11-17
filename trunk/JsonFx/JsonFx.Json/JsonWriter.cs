@@ -40,6 +40,14 @@ using System.Xml;
 namespace JsonFx.Json
 {
 	/// <summary>
+	/// Represents a proxy method for serialization of types which do not implement IJsonSerializable.
+	/// </summary>
+	/// <typeparam name="T">the type for this proxy</typeparam>
+	/// <param name="writer">the JsonWriter to serialize to</param>
+	/// <param name="value">the value to serialize</param>
+	public delegate void WriteDelegate<T>(JsonWriter writer, T value);
+
+	/// <summary>
 	/// Writer for producing JSON data.
 	/// </summary>
 	public class JsonWriter : IDisposable
@@ -66,6 +74,9 @@ namespace JsonFx.Json
 
 		private const string ErrorGenericIDictionary = "Types which implement Generic IDictionary<TKey, TValue> also need to implement IDictionary to be serialized.";
 
+		private static readonly DateTime EcmaScriptEpoch = new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc);
+		private const string EcmaScriptDateCtor = "new Date({0})";
+
 		#endregion Constants
 		
 		#region Fields
@@ -78,6 +89,7 @@ namespace JsonFx.Json
 		private bool useXmlSerializationAttributes = false;
 		private int depth = 0;
 		private string tab = "\t";
+		private WriteDelegate<DateTime> dateTimeSerializer = null;
 
 		#endregion Fields
 
@@ -147,8 +159,8 @@ namespace JsonFx.Json
 		/// </summary>
 		public string Tab
 		{
-			get { return tab; }
-			set { tab = value; }
+			get { return this.tab; }
+			set { this.tab = value; }
 		}
 
 		/// <summary>
@@ -182,6 +194,15 @@ namespace JsonFx.Json
 		{
 			get { return this.strictConformance; }
 			set { this.strictConformance = value; }
+		}
+
+		/// <summary>
+		/// Gets and sets a proxy formatter to use for DateTime serialization
+		/// </summary>
+		public WriteDelegate<DateTime> DateTimeSerializer
+		{
+			get { return this.dateTimeSerializer; }
+			set { this.dateTimeSerializer = value; }
 		}
 
 		/// <summary>
@@ -460,6 +481,12 @@ namespace JsonFx.Json
 
 		public virtual void Write(DateTime value)
 		{
+			if (this.dateTimeSerializer != null)
+			{
+				this.dateTimeSerializer(this, value);
+				return;
+			}
+
 			// UTC DateTime in ISO-8601
 			value = value.ToUniversalTime();
 			this.Write(String.Format("{0:s}Z", value));
@@ -573,6 +600,18 @@ namespace JsonFx.Json
 			this.writer.Write(value.Substring(start, length-start));
 
 			this.writer.Write(JsonReader.OperatorStringDelim);
+		}
+
+		public static void WriteEcmaScriptDate(JsonWriter writer, DateTime value)
+		{
+			// find the time since Jan 1, 1970
+			TimeSpan duration = value.ToUniversalTime().Subtract(EcmaScriptEpoch);
+
+			// get the total milliseconds
+			long ticks = (long)duration.TotalMilliseconds;
+
+			// write out as a Date constructor
+			writer.TextWriter.Write(EcmaScriptDateCtor, ticks);
 		}
 
 		#endregion Public Methods
