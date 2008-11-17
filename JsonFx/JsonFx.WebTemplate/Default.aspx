@@ -15,7 +15,7 @@
 	<%-- one tag to include all the client scripts --%>
 	<JsonFx:ResourceInclude runat="server" SourceUrl="~/Scripts/Scripts.merge" />
 
-	<%-- one tag to include all the client scripts --%>
+	<%-- one control to emit page data as JavaScript --%>
 	<JsonFx:ScriptDataBlock runat="server" Id="PageData" />
 
 	<%--
