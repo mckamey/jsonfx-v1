@@ -108,6 +108,7 @@ namespace JsonFx.Client
 				jsonWriter.PrettyPrint = this.IsDebug;
 				jsonWriter.NewLine = Environment.NewLine;
 				jsonWriter.Tab = "\t";
+				jsonWriter.DateTimeSerializer = JsonWriter.WriteEcmaScriptDate;
 
 				writer.Write(ScriptOpen);
 
@@ -150,8 +151,13 @@ namespace JsonFx.Client
 					if (this.IsDebug)
 					{
 						writer.Indent += 3;
-						writer.WriteLine(VarDeclarationDebug, key);
+						writer.Write(VarDeclarationDebug, key);
 						writer.Indent -= 3;
+						if (this.data[key] == null ||
+							!this.data[key].GetType().IsClass)
+						{
+							writer.WriteLine();
+						}
 					}
 					else
 					{
