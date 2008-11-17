@@ -44,3 +44,7 @@ Optional Type-Hinting improves deserializing to strongly-typed objects
 Optional PrettyPrint mode helps with debugging / human-readability
 
 	JsonFx.Json.JsonWriter.PrettyPrint
+
+Optional custom DateTime serialization override
+
+	JsonFx.Json.JsonWriter.DateTimeSerializer
