@@ -56,10 +56,6 @@ namespace JsonFx.Json
 
 		public const string JsonMimeType = "application/json";
 
-		internal const string TypeGenericIDictionary = "System.Collections.Generic.IDictionary`2";
-
-		private const string ErrorGenericIDictionary = "Types which implement Generic IDictionary<TKey, TValue> also need to implement IDictionary to be serialized.";
-
 		private static readonly DateTime EcmaScriptEpoch = new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc);
 		private const string EcmaScriptDateCtor = "new Date({0})";
 
@@ -416,9 +412,9 @@ namespace JsonFx.Json
 				return;
 			}
 
-			if (type.GetInterface(JsonWriter.TypeGenericIDictionary) != null)
+			if (type.GetInterface(JsonReader.TypeGenericIDictionary) != null)
 			{
-				throw new JsonSerializationException(JsonWriter.ErrorGenericIDictionary);
+				throw new JsonSerializationException(JsonReader.ErrorGenericIDictionary);
 			}
 
 			// IDictionary test must happen BEFORE IEnumerable test

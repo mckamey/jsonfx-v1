@@ -71,6 +71,9 @@ namespace JsonFx.Json
 		private const string CommentLine = "//";
 		private const string LineEndings = "\r\n";
 
+		internal const string TypeGenericIDictionary = "System.Collections.Generic.IDictionary`2";
+		internal const string TypeAnonymousPrefix = "<>f__AnonymousType";
+
 		private const string ErrorUnrecognizedToken = "Illegal JSON sequence.";
 		private const string ErrorUnterminatedComment = "Unterminated comment block.";
 		private const string ErrorUnterminatedObject = "Unterminated JSON object.";
@@ -85,7 +88,7 @@ namespace JsonFx.Json
 		private const string ErrorNullValueType = "{0} does not accept null as a value";
 		private const string ErrorDefaultCtor = "Only objects with default constructors can be deserialized. ({0})";
 		private const string ErrorCannotInstantiate = "Interfaces, Abstract classes, and unsupported ValueTypes cannot be deserialized. ({0})";
-		private const string ErrorGenericIDictionary = "Types which implement Generic IDictionary<TKey, TValue> also need to implement IDictionary to be deserialized. ({0})";
+		internal const string ErrorGenericIDictionary = "Types which implement Generic IDictionary<TKey, TValue> also need to implement IDictionary to be deserialized. ({0})";
 
 		#endregion Constants
 
@@ -369,7 +372,7 @@ namespace JsonFx.Json
 						((IDictionary)result)[memberName] = value;
 					}
 				}
-				else if (objectType.GetInterface(JsonWriter.TypeGenericIDictionary) != null)
+				else if (objectType.GetInterface(JsonReader.TypeGenericIDictionary) != null)
 				{
 					throw new JsonDeserializationException(JsonReader.ErrorGenericIDictionary, this.index);
 				}
