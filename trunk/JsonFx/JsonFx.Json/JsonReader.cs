@@ -1050,6 +1050,35 @@ namespace JsonFx.Json
 
 		#region Type Methods
 
+		/// <summary>
+		/// Converts a value into the specified type using type inference.
+		/// </summary>
+		/// <typeparam name="T">target type</typeparam>
+		/// <param name="value">value to convert</param>
+		/// <param name="typeToMatch">example object to get the type from</param>
+		/// <returns></returns>
+		public static T CoerceType<T>(object value, T typeToMatch)
+		{
+			return (T)JsonReader.CoerceType<T>(value);
+		}
+
+		/// <summary>
+		/// Converts a value into the specified type.
+		/// </summary>
+		/// <typeparam name="T">target type</typeparam>
+		/// <param name="value">value to convert</param>
+		/// <returns></returns>
+		public static T CoerceType<T>(object value)
+		{
+			return (T)JsonReader.CoerceType(typeof(T), value);
+		}
+
+		/// <summary>
+		/// Converts a value into the specified type.
+		/// </summary>
+		/// <param name="targetType">target type</param>
+		/// <param name="value">value to convert</param>
+		/// <returns></returns>
 		public static object CoerceType(Type targetType, object value)
 		{
 			return JsonReader.CoerceType(targetType, value, -1, false);
