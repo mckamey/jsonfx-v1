@@ -72,7 +72,6 @@ namespace JsonFx.Json
 		private const string LineEndings = "\r\n";
 
 		internal const string TypeGenericIDictionary = "System.Collections.Generic.IDictionary`2";
-		internal const string TypeAnonymousPrefix = "<>f__AnonymousType";
 
 		private const string ErrorUnrecognizedToken = "Illegal JSON sequence.";
 		private const string ErrorUnterminatedComment = "Unterminated comment block.";
