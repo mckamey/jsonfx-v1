@@ -54,21 +54,31 @@ namespace BuildTools.Json
 
 		static void Main(string[] args)
 		{
-			using (StreamWriter writer = new StreamWriter(ReportPath, false, Encoding.UTF8))
+			const int Count = 100;
+			double total = 0;
+
+			for (int i=0; i<Count; i++)
 			{
-				writer.WriteLine(HeaderMessage, DateTime.Now);
+				using (StreamWriter writer = new StreamWriter(ReportPath, false, Encoding.UTF8))
+				{
+					writer.WriteLine(HeaderMessage, DateTime.Now);
 
-				Stopwatch watch = Stopwatch.StartNew();
+					Stopwatch watch = Stopwatch.StartNew();
 
-				UnitTests.StronglyTyped.RunTest(writer, UnitTestsFolder, OutputFolder);
+					UnitTests.StronglyTyped.RunTest(writer, UnitTestsFolder, OutputFolder);
 
-				UnitTests.JsonText.RunTest(writer, UnitTestsFolder, OutputFolder);
+					UnitTests.JsonText.RunTest(writer, UnitTestsFolder, OutputFolder);
 
-				watch.Stop();
+					watch.Stop();
 
-				writer.WriteLine(UnitTests.JsonText.Seperator);
-				writer.WriteLine("Elapsed: {0} ms", watch.Elapsed.TotalMilliseconds);
+					writer.WriteLine(UnitTests.JsonText.Seperator);
+					writer.WriteLine("Elapsed: {0} ms", watch.Elapsed.TotalMilliseconds);
+
+					total += watch.Elapsed.TotalMilliseconds;
+				}
 			}
+
+			Console.WriteLine("Average after {1} tries: {0} ms", total/Count, Count);
 
 			Process process = new Process();
 			process.StartInfo.FileName = "notepad.exe";
