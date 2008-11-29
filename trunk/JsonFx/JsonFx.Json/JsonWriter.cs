@@ -59,6 +59,8 @@ namespace JsonFx.Json
 		private static readonly DateTime EcmaScriptEpoch = new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc);
 		private const string EcmaScriptDateCtor = "new Date({0})";
 
+		private const string AnonymousTypePrefix = "<>f__AnonymousType";
+
 		#endregion Constants
 		
 		#region Fields
