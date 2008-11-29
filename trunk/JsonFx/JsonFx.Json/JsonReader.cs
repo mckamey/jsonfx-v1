@@ -1070,7 +1070,7 @@ namespace JsonFx.Json
 		/// <returns></returns>
 		public static T CoerceType<T>(object value, T typeToMatch)
 		{
-			return (T)JsonReader.CoerceType<T>(value);
+			return (T)JsonReader.CoerceType(typeof(T), value, -1, false);
 		}
 
 		/// <summary>
@@ -1081,7 +1081,7 @@ namespace JsonFx.Json
 		/// <returns></returns>
 		public static T CoerceType<T>(object value)
 		{
-			return (T)JsonReader.CoerceType(typeof(T), value);
+			return (T)JsonReader.CoerceType(typeof(T), value, -1, false);
 		}
 
 		/// <summary>
