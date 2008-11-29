@@ -1,5 +1,10 @@
 Release History
 
+v1.0.0811.2821:
+- Enabled serialization of Anonymous Types
+- Improved efficiency of type detection code path
+- Added improved CoerceType syntax
+
 v1.0.0811.1622:
 - Added ScriptDateBlock control for easily emitting JavaScript data into page
 - Added ability to arbitrarily serialize DateTime objects
