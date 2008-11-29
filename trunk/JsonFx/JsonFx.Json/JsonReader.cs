@@ -373,7 +373,9 @@ namespace JsonFx.Json
 				}
 				else if (objectType.GetInterface(JsonReader.TypeGenericIDictionary) != null)
 				{
-					throw new JsonDeserializationException(JsonReader.ErrorGenericIDictionary, this.index);
+					throw new JsonDeserializationException(
+						String.Format(JsonReader.ErrorGenericIDictionary, objectType),
+						this.index);
 				}
 				else
 				{
@@ -395,41 +397,36 @@ namespace JsonFx.Json
 			return result;
 		}
 
-		private Array ReadArray(Type arrayType)
+		private IEnumerable ReadArray(Type arrayType)
 		{
 			if (this.Source[this.index] != JsonReader.OperatorArrayStart)
 			{
 				throw new JsonDeserializationException(JsonReader.ErrorExpectedArray, this.index);
 			}
 
-			bool isArrayTypeSet = (arrayType != null);
-			bool isArrayTypeAHint = !isArrayTypeSet;
+			bool isArrayItemTypeSet = (arrayType != null);
+			bool isArrayTypeAHint = !isArrayItemTypeSet;
+			Type arrayItemType = null;
 
-			if (isArrayTypeSet)
+			if (isArrayItemTypeSet)
 			{
 				if (arrayType.HasElementType)
 				{
-					arrayType = arrayType.GetElementType();
+					arrayItemType = arrayType.GetElementType();
 				}
 				else if (arrayType.IsGenericType)
 				{
 					Type[] generics = arrayType.GetGenericArguments();
-					if (generics.Length != 1)
+					if (generics.Length == 1)
 					{
 						// could use the first or last, but this more correct
-						arrayType = null;
+						arrayItemType = generics[0];
 					}
-					else
-					{
-						arrayType = generics[0];
-					}
-				}
-				else
-				{
-					arrayType = null;
 				}
 			}
 
+			// using ArrayList since has .ToArray(Type) method
+			// cannot create generic list at runtime
 			ArrayList jsArray = new ArrayList();
 
 			JsonToken token;
@@ -450,31 +447,39 @@ namespace JsonFx.Json
 				}
 
 				// parse array item
-				object value = this.Read(arrayType, isArrayTypeAHint);
+				object value = this.Read(arrayItemType, isArrayTypeAHint);
 				jsArray.Add(value);
 
 				// establish if array is of common type
 				if (value == null)
 				{
-					if (arrayType != null && arrayType.IsValueType)
+					if (arrayItemType != null && arrayItemType.IsValueType)
 					{
 						// use plain object to hold null
-						arrayType = null;
+						arrayItemType = null;
 					}
-					isArrayTypeSet = true;
+					isArrayItemTypeSet = true;
 				}
-				else if (arrayType != null && !arrayType.IsAssignableFrom(value.GetType()))
+				else if (arrayItemType != null && !arrayItemType.IsAssignableFrom(value.GetType()))
 				{
-					// use plain object to hold value
-					arrayType = null;
-					isArrayTypeSet = true;
+					if (value.GetType().IsAssignableFrom(arrayItemType))
+					{
+						// attempt to use the more general type
+						arrayItemType = value.GetType();
+					}
+					else
+					{
+						// use plain object to hold value
+						arrayItemType = null;
+						isArrayItemTypeSet = true;
+					}
 				}
-				else if (!isArrayTypeSet)
+				else if (!isArrayItemTypeSet)
 				{
-					// try out special type
+					// try out a hint type
 					// if hasn't been set before
-					arrayType = value.GetType();
-					isArrayTypeSet = true;
+					arrayItemType = value.GetType();
+					isArrayItemTypeSet = true;
 				}
 
 				// get next token
@@ -489,15 +494,21 @@ namespace JsonFx.Json
 			// consume closing bracket
 			this.index++;
 
-			// check to see if all the same type and convert to that
-			if (arrayType != null && arrayType != typeof(object))
+			if (arrayItemType != null && arrayItemType != typeof(object))
 			{
-				return jsArray.ToArray(arrayType);
+				// if all items are of same type then convert to that
+				return jsArray.ToArray(arrayItemType);
 			}
 
-			return jsArray.ToArray();
+			// leave as ArrayList for later coersion
+			return jsArray;
 		}
 
+		/// <summary>
+		/// Reads a JSON string
+		/// </summary>
+		/// <param name="expectedType"></param>
+		/// <returns>string or value which is represented as a string in JSON</returns>
 		private object ReadString(Type expectedType)
 		{
 			if (this.Source[this.index] != JsonReader.OperatorStringDelim &&
@@ -1140,7 +1151,8 @@ namespace JsonFx.Json
 				}
 			}
 
-			if (actualType.IsArray && !targetType.IsArray)
+			if (typeof(IEnumerable).IsAssignableFrom(targetType) &&
+				typeof(IEnumerable).IsAssignableFrom(actualType))
 			{
 				return JsonReader.CoerceArray(targetType, actualType, value, index, allowNullValueTypes);
 			}
@@ -1205,16 +1217,46 @@ namespace JsonFx.Json
 			// assume is an ICollection / IEnumerable with AddRange, Add,
 			// or custom Constructor with which we can populate it
 
-			ConstructorInfo ctor = targetType.GetConstructor(Type.EmptyTypes);
-			if (ctor == null)
+			// many ICollection types take an IEnumerable or ICollection
+			// as a constructor argument.  look through constructors for
+			// a compatible match.
+			ConstructorInfo[] ctors = targetType.GetConstructors();
+			ConstructorInfo defaultCtor = null;
+			foreach (ConstructorInfo ctor in ctors)
+			{
+				ParameterInfo[] paramList = ctor.GetParameters();
+				if (paramList.Length == 0)
+				{
+					// save for in case cannot find closer match
+					defaultCtor = ctor;
+					continue;
+				}
+
+				if (paramList.Length == 1 &&
+					paramList[0].ParameterType.IsAssignableFrom(arrayType))
+				{
+					try
+					{
+						// invoke first constructor that can take this value as an argument
+						return ctor.Invoke(
+								new object[] { value }
+							);
+					}
+					catch
+					{
+						// there might exist a better match
+						continue;
+					}
+				}
+			}
+
+			if (defaultCtor == null)
 			{
 				throw new JsonDeserializationException(
 					String.Format(JsonReader.ErrorDefaultCtor, targetType.FullName),
 					index);
 			}
-			object collection = ctor.Invoke(null);
-
-			Array arrayValue = (Array)value;
+			object collection = defaultCtor.Invoke(null);
 
 			// many ICollection types have an AddRange method
 			// which adds all items at once
@@ -1224,12 +1266,12 @@ namespace JsonFx.Json
 			Type paramType = (parameters == null || parameters.Length != 1) ?
 					null : parameters[0].ParameterType;
 			if (paramType != null &&
-					paramType.IsAssignableFrom(arrayType))
+				paramType.IsAssignableFrom(arrayType))
 			{
 				// add all members in one method
 				method.Invoke(
 					collection,
-					new object[] { arrayValue });
+					new object[] { value });
 				return collection;
 			}
 			else
@@ -1244,7 +1286,7 @@ namespace JsonFx.Json
 				if (paramType != null)
 				{
 					// loop through adding items to collection
-					foreach (object item in arrayValue)
+					foreach (object item in (IEnumerable)value)
 					{
 						method.Invoke(
 							collection,
@@ -1256,31 +1298,7 @@ namespace JsonFx.Json
 				}
 			}
 
-			// many ICollection types take an IEnumerable or ICollection
-			// as a constructor argument.  look through constructors for
-			// a compatible match.
-			ConstructorInfo[] ctors = targetType.GetConstructors();
-			foreach (ConstructorInfo ctor2 in ctors)
-			{
-				ParameterInfo[] paramList = ctor2.GetParameters();
-				if (paramList.Length == 1 &&
-						paramList[0].ParameterType.IsAssignableFrom(arrayType))
-				{
-					try
-					{
-						// invoke first constructor that can take this value as an argument
-						return ctor2.Invoke(
-								new object[] { value }
-							);
-					}
-					catch
-					{
-						// there might exist a better match
-						continue;
-					}
-				}
-			}
-
+			// fall back to basics
 			return Convert.ChangeType(value, targetType);
 		}
 
