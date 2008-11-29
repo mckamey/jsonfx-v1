@@ -1,6 +1,6 @@
 JsonFx.NET - JSON Serializer
 
-The JsonFx.NET JSON parser/serializer functions similarly to .NET XML Serialization
+The JsonFx.NET JSON parser/serializer functions similarly to the XmlSerializer in .NET
 
 Serializes and deserializes any Dictionary<String, T> and IDictionary with
 String keys directly as a JSON object
