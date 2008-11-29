@@ -414,7 +414,7 @@ namespace JsonFx.Json
 				return;
 			}
 
-			if (type.GetInterface(JsonReader.TypeGenericIDictionary) != null)
+			if (type.IsGenericType && type.GetInterface(JsonReader.TypeGenericIDictionary) != null)
 			{
 				throw new JsonSerializationException(JsonReader.ErrorGenericIDictionary);
 			}
@@ -456,7 +456,7 @@ namespace JsonFx.Json
 					this.depth++;
 					this.WriteLine();
 				}
-				this.WriteObject(value);
+				this.WriteObject(value, type);
 			}
 			finally
 			{
@@ -789,7 +789,7 @@ namespace JsonFx.Json
 			this.writer.Write(JsonReader.OperatorObjectEnd);
 		}
 
-		protected virtual void WriteObject(object value)
+		protected virtual void WriteObject(object value, Type type)
 		{
 			bool appendDelim = false;
 
@@ -798,8 +798,6 @@ namespace JsonFx.Json
 			this.depth++;
 			try
 			{
-				Type objType = value.GetType();
-
 				if (!String.IsNullOrEmpty(this.TypeHintName))
 				{
 					if (appendDelim)
@@ -814,19 +812,26 @@ namespace JsonFx.Json
 					this.WriteLine();
 					this.Write(this.TypeHintName);
 					this.writer.Write(JsonReader.OperatorNameDelim);
-					this.Write(objType.FullName, true);
+					this.Write(type.FullName, true);
 				}
 
+				bool anonymousType = type.IsGenericType && type.Name.StartsWith(JsonWriter.AnonymousTypePrefix);
+
 				// serialize public properties
-				PropertyInfo[] properties = objType.GetProperties();
+				PropertyInfo[] properties = type.GetProperties();
 				foreach (PropertyInfo property in properties)
 				{
-					if (!property.CanWrite || !property.CanRead)
+					if (!property.CanRead)
 					{
 						continue;
 					}
 
-					if (this.IsIgnored(objType, property, value))
+					if (!property.CanWrite && !anonymousType)
+					{
+						continue;
+					}
+
+					if (this.IsIgnored(type, property, value))
 					{
 						continue;
 					}
@@ -859,7 +864,7 @@ namespace JsonFx.Json
 				}
 
 				// serialize public fields
-				FieldInfo[] fields = objType.GetFields();
+				FieldInfo[] fields = type.GetFields();
 				foreach (FieldInfo field in fields)
 				{
 					if (!field.IsPublic || field.IsStatic)
@@ -867,7 +872,7 @@ namespace JsonFx.Json
 						continue;
 					}
 
-					if (this.IsIgnored(objType, field, value))
+					if (this.IsIgnored(type, field, value))
 					{
 						continue;
 					}
