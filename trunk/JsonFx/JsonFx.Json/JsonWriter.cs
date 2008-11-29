@@ -416,7 +416,7 @@ namespace JsonFx.Json
 
 			if (type.GetInterface(JsonReader.TypeGenericIDictionary) != null)
 			{
-				throw new JsonSerializationException(JsonReader.ErrorGenericIDictionary);
+				throw new JsonSerializationException(JsonReader.ErrorGenericIDictionary, type.FullName);
 			}
 
 			// IDictionary test must happen BEFORE IEnumerable test
