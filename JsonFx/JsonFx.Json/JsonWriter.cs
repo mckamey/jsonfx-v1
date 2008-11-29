@@ -58,20 +58,6 @@ namespace JsonFx.Json
 
 		internal const string TypeGenericIDictionary = "System.Collections.Generic.IDictionary`2";
 
-		private const string TypeBoolean = "System.Boolean";
-		private const string TypeChar = "System.Char";
-		private const string TypeByte = "System.Byte";
-		private const string TypeInt16 = "System.Int16";
-		private const string TypeInt32 = "System.Int32";
-		private const string TypeInt64 = "System.Int64";
-		private const string TypeSByte = "System.SByte";
-		private const string TypeUInt16 = "System.UInt16";
-		private const string TypeUInt32 = "System.UInt32";
-		private const string TypeUInt64 = "System.UInt64";
-		private const string TypeSingle = "System.Single";
-		private const string TypeDouble = "System.Double";
-		private const string TypeDecimal = "System.Decimal";
-
 		private const string ErrorGenericIDictionary = "Types which implement Generic IDictionary<TKey, TValue> also need to implement IDictionary to be serialized.";
 
 		private static readonly DateTime EcmaScriptEpoch = new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc);
@@ -277,15 +263,133 @@ namespace JsonFx.Json
 				return;
 			}
 
+			// must test enumerations before value types
 			if (value is Enum)
 			{
 				this.Write((Enum)value);
 				return;
 			}
 
-			if (value is String)
+			// Type.GetTypeCode() allows us to more efficiently switch type
+			// plus cannot use 'is' for ValueTypes
+			Type type = value.GetType();
+			switch (Type.GetTypeCode(type))
 			{
-				this.Write((String)value);
+				case TypeCode.Boolean:
+				{
+					this.Write((Boolean)value);
+					return;
+				}
+				case TypeCode.Byte:
+				{
+					this.Write((Byte)value);
+					return;
+				}
+				case TypeCode.Char:
+				{
+					this.Write((Char)value);
+					return;
+				}
+				case TypeCode.DateTime:
+				{
+					this.Write((DateTime)value);
+					return;
+				}
+				case TypeCode.DBNull:
+				case TypeCode.Empty:
+				{
+					this.writer.Write(JsonReader.LiteralNull);
+					return;
+				}
+				case TypeCode.Decimal:
+				{
+					// From MSDN:
+					// Conversions from Char, SByte, Int16, Int32, Int64, Byte, UInt16, UInt32, and UInt64
+					// to Decimal are widening conversions that never lose information or throw exceptions.
+					// Conversions from Single or Double to Decimal throw an OverflowException
+					// if the result of the conversion is not representable as a Decimal.
+					this.Write((Decimal)value);
+					return;
+				}
+				case TypeCode.Double:
+				{
+					this.Write((Double)value);
+					return;
+				}
+				case TypeCode.Int16:
+				{
+					this.Write((Int16)value);
+					return;
+				}
+				case TypeCode.Int32:
+				{
+					this.Write((Int32)value);
+					return;
+				}
+				case TypeCode.Int64:
+				{
+					this.Write((Int64)value);
+					return;
+				}
+				case TypeCode.SByte:
+				{
+					this.Write((SByte)value);
+					return;
+				}
+				case TypeCode.Single:
+				{
+					this.Write((Single)value);
+					return;
+				}
+				case TypeCode.String:
+				{
+					this.Write((String)value);
+					return;
+				}
+				case TypeCode.UInt16:
+				{
+					this.Write((UInt16)value);
+					return;
+				}
+				case TypeCode.UInt32:
+				{
+					this.Write((UInt32)value);
+					return;
+				}
+				case TypeCode.UInt64:
+				{
+					this.Write((UInt64)value);
+					return;
+				}
+				default:
+				case TypeCode.Object:
+				{
+					// all others must be explicitly tested
+					break;
+				}
+			}
+
+			if (value is Guid)
+			{
+				this.Write((Guid)value);
+				return;
+			}
+
+			if (value is Uri)
+			{
+				this.Write((Uri)value);
+				return;
+			}
+
+			if (value is TimeSpan)
+			{
+				this.Write((TimeSpan)value);
+				return;
+			}
+
+			if (value is Version)
+			{
+				this.Write((Version)value);
 				return;
 			}
 
@@ -312,12 +416,13 @@ namespace JsonFx.Json
 				return;
 			}
 
-			Type type = value.GetType();
 			if (type.GetInterface(JsonWriter.TypeGenericIDictionary) != null)
 			{
 				throw new JsonSerializationException(JsonWriter.ErrorGenericIDictionary);
 			}
 
+			// IDictionary test must happen BEFORE IEnumerable test
+			// since IDictionary implements IEnumerable
 			if (value is IEnumerable)
 			{
 				if (value is XmlNode)
@@ -345,131 +450,21 @@ namespace JsonFx.Json
 				return;
 			}
 
-			if (value is DateTime)
+			// structs and classes
+			try
 			{
-				this.Write((DateTime)value);
-				return;
+				if (isProperty)
+				{
+					this.depth++;
+					this.WriteLine();
+				}
+				this.WriteObject(value);
 			}
-
-			if (value is Guid)
+			finally
 			{
-				this.Write((Guid)value);
-				return;
-			}
-
-			if (value is Uri)
-			{
-				this.Write((Uri)value);
-				return;
-			}
-
-			if (value is TimeSpan)
-			{
-				this.Write((TimeSpan)value);
-				return;
-			}
-
-			if (value is Version)
-			{
-				this.Write((Version)value);
-				return;
-			}
-
-			// cannot use 'is' for ValueTypes, using string comparison
-			// these are ordered based on an intuitive sense of their
-			// frequency of use for nominally better switch performance
-			switch (type.FullName)
-			{
-				case JsonWriter.TypeDouble:
+				if (isProperty)
 				{
-					this.Write((Double)value);
-					return;
-				}
-				case JsonWriter.TypeInt32:
-				{
-					this.Write((Int32)value);
-					return;
-				}
-				case JsonWriter.TypeBoolean:
-				{
-					this.Write((Boolean)value);
-					return;
-				}
-				case JsonWriter.TypeDecimal:
-				{
-					// From MSDN:
-					// Conversions from Char, SByte, Int16, Int32, Int64, Byte, UInt16, UInt32, and UInt64
-					// to Decimal are widening conversions that never lose information or throw exceptions.
-					// Conversions from Single or Double to Decimal throw an OverflowException
-					// if the result of the conversion is not representable as a Decimal.
-					this.Write((Decimal)value);
-					return;
-				}
-				case JsonWriter.TypeByte:
-				{
-					this.Write((Byte)value);
-					return;
-				}
-				case JsonWriter.TypeInt16:
-				{
-					this.Write((Int16)value);
-					return;
-				}
-				case JsonWriter.TypeInt64:
-				{
-					this.Write((Int64)value);
-					return;
-				}
-				case JsonWriter.TypeChar:
-				{
-					this.Write((Char)value);
-					return;
-				}
-				case JsonWriter.TypeSingle:
-				{
-					this.Write((Single)value);
-					return;
-				}
-				case JsonWriter.TypeUInt16:
-				{
-					this.Write((UInt16)value);
-					return;
-				}
-				case JsonWriter.TypeUInt32:
-				{
-					this.Write((UInt32)value);
-					return;
-				}
-				case JsonWriter.TypeUInt64:
-				{
-					this.Write((UInt64)value);
-					return;
-				}
-				case JsonWriter.TypeSByte:
-				{
-					this.Write((SByte)value);
-					return;
-				}
-				default:
-				{
-					// structs and classes
-					try
-					{
-						if (isProperty)
-						{
-							this.depth++;
-							this.WriteLine();
-						}
-						this.WriteObject(value);
-					}
-					finally
-					{
-						if (isProperty)
-						{
-							this.depth--;
-						}
-					}
-					return;
+					this.depth--;
 				}
 			}
 		}
