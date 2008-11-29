@@ -414,7 +414,7 @@ namespace JsonFx.Json
 				return;
 			}
 
-			if (type.IsGenericType && type.GetInterface(JsonReader.TypeGenericIDictionary) != null)
+			if (type.GetInterface(JsonReader.TypeGenericIDictionary) != null)
 			{
 				throw new JsonSerializationException(JsonReader.ErrorGenericIDictionary);
 			}
