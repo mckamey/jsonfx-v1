@@ -1,6 +1,6 @@
 Release History
 
-v1.0.0811.2821:
+v1.0.0811.2910:
 - Enabled serialization of Anonymous Types
 - Improved efficiency of serialization
 - Added improved CoerceType syntax
