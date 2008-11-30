@@ -1,5 +1,8 @@
 Release History
 
+v1.0.0812.0114:
+- Rolled back a breaking change in serializer which caused JSON-RPC param list to sometimes be lost
+
 v1.0.0811.2910:
 - Enabled serialization of Anonymous Types
 - Improved efficiency of serialization
