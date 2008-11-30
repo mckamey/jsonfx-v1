@@ -494,14 +494,16 @@ namespace JsonFx.Json
 			// consume closing bracket
 			this.index++;
 
+			// TODO: optimize to reduce number of conversions on lists
+
 			if (arrayItemType != null && arrayItemType != typeof(object))
 			{
-				// if all items are of same type then convert to that
+				// if all items are of same type then convert to array of that type
 				return jsArray.ToArray(arrayItemType);
 			}
 
-			// leave as ArrayList for later coersion
-			return jsArray;
+			// convert to an object array for consistency
+			return jsArray.ToArray();
 		}
 
 		/// <summary>
