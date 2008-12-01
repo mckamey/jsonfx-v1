@@ -7,8 +7,8 @@
     <ProjectGuid>{9F616133-A5C3-48C7-95F3-2DCC01F8B03F}</ProjectGuid>
     <OutputType>Exe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>BuildTools</RootNamespace>
-    <AssemblyName>JsonSerializer</AssemblyName>
+    <RootNamespace>JsonFx.Json</RootNamespace>
+    <AssemblyName>JsonFx.Json.UnitTests</AssemblyName>
     <SccProjectName>SAK</SccProjectName>
     <SccLocalPath>SAK</SccLocalPath>
     <SccAuxPath>SAK</SccAuxPath>
@@ -54,9 +54,9 @@
     </Content>
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\..\JsonFx\JsonFx.Json\JsonFx.Json.csproj">
+    <ProjectReference Include="..\JsonFx.Json\JsonFx.Json.csproj">
       <Project>{ABA23F14-7E47-43FE-A3E7-1FF97840C3FB}</Project>
-      <Name>JsonFx.Json %28JsonFx.Json\JsonFx.Json%29</Name>
+      <Name>JsonFx.Json</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />

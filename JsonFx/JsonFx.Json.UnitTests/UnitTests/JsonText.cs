@@ -1,7 +1,7 @@
-#region BuildTools License
+#region License
 /*---------------------------------------------------------------------------------*\
 
-	BuildTools distributed under the terms of an MIT-style license:
+	Distributed under the terms of an MIT-style license:
 
 	The MIT License
 
@@ -26,14 +26,14 @@
 	THE SOFTWARE.
 
 \*---------------------------------------------------------------------------------*/
-#endregion BuildTools License
+#endregion License
 
 using System;
 using System.IO;
 
 using JsonFx.Json;
 
-namespace BuildTools.Json.UnitTests
+namespace JsonFx.Json.Test.UnitTests
 {
 	public class JsonText
 	{
