@@ -1178,6 +1178,13 @@ namespace JsonFx.Json
 					// try-catch is pointless since will throw upon generic conversion
 					return new Guid((string)value);
 				}
+				else if (targetType == typeof(Char))
+				{
+					if (((string)value).Length == 1)
+					{
+						return ((string)value)[0];
+					}
+				}
 				else if (targetType == typeof(Uri))
 				{
 					Uri uri;
