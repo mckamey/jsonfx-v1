@@ -60,6 +60,7 @@ namespace JsonFx.Json
 		private const string EcmaScriptDateCtor = "new Date({0})";
 
 		private const string AnonymousTypePrefix = "<>f__AnonymousType";
+		private const string ErrorMaxDepth = "The maxiumum depth of {0} was exceeded. Check for cycles in object graph.";
 
 		#endregion Constants
 		
@@ -72,6 +73,7 @@ namespace JsonFx.Json
 		private bool prettyPrint = false;
 		private bool useXmlSerializationAttributes = false;
 		private int depth = 0;
+		private int maxDepth = 25;
 		private string tab = "\t";
 		private WriteDelegate<DateTime> dateTimeSerializer = null;
 
@@ -148,12 +150,28 @@ namespace JsonFx.Json
 		}
 
 		/// <summary>
-		/// Gets and sets the lien terminator string
+		/// Gets and sets the line terminator string
 		/// </summary>
 		public string NewLine
 		{
 			get { return this.writer.NewLine; }
 			set { this.writer.NewLine = value; }
+		}
+
+		/// <summary>
+		/// Gets and sets the maximum depth to be serialized.
+		/// </summary>
+		public int MaxDepth
+		{
+			get { return this.maxDepth; }
+			set
+			{
+				if (value < 1)
+				{
+					throw new ArgumentOutOfRangeException("MaxDepth must be a positive integer as it controls the maximum nesting level of serialized objects.");
+				}
+				this.maxDepth = value;
+			}
 		}
 
 		/// <summary>
@@ -247,6 +265,10 @@ namespace JsonFx.Json
 					if (isProperty)
 					{
 						this.depth++;
+						if (this.depth > this.maxDepth)
+						{
+							throw new JsonSerializationException(String.Format(JsonWriter.ErrorMaxDepth, this.maxDepth));
+						}
 						this.WriteLine();
 					}
 					((IJsonSerializable)value).WriteJson(this);
@@ -400,6 +422,10 @@ namespace JsonFx.Json
 					if (isProperty)
 					{
 						this.depth++;
+						if (this.depth > this.maxDepth)
+						{
+							throw new JsonSerializationException(String.Format(JsonWriter.ErrorMaxDepth, this.maxDepth));
+						}
 						this.WriteLine();
 					}
 					this.WriteObject((IDictionary)value);
@@ -434,6 +460,10 @@ namespace JsonFx.Json
 					if (isProperty)
 					{
 						this.depth++;
+						if (this.depth > this.maxDepth)
+						{
+							throw new JsonSerializationException(String.Format(JsonWriter.ErrorMaxDepth, this.maxDepth));
+						}
 						this.WriteLine();
 					}
 					this.WriteArray((IEnumerable)value);
@@ -454,6 +484,10 @@ namespace JsonFx.Json
 				if (isProperty)
 				{
 					this.depth++;
+					if (this.depth > this.maxDepth)
+					{
+						throw new JsonSerializationException(String.Format(JsonWriter.ErrorMaxDepth, this.maxDepth));
+					}
 					this.WriteLine();
 				}
 				this.WriteObject(value, type);
@@ -722,6 +756,10 @@ namespace JsonFx.Json
 			this.writer.Write(JsonReader.OperatorArrayStart);
 
 			this.depth++;
+			if (this.depth > this.maxDepth)
+			{
+				throw new JsonSerializationException(String.Format(JsonWriter.ErrorMaxDepth, this.maxDepth));
+			}
 			try
 			{
 				foreach (object item in value)
@@ -758,6 +796,10 @@ namespace JsonFx.Json
 			this.writer.Write(JsonReader.OperatorObjectStart);
 
 			this.depth++;
+			if (this.depth > this.maxDepth)
+			{
+				throw new JsonSerializationException(String.Format(JsonWriter.ErrorMaxDepth, this.maxDepth));
+			}
 			try
 			{
 				foreach (object name in value.Keys)
@@ -796,6 +838,10 @@ namespace JsonFx.Json
 			this.writer.Write(JsonReader.OperatorObjectStart);
 
 			this.depth++;
+			if (this.depth > this.maxDepth)
+			{
+				throw new JsonSerializationException(String.Format(JsonWriter.ErrorMaxDepth, this.maxDepth));
+			}
 			try
 			{
 				if (!String.IsNullOrEmpty(this.TypeHintName))
