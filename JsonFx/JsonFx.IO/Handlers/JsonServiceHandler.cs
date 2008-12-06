@@ -170,10 +170,6 @@ namespace JsonFx.Handlers
 							// try to get as named positional param
 							positionalParams[i] = request.NamedParams[i.ToString()];
 						}
-
-						// TODO: check the parameters for type compatibility.  e.g. using Double for Int32 throws exception
-						// need to modify build to return type with paramMap
-						//positionalParams[i] = JsonReader.CoerceType(positionalParams[i], );
 					}
 				}
 				else if (request.PositionalParams != null)
@@ -181,8 +177,19 @@ namespace JsonFx.Handlers
 					positionalParams = new object[request.PositionalParams.Length];
 					request.PositionalParams.CopyTo(positionalParams, 0);
 				}
+
 				try
 				{
+					if (positionalParams != null)
+					{
+						ParameterInfo[] paramInfo = method.GetParameters();
+						for (int i=0; i<positionalParams.Length; i++)
+						{
+							// ensure type compatibility of parameters
+							positionalParams[i] = JsonReader.CoerceType(paramInfo[i].ParameterType, positionalParams[i]);
+						}
+					}
+
 					response.Result = method.Invoke(this.Service, positionalParams);
 				}
 				catch (TargetParameterCountException ex)
