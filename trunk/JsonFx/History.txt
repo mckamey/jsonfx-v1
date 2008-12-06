@@ -1,6 +1,6 @@
 Release History
 
-v1.0.0812.0611:
+v1.0.0812.0612:
 - made maximum depth of JSON serialization configurable
 - added string to char type coercion
 - improved type coercion of JSON-RPC params
