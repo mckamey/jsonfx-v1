@@ -1,5 +1,8 @@
 Release History
 
+v1.0.0812.xxxx:
+- updated to latest json2.js (2008-11-19)
+
 v1.0.0812.0612:
 - made maximum depth of JSON serialization configurable
 - added string to char type coercion
