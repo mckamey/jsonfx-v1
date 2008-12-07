@@ -6,6 +6,7 @@
 	- http://blogs.msdn.com/webdevtools/archive/2007/03/02/jscript-intellisense-in-orcas.aspx
 	- http://weblogs.asp.net/bleroy/archive/2007/04/23/the-format-for-javascript-doc-comments.aspx
 	- http://blogs.msdn.com/webdevtools/archive/2007/11/06/jscript-intellisense-a-reference-for-the-reference-tag.aspx
+	- http://blogs.msdn.com/webdevtools/archive/tags/IntelliSense/default.aspx
 
 - JSON-RPC debug
 	- Need to disable Ajax timeout on debugging.  Perhaps switched on a JsonFx setting for isDebug.
