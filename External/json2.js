@@ -1,6 +1,6 @@
 /*
     http://www.JSON.org/json2.js
-    2008-10-31
+    2008-11-19
 
     Public Domain.
 
@@ -207,10 +207,8 @@ if (!this.JSON) {
         return escapable.test(string) ?
             '"' + string.replace(escapable, function (a) {
                 var c = meta[a];
-                if (typeof c === 'string') {
-                    return c;
-                }
-                return '\\u' + ('0000' + a.charCodeAt(0).toString(16)).slice(-4);
+                return typeof c === 'string' ? c :
+                    '\\u' + ('0000' + a.charCodeAt(0).toString(16)).slice(-4);
             }) + '"' :
             '"' + string + '"';
     }
@@ -280,12 +278,11 @@ if (!this.JSON) {
             gap += indent;
             partial = [];
 
-// If the object has a dontEnum length property, we'll treat it as an array.
+// Is the value an array?
 
-            if (typeof value.length === 'number' &&
-                    !value.propertyIsEnumerable('length')) {
+            if (Object.prototype.toString.apply(value) === '[object Array]') {
 
-// The object is an array. Stringify every element. Use null as a placeholder
+// The value is an array. Stringify every element. Use null as a placeholder
 // for non-JSON values.
 
                 length = value.length;
