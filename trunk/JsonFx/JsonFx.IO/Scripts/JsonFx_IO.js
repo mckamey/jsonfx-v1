@@ -553,7 +553,7 @@ if ("undefined" === typeof JsonFx.IO.Service) {
 			};
 		}
 
-		if (this.onAddCustomHeaders) {
+		if ("function" === typeof this.onAddCustomHeaders) {
 			this.onAddCustomHeaders(options.headers);
 		}
 
