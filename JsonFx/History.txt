@@ -3,6 +3,7 @@ Release History
 v1.0.0812.0717:
 - added ability to add custom headers to service requests on a global or per-service request via callback
 - disabled Ajax request timeout when is a debug build
+- fixed a typo in the JSON-RPC Visual Studio Template
 - updated to latest json2.js (2008-11-19)
 
 v1.0.0812.0612:
