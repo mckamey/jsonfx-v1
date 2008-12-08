@@ -134,7 +134,7 @@ JsonFx.IO = {};
 	options.headers.Pragma = "no-cache";
 
 	if ("number" !== typeof options.timeout) {
-		options.timeout = 60000;// 60 seconds
+		options.timeout = 60000;// 1 minute
 	}
 	if ("function" !== typeof options.onCreate) {
 		options.onCreate = null;
@@ -395,7 +395,9 @@ if ("undefined" === typeof JsonFx.jsonReviver) {
 	// ensure defaults
 	options = JsonFx.IO.validateOptions(options);
 
-	options.headers.Accept = "application/json, application/jsonml+json";
+	if (!options.headers.Accept) {
+		options.headers.Accept = "application/json, application/jsonml+json";
+	}
 
 	// wrap callbacks with RPC layer
 	var onSuccess = options.onSuccess;
@@ -451,7 +453,7 @@ if ("undefined" === typeof JsonFx.jsonReviver) {
 		onFailure = null;
 	};
 
-	if ("object" !== typeof rpcParams) {// must be object or array, else wrap in one
+	if ("object" !== typeof rpcParams) {// must be object or array, else wrap in array
 		rpcParams = [ rpcParams ];
 	}
 
@@ -513,6 +515,8 @@ if ("undefined" === typeof JsonFx.IO.Service) {
 
 	/*event*/ JsonFx.IO.Service.prototype.onEndRequest = null;
 
+	/*event*/ JsonFx.IO.Service.prototype.onAddCustomHeaders = null;
+
 	/*string*/ JsonFx.IO.Service.prototype.getAddress = function() {
 		if (JsonFx.IO.Service.appRoot) {
 			return JsonFx.IO.Service.appRoot + this.address;
@@ -521,13 +525,17 @@ if ("undefined" === typeof JsonFx.IO.Service) {
 		}
 	};
 
-	/*void*/ JsonFx.IO.Service.prototype.callService = function(
+	/*void*/ JsonFx.IO.Service.prototype.invoke = function(
 		/*string*/ rpcMethod,
 		/*object*/ rpcParams,
 		/*RequestOptions*/ options) {
 
 		// ensure defaults
 		options = JsonFx.IO.validateOptions(options);
+
+		if (this.isDebug) {
+			options.timeout = -1;
+		}
 
 		var self = this, onComplete = null;
 		if ("function" === typeof this.onEndRequest) {
@@ -545,6 +553,10 @@ if ("undefined" === typeof JsonFx.IO.Service) {
 			};
 		}
 
+		if (this.onAddCustomHeaders) {
+			this.onAddCustomHeaders(options.headers);
+		}
+
 		if ("function" === typeof this.onBeginRequest) {
 			this.onBeginRequest(options.context);
 		}
@@ -553,9 +565,8 @@ if ("undefined" === typeof JsonFx.IO.Service) {
 	};
 
 	// service description is callable via two methods
-	/*string*/ JsonFx.IO.Service.prototype["system.describe"] = JsonFx.IO.Service.prototype.$describe = function(
-		/*RequestOptions*/ options) {
-
-		this.callService("system.describe", null, options);
-	};
+	/*string*/ JsonFx.IO.Service.prototype["system.describe"] = JsonFx.IO.Service.prototype.$describe =
+		function(/*RequestOptions*/ options) {
+			this.invoke("system.describe", null, options);
+		};
 }

@@ -151,6 +151,11 @@ namespace JsonFx.JsonRpc.Proxy
 					this.WriteMethod(writer, method);
 				}
 
+				if (prettyPrint)
+				{
+					this.WriteProperty(writer, "isDebug", "true");
+				}
+
 				writer.Write(this.formatter.ClassEnd);
 
 				writer.Write(this.formatter.ProxyInstantiation, this.ProxyNamespace, this.Service.Name);
@@ -349,7 +354,7 @@ namespace JsonFx.JsonRpc.Proxy
 
 		internal override string MethodMiddleFormat
 		{
-			get { return "opt){{this.callService(\"{0}\","; }
+			get { return "opt){{this.invoke(\"{0}\","; }
 		}
 
 		internal override string MethodEndFormat
@@ -416,7 +421,7 @@ namespace JsonFx.JsonRpc.Proxy
 
 		internal override string MethodMiddleFormat
 		{
-			get { return "/*RequestOptions*/ options) {{\r\n\t\tthis.callService(\"{0}\", "; }
+			get { return "/*RequestOptions*/ options) {{\r\n\t\tthis.invoke(\"{0}\", "; }
 		}
 
 		internal override string MethodEndFormat
