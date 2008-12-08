@@ -1,6 +1,8 @@
 Release History
 
 v1.0.0812.xxxx:
+- added ability to globally add custom headers to request
+- disabled Ajax request timeout when is a debug build
 - updated to latest json2.js (2008-11-19)
 
 v1.0.0812.0612:
