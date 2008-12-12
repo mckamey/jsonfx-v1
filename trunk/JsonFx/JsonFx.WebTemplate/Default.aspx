@@ -8,12 +8,12 @@
 	<title>Untitled</title>
 
 	<%-- one tag to include all the style sheets --%>
-	<JsonFx:ResourceInclude runat="server" SourceUrl="~/Styles/Styles.merge" />
+	<JsonFx:ResourceInclude runat="server" SourceUrl="~/Styles.merge" />
 </head>
 <body>
 
 	<%-- one tag to include all the client scripts --%>
-	<JsonFx:ResourceInclude runat="server" SourceUrl="~/Scripts/Scripts.merge" />
+	<JsonFx:ResourceInclude runat="server" SourceUrl="~/Scripts.merge" />
 
 	<%-- one control to emit page data as JavaScript --%>
 	<JsonFx:ScriptDataBlock runat="server" ID="PageData" />
