@@ -16,7 +16,7 @@
 			serverName : Example.serverName
 		};
 
-		// this databinds the data to the template
+	// this databinds the data to the template and rehydrates to DOM
 		var jbst = JsonFx.UI.bind(Example.congrats, sampleData);
 
 		// add the result to the container

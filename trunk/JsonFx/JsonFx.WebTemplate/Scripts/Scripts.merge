@@ -8,39 +8,15 @@
 # content can be directly in the project or embedded in linked assemblies
 # merge files can even merge other merge files
 
-# NOTE: if you want all of this you can replace with a single reference to
-# JsonFx.Scripts.JsonFx.merge, JsonFx.Client
+# add all of the JsonFx scripts at once
+JsonFx.Scripts.JsonFx.merge, JsonFx.Client
 
-# client-side JSON serialization
-JsonFx.Scripts.json2.js, JsonFx.Json
+# JavaScript service proxies
+~/Services/MyService.jrpc
 
-# JSON-RPC support
-JsonFx.Scripts.JsonFx_IO.js, JsonFx.IO
-
-# JsonML support
-JsonFx.Scripts.JsonML2.js, JsonFx.UI
-
-# JBST support
-JsonFx.Scripts.JsonML_BST.js, JsonFx.UI
-
-# CssUserAgent support
-JsonFx.Scripts.JsonFx_UA.js, JsonFx.UI
-
-# dynamic behavior binding support
-JsonFx.Scripts.JsonFx_Bindings.js, JsonFx.UI
-
-# DOM utilities
-JsonFx.Scripts.JsonFx_UI.js, JsonFx.UI
-
-# client-side globalization support
-JsonFx.Scripts.JsonFx_Lang.js, JsonFx.UI
-
-# Ajax History support
-JsonFx.Scripts.JsonFx_History.js, JsonFx.History
-
-# put all your references here
-~/Services/Services.merge
-~/Controls/Controls.merge
+# compiled JBST controls
+~/Controls/Example.jbst
+~/Controls/Results.jbst
 
 ~/Scripts/MyScript.js
 ~/Scripts/ServiceTest.js

@@ -12,35 +12,8 @@ if ("undefined" === typeof window.Example) {
 }
 
 /*void*/ Example.asyncError = function (/*object*/ result, /*object*/ cx, /*Error*/ ex) {
-	window.alert( JSON.stringify(ex, null, "\n\t") );
-};
-
-/*void*/ Example.asyncSuccess = function(/*object*/ data, /*object*/ cx) {
-	if (!data) {
-		return;
-	}
-
-	var elem = cx && cx.elem;
-	if (!elem || !elem.parentNode) {
-		return;
-	}
-
-	elem = elem.parentNode;
-
-	// this databinds the data to the template
-	var jbst = Example.results.dataBind( data );
-
-	// this hydrates the resulting markup allowing dynamic behaviors to be bound to elements
-	jbst = JsonML.parse(jbst, JsonFx.Bindings.bindOne);
-
-	// add the result to the container
-	if (jbst) {
-
-		// clear the container contents
-		JsonFx.UI.clear(elem);
-
-		elem.appendChild(jbst);
-	}
+	// just display raw error results
+	window.alert( JSON.stringify(ex, null, "\t") );
 };
 
 /*void*/ Example.tryService = function(/*DOM*/ elem) {
@@ -48,18 +21,18 @@ if ("undefined" === typeof window.Example) {
 		return;
 	}
 
-	// this is the parameter to the service method
+	// this is a parameter to the service method
 	var number = Math.PI;
 
 	// these are the options for the service proxy
 	var options = {
-		onSuccess: Example.asyncSuccess,
+		onSuccess: Example.results.bind, // defined in Results.jbst
 		onFailure: Example.asyncError,
-		context: { "elem": elem, "number": number }
+		context: { elem: elem, foo: "bar" }
 	};
 
 	// call the JSON-RPC service proxy object with the method args in order and add an options object at the end
 	Example.MyServiceProxy.getInfo(number, options);
-	
+
 	// when the request completes, the appropriate callback will get called with the return value and the context object
 };
