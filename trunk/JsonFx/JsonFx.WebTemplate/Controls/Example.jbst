@@ -1,6 +1,52 @@
 <%@ Control Name="Example.congrats" Language="JavaScript" %>
 
-<%-- If your configuration is not correct then this will not show. --%>
-<p class="ReadMe">Congratulations! As of <%= Example.renderTime.getHours()+":"+Example.renderTime.getMinutes() %>, setup appears to be configured correctly on <strong><%= this.data.hostName %> (<%= Example.serverName %>)</strong>.</p>
+<%!
+	/* NOTE: the keyword "this" refers to the JBST template during databinding */
+
+	/* this method auto-binds the template to a DOM element */
+	/*void*/ this.init = function(/*DOM*/ elem) {
+		if (!elem) {
+			return;
+		}
+
+		// some example data to bind
+		var sampleData = {
+			hostName : window.location.host,
+			renderTime : Example.renderTime,
+			serverName : Example.serverName
+		};
+
+		// this databinds the data to the template
+		var jbst = JsonFx.UI.bind(Example.congrats, sampleData);
+
+		// add the result to the container
+		if (jbst) {
+			// clear the container contents
+			JsonFx.UI.clear(elem);
+
+			elem.appendChild(jbst);
+		}
+	};
+
+	/* format integers to have at least two digits */
+	/*int*/ this.format = function(/*int*/ n) {
+        return (n < 10) ? '0' + n : n;
+    };
+
+	/* this automatically binds any div.js-MessageArea to this template */
+	JsonFx.Bindings.register(
+		"div",
+		"js-MessageArea",
+		this.init,
+		null);
+
+%>
+
+<%-- If your configuration is not correct then this message will not show. --%>
+<p class="ReadMe">
+	Congratulations!
+	As of <%= this.data.renderTime.getHours()+":"+this.format(this.data.renderTime.getMinutes()) %>,
+	setup appears to be configured correctly on <strong><%= this.data.hostName %> (<%= this.data.serverName %>)</strong>.
+</p>
 <p class="ReadMe">See <a href="http://help.jsonfx.net/instructions">http://help.jsonfx.net/instructions</a> for JsonFx customizations to Visual Studio.</p>
 <p class="ReadMe"><input type="button" value="Try Service" onclick="Example.tryService(this);" /></p>
