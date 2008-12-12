@@ -18,5 +18,5 @@ JsonFx.Scripts.JsonFx.merge, JsonFx.Client
 ~/Controls/Example.jbst
 ~/Controls/Results.jbst
 
-~/Scripts/MyScript.js
+# regular JavaScript
 ~/Scripts/ServiceTest.js

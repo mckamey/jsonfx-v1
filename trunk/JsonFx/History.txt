@@ -1,7 +1,8 @@
 Release History
 
-v1.0.0812.1207:
-- overhauled the JSON-RPC Visual Studio Template
+v1.0.0812.1208:
+- cleaned up the project examples & templates
+- improved the JSON-RPC templates
 
 v1.0.0812.0717:
 - added ability to add custom headers to service requests on a global or per-service request via callback

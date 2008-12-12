@@ -45,7 +45,6 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Default.aspx" />
-    <Content Include="Scripts\MyScript.js" />
     <Content Include="Scripts\ServiceTest.js" />
     <Content Include="Styles\MyStyles.css" />
     <Content Include="Web.config" />
