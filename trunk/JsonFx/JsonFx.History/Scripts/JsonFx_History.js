@@ -65,12 +65,10 @@ if ("undefined" === typeof JsonFx.UI) {
 JsonFx.History = {
 	/*object*/ h: null,
 
-	/*void*/ load: function(/*DOM*/ elem, /*function*/ callback, /*bool*/ start, /*string*/ url) {
-
+	/*void*/ load: function(/*DOM*/ elem, /*function*/ callback, /*object*/ start, /*string*/ url) {
 		if (!elem || "function" !== typeof callback) {
 			return;
 		}
-
 		var info;
 		if (!JsonFx.History.h) {
 			// initialization
@@ -96,8 +94,11 @@ JsonFx.History = {
 				JsonFx.History.save(start);
 				// reconnect callback
 				JsonFx.History.h.callback = callback;
+			} else if (window.opera) {
+				// opera is having issues, so disable history
+				JsonFx.History.h.elem = null;
+				callback(start);
 			}
-			return;
 
 		} else {
 			// onchange
