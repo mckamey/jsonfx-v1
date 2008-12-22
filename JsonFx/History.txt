@@ -1,5 +1,9 @@
 Release History
 
+v1.0.0812.2115:
+- fixed Opera bug in json2.js (Opera doesn't like escaped unicode chars in RegExp literals)
+- added workaround for Opera bug in JsonFx_History.js
+
 v1.0.0812.1208:
 - cleaned up the project examples & templates
 - improved the JSON-RPC templates
