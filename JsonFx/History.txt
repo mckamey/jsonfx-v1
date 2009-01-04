@@ -1,8 +1,9 @@
 Release History
 
-v1.0.0901.0317:
+v1.0.0901.0318:
 - improved deserialization of numeric flags enums
 - improved type inference of JsonReader interface
+- improved deserialization of generic dictionaries
 
 v1.0.0812.2115:
 - fixed Opera bug in json2.js (Opera doesn't like escaped unicode chars in RegExp literals)
