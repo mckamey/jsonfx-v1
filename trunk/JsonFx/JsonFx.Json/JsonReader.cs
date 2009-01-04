@@ -214,12 +214,36 @@ namespace JsonFx.Json
 		/// </summary>
 		/// <param name="type"></param>
 		/// <returns></returns>
+		public T Deserialize<T>()
+		{
+			// should this run through a preliminary test here?
+			return (T)this.Read(typeof(T), false);
+		}
+
+		/// <summary>
+		/// Convert from JSON string to Object graph of specific Type
+		/// </summary>
+		/// <param name="type"></param>
+		/// <returns></returns>
 		public object Deserialize(int start, Type type)
 		{
 			this.index = start;
 
 			// should this run through a preliminary test here?
 			return this.Read(type, false);
+		}
+
+		/// <summary>
+		/// Convert from JSON string to Object graph of specific Type
+		/// </summary>
+		/// <param name="type"></param>
+		/// <returns></returns>
+		public T Deserialize<T>(int start)
+		{
+			this.index = start;
+
+			// should this run through a preliminary test here?
+			return (T)this.Read(typeof(T), false);
 		}
 
 		private object Read(Type expectedType, bool typeIsHint)
@@ -817,11 +841,35 @@ namespace JsonFx.Json
 		/// <summary>
 		/// A fast method for deserializing an object from JSON
 		/// </summary>
+		/// <typeparam name="T"></typeparam>
 		/// <param name="value"></param>
+		/// <returns></returns>
+		public static T Deserialize<T>(string value)
+		{
+			return (T)JsonReader.Deserialize(value, 0, typeof(T));
+		}
+
+		/// <summary>
+		/// A fast method for deserializing an object from JSON
+		/// </summary>
+		/// <param name="value"></param>
+		/// <param name="start"></param>
 		/// <returns></returns>
 		public static object Deserialize(string value, int start)
 		{
 			return JsonReader.Deserialize(value, start, null);
+		}
+
+		/// <summary>
+		/// A fast method for deserializing an object from JSON
+		/// </summary>
+		/// <typeparam name="T"></typeparam>
+		/// <param name="value"></param>
+		/// <param name="start"></param>
+		/// <returns></returns>
+		public static T Deserialize<T>(string value, int start)
+		{
+			return (T)JsonReader.Deserialize(value, start, typeof(T));
 		}
 
 		/// <summary>
