@@ -1129,26 +1129,27 @@ namespace JsonFx.Json
 
 			if (targetType.IsEnum)
 			{
-				if (!Enum.IsDefined(targetType, value))
-				{
-					// if isn't a defined value perhaps it is the JsonName
-					foreach (FieldInfo field in targetType.GetFields())
-					{
-						string jsonName = JsonNameAttribute.GetJsonName(field);
-						if (((string)value).Equals(jsonName))
-						{
-							value = field.Name;
-							break;
-						}
-					}
-				}
-
 				if (value is String)
 				{
+					if (!Enum.IsDefined(targetType, value))
+					{
+						// if isn't a defined value perhaps it is the JsonName
+						foreach (FieldInfo field in targetType.GetFields())
+						{
+							string jsonName = JsonNameAttribute.GetJsonName(field);
+							if (((string)value).Equals(jsonName))
+							{
+								value = field.Name;
+								break;
+							}
+						}
+					}
+
 					return Enum.Parse(targetType, (string)value);
 				}
 				else
 				{
+					value = JsonReader.CoerceType(Enum.GetUnderlyingType(targetType), value);
 					return Enum.ToObject(targetType, value);
 				}
 			}
