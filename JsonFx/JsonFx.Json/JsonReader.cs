@@ -88,6 +88,7 @@ namespace JsonFx.Json
 		private const string ErrorDefaultCtor = "Only objects with default constructors can be deserialized. ({0})";
 		private const string ErrorCannotInstantiate = "Interfaces, Abstract classes, and unsupported ValueTypes cannot be deserialized. ({0})";
 		internal const string ErrorGenericIDictionary = "Types which implement Generic IDictionary<TKey, TValue> also need to implement IDictionary to be deserialized. ({0})";
+		private const string ErrorGenericIDictionaryKeys = "Types which implement Generic IDictionary<TKey, TValue> need to have string keys to be deserialized. ({0})";
 
 		#endregion Constants
 
@@ -323,11 +324,33 @@ namespace JsonFx.Json
 				throw new JsonDeserializationException(JsonReader.ErrorExpectedObject, this.index);
 			}
 
+			Type genericDictionaryType = null;
 			Dictionary<string, MemberInfo> memberMap = null;
 			Object result;
 			if (objectType != null)
 			{
 				result = this.InstantiateObject(objectType, ref memberMap);
+
+				if (memberMap == null)
+				{
+					// this allows specific IDictionary<string, T> to deserialize T
+					Type genericDictionary = objectType.GetInterface(JsonReader.TypeGenericIDictionary);
+					if (genericDictionary != null)
+					{
+						Type[] genericArgs = genericDictionary.GetGenericArguments();
+						if (genericArgs.Length == 2)
+						{
+							if (genericArgs[0] != typeof(String))
+							{
+								throw new JsonDeserializationException(
+									String.Format(JsonReader.ErrorGenericIDictionaryKeys, objectType),
+									this.index);
+							}
+
+							genericDictionaryType = genericArgs[1];
+						}
+					}
+				}
 			}
 			else
 			{
@@ -362,8 +385,16 @@ namespace JsonFx.Json
 				// parse object member value
 				string memberName = (String)this.ReadString(null);
 
-				// determine the type of the property/field
-				JsonReader.GetMemberInfo(memberMap, memberName, out memberType, out memberInfo);
+				if (genericDictionaryType == null)
+				{
+					// determine the type of the property/field
+					JsonReader.GetMemberInfo(memberMap, memberName, out memberType, out memberInfo);
+				}
+				else
+				{
+					memberType = genericDictionaryType;
+					memberInfo = null;
+				}
 
 				// get next token
 				token = this.Tokenize();
@@ -961,7 +992,7 @@ namespace JsonFx.Json
 			}
 			Object result = ctor.Invoke(null);
 
-			// don't incurr the cost of member map if a dictionary
+			// don't incurr the cost of member map for dictionaries
 			if (!typeof(IDictionary).IsAssignableFrom(objectType))
 			{
 				memberMap = this.CreateMemberMap(objectType);
@@ -1066,16 +1097,6 @@ namespace JsonFx.Json
 					// maps to public field
 					memberType = ((FieldInfo)memberInfo).FieldType;
 				}
-				else
-				{
-					// none found
-					memberType = null;
-				}
-			}
-			else
-			{
-				// none found
-				memberType = null;
 			}
 		}
 
