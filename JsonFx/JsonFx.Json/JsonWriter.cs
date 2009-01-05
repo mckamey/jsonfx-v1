@@ -506,6 +506,27 @@ namespace JsonFx.Json
 			this.Write(Convert.ToBase64String(value));
 		}
 
+		public virtual void WriteHexString(byte[] value)
+		{
+			if (value == null || value.Length == 0)
+			{
+				this.Write(String.Empty);
+				return;
+			}
+
+			StringBuilder builder = new StringBuilder();
+
+			// Loop through each byte of the hashed data 
+			// and format each one as a hexadecimal string
+			for (int i=0; i<value.Length; i++)
+			{
+				builder.Append(value[i].ToString("x2"));
+			}
+
+			// the hexadecimal string
+			this.Write(builder.ToString());
+		}
+
 		public virtual void Write(DateTime value)
 		{
 			if (this.dateTimeSerializer != null)
