@@ -516,7 +516,7 @@ namespace JsonFx.Json
 
 			StringBuilder builder = new StringBuilder();
 
-			// Loop through each byte of the hashed data 
+			// Loop through each byte of the binary data 
 			// and format each one as a hexadecimal string
 			for (int i=0; i<value.Length; i++)
 			{
