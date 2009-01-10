@@ -160,7 +160,7 @@ namespace JsonFx.UI.Jbst
 		protected override string GetCodeBlock()
 		{
 			// comments are only emitted for pretty-print
-			return String.Format(CommentFormat, this.Code.Replace("*/", "*\\/"));
+			return String.Format(CommentFormat, this.Code.Replace("*/", "* /"));
 		}
 
 		#endregion JbstCodeBlock Members
