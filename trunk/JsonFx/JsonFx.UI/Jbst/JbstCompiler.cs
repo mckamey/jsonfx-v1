@@ -668,6 +668,7 @@ if (""undefined"" === typeof {0}) {{
 							this.Directives.Append(tag.ToString());
 							break;
 						}
+						//case "script":
 						case "%!":
 						{
 							// analogous to static code, or JSP declarations
@@ -704,9 +705,13 @@ if (""undefined"" === typeof {0}) {{
 							break;
 						}
 						case "%--":
+						{
+							// server-side comments are omitted even for debug
+							break;
+						}
 						case "!--":
 						{
-							// Comments are emitted directly into JBST
+							// HTML Comments are emitted directly into JBST
 							JbstCommentBlock code = new JbstCommentBlock(
 								tag.Content,
 								this.path);
