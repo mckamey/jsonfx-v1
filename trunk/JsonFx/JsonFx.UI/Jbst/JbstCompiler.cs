@@ -46,7 +46,7 @@ namespace JsonFx.UI.Jbst
 	/// <summary>
 	/// JBST Template Compiler
 	/// </summary>
-	internal class JbstCompiler : IHtmlWriter
+	internal class JbstCompiler : IHtmlFilter, IHtmlWriter
 	{
 		#region Constants
 
@@ -110,7 +110,7 @@ if (""undefined"" === typeof {0}) {{
 			this.parser.EncodeNonAscii = false;
 			this.parser.BalanceTags = false;
 			this.parser.NormalizeWhitespace = false;
-			this.parser.HtmlFilter = new UnsafeHtmlFilter();
+			this.parser.HtmlFilter = this;
 			this.parser.HtmlWriter = this;
 			this.parser.BeginIncrementalParsing();
 		}
@@ -738,6 +738,32 @@ if (""undefined"" === typeof {0}) {{
 		}
 
 		#endregion IHtmlWriter Members
+
+		#region IHtmlFilter Members
+
+		bool IHtmlFilter.FilterTag(HtmlTag tag)
+		{
+			return true;
+		}
+
+		bool IHtmlFilter.FilterAttribute(string tag, string attribute, ref string value)
+		{
+			return true;
+		}
+
+		bool IHtmlFilter.FilterStyle(string tag, string style, ref string value)
+		{
+			return true;
+		}
+
+		bool IHtmlFilter.FilterLiteral(string source, int start, int end, out string replacement)
+		{
+			replacement = null;
+
+			return false;
+		}
+
+		#endregion
 
 		#region Directive Methods
 
