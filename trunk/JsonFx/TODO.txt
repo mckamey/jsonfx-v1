@@ -1,5 +1,18 @@
 2008-12-07 @ 15:10
 
+- alter JBST compilation to support <script type="text/javascript"></script> as equivalent to <%! %>
+- reconcile overlap between JsonFx libs and jQuery:
+	- $(document).ready... vs. JsonFx.UI.Binding
+	- all className / DOM lookup can be swapped
+	- JSBT auto-binding
+- release CssUserAgent as a stand-alone script
+- build jQuery extension for JsonML / JSBT (e.g. jQuery plugin )
+- add VS2K8 Intellisense support for JsonFx libs:
+	- add XML comments
+	- ease the burden of adding resource include tags
+- look into enabling CDN's via JsonFx (e.g. Google AJAX APIs)
+- rebuild JsonFx Ajax History to use hashes
+
 - JavaScript Intellisense
 	- Flesh out the JsonFx intellisense story
 	- add Doc comments to all JsonFx scripts
