@@ -52,6 +52,8 @@ namespace JsonFx.UI.Jbst
 
 		private static readonly char[] ImportDelim = { ' ', ',' };
 
+		private const string ScriptTagName = "script";
+
 		private const string AnonymousPrefix = "anonymous_";
 
 		private const string DeclarationFormat =
@@ -251,7 +253,7 @@ if (""undefined"" === typeof {0}) {{
 
 			JbstControl control;
 			if (tagName != null &&
-				tagName.StartsWith(JbstCustomControl.JbstPrefix, StringComparison.InvariantCultureIgnoreCase))
+				tagName.StartsWith(JbstCustomControl.JbstPrefix, StringComparison.OrdinalIgnoreCase))
 			{
 				control = JbstCustomControl.Create(tagName, this.path);
 			}
@@ -300,7 +302,7 @@ if (""undefined"" === typeof {0}) {{
 			}
 
 			if (!String.IsNullOrEmpty(tagName) &&
-				!tagName.Equals(this.current.RawName, StringComparison.InvariantCultureIgnoreCase))
+				!tagName.Equals(this.current.RawName, StringComparison.OrdinalIgnoreCase))
 			{
 				//throw new InvalidOperationException("Push/Pop mismatch? (tag names do not match)");
 				return;
@@ -311,6 +313,12 @@ if (""undefined"" === typeof {0}) {{
 				throw new InvalidOperationException("Push/Pop mismatch? (Current.Parent is null)");
 			}
 
+			if (JbstCompiler.ScriptTagName.Equals(this.current.RawName, StringComparison.OrdinalIgnoreCase))
+			{
+				// script tags get converted once fully parsed
+				this.ConvertScriptTag(this.current);
+			}
+
 			this.current = this.current.Parent;
 
 			if (this.current == this.document &&
@@ -318,6 +326,11 @@ if (""undefined"" === typeof {0}) {{
 			{
 				this.DocumentReady(this, EventArgs.Empty);
 			}
+		}
+
+		private void ConvertScriptTag(JbstControl jbstControl)
+		{
+			// TODO: convert a standard script tag into a declaration block
 		}
 
 		internal void StoreAttribute(string name, string value)
@@ -346,7 +359,7 @@ if (""undefined"" === typeof {0}) {{
 			this.Flush();
 
 			value = HtmlDistiller.DecodeHtmlEntities(value);
-			if ("style".Equals(name, StringComparison.InvariantCultureIgnoreCase))
+			if ("style".Equals(name, StringComparison.OrdinalIgnoreCase))
 			{
 				this.SetStyle(target, null, value);
 			}
@@ -763,7 +776,7 @@ if (""undefined"" === typeof {0}) {{
 			return false;
 		}
 
-		#endregion
+		#endregion IHtmlFilter Members
 
 		#region Directive Methods
 
