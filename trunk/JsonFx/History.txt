@@ -2,7 +2,7 @@ Release History
 
 v1.0.0901.0318:
 - improved deserialization of numeric flags enums
-- improved type inference of JsonReader interface
+- improved type inference of JsonReader interface in C# 3.0
 - improved deserialization of typed generic dictionaries
 
 v1.0.0812.2115:
