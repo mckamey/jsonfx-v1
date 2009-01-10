@@ -347,7 +347,10 @@ namespace JsonFx.Json
 									this.index);
 							}
 
-							genericDictionaryType = genericArgs[1];
+							if (genericArgs[1] != typeof(Object))
+							{
+								genericDictionaryType = genericArgs[1];
+							}
 						}
 					}
 				}
@@ -385,7 +388,7 @@ namespace JsonFx.Json
 				// parse object member value
 				string memberName = (String)this.ReadString(null);
 
-				if (genericDictionaryType == null)
+				if (genericDictionaryType == null && memberMap != null)
 				{
 					// determine the type of the property/field
 					JsonReader.GetMemberInfo(memberMap, memberName, out memberType, out memberInfo);
