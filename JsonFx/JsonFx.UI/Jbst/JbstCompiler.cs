@@ -607,6 +607,7 @@ if (""undefined"" === typeof {0}) {{
 										break;
 									}
 									case '=':
+									case '#':
 									{
 										JbstExpressionBlock code = new JbstExpressionBlock(
 											value.Substring(3, value.Length-5),
