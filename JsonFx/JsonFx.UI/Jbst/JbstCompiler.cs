@@ -668,7 +668,6 @@ if (""undefined"" === typeof {0}) {{
 							this.Directives.Append(tag.ToString());
 							break;
 						}
-						//case "script":
 						case "%!":
 						{
 							// analogous to static code, or JSP declarations
@@ -677,7 +676,8 @@ if (""undefined"" === typeof {0}) {{
 							this.Declarations.Append(tag.Content);
 							break;
 						}
-						case "%=":
+						case "%=": // inline expression
+						case "%#": // databinding expression
 						{
 							// expressions are emitted directly into JBST
 							JbstExpressionBlock code = new JbstExpressionBlock(
