@@ -781,8 +781,8 @@ namespace BuildTools.HtmlDistiller.Filters
 		{
 			if (value != null)
 			{
-				if (value.IndexOf("expression", StringComparison.InvariantCultureIgnoreCase) >= 0 ||
-					value.IndexOf("javascript:", StringComparison.InvariantCultureIgnoreCase) >= 0)
+				if (value.IndexOf("expression", StringComparison.OrdinalIgnoreCase) >= 0 ||
+					value.IndexOf("javascript:", StringComparison.OrdinalIgnoreCase) >= 0)
 				{
 					// IE CSS expressions are JavaScript
 					// JavaScript URLs are JavaScript

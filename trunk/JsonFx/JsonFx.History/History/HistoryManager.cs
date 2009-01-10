@@ -149,7 +149,7 @@ namespace JsonFx.History
 				{
 					HttpBrowserCapabilities browser = this.Page.Request.Browser;
 					if (browser.Browser == null ||
-						browser.Browser.IndexOf("safari", StringComparison.InvariantCultureIgnoreCase) < 0)
+						browser.Browser.IndexOf("safari", StringComparison.OrdinalIgnoreCase) < 0)
 					{
 						// currently Safari seems to be the browser with virtual document issues
 						this.usePhysicalUrl = false;

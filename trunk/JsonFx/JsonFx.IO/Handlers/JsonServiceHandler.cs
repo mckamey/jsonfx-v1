@@ -236,7 +236,7 @@ namespace JsonFx.Handlers
 
 				JsonRequest request = null;
 
-				if ("GET".Equals(context.Request.HttpMethod, StringComparison.InvariantCultureIgnoreCase))
+				if ("GET".Equals(context.Request.HttpMethod, StringComparison.OrdinalIgnoreCase))
 				{
 					request = this.BuildRequestFromGet(context);
 				}

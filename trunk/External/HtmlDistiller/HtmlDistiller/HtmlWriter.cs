@@ -185,7 +185,7 @@ namespace BuildTools.HtmlDistiller.Writers
 			{
 				string val = tag.Attributes[key];
 
-				if (filter.FilterAttribute(tag.TagName, key, ref val))
+				if (filter == null || filter.FilterAttribute(tag.TagName, key, ref val))
 				{
 					this.writer.Write(' ');
 					if (String.IsNullOrEmpty(key))
@@ -216,7 +216,7 @@ namespace BuildTools.HtmlDistiller.Writers
 			{
 				string val = tag.Styles[key];
 
-				if (filter.FilterStyle(tag.TagName, key, ref val))
+				if (filter == null || filter.FilterStyle(tag.TagName, key, ref val))
 				{
 					if (!String.IsNullOrEmpty(key) && !String.IsNullOrEmpty(val))
 					{

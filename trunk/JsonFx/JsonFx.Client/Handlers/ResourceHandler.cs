@@ -51,7 +51,7 @@ namespace JsonFx.Handlers
 		void IHttpHandler.ProcessRequest(HttpContext context)
 		{
 			string cacheKey = context.Request.QueryString[null];
-			bool isDebug = ResourceHandler.DebugFlag.Equals(cacheKey, StringComparison.InvariantCultureIgnoreCase);
+			bool isDebug = ResourceHandler.DebugFlag.Equals(cacheKey, StringComparison.OrdinalIgnoreCase);
 
 			context.Response.ClearHeaders();
 			context.Response.BufferOutput = true;
@@ -64,7 +64,7 @@ namespace JsonFx.Handlers
 				return;
 			}
 
-			bool isCached = info.MD5.ToString("N").Equals(cacheKey, StringComparison.InvariantCultureIgnoreCase);
+			bool isCached = info.MD5.ToString("N").Equals(cacheKey, StringComparison.OrdinalIgnoreCase);
 			if (isCached)
 			{
 				// if the content changes then so will the MD5
