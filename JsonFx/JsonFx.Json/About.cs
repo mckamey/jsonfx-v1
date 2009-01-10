@@ -40,7 +40,7 @@ namespace JsonFx
 	{
 		#region Fields
 
-		public static readonly About Fx;
+		public static readonly About Fx = new About(typeof(About).Assembly);
 
 		public readonly Version Version;
 		public readonly string FullName;
@@ -54,14 +54,6 @@ namespace JsonFx
 		#endregion Fields
 
 		#region Init
-
-		/// <summary>
-		/// CCtor
-		/// </summary>
-		static About()
-		{
-			About.Fx = new About(typeof(About).Assembly);
-		}
 
 		/// <summary>
 		/// Ctor
