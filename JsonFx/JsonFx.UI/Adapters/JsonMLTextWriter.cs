@@ -382,7 +382,7 @@ namespace JsonFx.UI
 			}
 
 			if (this.renderingIncompleteTag &&
-				value.Equals(HtmlTextWriter.TagRightChar.ToString(), StringComparison.InvariantCultureIgnoreCase))
+				value.Equals(HtmlTextWriter.TagRightChar.ToString(), StringComparison.OrdinalIgnoreCase))
 			{
 				this.renderingIncompleteTag = false;
 				return;

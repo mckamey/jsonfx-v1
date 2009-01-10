@@ -44,7 +44,7 @@ namespace JsonFx.Handlers
 		{
 			Type descriptorType = BuildManager.GetCompiledType(url);
 
-			if ("GET".Equals(verb, StringComparison.InvariantCultureIgnoreCase) &&
+			if ("GET".Equals(verb, StringComparison.OrdinalIgnoreCase) &&
 				String.IsNullOrEmpty(context.Request.PathInfo))
 			{
 				// output service javascript proxy

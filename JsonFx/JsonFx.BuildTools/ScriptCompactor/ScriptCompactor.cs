@@ -63,7 +63,7 @@ namespace BuildTools.ScriptCompactor
 				throw new AccessViolationException(String.Format("File (\"{0}\") already exists.", outputFile));
 			}
 
-			if (inputFile.Equals(outputFile, StringComparison.InvariantCultureIgnoreCase))
+			if (inputFile.Equals(outputFile, StringComparison.OrdinalIgnoreCase))
 			{
 				throw new ApplicationException("Input and output file are set to the same path.");
 			}

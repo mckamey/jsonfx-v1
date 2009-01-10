@@ -310,7 +310,7 @@ namespace BuildTools.HtmlDistiller
 			{
 				if (this.attributes == null)
 				{
-					this.attributes = new Dictionary<string, string>(HtmlTag.DefaultAttributeCapacity, StringComparer.InvariantCultureIgnoreCase);
+					this.attributes = new Dictionary<string, string>(HtmlTag.DefaultAttributeCapacity, StringComparer.OrdinalIgnoreCase);
 				}
 				return this.attributes;
 			}
@@ -339,7 +339,7 @@ namespace BuildTools.HtmlDistiller
 			{
 				if (this.styles == null)
 				{
-					this.styles = new Dictionary<string, string>(HtmlTag.DefaultStyleCapacity, StringComparer.InvariantCultureIgnoreCase);
+					this.styles = new Dictionary<string, string>(HtmlTag.DefaultStyleCapacity, StringComparer.OrdinalIgnoreCase);
 				}
 				return this.styles;
 			}
@@ -355,7 +355,7 @@ namespace BuildTools.HtmlDistiller
 		{
 			get
 			{
-				if (this.HasAttributes && this.Attributes.ContainsKey(StyleAttrib))
+				if (!this.HasAttributes || !this.Attributes.ContainsKey(HtmlTag.StyleAttrib))
 				{
 					return false;
 				}
@@ -368,7 +368,14 @@ namespace BuildTools.HtmlDistiller
 		/// </summary>
 		public string Content
 		{
-			get { return this.Attributes[HtmlTag.Key_Content]; }
+			get
+			{
+				if (!this.HasAttributes || !this.Attributes.ContainsKey(HtmlTag.Key_Content))
+				{
+					return String.Empty;
+				}
+				return this.Attributes[HtmlTag.Key_Content];
+			}
 			set { this.Attributes[HtmlTag.Key_Content] = value; }
 		}
 
@@ -377,7 +384,14 @@ namespace BuildTools.HtmlDistiller
 		/// </summary>
 		public string EndDelim
 		{
-			get { return this.Attributes[HtmlTag.Key_EndDelim]; }
+			get
+			{
+				if (!this.HasAttributes || !this.Attributes.ContainsKey(HtmlTag.Key_EndDelim))
+				{
+					return String.Empty;
+				}
+				return this.Attributes[HtmlTag.Key_EndDelim];
+			}
 			set { this.Attributes[HtmlTag.Key_EndDelim] = value; }
 		}
 

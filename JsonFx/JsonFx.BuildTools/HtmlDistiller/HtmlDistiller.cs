@@ -884,7 +884,7 @@ namespace BuildTools.HtmlDistiller
 				if (!String.IsNullOrEmpty(name))
 				{
 					if (value is String &&
-						HtmlTag.StyleAttrib.Equals(name, StringComparison.InvariantCultureIgnoreCase))
+						HtmlTag.StyleAttrib.Equals(name, StringComparison.OrdinalIgnoreCase))
 					{
 						this.ParseStyles(tag, value.ToString());
 					}
