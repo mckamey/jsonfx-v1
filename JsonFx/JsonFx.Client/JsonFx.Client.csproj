@@ -108,6 +108,9 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="License.txt" />
+    <EmbeddedResource Include="Scripts\IntelliSense.js" />
+    <EmbeddedResource Include="Scripts\jquery-vsdoc.js" />
+    <EmbeddedResource Include="Scripts\jquery.js" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\JsonFx.BuildTools\JsonFx.BuildTools.csproj">

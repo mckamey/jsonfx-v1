@@ -1,10 +1,10 @@
-/*global JsonFx, JSON */
+/*global JsonFx, jQuery, JSON */
 /*
 	JsonFx_Bindings.js
 	dynamic behavior binding support
 
 	Created: 2006-11-11-1759
-	Modified: 2008-05-25-2253
+	Modified: 2009-01-10-2203
 
 	Copyright (c)2006-2009 Stephen M. McKamey
 	Distributed under an open-source license: http://jsonfx.net/license
@@ -24,41 +24,9 @@ if ("undefined" === typeof JsonFx.UI) {
 if ("undefined" === typeof window.JSON) {
 	throw new Error("JsonFx_Bindings.js requires json2.js");
 }
-
-/*void*/ JsonFx.UI.attachHandler = function (/*DOM*/ obj, /*string*/ evtName, /*function*/ handler) {
-	if (!obj || !evtName || !handler) {
-		return;
-	}
-
-	if (obj.addEventListener) {
-		//DOM method for binding an event
-		obj.addEventListener(evtName, handler, false);
-	} else if (obj.attachEvent) {
-		//IE exclusive method for binding an event
-		obj.attachEvent("on"+evtName, handler);
-	} else if ("function" === typeof obj["on"+evtName]) {
-		var old = obj["on"+evtName];
-		obj["on"+evtName] = old ?
-			function(/*Event*/ evt) { handler(evt); return old(evt); } :
-			handler;
-	} else {
-		obj["on"+evtName] = handler;
-	}
-};
-
-/*void*/ JsonFx.UI.detachHandler = function (/*DOM*/ obj, /*string*/ evtName, /*function*/ handler) {
-	if (obj.removeEventListener) {
-		//DOM method for unbinding an event
-		obj.removeEventListener(evtName, handler, false);
-	} else if (obj.detachEvent) {
-		//IE exclusive method for binding an event
-		obj.detachEvent("on"+evtName, handler);
-	} else if (handler === obj["on"+evtName]) {
-		obj["on"+evtName] = null;
-	} else {
-		// cannot remove combined unless we stored original...
-	}
-};
+if ("undefined" === typeof window.jQuery) {
+	throw new Error("JsonFx_Bindings.js requires jquery.js");
+}
 
 if ("undefined" === typeof JsonFx.jsonReviver) {
 	/*object*/ JsonFx.jsonReviver = function(/*string*/ key, /*object*/ value) {
@@ -237,26 +205,13 @@ JsonFx.Bindings = function() {
 		}
 	};
 
-//	window.setTimeout(function() {
-//		/* it is important to control the handler order */
+	// register bind methods
+	jQuery(b.bindAll);
 
-//		// wire up binding
-//		if ("function" === typeof window.onload) {
-//			window.onload = function(/*Event*/ evt) { b.bindAll(evt); return window.onload(evt); };
-//		} else {
-//			window.onload = b.bindAll;
-//		}
-
-//		// wire up unbinding
-//		if ("function" === typeof window.onunload) {
-//			window.onunload = function(/*Event*/ evt) { b.unbindAll(evt); return window.onunload(evt); };
-//		} else {
-//			window.onunload = b.unbindAll;
-//		}
-//	}, 0);
-	JsonFx.UI.attachHandler(window, "load", b.bindAll);
-	JsonFx.UI.attachHandler(window, "unload", b.unbindAll);
+	// register unbind methods
+	jQuery(window).bind("unload", b.unbindAll)
 };
 
+// doing instead of anonymous fn for JSLint compatibility
 // instantiate only one, destroying the constructor
 JsonFx.Bindings = new JsonFx.Bindings();

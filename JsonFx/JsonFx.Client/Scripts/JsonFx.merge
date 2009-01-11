@@ -11,6 +11,9 @@
 JsonFx.Scripts.json2.js, JsonFx.Json
 
 # JSON-RPC support
+JsonFx.Scripts.jquery.js, JsonFx.Client
+
+# JSON-RPC support
 JsonFx.Scripts.JsonFx_IO.js, JsonFx.IO
 
 # JsonML support
