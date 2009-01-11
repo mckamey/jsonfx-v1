@@ -50,14 +50,22 @@ namespace JsonFx.UI.Jbst
 		#region Fields
 
 		private string text;
+		private string normalizedText;
+		private bool normalizeWhitespace;
 
 		#endregion Fields
 		
 		#region Init
 
-		public JbstLiteral(string text)
+		/// <summary>
+		/// Ctor
+		/// </summary>
+		/// <param name="text"></param>
+		/// <param name="normalize">if should normalize whitespace on output</param>
+		public JbstLiteral(string text, bool normalize)
 		{
 			this.Text = text;
+			this.NormalizeWhitespace = normalize;
 		}
 
 		#endregion Init
@@ -72,14 +80,39 @@ namespace JsonFx.UI.Jbst
 			get { return this.text; }
 			set
 			{
-				// normalize whitespace
-				this.text = RegexWhitespace.Replace(value, JbstLiteral.Whitespace);
+				this.text = value;
+				this.normalizedText = null;
 			}
+		}
+
+		/// <summary>
+		/// Gets the original text for this literal
+		/// </summary>
+		public string NormalizedText
+		{
+			get
+			{
+				if (this.normalizedText == null && this.text != null)
+				{
+					// normalize whitespaces
+					this.normalizedText = RegexWhitespace.Replace(this.text, JbstLiteral.Whitespace);
+				}
+				return this.normalizedText;
+			}
+		}
+
+		/// <summary>
+		/// Gets and sets if literal output should have whitespace normalized
+		/// </summary>
+		public bool NormalizeWhitespace
+		{
+			get { return this.normalizeWhitespace; }
+			set { this.normalizeWhitespace = value; }
 		}
 
 		public bool IsWhitespace
 		{
-			get { return (this.Text == JbstLiteral.Whitespace); }
+			get { return (this.NormalizedText == JbstLiteral.Whitespace); }
 		}
 
 		#endregion Properties
@@ -88,7 +121,14 @@ namespace JsonFx.UI.Jbst
 
 		void IJsonSerializable.WriteJson(JsonWriter writer)
 		{
-			writer.Write(this.Text);
+			if (this.NormalizeWhitespace)
+			{
+				writer.Write(this.NormalizedText);
+			}
+			else
+			{
+				writer.Write(this.Text);
+			}
 		}
 
 		void IJsonSerializable.ReadJson(JsonReader reader)

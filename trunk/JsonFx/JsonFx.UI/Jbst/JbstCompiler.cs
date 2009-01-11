@@ -87,6 +87,7 @@ if (""undefined"" === typeof {0}) {{
 
 		private bool isTemplate = false;
 		private bool isParsing = false;
+		private bool normalizeLiterals = true;
 		private readonly string path;
 		private readonly HtmlDistiller parser = new HtmlDistiller();
 		private readonly StringBuilder Directives = new StringBuilder();
@@ -150,6 +151,15 @@ if (""undefined"" === typeof {0}) {{
 		public JbstContainerControl Document
 		{
 			get { return this.document; }
+		}
+
+		/// <summary>
+		/// Gets and sets if literal output should have whitespace normalized
+		/// </summary>
+		public bool NormalizeLiterals
+		{
+			get { return this.normalizeLiterals; }
+			set { this.normalizeLiterals = value; }
 		}
 
 		#endregion Properties
@@ -222,7 +232,7 @@ if (""undefined"" === typeof {0}) {{
 			JbstLiteral literal = this.current.ChildControls.Last as JbstLiteral;
 			if (literal == null)
 			{
-				literal = new JbstLiteral(text);
+				literal = new JbstLiteral(text, this.NormalizeLiterals);
 				this.current.ChildControls.Add(literal);
 			}
 			else
@@ -336,13 +346,11 @@ if (""undefined"" === typeof {0}) {{
 		{
 			if (control is JbstCodeBlock)
 			{
-				JbstCodeBlock code = (JbstCodeBlock)control;
-				this.Declarations.Append(code.Code);
+				this.Declarations.Append( ((JbstCodeBlock)control).Code );
 			}
 			else if (control is JbstLiteral)
 			{
-				JbstLiteral literal = (JbstLiteral)control;
-				this.Declarations.Append(literal.Text);
+				this.Declarations.Append( ((JbstLiteral)control).Text );
 			}
 			else if (control is JbstContainerControl)
 			{
@@ -759,7 +767,7 @@ if (""undefined"" === typeof {0}) {{
 						}
 						default:
 						{
-							JbstLiteral literal = new JbstLiteral(tag.ToString());
+							JbstLiteral literal = new JbstLiteral(tag.ToString(), false);
 							this.AppendChild(literal);
 							break;
 						}
