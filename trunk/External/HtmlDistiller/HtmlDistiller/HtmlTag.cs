@@ -355,9 +355,9 @@ namespace BuildTools.HtmlDistiller
 		{
 			get
 			{
-				if (!this.HasAttributes || !this.Attributes.ContainsKey(HtmlTag.StyleAttrib))
+				if (this.HasAttributes && this.Attributes.ContainsKey(HtmlTag.StyleAttrib))
 				{
-					return false;
+					return true;
 				}
 				return (this.styles != null && this.styles.Count > 0);
 			}
