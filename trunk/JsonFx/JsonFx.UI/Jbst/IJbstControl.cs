@@ -29,13 +29,30 @@
 #endregion License
 
 using System;
+using JsonFx.Json;
 
 namespace JsonFx.UI.Jbst
 {
 	/// <summary>
 	/// Common base for all JBST nodes.
 	/// </summary>
-	internal interface IJbstControl
+	internal abstract class JbstControl
 	{
+		#region Fields
+
+		private JbstContainerControl parent = null;
+
+		#endregion Fields
+
+		#region Properties
+
+		[JsonIgnore]
+		public JbstContainerControl Parent
+		{
+			get { return this.parent; }
+			set { this.parent = value; }
+		}
+
+		#endregion Properties
 	}
 }

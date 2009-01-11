@@ -38,11 +38,11 @@ namespace JsonFx.UI.Jbst
 	/// <summary>
 	/// Internal representation of a nested JBST control.
 	/// </summary>
-	internal class JbstCustomControl : JbstControl, IJsonSerializable
+	internal class JbstCustomControl : JbstContainerControl, IJsonSerializable
 	{
 		#region Constants
 
-		public const string JbstPrefix = "jbst"+JbstControl.PrefixDelim;
+		public const string JbstPrefix = "jbst"+JbstContainerControl.PrefixDelim;
 		public const string PlaceholderCommand = "placeholder";
 
 		private const string PlaceholderStatement =
@@ -84,7 +84,7 @@ namespace JsonFx.UI.Jbst
 
 		#region Fields
 
-		private IJbstControl renderProxy = null;
+		private JbstControl renderProxy = null;
 		private string commandName = null;
 		private string controlName = null;
 		private string args = null;
@@ -102,7 +102,7 @@ namespace JsonFx.UI.Jbst
 
 		#region Factory Method
 
-		public static JbstControl Create(string rawName, string path)
+		public static JbstContainerControl Create(string rawName, string path)
 		{
 			JbstCustomControl control = new JbstCustomControl();
 

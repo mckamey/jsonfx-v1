@@ -95,19 +95,19 @@ namespace JsonFx.Compilation
 			}
 		}
 
-		private void ExtractGlobalizationKeys(JbstControl root)
+		private void ExtractGlobalizationKeys(JbstContainerControl root)
 		{
-			List<IJbstControl> queue = new List<IJbstControl>();
+			List<JbstControl> queue = new List<JbstControl>();
 			queue.Add(root);
 
 			while (queue.Count > 0)
 			{
 				// pop and cast
-				IJbstControl control = queue[0];
+				JbstControl control = queue[0];
 				queue.RemoveAt(0);
 
 				// queue up children
-				JbstControl container = control as JbstControl;
+				JbstContainerControl container = control as JbstContainerControl;
 				if (container != null && container.ChildControlsSpecified)
 				{
 					queue.AddRange(container.ChildControls);

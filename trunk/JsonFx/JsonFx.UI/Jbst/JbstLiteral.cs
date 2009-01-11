@@ -38,7 +38,7 @@ namespace JsonFx.UI.Jbst
 	/// <summary>
 	/// Represents literal text in a JBST document
 	/// </summary>
-	internal class JbstLiteral : IJbstControl, IJsonSerializable
+	internal class JbstLiteral : JbstControl, IJsonSerializable
 	{
 		#region Constants
 

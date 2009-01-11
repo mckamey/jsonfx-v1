@@ -36,18 +36,18 @@ namespace JsonFx.UI.Jbst
 	/// <summary>
 	/// Control collection for JBST nodes.
 	/// </summary>
-	internal class JbstControlCollection : ICollection<IJbstControl>
+	internal class JbstControlCollection : ICollection<JbstControl>
 	{
 		#region Fields
 
-		private List<IJbstControl> controls = new List<IJbstControl>();
-		private JbstControl owner;
+		private List<JbstControl> controls = new List<JbstControl>();
+		private JbstContainerControl owner;
 
 		#endregion Fields
 
 		#region Init
 
-		public JbstControlCollection(JbstControl owner)
+		public JbstControlCollection(JbstContainerControl owner)
 		{
 			this.owner = owner;
 		}
@@ -56,18 +56,18 @@ namespace JsonFx.UI.Jbst
 
 		#region Properties
 
-		public JbstControl Owner
+		public JbstContainerControl Owner
 		{
 			get { return this.owner; }
 		}
 
-		public IJbstControl this[int index]
+		public JbstControl this[int index]
 		{
 			get { return this.controls[index]; }
 			set { this.controls[index] = value; }
 		}
 
-		public IJbstControl Last
+		public JbstControl Last
 		{
 			get
 			{
@@ -80,15 +80,12 @@ namespace JsonFx.UI.Jbst
 
 		#endregion Properties
 
-		#region ICollection<IJbstControl> Members
+		#region ICollection<JbstControlBase> Members
 
-		public void Add(IJbstControl item)
+		public void Add(JbstControl item)
 		{
 			this.controls.Add(item);
-			if (item is JbstControl)
-			{
-				((JbstControl)item).Parent = this.Owner;
-			}
+			item.Parent = this.Owner;
 		}
 
 		public void Clear()
@@ -96,12 +93,12 @@ namespace JsonFx.UI.Jbst
 			this.controls.Clear();
 		}
 
-		bool ICollection<IJbstControl>.Contains(IJbstControl item)
+		bool ICollection<JbstControl>.Contains(JbstControl item)
 		{
 			return this.controls.Contains(item);
 		}
 
-		void ICollection<IJbstControl>.CopyTo(IJbstControl[] array, int arrayIndex)
+		void ICollection<JbstControl>.CopyTo(JbstControl[] array, int arrayIndex)
 		{
 			this.controls.CopyTo(array, arrayIndex);
 		}
@@ -111,26 +108,31 @@ namespace JsonFx.UI.Jbst
 			get { return this.controls.Count; }
 		}
 
-		bool ICollection<IJbstControl>.IsReadOnly
+		bool ICollection<JbstControl>.IsReadOnly
 		{
-			get { return ((ICollection<IJbstControl>)this.controls).IsReadOnly; }
+			get { return ((ICollection<JbstControl>)this.controls).IsReadOnly; }
 		}
 
-		bool ICollection<IJbstControl>.Remove(IJbstControl item)
+		bool ICollection<JbstControl>.Remove(JbstControl item)
 		{
 			return this.controls.Remove(item);
 		}
 
-		#endregion ICollection<IJbstControl> Members
+		internal bool Remove(JbstControl item)
+		{
+			return this.controls.Remove(item);
+		}
 
-		#region IEnumerable<IJbstControl> Members
+		#endregion ICollection<JbstControlBase> Members
 
-		IEnumerator<IJbstControl> IEnumerable<IJbstControl>.GetEnumerator()
+		#region IEnumerable<JbstControlBase> Members
+
+		IEnumerator<JbstControl> IEnumerable<JbstControl>.GetEnumerator()
 		{
 			return this.controls.GetEnumerator();
 		}
 
-		#endregion IEnumerable<IJbstControl> Members
+		#endregion IEnumerable<JbstControlBase> Members
 
 		#region IEnumerable Members
 

@@ -57,7 +57,7 @@ namespace JsonFx.UI.Jbst
 	/// <summary>
 	/// Internal representation of a JBST code block.
 	/// </summary>
-	internal abstract class JbstCodeBlock : IJbstControl, IJsonSerializable
+	internal abstract class JbstCodeBlock : JbstControl, IJsonSerializable
 	{
 		#region Fields
 
