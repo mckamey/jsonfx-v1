@@ -6,7 +6,7 @@
 	Created: 2006-11-09-0120
 	Modified: 2008-05-25-2253
 
-	Copyright (c)2006-2008 Stephen M. McKamey
+	Copyright (c)2006-2009 Stephen M. McKamey
 	Released under an open-source license: http://jsonfx.net/license
 */
 

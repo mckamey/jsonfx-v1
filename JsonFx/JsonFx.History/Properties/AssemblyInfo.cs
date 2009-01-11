@@ -5,7 +5,7 @@
 
 	The MIT License
 
-	Copyright (c) 2006-2008 Stephen M. McKamey
+	Copyright (c) 2006-2009 Stephen M. McKamey
 
 	Permission is hereby granted, free of charge, to any person obtaining a copy
 	of this software and associated documentation files (the "Software"), to deal
@@ -36,7 +36,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyTitle("JsonFx.History")]
 [assembly: AssemblyDescription("JsonFx.NET Ajax History")]
 [assembly: AssemblyProduct("JsonFx.NET")]
-[assembly: AssemblyCopyright("Copyright © 2006-2008 Stephen M. McKamey. All rights reserved.")]
+[assembly: AssemblyCopyright("Copyright © 2006-2009 Stephen M. McKamey. All rights reserved.")]
 [assembly: AssemblyCompany("http://jsonfx.net")]
 #if DEBUG
 [assembly: AssemblyConfiguration("Debug")]
