@@ -81,9 +81,9 @@ if (""undefined"" === typeof {0}) {{
 		#region Fields
 
 		private List<ParseException> errors = new List<ParseException>();
-		private JbstControl document = new JbstControl(String.Empty);
-		private JbstControl current = null;
-		private JbstControl next = null;
+		private JbstContainerControl document = new JbstContainerControl(String.Empty);
+		private JbstContainerControl current = null;
+		private JbstContainerControl next = null;
 
 		private bool isTemplate = false;
 		private bool isParsing = false;
@@ -147,7 +147,7 @@ if (""undefined"" === typeof {0}) {{
 		/// <summary>
 		/// Gets the document root
 		/// </summary>
-		public JbstControl Document
+		public JbstContainerControl Document
 		{
 			get { return this.document; }
 		}
@@ -231,7 +231,7 @@ if (""undefined"" === typeof {0}) {{
 			}
 		}
 
-		internal void AppendChild(IJbstControl child)
+		internal void AppendChild(JbstControl child)
 		{
 			if (child == null)
 			{
@@ -251,7 +251,7 @@ if (""undefined"" === typeof {0}) {{
 			// flush any accumulated literals
 			this.Flush();
 
-			JbstControl control;
+			JbstContainerControl control;
 			if (tagName != null &&
 				tagName.StartsWith(JbstCustomControl.JbstPrefix, StringComparison.OrdinalIgnoreCase))
 			{
@@ -262,7 +262,7 @@ if (""undefined"" === typeof {0}) {{
 				control = this.next;
 				if (control == null)
 				{
-					control = new JbstControl(tagName);
+					control = new JbstContainerControl(tagName);
 				}
 				else
 				{
@@ -316,7 +316,7 @@ if (""undefined"" === typeof {0}) {{
 			if (JbstCompiler.ScriptTagName.Equals(this.current.RawName, StringComparison.OrdinalIgnoreCase))
 			{
 				// script tags get converted once fully parsed
-				this.ConvertScriptTag(this.current);
+				this.ConvertControlToDeclaration(this.current);
 			}
 
 			this.current = this.current.Parent;
@@ -328,16 +328,41 @@ if (""undefined"" === typeof {0}) {{
 			}
 		}
 
-		private void ConvertScriptTag(JbstControl jbstControl)
+		/// <summary>
+		/// Convert a tag and children into declaration block
+		/// </summary>
+		/// <param name="control"></param>
+		private void ConvertControlToDeclaration(JbstControl control)
 		{
-			// TODO: convert a standard script tag into a declaration block
+			if (control is JbstCodeBlock)
+			{
+				JbstCodeBlock code = (JbstCodeBlock)control;
+				this.Declarations.Append(code.Code);
+			}
+			else if (control is JbstLiteral)
+			{
+				JbstLiteral literal = (JbstLiteral)control;
+				this.Declarations.Append(literal.Text);
+			}
+			else if (control is JbstContainerControl)
+			{
+				JbstContainerControl parent = (JbstContainerControl)control;
+
+				while (parent.ChildControlsSpecified)
+				{
+					// this will remove it from the collection
+					this.ConvertControlToDeclaration(parent.ChildControls[0]);
+				}
+			}
+
+			control.Parent.ChildControls.Remove(control);
 		}
 
 		internal void StoreAttribute(string name, string value)
 		{
 			if (this.next == null)
 			{
-				this.next = new JbstControl();
+				this.next = new JbstContainerControl();
 			}
 
 			this.SetAttribute(this.next, name, value);
@@ -353,7 +378,7 @@ if (""undefined"" === typeof {0}) {{
 			this.SetAttribute(this.current, name, value);
 		}
 
-		internal void SetAttribute(JbstControl target, string name, string value)
+		internal void SetAttribute(JbstContainerControl target, string name, string value)
 		{
 			// flush any accumulated literals
 			this.Flush();
@@ -369,7 +394,7 @@ if (""undefined"" === typeof {0}) {{
 			}
 		}
 
-		internal void AddAttribute(string name, IJbstControl value)
+		internal void AddAttribute(string name, JbstControl value)
 		{
 			if (this.current == null)
 			{
@@ -383,7 +408,7 @@ if (""undefined"" === typeof {0}) {{
 		{
 			if (this.next == null)
 			{
-				this.next = new JbstControl();
+				this.next = new JbstContainerControl();
 			}
 
 			this.SetStyle(this.next, name, value);
@@ -399,7 +424,7 @@ if (""undefined"" === typeof {0}) {{
 			this.SetStyle(this.current, name, value);
 		}
 
-		internal void SetStyle(JbstControl target, string name, string value)
+		internal void SetStyle(JbstContainerControl target, string name, string value)
 		{
 			// flush any accumulated literals
 			this.Flush();
@@ -509,8 +534,8 @@ if (""undefined"" === typeof {0}) {{
 			JsonFx.Json.JsonWriter jw = new JsonFx.Json.JsonWriter(writer);
 			jw.PrettyPrint = prettyPrint;
 
-			IJbstControl control = null;
-			foreach (IJbstControl child in this.document.ChildControls)
+			JbstControl control = null;
+			foreach (JbstControl child in this.document.ChildControls)
 			{
 				// tally non-whitespace controls
 				JbstLiteral lit = child as JbstLiteral;

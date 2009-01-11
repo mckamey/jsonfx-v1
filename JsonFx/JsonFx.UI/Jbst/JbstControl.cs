@@ -40,7 +40,7 @@ namespace JsonFx.UI.Jbst
 	/// <summary>
 	/// Internal representation of a JBST element.
 	/// </summary>
-	internal class JbstControl : IJbstControl, IEnumerable
+	internal class JbstContainerControl : JbstControl, IEnumerable
 	{
 		#region Constants
 
@@ -54,7 +54,6 @@ namespace JsonFx.UI.Jbst
 		private string tagName;
 		private Dictionary<String, Object> attributes = new Dictionary<String, Object>();
 		private JbstControlCollection childControls;
-		private JbstControl parent = null;
 
 		#endregion Fields
 
@@ -63,7 +62,7 @@ namespace JsonFx.UI.Jbst
 		/// <summary>
 		/// Ctor
 		/// </summary>
-		public JbstControl()
+		public JbstContainerControl()
 			: this(String.Empty)
 		{
 		}
@@ -72,7 +71,7 @@ namespace JsonFx.UI.Jbst
 		/// Ctor
 		/// </summary>
 		/// <param name="tagName"></param>
-		public JbstControl(string tagName)
+		public JbstContainerControl(string tagName)
 		{
 			this.childControls = new JbstControlCollection(this);
 
@@ -158,13 +157,6 @@ namespace JsonFx.UI.Jbst
 			set { }
 		}
 
-		[JsonIgnore]
-		public JbstControl Parent
-		{
-			get { return this.parent; }
-			internal set { this.parent = value; }
-		}
-
 		#endregion Properties
 
 		#region Methods
@@ -221,7 +213,7 @@ namespace JsonFx.UI.Jbst
 		{
 			#region Fields
 
-			private JbstControl control;
+			private JbstContainerControl control;
 			private EnumeratorState state = EnumeratorState.Start;
 			private int index = 0;
 
@@ -229,7 +221,7 @@ namespace JsonFx.UI.Jbst
 
 			#region Init
 
-			public JbstControlEnumerator(JbstControl control)
+			public JbstControlEnumerator(JbstContainerControl control)
 			{
 				this.control = control;
 			}
