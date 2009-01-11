@@ -1,8 +1,5 @@
 ﻿/*global JSON, JsonFx, Example */
 
-/* enable valid CSS to target browsers without reverting to CSS hacks */
-JsonFx.UA.setCssUserAgent();
-
 /*
 	it is a best practice to not clutter the global namespace
 	creating top level objects which contain variables and functions
