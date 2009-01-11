@@ -1,6 +1,7 @@
 <%@ Control Name="Example.congrats" Language="JavaScript" %>
 
-<%!
+<script type="text/javascript">
+
 	/* NOTE: the keyword "this" refers to the JBST template during databinding */
 
 	/* this method auto-binds the template to a DOM element */
@@ -16,7 +17,7 @@
 			serverName : Example.serverName
 		};
 
-	// this databinds the data to the template and rehydrates to DOM
+		// this databinds the data to the template and rehydrates to DOM
 		var jbst = JsonFx.UI.bind(Example.congrats, sampleData);
 
 		// add the result to the container
@@ -40,7 +41,7 @@
 		this.init,
 		null);
 
-%>
+</script>
 
 <%-- If your configuration is not correct then this message will not show. --%>
 <p class="ReadMe">
