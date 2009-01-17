@@ -5,7 +5,6 @@ TODO:
 	add jbst:visible="false" option to JBST builder
 	reconcile overlap between JsonFx libs and jQuery:
 		all className / DOM lookup can be swapped with SizzleJS
-		if jQuery exists, leverage $(document).ready
 		JsonFx.UI.Binding vs. jQuery style
 	use SHA1 rather than MD5 for cache keys
 	rebuild http://jsonfx.net site using StarterKit chrome
@@ -22,8 +21,8 @@ TODO:
 	enable CDN support to JsonFx:ResourceInclude  (e.g. Google AJAX APIs)
 	rebuild JsonFx Ajax History to use hashes
 
-- JavaScript Intellisense
-	- Flesh out the JsonFx intellisense story
+- JavaScript IntelliSense
+	- Flesh out the JsonFx intelliSense story
 	- add Doc comments to all JsonFx scripts
 	- http://blogs.msdn.com/webdevtools/archive/2008/11/18/jscript-intellisense-faq.aspx
 	- http://blogs.msdn.com/webdevtools/archive/2007/03/02/jscript-intellisense-in-orcas.aspx
