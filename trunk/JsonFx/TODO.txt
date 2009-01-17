@@ -1,16 +1,26 @@
-2009-01-10 @ 17:20
+2009-01-17 @ 12:21
 
-- reconcile overlap between JsonFx libs and jQuery:
-	- $(document).ready... vs. JsonFx.UI.Binding
-	- all className / DOM lookup can be swapped
-	- JSBT auto-binding
-- release CssUserAgent as a stand-alone script
-- build jQuery extension for JsonML / JSBT (e.g. jQuery plugin )
-- add VS2K8 Intellisense support for JsonFx libs:
-	- add XML comments
-	- ease the burden of adding resource include tags
-- look into enabling CDN's via JsonFx (e.g. Google AJAX APIs)
-- rebuild JsonFx Ajax History to use hashes
+TODO:
+	output merge-file errors into merge file as /* css/js comments */
+	add jbst:visible="false" option to JBST builder
+	reconcile overlap between JsonFx libs and jQuery:
+		all className / DOM lookup can be swapped with SizzleJS
+		if jQuery exists, leverage $(document).ready
+		JsonFx.UI.Binding vs. jQuery style
+	use SHA1 rather than MD5 for cache keys
+	rebuild http://jsonfx.net site using StarterKit chrome
+	emit CSS merge as imports during debug
+	client-side localization: add support for <%= Resources.Foo.Bar %>
+	create JSBT auto-binding server-control (or at least pattern)
+	release CssUserAgent as a stand-alone script
+	build jQuery extension for JsonML / JSBT (e.g. jQuery plugin )
+	convert VSS2SVN
+		Create a Google Code repository http://code.google.com/hosting/createProject
+	add VS2K8 Intellisense support for JsonFx libs:
+		add XML comments
+		ease the burden of adding resource include tags
+	enable CDN support to JsonFx:ResourceInclude  (e.g. Google AJAX APIs)
+	rebuild JsonFx Ajax History to use hashes
 
 - JavaScript Intellisense
 	- Flesh out the JsonFx intellisense story
