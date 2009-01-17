@@ -1,10 +1,10 @@
-/*global JsonFx, jQuery, JSON */
+/*global JsonFx, JSON, jQuery */
 /*
 	JsonFx_Bindings.js
 	dynamic behavior binding support
 
 	Created: 2006-11-11-1759
-	Modified: 2009-01-10-2203
+	Modified: 2009-01-17-1315
 
 	Copyright (c)2006-2009 Stephen M. McKamey
 	Distributed under an open-source license: http://jsonfx.net/license
@@ -23,9 +23,6 @@ if ("undefined" === typeof JsonFx.UI) {
 
 if ("undefined" === typeof window.JSON) {
 	throw new Error("JsonFx_Bindings.js requires json2.js");
-}
-if ("undefined" === typeof window.jQuery) {
-	throw new Error("JsonFx_Bindings.js requires jquery.js");
 }
 
 if ("undefined" === typeof JsonFx.jsonReviver) {
@@ -81,7 +78,7 @@ JsonFx.Bindings = function() {
 	};
 
 	/*element*/ var performOne = function(/*element*/ elem, /*actionKey*/ a) {
-		var tag, tagBindings, classes, i, css, options, replace;
+		var tag, tagBindings, classes, i, css, options;
 		if (elem && elem.tagName && elem.className) {
 
 			// only perform on registered tags
@@ -159,57 +156,40 @@ JsonFx.Bindings = function() {
 
 	// bind
 	/*void*/ b.bindAll = function() {
-		var ttl, crsr;
-		if (document.body && document.body.style) {
-			// store previous values
-			ttl = document.body.title;
-			crsr = document.body.style.cursor;
-
-			// setup loading visual cues
-			document.body.title = "Loading...";
-			document.body.style.cursor = "wait";
-		}
-
-		try {
-			b.bind(document);
-		} finally {
-			if (document.body && document.body.style) {
-				// restore previous values
-				document.body.title = ttl || "";
-				document.body.style.cursor = crsr || "";
-			}
-		}
+		b.bind(document);
 	};
 
 	// unbind
 	/*void*/ b.unbindAll = function() {
-		var ttl, crsr;
-		if (document.body && document.body.style) {
-			// store previous values
-			ttl = document.body.title;
-			crsr = document.body.style.cursor;
-
-			// setup loading visual cues
-			document.body.title = "Unloading...";
-			document.body.style.cursor = "wait";
-		}
-
-		try {
-			b.unbind(document);
-		} finally {
-			if (document.body && document.body.style) {
-				// restore previous values
-				document.body.title = ttl || "";
-				document.body.style.cursor = crsr || "";
-			}
-		}
+		b.unbind(document);
 	};
 
-	// register bind methods
-	jQuery(b.bindAll);
+	// register bind events
+	if (typeof jQuery !== "undefined") {
+		jQuery(b.bindAll);
+		jQuery(window).bind("unload", b.unbindAll);
+	} else if (window.addEventListener) {
+		//DOM Level 2 model for binding events
+		window.addEventListener("load", b.bindAll, false);
+		window.addEventListener("unload", b.unbindAll, false);
+	} else if (window.attachEvent) {
+		//IE model for binding events
+		window.attachEvent("onload", b.bindAll);
+		window.attachEvent("onunload", b.unbindAll);
+	} else {
+		//DOM Level 0 model for binding events
+		var onload = window.onload;
+		window.onload =
+			("function" === typeof onload) ?
+			function(/*Event*/ evt) { b.bindAll(evt); return onload(evt); } :
+			b.bindAll;
 
-	// register unbind methods
-	jQuery(window).bind("unload", b.unbindAll)
+		var onunload = window.onunload;
+		window.onunload =
+			("function" === typeof onunload) ?
+			function(/*Event*/ evt) { b.unbindAll(evt); return onunload(evt); } :
+			b.unbindAll;
+	}
 };
 
 // doing instead of anonymous fn for JSLint compatibility
