@@ -130,8 +130,7 @@ namespace BuildTools.CssCompactor
 				this.reader.NormalizeWhiteSpace = true;
 
 #if DEBUG
-				System.Diagnostics.Stopwatch watch = new System.Diagnostics.Stopwatch();
-				watch.Start();
+				System.Diagnostics.Stopwatch watch = System.Diagnostics.Stopwatch.StartNew();
 #endif
 
 				char ch;
@@ -408,7 +407,7 @@ namespace BuildTools.CssCompactor
 							case ';':
 							case '}':
 							{
-								throw new SyntaxError("Error parsing Selectors", this.reader.FilePath, this.reader.Line, this.reader.Column);
+								throw new SyntaxError("Invalid Selectors", this.reader.FilePath, this.reader.Line, this.reader.Column);
 							}
 						}
 					}
@@ -438,7 +437,7 @@ namespace BuildTools.CssCompactor
 						{
 							case '{':
 							{
-								throw new SyntaxError("Error parsing RuleSet", this.reader.FilePath, this.reader.Line, this.reader.Column);
+								throw new SyntaxError("Invalid RuleSet", this.reader.FilePath, this.reader.Line, this.reader.Column);
 							}
 							//case ':':// keep going
 							case ';':
@@ -514,7 +513,7 @@ namespace BuildTools.CssCompactor
 					case ';':
 					case '}':
 					{
-						throw new SyntaxError("Error parsing Selector", this.reader.FilePath, this.reader.Line, this.reader.Column);
+						throw new SyntaxError("Invalid Selector", this.reader.FilePath, this.reader.Line, this.reader.Column);
 					}
 				}
 			}
