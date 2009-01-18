@@ -80,6 +80,10 @@ namespace JsonFx.Compilation
 
 				this.ExtractGlobalizationKeys(parser.Document);
 			}
+			catch (ParseException ex)
+			{
+				errors.Add(ex);
+			}
 			catch (Exception ex)
 			{
 				errors.Add(new ParseError(ex.Message, virtualPath, 0, 0, ex));

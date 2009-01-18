@@ -695,7 +695,7 @@ namespace BuildTools.CssCompactor
 		{
 			if (this.reader.EndOfFile)
 			{
-				throw new UnexpectedEndOfFile("Reading past end of file", this.reader.FilePath, this.reader.Line, this.reader.Column);
+				throw new UnexpectedEndOfFile("Unexpected end of file", this.reader.FilePath, this.reader.Line, this.reader.Column);
 			}
 
 			int c = this.reader.Read();

@@ -87,6 +87,11 @@ namespace JsonFx.Compilation
 						null,
 						CssCompactor.Options.None);
 				}
+				catch (ParseException ex)
+				{
+					errors.Add(ex);
+					parseErrors = null;
+				}
 				catch (Exception ex)
 				{
 					errors.Add(new ParseError(ex.Message, virtualPath, 0, 0, ex));

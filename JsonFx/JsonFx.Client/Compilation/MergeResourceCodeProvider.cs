@@ -199,6 +199,10 @@ namespace JsonFx.Compilation
 						continue;
 					}
 				}
+				catch (ParseException ex)
+				{
+					errors.Add(ex);
+				}
 				catch (Exception ex)
 				{
 					errors.Add(new ParseError(ex.Message, virtualPath, i+1, 1, ex));
@@ -284,6 +288,10 @@ namespace JsonFx.Compilation
 					out preProcessed,
 					out compacted,
 					errors);
+			}
+			catch (ParseException ex)
+			{
+				errors.Add(ex);
 			}
 			catch (Exception ex)
 			{
