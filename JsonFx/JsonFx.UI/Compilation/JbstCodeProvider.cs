@@ -72,11 +72,18 @@ namespace JsonFx.Compilation
 			out string compacted,
 			List<ParseException> errors)
 		{
-			// parse JBST markup
 			JbstCompiler parser = new JbstCompiler(virtualPath, true);
-			parser.Parse(sourceText);
+			try
+			{
+				// parse JBST markup
+				parser.Parse(sourceText);
 
-			this.ExtractGlobalizationKeys(parser.Document);
+				this.ExtractGlobalizationKeys(parser.Document);
+			}
+			catch (Exception ex)
+			{
+				errors.Add(new ParseError(ex.Message, virtualPath, 0, 0, ex));
+			}
 
 			using (StringWriter sw = new StringWriter())
 			{

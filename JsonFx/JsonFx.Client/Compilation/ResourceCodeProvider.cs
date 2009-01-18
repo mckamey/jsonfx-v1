@@ -54,6 +54,10 @@ namespace JsonFx.Compilation
 	/// a custom compiler to correctly report its errors in the Visual Studio
 	/// Error List.  Double clicking these errors takes the user to the actual
 	/// source at the point where the error occurred.
+	/// 
+	/// Unfortunately, in Web Application Projects (WAP) the compilation happens
+	/// outside of Visual Studio leaving little or no trace of these errors.
+	/// The output of the resource will now also show an error listing.
 	/// </remarks>
 	public abstract class ResourceCodeProvider : Microsoft.CSharp.CSharpCodeProvider
 	{
@@ -147,8 +151,7 @@ namespace JsonFx.Compilation
 			out string preProcessed,
 			out string compacted)
 		{
-			// clear any previously stored state
-			this.errors.Clear();
+			// clear any previously stored state (leave errors for later reporting)
 			this.g11nKeys.Clear();
 			this.ResetCodeProvider();
 
@@ -174,12 +177,13 @@ namespace JsonFx.Compilation
 		/// <param name="results"></param>
 		private void ReportErrors(CompilerResults results)
 		{
-			foreach (ParseException ex in errors)
+			foreach (ParseException ex in this.errors)
 			{
 				CompilerError error = new CompilerError(ex.File, ex.Line, ex.Column, ex.ErrorCode, ex.Message);
 				error.IsWarning = (ex is ParseWarning);
 				results.Errors.Add(error);
 			}
+			this.errors.Clear();
 		}
 
 		#endregion Methods

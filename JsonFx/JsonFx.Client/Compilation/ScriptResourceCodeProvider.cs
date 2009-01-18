@@ -79,13 +79,22 @@ namespace JsonFx.Compilation
 		{
 			using (StringWriter writer = new StringWriter())
 			{
-				IList<ParseException> parseErrors = ScriptCompactor.Compact(
-					virtualPath,
-					sourceText,
-					writer,
-					null,
-					null,
-					ScriptCompactor.Options.None);
+				IList<ParseException> parseErrors;
+				try
+				{
+					parseErrors = ScriptCompactor.Compact(
+						virtualPath,
+						sourceText,
+						writer,
+						null,
+						null,
+						ScriptCompactor.Options.None);
+				}
+				catch (Exception ex)
+				{
+					errors.Add(new ParseError(ex.Message, virtualPath, 0, 0, ex));
+					parseErrors = null;
+				}
 
 				if (parseErrors != null && parseErrors.Count > 0)
 				{
