@@ -259,6 +259,7 @@ namespace JsonFx.Compilation
 				using (StreamReader reader = new StreamReader(stream))
 				{
 					preProcessed = reader.ReadToEnd();
+					compacted = null;
 				}
 			}
 
@@ -273,14 +274,21 @@ namespace JsonFx.Compilation
 
 			ResourceCodeProvider provider = (ResourceCodeProvider)Activator.CreateInstance(compiler.CodeDomProviderType);
 
-			// concatenate the preprocessed source for current merge phase
-			provider.ProcessResource(
-				helper,
-				parts[0],
-				preProcessed,
-				out preProcessed,
-				out compacted,
-				errors);
+			try
+			{
+				// concatenate the preprocessed source for current merge phase
+				provider.ProcessResource(
+					helper,
+					parts[0],
+					preProcessed,
+					out preProcessed,
+					out compacted,
+					errors);
+			}
+			catch (Exception ex)
+			{
+				errors.Add(new ParseError(ex.Message, parts[0], 0, 0, ex));
+			}
 
 			if (!this.isMimeSet &&
 				!String.IsNullOrEmpty(provider.ContentType) &&
