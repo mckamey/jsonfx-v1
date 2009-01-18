@@ -178,6 +178,10 @@ if (""undefined"" === typeof {0}) {{
 
 				this.parser.Parse(source);
 			}
+			catch (ParseException ex)
+			{
+				errors.Add(ex);
+			}
 			catch (Exception ex)
 			{
 				this.errors.Add(new ParseError(ex.Message, null, 1, 1, ex));

@@ -102,6 +102,10 @@ namespace BuildTools.ScriptCompactor
 					jsmin.Run(inputSource, output);
 				}
 			}
+			catch (ParseException ex)
+			{
+				jslint.Errors.Add(ex);
+			}
 			catch (Exception ex)
 			{
 				// a bad JSLint error could cause JSMin to choke
