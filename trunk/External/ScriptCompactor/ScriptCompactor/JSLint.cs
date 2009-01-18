@@ -516,7 +516,9 @@ namespace BuildTools.ScriptCompactor
 		public void Run(TextReader reader, string filename)
 		{
 			if (reader == null)
+			{
 				throw new NullReferenceException("Input StreamReader was null");
+			}
 
 			// read input file into memory
 			string scriptText = reader.ReadToEnd();
@@ -527,7 +529,9 @@ namespace BuildTools.ScriptCompactor
 		public void Run(string filename)
 		{
 			if (!File.Exists(filename))
+			{
 				throw new FileNotFoundException(String.Format("File not found: \"{0}\"", filename), filename);
+			}
 
 			using (StreamReader reader = new StreamReader(filename))
 			{
