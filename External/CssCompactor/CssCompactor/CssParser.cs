@@ -407,7 +407,7 @@ namespace BuildTools.CssCompactor
 							case ';':
 							case '}':
 							{
-								throw new SyntaxError("Invalid Selectors", this.reader.FilePath, this.reader.Line, this.reader.Column);
+								throw new SyntaxError("Invalid Selector list", this.reader.FilePath, this.reader.Line, this.reader.Column);
 							}
 						}
 					}
