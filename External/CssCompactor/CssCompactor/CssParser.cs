@@ -407,7 +407,7 @@ namespace BuildTools.CssCompactor
 							case ';':
 							case '}':
 							{
-								throw new SyntaxError("Invalid Selector list", this.reader.FilePath, this.reader.Line, this.reader.Column);
+								throw new SyntaxError("Invalid selector list", this.reader.FilePath, this.reader.Line, this.reader.Column);
 							}
 						}
 					}
@@ -437,7 +437,7 @@ namespace BuildTools.CssCompactor
 						{
 							case '{':
 							{
-								throw new SyntaxError("Invalid RuleSet", this.reader.FilePath, this.reader.Line, this.reader.Column);
+								throw new SyntaxError("Invalid ruleset", this.reader.FilePath, this.reader.Line, this.reader.Column);
 							}
 							//case ':':// keep going
 							case ';':
@@ -488,7 +488,7 @@ namespace BuildTools.CssCompactor
 				case ';':
 				case '}':
 				{
-					throw new SyntaxError("Invalid chars in Selector", this.reader.FilePath, this.reader.Line, this.reader.Column);
+					throw new SyntaxError("Invalid chars in selector", this.reader.FilePath, this.reader.Line, this.reader.Column);
 				}
 			}
 
@@ -513,11 +513,11 @@ namespace BuildTools.CssCompactor
 					case ';':
 					case '}':
 					{
-						throw new SyntaxError("Invalid Selector", this.reader.FilePath, this.reader.Line, this.reader.Column);
+						throw new SyntaxError("Invalid selector", this.reader.FilePath, this.reader.Line, this.reader.Column);
 					}
 				}
 			}
-			throw new UnexpectedEndOfFile("Unclosed Selector", this.reader.FilePath, this.reader.Line, this.reader.Column);
+			throw new UnexpectedEndOfFile("Unclosed ruleset", this.reader.FilePath, this.reader.Line, this.reader.Column);
 		}
 
 		#endregion Selector
@@ -566,7 +566,7 @@ namespace BuildTools.CssCompactor
 					//case ':':
 					case ';':
 					{
-						throw new SyntaxError("Invalid Property name: "+this.Copy(start), this.reader.FilePath, this.reader.Line, this.reader.Column);
+						throw new SyntaxError("Invalid CSS property name: "+this.Copy(start), this.reader.FilePath, this.reader.Line, this.reader.Column);
 					}
 					case '}':
 					{
@@ -634,7 +634,7 @@ namespace BuildTools.CssCompactor
 				case ';':
 				case '}':
 				{
-					throw new SyntaxError("Invalid char in property value: '"+ch+"'", this.reader.FilePath, this.reader.Line, this.reader.Column);
+					throw new SyntaxError("Invalid char in CSS property value: '"+ch+"'", this.reader.FilePath, this.reader.Line, this.reader.Column);
 				}
 			}
 
@@ -649,7 +649,7 @@ namespace BuildTools.CssCompactor
 					case '{':
 					//case ':':// leave in for "filter: progid:DXImageTransform.Microsoft..."
 					{
-						throw new SyntaxError("Invalid property value: "+this.Copy(start), this.reader.FilePath, this.reader.Line, this.reader.Column);
+						throw new SyntaxError("Invalid CSS property value: "+this.Copy(start), this.reader.FilePath, this.reader.Line, this.reader.Column);
 					}
 					case '}':
 					case ';':
