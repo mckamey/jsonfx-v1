@@ -75,7 +75,7 @@ namespace BuildTools.IO
 			this.source = source;
 			this.filePath = filePath;
 
-			if (String.IsNullOrEmpty(this.source))
+			if (this.source == null)
 			{
 				if (File.Exists(filePath))
 				{
@@ -83,7 +83,7 @@ namespace BuildTools.IO
 				}
 				else
 				{
-					throw new FileError("File Not Found", filePath, 0, 0);
+					throw new FileError("File not found", filePath, 0, 0);
 				}
 			}
 		}
