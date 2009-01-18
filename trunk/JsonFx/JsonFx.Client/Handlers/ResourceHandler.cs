@@ -135,7 +135,7 @@ namespace JsonFx.Handlers
 
 		protected internal static string GetResourceUrl(string path, bool isDebug)
 		{
-			CompiledBuildResult info = CompiledBuildResult.Create(path);
+			CompiledBuildResult info = CompiledBuildResult.Create(path, true);
 			if (info == null)
 			{
 				return path;
@@ -169,7 +169,7 @@ namespace JsonFx.Handlers
 		protected virtual CompiledBuildResult GetResourceInfo(HttpContext context, bool isDebug)
 		{
 			string virtualPath = context.Request.AppRelativeCurrentExecutionFilePath;
-			CompiledBuildResult info = CompiledBuildResult.Create(virtualPath);
+			CompiledBuildResult info = CompiledBuildResult.Create(virtualPath, true);
 			if (info == null)
 			{
 				throw new HttpException(404, "Resource not found.");
