@@ -135,7 +135,7 @@ namespace JsonFx.Compilation
 					}
 
 					// try to get as a CompiledBuildResult
-					CompiledBuildResult result = CompiledBuildResult.Create(files[i]);
+					CompiledBuildResult result = CompiledBuildResult.Create(files[i], false);
 					if (result != null)
 					{
 						if (!this.isMimeSet &&
