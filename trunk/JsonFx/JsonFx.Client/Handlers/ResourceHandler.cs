@@ -64,10 +64,10 @@ namespace JsonFx.Handlers
 				return;
 			}
 
-			bool isCached = info.MD5.ToString("N").Equals(cacheKey, StringComparison.OrdinalIgnoreCase);
+			bool isCached = StringComparer.OrdinalIgnoreCase.Equals(info.Hash, cacheKey);
 			if (isCached)
 			{
-				// if the content changes then so will the MD5
+				// if the content changes then so will the hash
 				// so we can effectively cache this forever
 				context.Response.ExpiresAbsolute = DateTime.UtcNow.AddYears(5);
 			}
@@ -148,7 +148,7 @@ namespace JsonFx.Handlers
 			}
 			else
 			{
-				cache = '?'+info.MD5.ToString("N");
+				cache = '?'+info.Hash;
 			}
 
 			int index = path.IndexOf('?');
@@ -176,7 +176,7 @@ namespace JsonFx.Handlers
 			}
 
 			// check if client has cached copy
-			ETag etag = new GuidETag(info.MD5);
+			ETag etag = new HashETag(info.Hash);
 			if (etag.HandleETag(context, HttpCacheability.ServerAndPrivate, isDebug))
 			{
 				return null;

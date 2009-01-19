@@ -1,7 +1,6 @@
-2009-01-17 @ 14:34
+2009-01-19 @ 17:02
 
 - add jbst:visible="false" option to JBST builder
-- use SHA1 rather than MD5 for cache keys
 - rebuild http://jsonfx.net site using StarterKit chrome
 - release CssUserAgent as a stand-alone script
 - reconcile overlap between JsonFx libs and jQuery:
@@ -12,7 +11,7 @@
 - build jQuery extension for JsonML / JSBT (e.g. jQuery plugin )
 - convert VSS2SVN
 	- Create a Google Code repository http://code.google.com/hosting/createProject
-- add VS2K8 Intellisense support for JsonFx libs:
+- add VS2K8 IntelliSense support for JsonFx libs:
 	- add XML comments
 	- ease the burden of adding resource include tags
 - enable CDN support to JsonFx:ResourceInclude  (e.g. Google AJAX APIs)
@@ -21,7 +20,7 @@
 ___________________________________________________________________________________
 
 - JavaScript IntelliSense
-	- Flesh out the JsonFx intelliSense story
+	- Flesh out the JsonFx IntelliSense story
 	- add Doc comments to all JsonFx scripts
 	- http://blogs.msdn.com/webdevtools/archive/2008/11/18/jscript-intellisense-faq.aspx
 	- http://blogs.msdn.com/webdevtools/archive/2007/03/02/jscript-intellisense-in-orcas.aspx

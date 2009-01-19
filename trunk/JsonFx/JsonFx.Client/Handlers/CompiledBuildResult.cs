@@ -92,9 +92,9 @@ namespace JsonFx.Handlers
 		public abstract byte[] Deflated { get; }
 
 		/// <summary>
-		/// Gets the MD5 hash for the compacted resource data
+		/// Gets the file hash for the compacted resource data
 		/// </summary>
-		public abstract Guid MD5 { get; }
+		public abstract string Hash { get; }
 
 		#endregion Properties
 

@@ -59,7 +59,7 @@ namespace JsonFx.Handlers
 		private static readonly string RequestDateHeader = "If-Modified-Since";
 		private static readonly string ResponseDateHeader = "Last-Modified";
 		private static readonly int NotModified = (int)HttpStatusCode.NotModified;
-		private static readonly MD5 MD5HashProvider = MD5.Create();
+		private static readonly SHA1 HashProvider = SHA1.Create();
 
 		#endregion Constants
 
@@ -247,7 +247,7 @@ namespace JsonFx.Handlers
 		/// <remarks>
 		/// GetMetaData must return String, Byte[], or Stream
 		/// </remarks>
-		protected abstract object GetMetaData();
+		protected abstract object GetMetaData(out bool isHash);
 
 		/// <summary>
 		/// 
@@ -262,9 +262,10 @@ namespace JsonFx.Handlers
 		/// Sets ETag.Value
 		/// </summary>
 		/// <param name="Entity"></param>
-		private string CalculateETag()
+		protected virtual string CalculateETag()
 		{
-			object metaData = this.GetMetaData();
+			bool isHash;
+			object metaData = this.GetMetaData(out isHash);
 
 			string etag;
 			if (metaData is Guid)
@@ -273,15 +274,29 @@ namespace JsonFx.Handlers
 			}
 			else if (metaData is string)
 			{
-				etag = ETag.MD5Hash((string)metaData);
+				if (isHash)
+				{
+					etag = (string)metaData;
+				}
+				else
+				{
+					etag = ETag.ComputeHash((string)metaData);
+				}
 			}
 			else if (metaData is byte[])
 			{
-				etag = ETag.MD5Hash((byte[])metaData);
+				if (isHash)
+				{
+					etag = ETag.FormatBytes((byte[])metaData);
+				}
+				else
+				{
+					etag = ETag.ComputeHash((byte[])metaData);
+				}
 			}
 			else if (metaData is Stream)
 			{
-				etag = ETag.MD5Hash((Stream)metaData);
+				etag = ETag.ComputeHash((Stream)metaData);
 			}
 			else
 			{
@@ -336,88 +351,78 @@ namespace JsonFx.Handlers
 		}
 
 		/// <summary>
-		/// Generates a unique MD5 hash from string
+		/// Generates a unique hash from string
 		/// </summary>
 		/// <param name="value"></param>
 		/// <returns></returns>
-		protected static string MD5Hash(string value)
+		protected static string ComputeHash(string value)
 		{
 			// get String as a Byte[]
 			byte[] buffer = Encoding.Unicode.GetBytes(value);
 
-			return ETag.MD5Hash(buffer);
+			return ETag.ComputeHash(buffer);
 		}
 
 		/// <summary>
-		/// Generates a unique MD5 hash from Stream
+		/// Generates a unique hash from Stream
 		/// </summary>
 		/// <param name="value"></param>
 		/// <returns></returns>
-		protected static string MD5Hash(Stream value)
+		protected static string ComputeHash(Stream value)
 		{
 			byte[] hash;
 
-			lock (MD5HashProvider)
+			lock (HashProvider)
 			{
-				// generate MD5 hash
-				hash = MD5HashProvider.ComputeHash(value);
+				// generate hash
+				hash = HashProvider.ComputeHash(value);
 			}
 
-			// convert hash to Base64 string
-			return ETag.EncodeToString(hash);
+			// convert hash to string
+			return ETag.FormatBytes(hash);
 		}
 
 		/// <summary>
-		/// Generates a unique MD5 hash from byte[]
+		/// Generates a unique hash from byte[]
 		/// </summary>
 		/// <param name="buffer"></param>
 		/// <returns></returns>
-		protected static string MD5Hash(byte[] value)
+		protected static string ComputeHash(byte[] value)
 		{
 			byte[] hash;
-			lock (MD5HashProvider)
+			lock (HashProvider)
 			{
-				// generate MD5 hash
-				hash = MD5HashProvider.ComputeHash(value);
+				// generate hash
+				hash = HashProvider.ComputeHash(value);
 			}
 
-			// convert hash to Base64 string
-			return ETag.EncodeToString(hash);
+			// convert hash to string
+			return ETag.FormatBytes(hash);
 		}
 
 		/// <summary>
-		/// Converts Byte[] to string
+		/// Gets the hex digits for the given bytes
 		/// </summary>
-		/// <param name="hash"></param>
+		/// <param name="value"></param>
 		/// <returns></returns>
-		protected static string EncodeToString(byte[] hash)
+		private static string FormatBytes(byte[] value)
 		{
-			if (hash == null || hash.Length == 0)
+			if (value == null || value.Length == 0)
 			{
 				return String.Empty;
 			}
 
-			if (hash.Length == 16)
+			StringBuilder builder = new StringBuilder();
+
+			// Loop through each byte of the binary data 
+			// and format each one as a hexadecimal string
+			for (int i=0; i<value.Length; i++)
 			{
-				Guid guid = new Guid(hash);
-				return guid.ToString("N");
+				builder.Append(value[i].ToString("x2"));
 			}
 
-			return Base64Encode(hash);
-		}
-
-		/// <summary>
-		/// Converts Byte[] to trimed Base64 String
-		/// </summary>
-		/// <param name="hash"></param>
-		/// <returns></returns>
-		protected static string Base64Encode(byte[] hash)
-		{
-			// convert hash to Base64 string
-			string base64 = Convert.ToBase64String(hash, Base64FormattingOptions.None);
-
-			// trim value-less padding chars
-			return base64.Trim('=');
+			// the hexadecimal string
+			return builder.ToString();
 		}
 
 		#endregion Utility Methods
@@ -426,11 +431,11 @@ namespace JsonFx.Handlers
 	/// <summary>
 	/// Generates an ETag for a specific Guid.
 	/// </summary>
-	public class GuidETag : ETag
+	public class HashETag : ETag
 	{
 		#region Fields
 
-		private readonly Guid Hash;
+		private readonly string Hash;
 
 		#endregion Fields
 
@@ -439,8 +444,17 @@ namespace JsonFx.Handlers
 		/// <summary>
 		/// Ctor
 		/// </summary>
-		/// <param name="Content"></param>
-		public GuidETag(Guid hash)
+		/// <param name="hash"></param>
+		public HashETag(Guid hash)
+		{
+			this.Hash = hash.ToString("N");
+		}
+
+		/// <summary>
+		/// Ctor
+		/// </summary>
+		/// <param name="hash"></param>
+		public HashETag(string hash)
 		{
 			this.Hash = hash;
 		}
@@ -454,8 +468,9 @@ namespace JsonFx.Handlers
 		/// </summary>
 		/// <param name="entity"></param>
 		/// <returns></returns>
-		protected override object GetMetaData()
+		protected override object GetMetaData(out bool isHash)
 		{
+			isHash = true;
 			return this.Hash;
 		}
 
@@ -493,8 +508,9 @@ namespace JsonFx.Handlers
 		/// </summary>
 		/// <param name="entity"></param>
 		/// <returns></returns>
-		protected override object GetMetaData()
+		protected override object GetMetaData(out bool isHash)
 		{
+			isHash = false;
 			return this.Content;
 		}
 
@@ -536,12 +552,14 @@ namespace JsonFx.Handlers
 		#region ETag Members
 
 		/// <summary>
-		/// Generates a unique ETag which changes when the file changes
+		/// Generates a unique ETag which changes when the file metadata changes
 		/// </summary>
 		/// <param name="entity"></param>
 		/// <returns></returns>
-		protected override object GetMetaData()
+		protected override object GetMetaData(out bool isHash)
 		{
+			isHash = false;
+
 			string value = this.info.FullName.ToLowerInvariant();
 			value += ";"+this.info.Length.ToString();
 			value += ";"+this.info.CreationTimeUtc.Ticks.ToString();
@@ -597,8 +615,9 @@ namespace JsonFx.Handlers
 		/// </summary>
 		/// <param name="entity"></param>
 		/// <returns></returns>
-		protected override object GetMetaData()
+		protected override object GetMetaData(out bool isHash)
 		{
+
 			if (this.Assembly == null)
 			{
 				throw new NullReferenceException("ETag cannot be created for null Assembly");
@@ -609,13 +628,9 @@ namespace JsonFx.Handlers
 				throw new NullReferenceException("ETag cannot be created for empty ResourceName");
 			}
 
+			isHash = true;
 			Hash hash = new Hash(this.Assembly);
-			Byte[] hashcode = hash.MD5;
-
-			string value = ETag.EncodeToString(hashcode);
-			value += ";"+this.ResourceName;
-
-			return value;
+			return hash.SHA1;
 		}
 
 		#endregion ETag Members
