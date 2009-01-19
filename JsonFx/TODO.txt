@@ -1,6 +1,5 @@
 2009-01-17 @ 14:34
 
-- output merge-file errors into merge file as /* css/js comments */
 - add jbst:visible="false" option to JBST builder
 - use SHA1 rather than MD5 for cache keys
 - rebuild http://jsonfx.net site using StarterKit chrome
