@@ -1,6 +1,7 @@
 Release History
 
 v1.0.0901.19xx:
+- begining to leverage jQuery if present
 - improving resource compilation error reporting (css, js, jbst, merge)
 - bubbling up compilation errors to page level
 - fixed bug where under certain circumstances error wasn't being properly reported
