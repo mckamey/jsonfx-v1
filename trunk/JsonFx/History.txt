@@ -4,7 +4,7 @@ v1.0.0901.19xx:
 - improving resource compilation error reporting (css, js, jbst, merge)
 - bubbling up compilation errors to page level
 - fixed bug where under certain circumstances error wasn't being properly reported
-- now using SHA1 rather than MD5 for resource cache keys/ETags
+- using SHA1 rather than MD5 for resource cache keys/ETags
 - added switch to control how stylesheets are attached (link, style import)
 - added pass-through for any attributes added to ResourceInclude (e.g. media="print" rel="alternate")
 
