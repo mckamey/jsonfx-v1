@@ -156,33 +156,6 @@ if ("undefined" === typeof JsonFx.Bindings) {
 	return null;
 };
 
-/* Event utilities ----------------------------------------------*/
-
-/*void*/ JsonFx.UI.clearEvent = function(/*Event*/ evt) {
-	evt = evt || window.event;
-	if (evt) {
-		if (evt.stopPropagation) {
-			evt.stopPropagation();
-			evt.preventDefault();
-		} else {
-			try {
-				evt.cancelBubble = true;
-				evt.returnValue = false;
-			} catch (ex) {
-				// IE6
-			}
-		}
-	}
-};
-
-/*int*/ JsonFx.UI.getKeyCode = function(/*Event*/ evt) {
-	evt = evt || window.event;
-	if (!evt) {
-		return -1;
-	}
-	return Number(evt.keyCode || evt.charCode || -1);
-};
-
 /* JsonML utilities ---------------------------------------------*/
 
 /* JBST + JSON => JsonML => DOM */
