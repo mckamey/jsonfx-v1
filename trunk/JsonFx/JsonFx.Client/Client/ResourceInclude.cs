@@ -102,7 +102,30 @@ namespace JsonFx.Client
 		public StyleIncludeType StyleFormat
 		{
 			get { return this.styleFormat; }
-			set { this.styleFormat = value; }
+			set
+			{
+				this.styleFormat = value;
+				if (value == StyleIncludeType.Link &&
+					!this.Attributes.ContainsKey("rel"))
+				{
+					this.Attributes["rel"] = "stylesheet";
+				}
+			}
+		}
+
+		/// <summary>
+		/// Gets the collection of custom attributes
+		/// </summary>
+		public Dictionary<string, string> Attributes
+		{
+			get
+			{
+				if (this.attributes == null)
+				{
+					this.attributes = new Dictionary<string, string>(2, StringComparer.OrdinalIgnoreCase);
+				}
+				return this.attributes;
+			}
 		}
 
 		#endregion Properties
@@ -204,12 +227,7 @@ namespace JsonFx.Client
 
 		void IAttributeAccessor.SetAttribute(string key, string value)
 		{
-			if (this.attributes == null)
-			{
-				this.attributes = new Dictionary<string,string>(2, StringComparer.OrdinalIgnoreCase);
-			}
-
-			this.attributes[key] = value;
+			this.Attributes[key] = value;
 		}
 
 		#endregion IAttributeAccessor Members
