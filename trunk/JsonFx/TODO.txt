@@ -2,19 +2,19 @@
 
 - add jbst:visible="false" option to JBST builder
 - rebuild http://jsonfx.net site using StarterKit chrome
-- release CssUserAgent as a stand-alone script
 - reconcile overlap between JsonFx libs and jQuery:
 	- JsonFx.UI.Binding vs. jQuery.ready
-- emit CSS merge as imports during debug
 - client-side localization: add support for <%= Resources.Foo.Bar %>
-- create JSBT auto-binding server-control (or at least refine pattern)
-- build jQuery extension for JsonML / JSBT (e.g. jQuery plugin )
 - convert VSS2SVN
 	- Create a Google Code repository http://code.google.com/hosting/createProject
+- release CssUserAgent as a stand-alone script
+- emit CSS merge as imports during debug
+- enable CDN support to JsonFx:ResourceInclude  (e.g. Google AJAX APIs)
+- create JSBT auto-binding server-control (or at least refine pattern)
+- build jQuery extension for JsonML / JSBT (e.g. jQuery plugin )
 - add VS2K8 IntelliSense support for JsonFx libs:
 	- add XML comments
 	- ease the burden of adding resource include tags
-- enable CDN support to JsonFx:ResourceInclude  (e.g. Google AJAX APIs)
 - rebuild JsonFx Ajax History to use hashes
 
 ___________________________________________________________________________________
