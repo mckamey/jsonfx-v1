@@ -122,7 +122,7 @@ namespace JsonFx.UI.Jbst
 				}
 				default:
 				{
-					throw new NotSupportedException("Unknown JBST control: "+control.commandName);
+					throw new NotSupportedException("Unknown JBST command: "+control.commandName);
 				}
 			}
 
