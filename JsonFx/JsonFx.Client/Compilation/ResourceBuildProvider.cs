@@ -66,7 +66,7 @@ namespace JsonFx.Compilation
 	{
 		#region Constants
 
-		private static readonly MD5 MD5HashProvider = MD5.Create();
+		private static readonly SHA1 HashProvider = SHA1.Create();
 
 		#endregion Constants
 
@@ -188,7 +188,7 @@ namespace JsonFx.Compilation
 
 			byte[] gzippedBytes, deflatedBytes;
 			ResourceBuildProvider.Compress(compactedResource, out gzippedBytes, out deflatedBytes);
-			byte[] hash = ResourceBuildProvider.MD5Hash(compactedResource);
+			string hash = ResourceBuildProvider.ComputeHash(compactedResource);
 
 			// generate a resource container
 			CodeCompileUnit generatedUnit = new CodeCompileUnit();
@@ -372,27 +372,20 @@ namespace JsonFx.Compilation
 
 			#endregion public override string FileExtension { get; }
 
-			#region public override Guid MD5 { get; }
+			#region public override string Hash { get; }
 
 			// add a readonly property with the resource data
 			property = new CodeMemberProperty();
-			property.Name = "MD5";
-			property.Type = new CodeTypeReference(typeof(Guid));
+			property.Name = "Hash";
+			property.Type = new CodeTypeReference(typeof(String));
 			property.Attributes = MemberAttributes.Public|MemberAttributes.Override;
 			property.HasGet = true;
-			// get { return new Guid(hash)); }
+			// get { return hash); }
 
-			arrayInit = new CodeArrayCreateExpression(typeof(byte[]), hash.Length);
-			foreach (byte b in hash)
-			{
-				arrayInit.Initializers.Add(new CodePrimitiveExpression(b));
-			}
-
-			CodeObjectCreateExpression newGuid = new CodeObjectCreateExpression(property.Type, arrayInit);
-			property.GetStatements.Add(new CodeMethodReturnStatement(newGuid));
+			property.GetStatements.Add(new CodeMethodReturnStatement(new CodePrimitiveExpression(hash)));
 			resourceType.Members.Add(property);
 
-			#endregion public override Guid MD5 { get; }
+			#endregion public override string Hash { get; }
 
 			// allow the code provider to extend with additional properties
 			provider.GenerateCodeExtensions(resourceType);
@@ -508,33 +501,77 @@ namespace JsonFx.Compilation
 		#region Utility Methods
 
 		/// <summary>
-		/// Generates a unique MD5 hash from string
+		/// Generates a unique hash from string
 		/// </summary>
 		/// <param name="value"></param>
 		/// <returns></returns>
-		public static byte[] MD5Hash(string value)
+		public static string ComputeHash(string value)
 		{
 			// get String as a Byte[]
 			byte[] buffer = Encoding.Unicode.GetBytes(value);
 
-			return ResourceBuildProvider.MD5Hash(buffer);
+			return ResourceBuildProvider.ComputeHash(buffer);
 		}
 
 		/// <summary>
-		/// Generates an MD5 hash from byte[]
+		/// Generates a unique hash from byte[]
 		/// </summary>
 		/// <param name="buffer"></param>
 		/// <returns></returns>
-		public static byte[] MD5Hash(byte[] value)
+		protected static string ComputeHash(Stream value)
 		{
 			byte[] hash;
-			lock (MD5HashProvider)
+			lock (HashProvider)
 			{
-				// generate MD5 hash
-				hash = MD5HashProvider.ComputeHash(value);
+				// generate hash
+				hash = HashProvider.ComputeHash(value);
 			}
 
-			return hash;
+			// convert hash to string
+			return ResourceBuildProvider.FormatBytes(hash);
+		}
+
+		/// <summary>
+		/// Generates a unique hash from byte[]
+		/// </summary>
+		/// <param name="buffer"></param>
+		/// <returns></returns>
+		protected static string ComputeHash(byte[] value)
+		{
+			byte[] hash;
+			lock (HashProvider)
+			{
+				// generate hash
+				hash = HashProvider.ComputeHash(value);
+			}
+
+			// convert hash to string
+			return ResourceBuildProvider.FormatBytes(hash);
+		}
+
+		/// <summary>
+		/// Gets the hex digits for the given bytes
+		/// </summary>
+		/// <param name="value"></param>
+		/// <returns></returns>
+		private static string FormatBytes(byte[] value)
+		{
+			if (value == null || value.Length == 0)
+			{
+				return String.Empty;
+			}
+
+			StringBuilder builder = new StringBuilder();
+
+			// Loop through each byte of the binary data 
+			// and format each one as a hexadecimal string
+			for (int i=0; i<value.Length; i++)
+			{
+				builder.Append(value[i].ToString("x2"));
+			}
+
+			// the hexadecimal string
+			return builder.ToString();
 		}
 
 		#endregion Utility Methods

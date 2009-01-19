@@ -214,7 +214,7 @@ namespace JsonFx.Compilation
 
 			byte[] gzippedBytes, deflatedBytes;
 			ResourceBuildProvider.Compress(proxyOutput, out gzippedBytes, out deflatedBytes);
-			byte[] hash = ResourceBuildProvider.MD5Hash(proxyOutput);
+			string hash = ResourceBuildProvider.ComputeHash(proxyOutput);
 
 			// generate a service factory
 			CodeCompileUnit generatedUnit = new CodeCompileUnit();
@@ -370,27 +370,20 @@ namespace JsonFx.Compilation
 
 			#endregion public override byte[] Deflated { get; }
 
-			#region public override Guid MD5 { get; }
+			#region public override string Hash { get; }
 
 			// add a readonly property with the resource data
 			property = new CodeMemberProperty();
-			property.Name = "MD5";
-			property.Type = new CodeTypeReference(typeof(Guid));
+			property.Name = "Hash";
+			property.Type = new CodeTypeReference(typeof(String));
 			property.Attributes = MemberAttributes.Public|MemberAttributes.Override;
 			property.HasGet = true;
-			// get { return new Guid(hash)); }
+			// get { return hash; }
 
-			arrayInit = new CodeArrayCreateExpression(typeof(byte[]), hash.Length);
-			foreach (byte b in hash)
-			{
-				arrayInit.Initializers.Add(new CodePrimitiveExpression(b));
-			}
-
-			CodeObjectCreateExpression newGuid = new CodeObjectCreateExpression(property.Type, arrayInit);
-			property.GetStatements.Add(new CodeMethodReturnStatement(newGuid));
+			property.GetStatements.Add(new CodeMethodReturnStatement(new CodePrimitiveExpression(hash)));
 			resourceType.Members.Add(property);
 
-			#endregion public override Guid MD5 { get; }
+			#endregion public override string Hash { get; }
 
 			#region public override Type ServiceType { get; }
 
