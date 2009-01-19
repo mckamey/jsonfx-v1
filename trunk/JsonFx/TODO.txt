@@ -2,9 +2,9 @@
 
 - add jbst:visible="false" option to JBST builder
 - rebuild http://jsonfx.net site using StarterKit chrome
+- client-side localization: add support for <%= Resources.Foo.Bar %>
 - reconcile overlap between JsonFx libs and jQuery:
 	- JsonFx.UI.Binding vs. jQuery.ready
-- client-side localization: add support for <%= Resources.Foo.Bar %>
 - convert VSS2SVN
 	- Create a Google Code repository http://code.google.com/hosting/createProject
 - release CssUserAgent as a stand-alone script
