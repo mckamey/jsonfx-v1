@@ -44,7 +44,7 @@ namespace JsonFx.UI.Jbst
 	{
 		#region Constants
 
-		public const string PrefixDelim = ":";
+		protected const string PrefixDelim = ":";
 
 		#endregion Constants
 
@@ -52,7 +52,7 @@ namespace JsonFx.UI.Jbst
 
 		private string prefix;
 		private string tagName;
-		private Dictionary<String, Object> attributes = new Dictionary<String, Object>();
+		private Dictionary<String, Object> attributes;
 		private JbstControlCollection childControls;
 
 		#endregion Fields
@@ -73,8 +73,6 @@ namespace JsonFx.UI.Jbst
 		/// <param name="tagName"></param>
 		public JbstContainerControl(string tagName)
 		{
-			this.childControls = new JbstControlCollection(this);
-
 			if (tagName == null)
 			{
 				tagName = String.Empty;
@@ -115,45 +113,46 @@ namespace JsonFx.UI.Jbst
 		}
 
 		[JsonName("attributes")]
+		[JsonSpecifiedProperty("AttributesSpecified")]
 		public Dictionary<String, Object> Attributes
 		{
-			get { return this.attributes; }
+			get
+			{
+				if (this.attributes == null)
+				{
+					this.attributes = new Dictionary<String, Object>(StringComparer.OrdinalIgnoreCase);
+				}
+				return this.attributes;
+			}
 			set { this.attributes = value; }
 		}
 
 		[JsonIgnore]
 		public bool AttributesSpecified
 		{
-			get { return this.Attributes.Keys.Count > 0; }
+			get { return (this.attributes != null) && (this.attributes.Keys.Count > 0); }
 			set { }
 		}
 
-		//[JsonIgnore]
-		//public Dictionary<String, Object> Style
-		//{
-		//    get
-		//    {
-		//        Dictionary<String, Object> style = this.Attributes["style"] as Dictionary<String, Object>;
-		//        if (style == null)
-		//        {
-		//            style = new Dictionary<String, Object>();
-		//            this.Attributes["style"] = style;
-		//        }
-		//        return style;
-		//    }
-		//}
-
 		[JsonName("children")]
+		[JsonSpecifiedProperty("ChildControlsSpecified")]
 		public virtual JbstControlCollection ChildControls
 		{
-			get { return this.childControls; }
+			get
+			{
+				if (this.childControls == null)
+				{
+					this.childControls = new JbstControlCollection(this);
+				}
+				return this.childControls;
+			}
 			set { this.childControls = value; }
 		}
 
 		[JsonIgnore]
 		public bool ChildControlsSpecified
 		{
-			get { return this.ChildControls.Count > 0; }
+			get { return this.childControls != null && this.childControls.Count > 0; }
 			set { }
 		}
 
@@ -186,124 +185,28 @@ namespace JsonFx.UI.Jbst
 
 		#region IEnumerable Members
 
-		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
+		/// <summary>
+		/// Enumerates the control as JsonML.
+		/// </summary>
+		/// <returns></returns>
+		IEnumerator IEnumerable.GetEnumerator()
 		{
-			return new JbstControlEnumerator(this);
+			yield return this.TagName;
+
+			if (this.AttributesSpecified)
+			{
+				yield return this.Attributes;
+			}
+
+			if (this.ChildControlsSpecified)
+			{
+				foreach (JbstControl childControl in this.ChildControls)
+				{
+					yield return childControl;
+				}
+			}
 		}
 
 		#endregion IEnumerable Members
-
-		#region Enumerator State
-
-		enum EnumeratorState : int
-		{
-			Start = 0,
-			TagName = 1,
-			Attributes = 2,
-			ChildControls = 3,
-			End = -1
-		}
-
-		#endregion Enumerator State
-
-		/// <summary>
-		/// An enumerator for JbstControl objects.
-		/// </summary>
-		private class JbstControlEnumerator : IEnumerator
-		{
-			#region Fields
-
-			private JbstContainerControl control;
-			private EnumeratorState state = EnumeratorState.Start;
-			private int index = 0;
-
-			#endregion Fields
-
-			#region Init
-
-			public JbstControlEnumerator(JbstContainerControl control)
-			{
-				this.control = control;
-			}
-
-			#endregion Init
-
-			#region IEnumerator Members
-
-			object System.Collections.IEnumerator.Current
-			{
-				get
-				{
-					switch (this.state)
-					{
-						case EnumeratorState.TagName:
-						{
-							return this.control.TagName;
-						}
-						case EnumeratorState.Attributes:
-						{
-							return this.control.Attributes;
-						}
-						case EnumeratorState.ChildControls:
-						{
-							return this.control.ChildControls[this.index];
-						}
-						default:
-						{
-							throw new InvalidOperationException("Bad enumerator state.");
-						}
-					}
-				}
-			}
-
-			bool System.Collections.IEnumerator.MoveNext()
-			{
-				// key off current state
-				switch (this.state)
-				{
-					case EnumeratorState.Start:
-					{
-						this.state = EnumeratorState.TagName;
-						return true;
-					}
-					case EnumeratorState.TagName:
-					{
-						if (!this.control.AttributesSpecified)
-							goto case EnumeratorState.Attributes;
-
-						this.state = EnumeratorState.Attributes;
-						return true;
-					}
-					case EnumeratorState.Attributes:
-					{
-						if (!this.control.ChildControlsSpecified)
-							goto case EnumeratorState.ChildControls;
-
-						this.state = EnumeratorState.ChildControls;
-						return true;
-					}
-					case EnumeratorState.ChildControls:
-					{
-						this.index++;
-						if (this.index >= this.control.ChildControls.Count)
-							goto default;
-
-						return true;
-					}
-					default:
-					{
-						this.state = EnumeratorState.End;
-						return false;
-					}
-				}
-			}
-
-			void System.Collections.IEnumerator.Reset()
-			{
-				this.state = EnumeratorState.Start;
-			}
-
-			#endregion IEnumerator Members
-		}
 	}
 }

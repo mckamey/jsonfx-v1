@@ -390,6 +390,16 @@ if (""undefined"" === typeof {0}) {{
 			this.SetAttribute(this.current, name, value);
 		}
 
+		internal void AddAttribute(string name, JbstControl value)
+		{
+			if (this.current == null)
+			{
+				throw new InvalidOperationException("Unexpected attribute");
+			}
+
+			this.current.Attributes[name] = value;
+		}
+
 		internal void SetAttribute(JbstContainerControl target, string name, string value)
 		{
 			// flush any accumulated literals
@@ -404,16 +414,6 @@ if (""undefined"" === typeof {0}) {{
 			{
 				target.Attributes[name] = value;
 			}
-		}
-
-		internal void AddAttribute(string name, JbstControl value)
-		{
-			if (this.current == null)
-			{
-				throw new InvalidOperationException("Unexpected attribute");
-			}
-
-			this.current.Attributes[name] = value;
 		}
 
 		internal void StoreStyle(string name, string value)
@@ -455,6 +455,7 @@ if (""undefined"" === typeof {0}) {{
 				target.Attributes.ContainsKey("style") ?
 				target.Attributes["style"] as String :
 				null;
+
 			if (style != null && !style.EndsWith(";"))
 			{
 				style += ";";
@@ -630,9 +631,12 @@ if (""undefined"" === typeof {0}) {{
 
 					if (tag.HasAttributes)
 					{
-						foreach (string key in tag.Attributes.Keys)
+						foreach (string keyRaw in tag.Attributes.Keys)
 						{
-							string value = tag.Attributes[key];
+							// normalize JBST command names
+							string key = keyRaw.StartsWith(JbstCustomControl.JbstPrefix, StringComparison.OrdinalIgnoreCase) ?
+								keyRaw.ToLowerInvariant() : keyRaw;
+							string value = tag.Attributes[keyRaw];
 
 							// TODO: replace this re-parsing
 							if (value.Length >= 4 &&
