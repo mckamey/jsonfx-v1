@@ -880,6 +880,12 @@ if (""undefined"" === typeof {0}) {{
 		/// <returns></returns>
 		public static string EnsureIdent(string ident)
 		{
+			if (String.IsNullOrEmpty(ident))
+			{
+				// TODO: handle this more gracefully
+				throw new InvalidOperationException("Invalid identifier.");
+			}
+
 			// TODO: scrub name for valid identifier
 			return ident;
 		}
