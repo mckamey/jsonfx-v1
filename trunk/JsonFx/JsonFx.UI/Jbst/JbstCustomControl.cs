@@ -49,7 +49,10 @@ namespace JsonFx.UI.Jbst
 			@"return (this.jbst instanceof JsonML.BST) ? this.jbst.dataBind(this.data, this.index) : """";";
 
 		private const string ControlCommand = "control";
-		private const string ControlNameKey = JbstCustomControl.JbstPrefix+"name";
+		private const string ControlNameKey = "name";
+		private const string ControlNameKeyAlt = JbstCustomControl.JbstPrefix+JbstCustomControl.ControlNameKey;
+		private const string ControlDataKey = "data";
+		private const string ControlDataKeyAlt = JbstCustomControl.JbstPrefix+JbstCustomControl.ControlDataKey;
 
 		private const string ControlSimple =
 			@"function(){{return {0}.dataBind(this.data,this.index);}}";
@@ -79,9 +82,10 @@ namespace JsonFx.UI.Jbst
 
 		#region Fields
 
-		private JbstControl renderProxy = null;
-		private string commandName = null;
-		private string controlName = null;
+		private JbstControl renderProxy;
+		private string commandName;
+		private string controlName;
+		private string controlData;
 
 		#endregion Fields
 
@@ -99,8 +103,7 @@ namespace JsonFx.UI.Jbst
 		public static JbstContainerControl Create(string rawName, string path)
 		{
 			JbstCustomControl control = new JbstCustomControl();
-
-			string prefix = SplitPrefix(rawName, out control.commandName);
+			SplitPrefix(rawName, out control.commandName);
 
 			switch (control.commandName.ToLowerInvariant())
 			{
@@ -137,8 +140,22 @@ namespace JsonFx.UI.Jbst
 			if (this.Attributes.ContainsKey(ControlNameKey))
 			{
 				this.controlName = this.Attributes[ControlNameKey] as string;
-				controlName = JbstCompiler.EnsureIdent(controlName);
-				this.Attributes.Remove(ControlNameKey);
+			}
+			else if (this.Attributes.ContainsKey(ControlNameKeyAlt))
+			{
+				// backwards compatibility with "jbst:name"
+				this.controlName = this.Attributes[ControlNameKeyAlt] as string;
+			}
+			this.controlName = JbstCompiler.EnsureIdent(this.controlName);
+
+			if (this.Attributes.ContainsKey(ControlDataKey))
+			{
+				this.controlData = this.Attributes[ControlDataKey] as string;
+			}
+			else if (this.Attributes.ContainsKey(ControlDataKeyAlt))
+			{
+				// backwards compatibility with "jbst:data"
+				this.controlData = this.Attributes[ControlDataKeyAlt] as string;
 			}
 
 			this.Attributes.Clear();
@@ -204,7 +221,7 @@ namespace JsonFx.UI.Jbst
 
 		void IJsonSerializable.ReadJson(JsonReader reader)
 		{
-			throw new NotImplementedException("JbstCodeBlock deserialization is not yet implemented.");
+			throw new NotImplementedException("JbstCustomControl deserialization is not yet implemented.");
 		}
 
 		#endregion IJsonSerializable Members
