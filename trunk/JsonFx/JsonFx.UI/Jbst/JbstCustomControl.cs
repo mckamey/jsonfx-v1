@@ -55,11 +55,11 @@ namespace JsonFx.UI.Jbst
 		private const string ControlDataKeyAlt = JbstCustomControl.JbstPrefix+JbstCustomControl.ControlDataKey;
 
 		private const string ControlSimple =
-			@"function(){{return {0}.dataBind(this.data,this.index);}}";
+			@"function(){{return {0}.dataBind({1},this.index);}}";
 
 		private const string ControlSimpleDebug =
 			@"function() {{
-				return {0}.dataBind(this.data, this.index);
+				return {0}.dataBind({1}, this.index);
 			}}";
 
 		private const string ControlStart =
@@ -70,13 +70,18 @@ namespace JsonFx.UI.Jbst
 				var t = new JsonML.BST(";
 
 		private const string ControlEndFormat =
-			@");t.prototype=this;return {0}.dataBind(this.data,this.index,t);}}";
+			@");t.prototype=this;return {0}.dataBind({1},this.index,t);}}";
 
 		private const string ControlEndFormatDebug =
 			@");
 				t.prototype = this;
-				return {0}.dataBind(this.data, this.index, t);
+				return {0}.dataBind({1}, this.index, t);
 			}}";
+
+		private const string FunctionEvalExpression =
+			"({0})()";
+
+		private const string DefaultDataExpression = @"this.data";
 
 		#endregion Constants
 
@@ -85,7 +90,7 @@ namespace JsonFx.UI.Jbst
 		private JbstControl renderProxy;
 		private string commandName;
 		private string controlName;
-		private string controlData;
+		private object controlData;
 
 		#endregion Fields
 
@@ -137,6 +142,8 @@ namespace JsonFx.UI.Jbst
 				return;
 			}
 
+			#region Control Name
+
 			if (this.Attributes.ContainsKey(ControlNameKey))
 			{
 				this.controlName = this.Attributes[ControlNameKey] as string;
@@ -148,15 +155,38 @@ namespace JsonFx.UI.Jbst
 			}
 			this.controlName = JbstCompiler.EnsureIdent(this.controlName);
 
+			#endregion Control Name
+
+			#region Control Data
+
 			if (this.Attributes.ContainsKey(ControlDataKey))
 			{
-				this.controlData = this.Attributes[ControlDataKey] as string;
+				this.controlData = this.Attributes[ControlDataKey];
 			}
 			else if (this.Attributes.ContainsKey(ControlDataKeyAlt))
 			{
 				// backwards compatibility with "jbst:data"
-				this.controlData = this.Attributes[ControlDataKeyAlt] as string;
+				this.controlData = this.Attributes[ControlDataKeyAlt];
 			}
+
+			// convert to inline expression
+			if (this.controlData is JbstExpressionBlock)
+			{
+				this.controlData = ((JbstExpressionBlock)this.controlData).Code;
+			}
+			else if (this.controlData is JbstCodeBlock)
+			{
+				this.controlData = String.Format(
+					FunctionEvalExpression,
+					JsonWriter.Serialize(((JbstCodeBlock)this.controlData)));
+			}
+
+			if (this.controlData == null)
+			{
+				this.controlData = DefaultDataExpression;
+			}
+
+			#endregion Control Data
 
 			this.Attributes.Clear();
 		}
@@ -164,21 +194,16 @@ namespace JsonFx.UI.Jbst
 		private void RenderCustomControl(JsonWriter writer)
 		{
 			this.EnsureControl();
-			if (String.IsNullOrEmpty(this.controlName))
-			{
-				// TODO: handle this more gracefully
-				return;
-			}
 
 			if (!this.ChildControlsSpecified)
 			{
 				if (writer.PrettyPrint)
 				{
-					writer.TextWriter.Write(ControlSimpleDebug, controlName);
+					writer.TextWriter.Write(ControlSimpleDebug, this.controlName, this.controlData);
 				}
 				else
 				{
-					writer.TextWriter.Write(ControlSimple, controlName);
+					writer.TextWriter.Write(ControlSimple, this.controlName, this.controlData);
 				}
 				return;
 			}
@@ -196,11 +221,11 @@ namespace JsonFx.UI.Jbst
 
 			if (writer.PrettyPrint)
 			{
-				writer.TextWriter.Write(ControlEndFormatDebug, controlName);
+				writer.TextWriter.Write(ControlEndFormatDebug, this.controlName, this.controlData);
 			}
 			else
 			{
-				writer.TextWriter.Write(ControlEndFormat, controlName);
+				writer.TextWriter.Write(ControlEndFormat, this.controlName, this.controlData);
 			}
 		}
 
