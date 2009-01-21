@@ -43,17 +43,13 @@ namespace JsonFx.UI.Jbst
 		#region Constants
 
 		public const string JbstPrefix = "jbst"+JbstContainerControl.PrefixDelim;
-		public const string PlaceholderCommand = "placeholder";
+		private const string PlaceholderCommand = "placeholder";
 
 		private const string PlaceholderStatement =
-			@"if (this.jbst instanceof JsonML.BST) {
-				return this.jbst.dataBind(this.data, this.index);
-			} else {
-				return this.data;
-			}";
+			@"return (this.jbst instanceof JsonML.BST) ? this.jbst.dataBind(this.data, this.index) : """";";
 
-		public const string ControlCommand = "control";
-		public const string ControlNameKey = JbstCustomControl.JbstPrefix+"Name";
+		private const string ControlCommand = "control";
+		private const string ControlNameKey = JbstCustomControl.JbstPrefix+"name";
 
 		private const string ControlSimple =
 			@"function(){{return {0}.dataBind(this.data,this.index);}}";
@@ -71,12 +67,11 @@ namespace JsonFx.UI.Jbst
 				var t = new JsonML.BST(";
 
 		private const string ControlEndFormat =
-			@");t.prototype=this;t.args={1};return {0}.dataBind(this.data,this.index,t,{1});}}";
+			@");t.prototype=this;return {0}.dataBind(this.data,this.index,t);}}";
 
 		private const string ControlEndFormatDebug =
 			@");
 				t.prototype = this;
-				t.args = {1};
 				return {0}.dataBind(this.data, this.index, t);
 			}}";
 
@@ -87,7 +82,6 @@ namespace JsonFx.UI.Jbst
 		private JbstControl renderProxy = null;
 		private string commandName = null;
 		private string controlName = null;
-		private string args = null;
 
 		#endregion Fields
 
@@ -147,12 +141,6 @@ namespace JsonFx.UI.Jbst
 				this.Attributes.Remove(ControlNameKey);
 			}
 
-			this.args = JsonWriter.Serialize(this.Attributes);
-			if (String.IsNullOrEmpty(this.args))
-			{
-				this.args = "{}";
-			}
-
 			this.Attributes.Clear();
 		}
 
@@ -191,11 +179,11 @@ namespace JsonFx.UI.Jbst
 
 			if (writer.PrettyPrint)
 			{
-				writer.TextWriter.Write(ControlEndFormatDebug, controlName, this.args);
+				writer.TextWriter.Write(ControlEndFormatDebug, controlName);
 			}
 			else
 			{
-				writer.TextWriter.Write(ControlEndFormat, controlName, this.args);
+				writer.TextWriter.Write(ControlEndFormat, controlName);
 			}
 		}
 
