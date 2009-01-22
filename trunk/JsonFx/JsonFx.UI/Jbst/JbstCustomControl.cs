@@ -125,13 +125,9 @@ namespace JsonFx.UI.Jbst
 
 		private void EnsureControl()
 		{
-			if (!this.AttributesSpecified)
-			{
-				return;
-			}
-
 			#region Control Name
 
+			// placeholder does not need a named JBST
 			if (JbstCustomControl.ControlCommand.Equals(this.commandName, StringComparison.OrdinalIgnoreCase))
 			{
 				if (this.Attributes.ContainsKey(ControlNameKey))
