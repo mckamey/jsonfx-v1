@@ -52,6 +52,8 @@ namespace JsonFx.UI.Jbst
 
 		private static readonly char[] ImportDelim = { ' ', ',' };
 
+		internal const string PrefixDelim = ":";
+
 		private const string ScriptTagName = "script";
 
 		private const string AnonymousPrefix = "anonymous_";
@@ -81,7 +83,7 @@ if (""undefined"" === typeof {0}) {{
 		#region Fields
 
 		private List<ParseException> errors = new List<ParseException>();
-		private JbstContainerControl document = new JbstContainerControl(String.Empty);
+		private JbstContainerControl document = new JbstContainerControl();
 		private JbstContainerControl current = null;
 		private JbstContainerControl next = null;
 
@@ -260,29 +262,29 @@ if (""undefined"" === typeof {0}) {{
 			this.current.ChildControls.Add(child);
 		}
 
-		internal void PushTag(string tagName)
+		internal void PushTag(string rawName)
 		{
 			// flush any accumulated literals
 			this.Flush();
 
+			string tagName;
+			string prefix = JbstCompiler.SplitPrefix(rawName, out tagName);
+
 			JbstContainerControl control;
-			if (tagName != null &&
-				tagName.StartsWith(JbstCustomControl.JbstPrefix, StringComparison.OrdinalIgnoreCase))
+			if (JbstCustomControl.JbstPrefix.Equals(prefix, StringComparison.OrdinalIgnoreCase))
 			{
-				control = JbstCustomControl.Create(tagName, this.path);
+				control = new JbstCustomControl(tagName);
 			}
 			else
 			{
-				control = this.next;
-				if (control == null)
-				{
-					control = new JbstContainerControl(tagName);
-				}
-				else
-				{
-					control.TagName = tagName;
-					this.next = null;
-				}
+				control = new JbstContainerControl(prefix, tagName);
+			}
+
+			if (this.next != null)
+			{
+				control.Attributes = this.next.Attributes;
+				control.ChildControls = this.next.ChildControls;
+				this.next = null;
 			}
 
 			if (this.current == null)
@@ -923,5 +925,30 @@ if (""undefined"" === typeof {0}) {{
 		}
 
 		#endregion Directive Methods
+
+		#region Utility Methods
+
+		/// <summary>
+		/// Splits the prefix and tag name
+		/// </summary>
+		/// <param name="rawName"></param>
+		/// <param name="tagName"></param>
+		/// <returns></returns>
+		private static string SplitPrefix(string rawName, out string tagName)
+		{
+			int index = String.IsNullOrEmpty(rawName) ?
+				-1 : rawName.IndexOf(PrefixDelim);
+
+			if (index < 0)
+			{
+				tagName = rawName;
+				return String.Empty;
+			}
+
+			tagName = rawName.Substring(index+1);
+			return rawName.Substring(0, index+1);
+		}
+
+		#endregion Utility Methods
 	}
 }
