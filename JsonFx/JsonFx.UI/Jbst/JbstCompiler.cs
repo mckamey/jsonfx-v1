@@ -282,6 +282,7 @@ if (""undefined"" === typeof {0}) {{
 
 			if (this.next != null)
 			{
+				// copy over preloaded children
 				control.Attributes = this.next.Attributes;
 				control.ChildControls = this.next.ChildControls;
 				this.next = null;
