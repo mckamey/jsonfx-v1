@@ -55,6 +55,7 @@
     <Compile Include="Adapters\JsonFxBrowserCapabilities.cs" />
     <Compile Include="Adapters\JsonFxBrowserModule.cs" />
     <Compile Include="Adapters\JsonMLTextWriter.cs" />
+    <Compile Include="Jbst\Control.cs" />
     <Compile Include="Jbst\Extensions\AppSettingsJbstExtension.cs" />
     <Compile Include="Jbst\Extensions\JbstExtension.cs" />
     <Compile Include="Jbst\Extensions\ResourceJbstExtension.cs" />
