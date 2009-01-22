@@ -42,12 +42,6 @@ namespace JsonFx.UI.Jbst
 	/// </summary>
 	internal class JbstContainerControl : JbstControl, IEnumerable
 	{
-		#region Constants
-
-		protected const string PrefixDelim = ":";
-
-		#endregion Constants
-
 		#region Fields
 
 		private string prefix;
@@ -63,7 +57,7 @@ namespace JsonFx.UI.Jbst
 		/// Ctor
 		/// </summary>
 		public JbstContainerControl()
-			: this(String.Empty)
+			: this(String.Empty, String.Empty)
 		{
 		}
 
@@ -71,14 +65,15 @@ namespace JsonFx.UI.Jbst
 		/// Ctor
 		/// </summary>
 		/// <param name="tagName"></param>
-		public JbstContainerControl(string tagName)
+		public JbstContainerControl(string prefix, string tagName)
 		{
 			if (tagName == null)
 			{
 				tagName = String.Empty;
 			}
 
-			this.prefix = SplitPrefix(tagName, out this.tagName);
+			this.prefix = prefix;
+			this.tagName = tagName;
 		}
 
 		#endregion Init
@@ -108,7 +103,7 @@ namespace JsonFx.UI.Jbst
 				{
 					return this.TagName;
 				}
-				return this.Prefix + PrefixDelim + this.TagName;
+				return this.Prefix + this.TagName;
 			}
 		}
 
@@ -157,31 +152,6 @@ namespace JsonFx.UI.Jbst
 		}
 
 		#endregion Properties
-
-		#region Methods
-
-		/// <summary>
-		/// Splits the prefix and tag name
-		/// </summary>
-		/// <param name="rawName"></param>
-		/// <param name="tagName"></param>
-		/// <returns></returns>
-		protected internal static string SplitPrefix(string rawName, out string tagName)
-		{
-			int index = rawName.IndexOf(PrefixDelim);
-			if (index < 0)
-			{
-				tagName = rawName;
-				return String.Empty;
-			}
-			else
-			{
-				tagName = rawName.Substring(index+1);
-				return rawName.Substring(0, index);
-			}
-		}
-
-		#endregion Methods
 
 		#region IEnumerable Members
 
