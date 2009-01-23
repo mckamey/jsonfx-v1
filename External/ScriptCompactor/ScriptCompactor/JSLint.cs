@@ -209,7 +209,6 @@ namespace BuildTools.ScriptCompactor
 		#region Constants
 
 		private const string JSLintScript = "BuildTools.ScriptCompactor.jslint.js";
-		private static string JSLintSource = null;
 		private const string MSScriptError =
 			"JSLint is disabled.\r\n"+
 			"Syntax checking requires MSScriptControl COM component be registered:\r\n"+
@@ -219,6 +218,7 @@ namespace BuildTools.ScriptCompactor
 
 		#region Fields
 
+		private static string JSLintSource = null;
 		private static bool isDisabled = false;
 		private JSLint.Options options = new JSLint.Options();
 		private List<ParseException> errors = new List<ParseException>();
@@ -394,18 +394,16 @@ namespace BuildTools.ScriptCompactor
 
 		public void Run(string filename, string script)
 		{
-			Assembly assembly = Assembly.GetAssembly(typeof(JSLint));
-
-			// shortcut if previously failed
 			if (JSLint.isDisabled)
 			{
-				this.errors.Add(new ParseWarning(
-					JSLint.MSScriptError,
-					assembly.GetName().Name,
-					0,
-					0));
+				// shortcut if previously failed
 				return;
 			}
+
+#if !JSLINT
+			JSLint.isDisabled = true;
+#else
+			Assembly assembly = Assembly.GetAssembly(typeof(JSLint));
 
 			#region Microsoft Script Control References
 
@@ -434,24 +432,7 @@ namespace BuildTools.ScriptCompactor
 
 			try
 			{
-				if (JSLint.JSLintSource == null)
-				{
-					// JSLint.js stored as a resource file
-					string resourceName = JSLint.JSLintScript;
-					if (assembly.GetManifestResourceInfo(resourceName) == null)
-					{
-						throw new FileNotFoundException("Cannot find the JSLint script file.", resourceName);
-					}
-
-					// output next to assembly
-					using (Stream input = assembly.GetManifestResourceStream(resourceName))
-					{
-						using (StreamReader reader = new StreamReader(input))
-						{
-							JSLint.JSLintSource = reader.ReadToEnd();
-						}
-					}
-				}
+				this.EnsureJSLint(assembly);
 
 				MSScriptControl.ScriptControlClass sc = new MSScriptControl.ScriptControlClass();
 				sc.Language = "JScript";
@@ -511,6 +492,7 @@ namespace BuildTools.ScriptCompactor
 					ex));
 				return;
 			}
+#endif
 		}
 
 		public void Run(TextReader reader, string filename)
@@ -548,6 +530,28 @@ namespace BuildTools.ScriptCompactor
 			using (StreamReader reader = new StreamReader(input))
 			{
 				this.Run(reader, filename);
+			}
+		}
+
+		private void EnsureJSLint(Assembly assembly)
+		{
+			if (JSLint.JSLintSource == null)
+			{
+				// jslint.js stored as a resource file
+				string resourceName = JSLint.JSLintScript;
+				if (assembly.GetManifestResourceInfo(resourceName) == null)
+				{
+					throw new FileNotFoundException("Cannot find the JSLint script file.", resourceName);
+				}
+
+				// output next to assembly
+				using (Stream input = assembly.GetManifestResourceStream(resourceName))
+				{
+					using (StreamReader reader = new StreamReader(input))
+					{
+						JSLint.JSLintSource = reader.ReadToEnd();
+					}
+				}
 			}
 		}
 
