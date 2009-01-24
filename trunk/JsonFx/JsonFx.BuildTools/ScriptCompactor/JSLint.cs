@@ -56,6 +56,13 @@
 \*---------------------------------------------------------------------------------*/
 #endregion JSLint License
 
+#if __MonoCS__
+// remove JSLINT for Mono Framework
+#undef JSLINT
+#endif
+
+#if JSLINT
+
 using System;
 using System.IO;
 using System.Collections.Generic;
@@ -219,7 +226,7 @@ namespace BuildTools.ScriptCompactor
 		#region Fields
 
 		private static string JSLintSource = null;
-		private static bool isDisabled = false;
+		private static bool isDisabled = (Type.GetTypeFromCLSID(new Guid("0E59F1D5-1FBE-11D0-8FF2-00A0D10038BC")) == null);
 		private JSLint.Options options = new JSLint.Options();
 		private List<ParseException> errors = new List<ParseException>();
 
@@ -400,9 +407,6 @@ namespace BuildTools.ScriptCompactor
 				return;
 			}
 
-#if !JSLINT
-			JSLint.isDisabled = true;
-#else
 			Assembly assembly = Assembly.GetAssembly(typeof(JSLint));
 
 			#region Microsoft Script Control References
@@ -492,7 +496,6 @@ namespace BuildTools.ScriptCompactor
 					ex));
 				return;
 			}
-#endif
 		}
 
 		public void Run(TextReader reader, string filename)
@@ -558,3 +561,4 @@ namespace BuildTools.ScriptCompactor
 		#endregion Methods
 	}
 }
+#endif
