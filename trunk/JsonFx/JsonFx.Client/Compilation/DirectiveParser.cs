@@ -74,12 +74,12 @@ namespace JsonFx.Compilation
 				// remove the directive from the original source
 				return index;
 			}
+			catch (HttpParseException)
+			{
+				throw;
+			}
 			catch (Exception ex)
 			{
-				if (ex is HttpParseException)
-				{
-					throw;
-				}
 				throw new HttpParseException("ParseDirective: "+ex.Message, ex, this.virtualPath, this.sourceText, this.lineNumber);
 			}
 			finally

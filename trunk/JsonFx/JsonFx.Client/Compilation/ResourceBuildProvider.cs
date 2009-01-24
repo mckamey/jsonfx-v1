@@ -470,6 +470,17 @@ namespace JsonFx.Compilation
 
 		void IResourceBuildHelper.AddAssemblyDependency(Assembly assembly)
 		{
+			this.AddAssemblyDependency(assembly);
+		}
+
+		protected void AddAssemblyDependency(string assemblyName)
+		{
+			Assembly assembly = Assembly.Load(assemblyName);
+			this.AddAssemblyDependency(assembly);
+		}
+
+		protected void AddAssemblyDependency(Assembly assembly)
+		{
 			if (this.assemblyDependencies == null)
 			{
 				this.assemblyDependencies = new List<Assembly>();
