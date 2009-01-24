@@ -97,7 +97,7 @@ namespace JsonFx.Compilation
 					unit.LinePragma = new CodeLinePragma(base.VirtualPath, this.lineNumber);
 
 					// add known assembly references
-					foreach (Assembly assembly in base.ReferencedAssemblies)
+					foreach (Assembly assembly in this.ReferencedAssemblies)
 					{
 						assemblyBuilder.AddAssemblyReference(assembly);
 						if (!String.IsNullOrEmpty(assembly.Location) &&
@@ -603,7 +603,7 @@ namespace JsonFx.Compilation
 				}
 				catch { }
 			}
-			type = this.GetTypeFromAssemblies(base.ReferencedAssemblies, typeName, false);
+			type = this.GetTypeFromAssemblies(this.ReferencedAssemblies, typeName, false);
 			if (type == null)
 			{
 				throw new HttpParseException(String.Format(ErrorCouldNotCreateType, typeName), null, base.VirtualPath, this.sourceText, this.lineNumber);
