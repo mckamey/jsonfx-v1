@@ -67,12 +67,12 @@ namespace JsonFx.Compilation
 
 		#region Fields
 
-		private string sourceText = null;
-		private CompilerType compilerType = null;
-		private string serviceTypeName = null;
-		private bool directiveParsed = false;
+		private string sourceText;
+		private CompilerType compilerType;
+		private string serviceTypeName;
+		private bool directiveParsed;
 		private int lineNumber = 1;
-		private bool foundDirective = false;
+		private bool foundDirective;
 
 		#endregion Fields
 
@@ -80,6 +80,17 @@ namespace JsonFx.Compilation
 
 		public override void GenerateCode(AssemblyBuilder assemblyBuilder)
 		{
+//#if DEBUG
+//            // this is where the Mono issue is: no referenced assemblies are passed in
+//            Console.Error.WriteLine(this.ReferencedAssemblies.Count+" referenced assemblies");
+//            foreach (Assembly assembly in this.ReferencedAssemblies)
+//            {
+//                Console.Error.WriteLine(assembly.FullName);
+//                Console.Error.WriteLine(assembly.CodeBase);
+//                Console.Error.WriteLine();
+//            }
+//#endif
+
 			try
 			{
 				this.EnsureDirective();
@@ -549,7 +560,7 @@ namespace JsonFx.Compilation
 				string language = attribs.ContainsKey("Language") ? attribs["Language"] : null;
 				if (String.IsNullOrEmpty(language))
 				{
-					// default to C# because no additional assemblies needed
+					// default to C# because it does not need additional assemblies
 					language = "C#";
 				}
 
