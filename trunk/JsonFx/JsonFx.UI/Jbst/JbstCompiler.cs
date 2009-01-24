@@ -667,8 +667,7 @@ if (""undefined"" === typeof {0}) {{
 									case '#':
 									{
 										JbstExpressionBlock code = new JbstExpressionBlock(
-											value.Substring(3, value.Length-5),
-											this.path);
+											value.Substring(3, value.Length-5));
 										this.AddAttribute(key, code);
 										break;
 									}
@@ -683,8 +682,7 @@ if (""undefined"" === typeof {0}) {{
 									default:
 									{
 										JbstStatementBlock code = new JbstStatementBlock(
-											value.Substring(2, value.Length-4),
-											this.path);
+											value.Substring(2, value.Length-4));
 										this.AddAttribute(key, code);
 										break;
 									}
@@ -738,9 +736,7 @@ if (""undefined"" === typeof {0}) {{
 						case "%#": // databinding expression
 						{
 							// expressions are emitted directly into JBST
-							JbstExpressionBlock code = new JbstExpressionBlock(
-								tag.Content,
-								this.path);
+							JbstExpressionBlock code = new JbstExpressionBlock(tag.Content);
 							this.AppendChild(code);
 							break;
 						}
@@ -756,9 +752,7 @@ if (""undefined"" === typeof {0}) {{
 						case "%":
 						{
 							// statements are emitted directly into JBST
-							JbstStatementBlock code = new JbstStatementBlock(
-								tag.Content,
-								this.path);
+							JbstStatementBlock code = new JbstStatementBlock(tag.Content);
 							this.AppendChild(code);
 							break;
 						}
@@ -770,9 +764,7 @@ if (""undefined"" === typeof {0}) {{
 						case "!--":
 						{
 							// HTML Comments are emitted directly into JBST
-							JbstCommentBlock code = new JbstCommentBlock(
-								tag.Content,
-								this.path);
+							JbstCommentBlock code = new JbstCommentBlock(tag.Content);
 							this.AppendChild(code);
 							break;
 						}

@@ -62,7 +62,6 @@ namespace JsonFx.UI.Jbst
 		#region Fields
 
 		private readonly string code;
-		private readonly string path;
 
 		#endregion Fields
 
@@ -74,10 +73,9 @@ namespace JsonFx.UI.Jbst
 		/// <param name="type"></param>
 		/// <param name="code"></param>
 		/// <param name="path"></param>
-		protected JbstCodeBlock(string code, string path)
+		protected JbstCodeBlock(string code)
 		{
 			this.code = (code == null) ? String.Empty : code;
-			this.path = (path == null) ? String.Empty : path;
 		}
 
 		#endregion Init
@@ -148,8 +146,8 @@ namespace JsonFx.UI.Jbst
 		/// </summary>
 		/// <param name="code"></param>
 		/// <param name="path"></param>
-		public JbstCommentBlock(string code, string path)
-			: base(code, path)
+		public JbstCommentBlock(string code)
+			: base(code)
 		{
 		}
 
@@ -184,8 +182,8 @@ namespace JsonFx.UI.Jbst
 		/// </summary>
 		/// <param name="code"></param>
 		/// <param name="path"></param>
-		public JbstExpressionBlock(string code, string path)
-			: base(code, path)
+		public JbstExpressionBlock(string code)
+			: base(code)
 		{
 		}
 
@@ -231,8 +229,8 @@ namespace JsonFx.UI.Jbst
 		/// </summary>
 		/// <param name="code"></param>
 		/// <param name="path"></param>
-		public JbstStatementBlock(string code, string path)
-			: base(code, path)
+		public JbstStatementBlock(string code)
+			: base(code)
 		{
 		}
 
@@ -293,7 +291,7 @@ namespace JsonFx.UI.Jbst
 		/// <param name="code"></param>
 		/// <param name="path"></param>
 		public JbstExtensionBlock(string code, string path)
-			: base(code, path)
+			: base(code)
 		{
 			KeyValuePair<string, string> expr = JbstExtensionBlock.ParseExpression(code);
 

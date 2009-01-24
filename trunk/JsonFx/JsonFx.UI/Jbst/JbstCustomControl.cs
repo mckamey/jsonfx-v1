@@ -265,7 +265,7 @@ namespace JsonFx.UI.Jbst
 					this.indexExpr
 				);
 
-			writer.Write(new JbstStatementBlock(placeholder, String.Empty));
+			writer.Write(new JbstStatementBlock(placeholder));
 		}
 
 		#endregion Render Methods
