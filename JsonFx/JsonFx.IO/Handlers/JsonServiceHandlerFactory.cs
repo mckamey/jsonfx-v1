@@ -42,20 +42,23 @@ namespace JsonFx.Handlers
 
 		IHttpHandler IHttpHandlerFactory.GetHandler(HttpContext context, string verb, string url, string path)
 		{
-			Type descriptorType = BuildManager.GetCompiledType(url);
-
-			if ("GET".Equals(verb, StringComparison.OrdinalIgnoreCase) &&
-				String.IsNullOrEmpty(context.Request.PathInfo))
+			if (String.IsNullOrEmpty(context.Request.PathInfo))
 			{
 				// output service javascript proxy
 				return new ResourceHandler();
 			}
 
-			// TODO: provide a mechanism for disabling compression?
-			CompiledBuildResult.EnableStreamCompression(context);
+			string setting = context.Request.QueryString[null];
+			bool isDebug = ResourceHandler.DebugFlag.Equals(setting, StringComparison.OrdinalIgnoreCase);
+			if (!isDebug)
+			{
+				// TODO: provide a mechanism for disabling compression?
+				CompiledBuildResult.EnableStreamCompression(context);
+			}
 
 			// handle service requests
-			JsonServiceInfo serviceInfo = BuildManager.CreateInstanceFromVirtualPath(url, descriptorType) as JsonServiceInfo;
+			JsonServiceInfo serviceInfo = JsonServiceInfo.Create(url);
+
 			return new JsonFx.Handlers.JsonServiceHandler(serviceInfo, url);
 		}
 

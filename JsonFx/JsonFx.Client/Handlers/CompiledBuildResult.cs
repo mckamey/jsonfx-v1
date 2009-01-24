@@ -205,25 +205,14 @@ namespace JsonFx.Handlers
 		/// </summary>
 		/// <param name="virtualPath"></param>
 		/// <returns></returns>
-		protected internal static CompiledBuildResult Create(string virtualPath, bool throwOnException)
+		protected internal static CompiledBuildResult Create(string virtualPath)
 		{
-			try
+			if (virtualPath.StartsWith("/"))
 			{
-				if (virtualPath.StartsWith("/"))
-				{
-					virtualPath = "~"+virtualPath;
-				}
+				virtualPath = "~"+virtualPath;
+			}
 
-				return (CompiledBuildResult)BuildManager.CreateInstanceFromVirtualPath(virtualPath, typeof(CompiledBuildResult));
-			}
-			catch
-			{
-				if (throwOnException)
-				{
-					throw;
-				}
-				return null;
-			}
+			return (CompiledBuildResult)BuildManager.CreateInstanceFromVirtualPath(virtualPath, typeof(CompiledBuildResult));
 		}
 
 		/// <summary>

@@ -192,7 +192,7 @@ namespace JsonFx.Handlers
 			string targetPath = context.Request.AppRelativeCurrentExecutionFilePath;
 
 			// TODO: provide mechanism for easily defining this target
-			GlobalizedCompiledBuildResult target = CompiledBuildResult.Create(targetPath, true) as GlobalizedCompiledBuildResult;
+			GlobalizedCompiledBuildResult target = CompiledBuildResult.Create(targetPath) as GlobalizedCompiledBuildResult;
 			if (target == null)
 			{
 				// TODO: handle this more gracefully
