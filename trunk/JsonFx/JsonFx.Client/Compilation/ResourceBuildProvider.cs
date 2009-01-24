@@ -72,11 +72,11 @@ namespace JsonFx.Compilation
 
 		#region Fields
 
-		private List<string> pathDependencies = null;
-		private List<Assembly> assemblyDependencies = null;
-		private string resourceFullName = null;
-		private string resourceTypeName = null;
-		private string resourceNamespace = null;
+		private List<string> pathDependencies;
+		private List<Assembly> assemblyDependencies;
+		private string resourceFullName;
+		private string resourceTypeName;
+		private string resourceNamespace;
 
 		#endregion Fields
 
