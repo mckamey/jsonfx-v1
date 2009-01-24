@@ -51,7 +51,7 @@ namespace JsonFx.Compilation
 	/// BuildProvider for JSON-RPC services.
 	/// </summary>
 	[PermissionSet(SecurityAction.Demand, Unrestricted=true)]
-	public class JsonServiceBuildProvider : System.Web.Compilation.BuildProvider
+	public class JsonServiceBuildProvider : JsonFx.Compilation.ResourceBuildProvider
 	{
 		#region Constants
 
@@ -67,62 +67,14 @@ namespace JsonFx.Compilation
 
 		#region Fields
 
-		private List<Assembly> linkedAssemblies = null;
 		private string sourceText = null;
 		private CompilerType compilerType = null;
 		private string serviceTypeName = null;
 		private bool directiveParsed = false;
 		private int lineNumber = 1;
 		private bool foundDirective = false;
-		private string resourceFullName = null;
-		private string resourceTypeName = null;
-		private string resourceNamespace = null;
 
 		#endregion Fields
-
-		#region Properties
-
-		protected virtual string ResourceFullName
-		{
-			get
-			{
-				if (String.IsNullOrEmpty(this.resourceFullName))
-				{
-					this.resourceFullName = CompiledBuildResult.GenerateTypeName(base.VirtualPath);
-				}
-				return this.resourceFullName;
-			}
-		}
-
-		protected string ResourceNamespace
-		{
-			get
-			{
-				if (String.IsNullOrEmpty(this.resourceNamespace))
-				{
-					string type = this.ResourceFullName;
-					int dot = type.LastIndexOf('.');
-					this.resourceNamespace = type.Substring(0, dot);
-				}
-				return this.resourceNamespace;
-			}
-		}
-
-		protected string ResourceTypeName
-		{
-			get
-			{
-				if (String.IsNullOrEmpty(this.resourceTypeName))
-				{
-					string type = this.ResourceFullName;
-					int dot = type.LastIndexOf('.');
-					this.resourceTypeName = type.Substring(dot+1);
-				}
-				return this.resourceTypeName;
-			}
-		}
-
-		#endregion Properties
 
 		#region BuildProvider Methods
 
@@ -138,7 +90,6 @@ namespace JsonFx.Compilation
 				}
 
 				Assembly tempAssembly = null;
-
 				if (!String.IsNullOrEmpty(this.sourceText))
 				{
 					// generate a code snippet for any inline source
@@ -148,24 +99,11 @@ namespace JsonFx.Compilation
 					// add known assembly references
 					foreach (Assembly assembly in base.ReferencedAssemblies)
 					{
+						assemblyBuilder.AddAssemblyReference(assembly);
 						if (!String.IsNullOrEmpty(assembly.Location) &&
-						!unit.ReferencedAssemblies.Contains(assembly.Location))
+							!unit.ReferencedAssemblies.Contains(assembly.Location))
 						{
 							unit.ReferencedAssemblies.Add(assembly.Location);
-						}
-					}
-
-					if (this.linkedAssemblies != null)
-					{
-						// add parsed assembly dependencies
-						foreach (Assembly assembly in this.linkedAssemblies)
-						{
-							assemblyBuilder.AddAssemblyReference(assembly);
-							if (!String.IsNullOrEmpty(assembly.Location) &&
-								!unit.ReferencedAssemblies.Contains(assembly.Location))
-							{
-								unit.ReferencedAssemblies.Add(assembly.Location);
-							}
 						}
 					}
 
@@ -183,12 +121,14 @@ namespace JsonFx.Compilation
 				Type serviceType = this.GetTypeToCache(this.serviceTypeName, tempAssembly);
 				this.GenerateServiceProxyCode(assemblyBuilder, serviceType);
 			}
+			catch (HttpParseException ex)
+			{
+				Console.Error.WriteLine(ex);
+				throw;
+			}
 			catch (Exception ex)
 			{
-				if (ex is HttpParseException)
-				{
-					throw;
-				}
+				Console.Error.WriteLine(ex);
 				throw new HttpParseException("GenerateCode: "+ex.Message, ex, base.VirtualPath, this.sourceText, this.lineNumber);
 			}
 		}
@@ -511,12 +451,14 @@ namespace JsonFx.Compilation
 					// if directive failed will be null
 					return this.compilerType;
 				}
+				catch (HttpParseException ex)
+				{
+					Console.Error.WriteLine(ex);
+					throw;
+				}
 				catch (Exception ex)
 				{
-					if (ex is HttpParseException)
-					{
-						throw;
-					}
+					Console.Error.WriteLine(ex);
 					throw new HttpParseException("CodeCompilerType: "+ex.Message, ex, base.VirtualPath, this.sourceText, this.lineNumber);
 				}
 			}
@@ -528,20 +470,29 @@ namespace JsonFx.Compilation
 			{
 				this.EnsureDirective();
 
-				if (String.IsNullOrEmpty(this.serviceTypeName) ||
-					results.Errors.HasErrors)
+				if (results.Errors.HasErrors)
 				{
-					return null;
+					foreach (CompilerError error in results.Errors)
+					{
+						throw new HttpParseException(error.ErrorText, null, error.FileName, "", error.Line);
+					}
+				}
+
+				if (String.IsNullOrEmpty(this.serviceTypeName))
+				{
+					throw new HttpParseException("GetGeneratedType: missing service type name", null, base.VirtualPath, this.sourceText, this.lineNumber);
 				}
 
 				return this.GetTypeToCache(this.ResourceFullName, results.CompiledAssembly);
 			}
+			catch (HttpParseException ex)
+			{
+				Console.Error.WriteLine(ex);
+				throw;
+			}
 			catch (Exception ex)
 			{
-				if (ex is HttpParseException)
-				{
-					throw;
-				}
+				Console.Error.WriteLine(ex);
 				throw new HttpParseException("GetGeneratedType: "+ex.Message, ex, base.VirtualPath, this.sourceText, this.lineNumber);
 			}
 		}
@@ -626,21 +577,6 @@ namespace JsonFx.Compilation
 
 		#region Type Methods
 
-		private void AddAssemblyDependency(string assemblyName)
-		{
-			Assembly assembly = Assembly.Load(assemblyName);
-			this.AddAssemblyDependency(assembly);
-		}
-
-		private void AddAssemblyDependency(Assembly assembly)
-		{
-			if (this.linkedAssemblies == null)
-			{
-				this.linkedAssemblies = new List<Assembly>();
-			}
-			this.linkedAssemblies.Add(assembly);
-		}
-
 		private Type GetTypeToCache(string typeName, Assembly assembly)
 		{
 			Type type = null;
@@ -670,12 +606,7 @@ namespace JsonFx.Compilation
 			type = this.GetTypeFromAssemblies(base.ReferencedAssemblies, typeName, false);
 			if (type == null)
 			{
-				type = this.GetTypeFromAssemblies(this.linkedAssemblies, typeName, false);
-				if (type == null)
-				{
-					throw new HttpParseException(String.Format(ErrorCouldNotCreateType, typeName), null, base.VirtualPath, this.sourceText, this.lineNumber);
-				}
-				return type;
+				throw new HttpParseException(String.Format(ErrorCouldNotCreateType, typeName), null, base.VirtualPath, this.sourceText, this.lineNumber);
 			}
 			return type;
 		}
