@@ -28,6 +28,11 @@
 \*---------------------------------------------------------------------------------*/
 #endregion BuildTools License
 
+#if __MonoCS__
+// remove JSLINT for Mono Framework
+#undef JSLINT
+#endif
+
 using System;
 using System.IO;
 using System.Collections.Generic;
@@ -85,9 +90,15 @@ namespace BuildTools.ScriptCompactor
 			// write out header with copyright and timestamp
 			ScriptCompactor.WriteHeader(output, copyright, timeStamp);
 
+			List<ParseException> errors;
+#if JSLINT
 			// verify
 			JSLint jslint = new JSLint();
 			jslint.Run(inputFile, inputSource);
+			errors = jslint.Errors;
+#else
+			errors = new List<ParseException>();
+#endif
 
 			// compact and write out results
 			try
@@ -104,16 +115,16 @@ namespace BuildTools.ScriptCompactor
 			}
 			catch (ParseException ex)
 			{
-				jslint.Errors.Add(ex);
+				errors.Add(ex);
 			}
 			catch (Exception ex)
 			{
 				// a bad JSLint error could cause JSMin to choke
-				jslint.Errors.Add(new ParseError(ex.Message, inputFile, -1, -1, ex));
+				errors.Add(new ParseError(ex.Message, inputFile, -1, -1, ex));
 			}
 
 			// return any errors
-			return jslint.Errors;
+			return errors;
 		}
 
 		#endregion Public Methods
