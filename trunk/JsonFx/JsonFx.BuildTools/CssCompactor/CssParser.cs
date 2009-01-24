@@ -707,22 +707,22 @@ namespace BuildTools.CssCompactor
 			return true;
 		}
 
-		/// <summary>
-		/// 
-		/// </summary>
-		/// <param name="ch"></param>
-		/// <returns>Success</returns>
-		private bool Peek(out char ch)
-		{
-			int c = this.reader.Peek();
-			if (c < 0)
-			{
-				ch = '\0';
-				return false;
-			}
-			ch = (char)c;
-			return true;
-		}
+		///// <summary>
+		///// 
+		///// </summary>
+		///// <param name="ch"></param>
+		///// <returns>Success</returns>
+		//private bool Peek(out char ch)
+		//{
+		//    int c = this.reader.Peek();
+		//    if (c < 0)
+		//    {
+		//        ch = '\0';
+		//        return false;
+		//    }
+		//    ch = (char)c;
+		//    return true;
+		//}
 
 		/// <summary>
 		/// Copies chars from start until the position before the current position
