@@ -42,7 +42,8 @@ namespace JsonFx.Handlers
 
 		IHttpHandler IHttpHandlerFactory.GetHandler(HttpContext context, string verb, string url, string path)
 		{
-			if (String.IsNullOrEmpty(context.Request.PathInfo))
+			if ("GET".Equals(verb, StringComparison.OrdinalIgnoreCase) &&
+				String.IsNullOrEmpty(context.Request.PathInfo))
 			{
 				// output service javascript proxy
 				return new ResourceHandler();
