@@ -30,11 +30,13 @@
 	<% } %>
 
 <form id="F" runat="server">
-<div class="js-MessageArea">
+<jbst:Control runat="server"
+	name="Example.congrats"
+	data="{hostName:window.location.host,renderTime:Example.renderTime,serverName:Example.serverName}">
 
 	<p class="ReadMe">See <a href="http://help.jsonfx.net/instructions">http://help.jsonfx.net/instructions</a> for configuration help.</p>
     
-</div>
+</jbst:Control>
 </form>
 
 </body>
