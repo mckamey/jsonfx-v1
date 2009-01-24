@@ -50,8 +50,7 @@ namespace JsonFx.Compilation
 	/// <summary>
 	/// BuildProvider for JSON-RPC services.
 	/// </summary>
-	[BuildProviderAppliesTo(BuildProviderAppliesTo.Web)]
-	[PermissionSet(SecurityAction.Demand, Unrestricted = true)]
+	[PermissionSet(SecurityAction.Demand, Unrestricted=true)]
 	public class JsonServiceBuildProvider : System.Web.Compilation.BuildProvider
 	{
 		#region Constants

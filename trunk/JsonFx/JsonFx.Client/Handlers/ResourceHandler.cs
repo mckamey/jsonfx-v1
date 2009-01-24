@@ -135,7 +135,7 @@ namespace JsonFx.Handlers
 
 		protected internal static string GetResourceUrl(string path, bool isDebug)
 		{
-			CompiledBuildResult info = CompiledBuildResult.Create(path, true);
+			CompiledBuildResult info = CompiledBuildResult.Create(path);
 			if (info == null)
 			{
 				return path;
@@ -169,10 +169,10 @@ namespace JsonFx.Handlers
 		protected virtual CompiledBuildResult GetResourceInfo(HttpContext context, bool isDebug)
 		{
 			string virtualPath = context.Request.AppRelativeCurrentExecutionFilePath;
-			CompiledBuildResult info = CompiledBuildResult.Create(virtualPath, true);
+			CompiledBuildResult info = CompiledBuildResult.Create(virtualPath);
 			if (info == null)
 			{
-				throw new HttpException(404, "Resource not found.");
+				throw new HttpException(404, "Resource not found: "+virtualPath);
 			}
 
 			// check if client has cached copy

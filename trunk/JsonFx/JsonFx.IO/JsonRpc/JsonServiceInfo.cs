@@ -30,6 +30,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Web.Compilation;
 using System.Reflection;
 
 using JsonFx.Handlers;
@@ -55,6 +56,21 @@ namespace JsonFx.JsonRpc
 		#endregion JsonServiceInfo Methods
 
 		#region Static Methods
+
+		/// <summary>
+		/// JsonServiceInfo Factory method
+		/// </summary>
+		/// <param name="virtualPath"></param>
+		/// <returns></returns>
+		protected internal new static JsonServiceInfo Create(string virtualPath)
+		{
+			//if (virtualPath.StartsWith("/"))
+			//{
+			//    virtualPath = "~"+virtualPath;
+			//}
+
+			return (JsonServiceInfo)BuildManager.CreateInstanceFromVirtualPath(virtualPath, typeof(JsonServiceInfo));
+		}
 
 		/// <summary>
 		/// Gets a mapping of parameter position to parameter name for a given method.

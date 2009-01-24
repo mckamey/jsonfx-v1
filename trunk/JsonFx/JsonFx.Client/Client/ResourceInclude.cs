@@ -135,7 +135,7 @@ namespace JsonFx.Client
 		protected override void Render(HtmlTextWriter writer)
 		{
 			string url = this.SourceUrl;
-			CompiledBuildResult info = CompiledBuildResult.Create(url, true);
+			CompiledBuildResult info = CompiledBuildResult.Create(url);
 			if (info == null)
 			{
 				throw new ArgumentException(String.Format(
