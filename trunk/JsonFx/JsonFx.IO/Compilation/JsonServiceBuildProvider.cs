@@ -615,7 +615,9 @@ namespace JsonFx.Compilation
 		private Type GetTypeFromAssemblies(ICollection assemblies, string typeName, bool ignoreCase)
 		{
 			if (assemblies == null)
+			{
 				return null;
+			}
 
 			Type type = null;
 			foreach (Assembly assembly in assemblies)
