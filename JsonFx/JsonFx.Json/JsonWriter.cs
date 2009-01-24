@@ -1090,7 +1090,6 @@ namespace JsonFx.Json
 		private static Enum[] GetFlagList(Type enumType, object value)
 		{
 			ulong longVal = Convert.ToUInt64(value);
-			string[] enumNames = Enum.GetNames(enumType);
 			Array enumValues = Enum.GetValues(enumType);
 
 			List<Enum> enums = new List<Enum>(enumValues.Length);
