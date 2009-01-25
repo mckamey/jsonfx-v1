@@ -1,20 +1,22 @@
-2009-01-22 @ 09:45
+2009-01-25 @ 09:47
 
-- create JSBT auto-binding server-control (or at least refine pattern)
-- rebuild http://jsonfx.net site using StarterKit chrome
-- client-side localization: add support for <%= Resources.Foo.Bar %>
+- add finishing touched to http://jsonfx.net
 - reconcile overlap between JsonFx libs and jQuery:
 	- JsonFx.UI.Binding vs. jQuery.ready
+- clean up server-side jbst:control
+- fully support Mod_mono Apache hosting
+- client-side localization: add support for <%= Resources.Foo.Bar %>
+- rebuild JsonFx Ajax History to use doc frag
+- enable CDN support to JsonFx:ResourceInclude  (e.g. Google AJAX APIs)
 - convert VSS2SVN
 	- Create a Google Code repository http://code.google.com/hosting/createProject
 - release CssUserAgent as a stand-alone script
 - emit CSS merge as imports during debug
-- enable CDN support to JsonFx:ResourceInclude  (e.g. Google AJAX APIs)
 - build jQuery extension for JsonML / JSBT (e.g. jQuery plugin )
 - add VS2K8 IntelliSense support for JsonFx libs:
 	- add XML comments
 	- ease the burden of adding resource include tags
-- rebuild JsonFx Ajax History to use hashes
+
 
 ___________________________________________________________________________________
 
