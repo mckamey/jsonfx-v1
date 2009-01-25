@@ -43,6 +43,11 @@ namespace JsonFx.UI.Jbst
 
 		protected override void Render(HtmlTextWriter writer)
 		{
+			if (String.IsNullOrEmpty(this.Name))
+			{
+				throw new ArgumentNullException("jbst:Control Name cannot be empty.");
+			}
+
 			string hook = Guid.NewGuid().ToString("N");
 
 			// render the placeholder hook
@@ -61,7 +66,14 @@ namespace JsonFx.UI.Jbst
 			writer.Write("\",function(elem){return JsonFx.UI.bind((");
 			writer.Write(this.Name);
 			writer.Write("),(");
-			writer.Write(this.Data);
+			if (String.IsNullOrEmpty(this.Data))
+			{
+				writer.Write("{}");
+			}
+			else
+			{
+				writer.Write(this.Data);
+			}
 			writer.Write("))||elem;},null);</script>");
 		}
 
