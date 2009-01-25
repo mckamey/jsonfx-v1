@@ -1,9 +1,10 @@
 2009-01-25 @ 09:47
 
 - add finishing touches to http://jsonfx.net
+- update any documentation that might be affected
+- clean up server-side jbst:control
 - reconcile overlap between JsonFx libs and jQuery:
 	- JsonFx.UI.Binding vs. jQuery.ready
-- clean up server-side jbst:control
 - fully support Mod_mono Apache hosting
 - client-side localization: add support for <%= Resources.Foo.Bar %>
 - rebuild JsonFx Ajax History to use doc frag
