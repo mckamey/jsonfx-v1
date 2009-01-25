@@ -1,6 +1,5 @@
-2009-01-25 @ 09:58
+2009-01-25 @ 13:32
 
-- add finishing touches to http://jsonfx.net
 - update any documentation that might be affected
 - clean up server-side jbst:control
 - reconcile overlap between JsonFx libs and jQuery:
