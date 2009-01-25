@@ -91,16 +91,6 @@ JsonFx.Bindings = function() {
 				for (i=0; i<classes.length; i++) {
 					css = classes[i];
 					if (css && tagBindings[css] && tagBindings[css][a]) {
-
-						// allow element to provide parameters for bindings
-						options = elem.getAttribute("jsonfx:options");
-						if (options && "string" === typeof options) {
-							try {
-								// treat string as JSON
-								options = JSON.parse(options, JsonFx.jsonReviver);
-							} catch (ex) { }
-						}
-
 						try {
 							// perform action on element and
 							// allow binding to replace element
