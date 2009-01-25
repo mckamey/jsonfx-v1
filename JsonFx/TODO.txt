@@ -1,7 +1,7 @@
 2009-01-25 @ 13:32
 
-- update any documentation that might be affected
 - clean up server-side jbst:control
+- update any documentation that might be affected
 - reconcile overlap between JsonFx libs and jQuery:
 	- JsonFx.UI.Binding vs. jQuery.ready
 - fully support Mod_mono Apache hosting
