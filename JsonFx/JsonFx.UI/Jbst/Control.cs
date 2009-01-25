@@ -58,11 +58,11 @@ namespace JsonFx.UI.Jbst
 			// render the binding script
 			writer.Write("<script type=\"text/javascript\">JsonFx.Bindings.register(\"div\",\"");
 			writer.Write(hook);
-			writer.Write("\",function(elem){var jbst=elem&&JsonFx.UI.bind(");
+			writer.Write("\",function(elem){return JsonFx.UI.bind((");
 			writer.Write(this.Name);
-			writer.Write(",");
+			writer.Write("),(");
 			writer.Write(this.Data);
-			writer.Write(");if(jbst){JsonFx.UI.clear(elem);return jbst;}},null);</script>");
+			writer.Write("))||elem;},null);</script>");
 		}
 
 		#endregion Page Event Handlers
