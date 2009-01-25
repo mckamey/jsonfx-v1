@@ -89,7 +89,8 @@ namespace JsonFx.UI.Jbst
 
 		#region Fields
 
-		private readonly string commandName;
+		private bool isProcessed;
+		private readonly string commandType;
 		private string controlName;
 		private string dataExpr;
 		private string indexExpr;
@@ -104,7 +105,7 @@ namespace JsonFx.UI.Jbst
 		/// <param name="commandName"></param>
 		public JbstCustomControl(string commandName)
 		{
-			this.commandName = (commandName == null) ?
+			this.commandType = (commandName == null) ?
 				String.Empty :
 				commandName.ToLowerInvariant();
 		}
@@ -116,7 +117,7 @@ namespace JsonFx.UI.Jbst
 		[JsonName("rawName")]
 		public override string RawName
 		{
-			get { return JbstCustomControl.JbstPrefix + this.commandName; }
+			get { return JbstCustomControl.JbstPrefix + this.commandType; }
 		}
 
 		#endregion Properties
@@ -125,10 +126,15 @@ namespace JsonFx.UI.Jbst
 
 		private void EnsureControl()
 		{
+			if (this.isProcessed)
+			{
+				return;
+			}
+
 			#region Control Name
 
 			// placeholder does not need a named JBST
-			if (JbstCustomControl.ControlCommand.Equals(this.commandName, StringComparison.OrdinalIgnoreCase))
+			if (JbstCustomControl.ControlCommand.Equals(this.commandType, StringComparison.OrdinalIgnoreCase))
 			{
 				if (this.Attributes.ContainsKey(ControlNameKey))
 				{
@@ -146,79 +152,82 @@ namespace JsonFx.UI.Jbst
 
 			#region Control Data
 
-			object dataExpr = null;
+			object dataParam = null;
 			if (this.Attributes.ContainsKey(ControlDataKey))
 			{
-				dataExpr = this.Attributes[ControlDataKey];
+				dataParam = this.Attributes[ControlDataKey];
 			}
 			else if (this.Attributes.ContainsKey(ControlDataKeyAlt))
 			{
 				// backwards compatibility with "jbst:data"
-				dataExpr = this.Attributes[ControlDataKeyAlt];
+				dataParam = this.Attributes[ControlDataKeyAlt];
 			}
 
-			if (dataExpr == null)
+			if (dataParam == null)
 			{
 				this.dataExpr = DefaultDataExpression;
 			}
-			else if (dataExpr is JbstExpressionBlock)
+			else if (dataParam is JbstExpressionBlock)
 			{
 				// convert to inline expression
-				this.dataExpr = ((JbstExpressionBlock)dataExpr).Code;
+				this.dataExpr = ((JbstExpressionBlock)dataParam).Code;
 			}
-			else if (dataExpr is JbstCodeBlock)
+			else if (dataParam is JbstCodeBlock)
 			{
 				// convert to anonymous function expression
 				this.dataExpr = String.Format(
 					FunctionEvalExpression,
-					JsonWriter.Serialize(dataExpr));
+					JsonWriter.Serialize(dataParam));
 			}
 			else
 			{
 				// convert to literal expression
-				this.dataExpr = JsonWriter.Serialize(dataExpr);
+				this.dataExpr = JsonWriter.Serialize(dataParam);
 			}
+			this.dataExpr = this.dataExpr.Trim();
 
 			#endregion Control Data
 
 			#region Control Index
 
-			object indexExpr = null;
+			object indexParam = null;
 			if (this.Attributes.ContainsKey(ControlIndexKey))
 			{
-				indexExpr = this.Attributes[ControlIndexKey];
+				indexParam = this.Attributes[ControlIndexKey];
 			}
 			else if (this.Attributes.ContainsKey(ControlIndexKeyAlt))
 			{
 				// backwards compatibility with "jbst:index"
-				indexExpr = this.Attributes[ControlIndexKeyAlt];
+				indexParam = this.Attributes[ControlIndexKeyAlt];
 			}
 
-			if (indexExpr == null)
+			if (indexParam == null)
 			{
 				this.indexExpr = DefaultIndexExpression;
 			}
-			else if (indexExpr is JbstExpressionBlock)
+			else if (indexParam is JbstExpressionBlock)
 			{
 				// convert to inline expression
-				this.indexExpr = ((JbstExpressionBlock)indexExpr).Code;
+				this.indexExpr = ((JbstExpressionBlock)indexParam).Code;
 			}
-			else if (indexExpr is JbstCodeBlock)
+			else if (indexParam is JbstCodeBlock)
 			{
 				// convert to anonymous function expression
 				this.indexExpr = String.Format(
 					FunctionEvalExpression,
-					JsonWriter.Serialize(indexExpr));
+					JsonWriter.Serialize(indexParam));
 			}
 			else
 			{
 				// convert to literal expression
-				this.indexExpr = JsonWriter.Serialize(indexExpr);
+				this.indexExpr = JsonWriter.Serialize(indexParam);
 			}
+			this.indexExpr = this.indexExpr.Trim();
 
 			#endregion Control Index
 
 			this.Attributes.Clear();
+			this.isProcessed = true;
 		}
 
 		private void RenderCustomControl(JsonWriter writer)
@@ -276,7 +285,7 @@ namespace JsonFx.UI.Jbst
 		{
 			this.EnsureControl();
 
-			switch (this.commandName)
+			switch (this.commandType)
 			{
 				case JbstCustomControl.ControlCommand:
 				{
