@@ -1,8 +1,8 @@
 Release History
 
 v1.0.0901.25xx
-- allowing JBST Controls and PlaceHolders to specify data and index as code expression
-- adding JBST server control for specifying jbst/data hooks on page
+- enabled JBST Controls and PlaceHolders to specify data and index as code expression
+- added JBST server control for specifying jbst/data hooks on page
 - simplified JBST compiler output
 - improved compatibility with Mono Framework
 - full compatibility with environments missing MSScriptControl

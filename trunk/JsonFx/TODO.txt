@@ -1,6 +1,6 @@
 2009-01-25 @ 09:47
 
-- add finishing touched to http://jsonfx.net
+- add finishing touches to http://jsonfx.net
 - reconcile overlap between JsonFx libs and jQuery:
 	- JsonFx.UI.Binding vs. jQuery.ready
 - clean up server-side jbst:control
