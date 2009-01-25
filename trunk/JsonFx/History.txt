@@ -6,6 +6,7 @@ v1.0.0901.xxxx
 - improved compatibility with Mono Framework
 - improved compatibility with environments missing MSScriptControl
 - added "JSLINT" conditional compilation symbols to enable/disable JSLint compilation.
+- removed jsonfx:options attribute auto-parsing
 
 v1.0.0901.1919:
 - begining to better leverage jQuery if present
