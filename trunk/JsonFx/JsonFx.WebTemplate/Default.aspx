@@ -23,7 +23,7 @@
 		if application is being run as a virtual directory
 		then we need to let the JSON-RPC marshalling system
 		know it needs to adjust the end-point URLs
-		NOTE: you can remove this when app root is always "/"
+		NOTE: you can remove this when app root will always be "/"
 	--%>
 	<% if (HttpRuntime.AppDomainAppVirtualPath.Length > 1) { %>
 		<script type="text/javascript">JsonFx.IO.Service.setAppRoot("<%= HttpRuntime.AppDomainAppVirtualPath %>");</script>
