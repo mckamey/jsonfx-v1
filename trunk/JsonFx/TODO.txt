@@ -1,4 +1,4 @@
-2009-01-25 @ 09:47
+2009-01-25 @ 09:58
 
 - add finishing touches to http://jsonfx.net
 - update any documentation that might be affected
@@ -8,7 +8,7 @@
 - fully support Mod_mono Apache hosting
 - client-side localization: add support for <%= Resources.Foo.Bar %>
 - rebuild JsonFx Ajax History to use doc frag
-- enable CDN support to JsonFx:ResourceInclude  (e.g. Google AJAX APIs)
+- add CDN support to JsonFx:ResourceInclude  (e.g. Google AJAX APIs)
 - convert VSS2SVN
 	- Create a Google Code repository http://code.google.com/hosting/createProject
 - release CssUserAgent as a stand-alone script
