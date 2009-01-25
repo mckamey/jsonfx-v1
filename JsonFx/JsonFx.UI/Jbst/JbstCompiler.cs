@@ -882,7 +882,7 @@ if (""undefined"" === typeof {0}) {{
 			}
 
 			// TODO: scrub name for valid identifier
-			return ident;
+			return ident.Trim();
 		}
 
 		/// <summary>
