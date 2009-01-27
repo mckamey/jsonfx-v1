@@ -993,7 +993,20 @@ namespace JsonFx.Json
 					String.Format(JsonReader.ErrorDefaultCtor, objectType.FullName),
 					this.index);
 			}
-			Object result = ctor.Invoke(null);
+			Object result;
+			try
+			{
+				// always try-catch Invoke() to expose real exception
+				result = ctor.Invoke(null);
+			}
+			catch (TargetInvocationException ex)
+			{
+				if (ex.InnerException != null)
+				{
+					throw new JsonDeserializationException(ex.InnerException.Message, ex.InnerException, this.index);
+				}
+				throw new JsonDeserializationException("Error instantiating "+objectType.FullName, ex, this.index);
+			}
 
 			// don't incurr the cost of member map for dictionaries
 			if (!typeof(IDictionary).IsAssignableFrom(objectType))
@@ -1338,7 +1351,20 @@ namespace JsonFx.Json
 					String.Format(JsonReader.ErrorDefaultCtor, targetType.FullName),
 					index);
 			}
-			object collection = defaultCtor.Invoke(null);
+			object collection;
+			try
+			{
+				// always try-catch Invoke() to expose real exception
+				collection = defaultCtor.Invoke(null);
+			}
+			catch (TargetInvocationException ex)
+			{
+				if (ex.InnerException != null)
+				{
+					throw new JsonDeserializationException(ex.InnerException.Message, ex.InnerException, index);
+				}
+				throw new JsonDeserializationException("Error instantiating "+targetType.FullName, ex, index);
+			}
 
 			// many ICollection types have an AddRange method
 			// which adds all items at once
@@ -1350,10 +1376,22 @@ namespace JsonFx.Json
 			if (paramType != null &&
 				paramType.IsAssignableFrom(arrayType))
 			{
-				// add all members in one method
-				method.Invoke(
-					collection,
-					new object[] { value });
+				try
+				{
+					// always try-catch Invoke() to expose real exception
+					// add all members in one method
+					method.Invoke(
+						collection,
+						new object[] { value });
+				}
+				catch (TargetInvocationException ex)
+				{
+					if (ex.InnerException != null)
+					{
+						throw new JsonDeserializationException(ex.InnerException.Message, ex.InnerException, index);
+					}
+					throw new JsonDeserializationException("Error calling AddRange on "+targetType.FullName, ex, index);
+				}
 				return collection;
 			}
 			else
@@ -1370,11 +1408,23 @@ namespace JsonFx.Json
 					// loop through adding items to collection
 					foreach (object item in (IEnumerable)value)
 					{
-						method.Invoke(
-							collection,
-							new object[] {
+						try
+						{
+							// always try-catch Invoke() to expose real exception
+							method.Invoke(
+								collection,
+								new object[] {
 									JsonReader.CoerceType(paramType, item, index, allowNullValueTypes)
 								});
+						}
+						catch (TargetInvocationException ex)
+						{
+							if (ex.InnerException != null)
+							{
+								throw new JsonDeserializationException(ex.InnerException.Message, ex.InnerException, index);
+							}
+							throw new JsonDeserializationException("Error calling Add on "+targetType.FullName, ex, index);
+						}
 					}
 					return collection;
 				}
