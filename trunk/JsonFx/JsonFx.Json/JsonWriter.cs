@@ -879,7 +879,7 @@ namespace JsonFx.Json
 					this.WriteLine();
 					this.Write(this.TypeHintName);
 					this.writer.Write(JsonReader.OperatorNameDelim);
-					this.Write(type.FullName, true);
+					this.Write(type.FullName+", "+type.Assembly.GetName().Name, true);
 				}
 
 				bool anonymousType = type.IsGenericType && type.Name.StartsWith(JsonWriter.AnonymousTypePrefix);
