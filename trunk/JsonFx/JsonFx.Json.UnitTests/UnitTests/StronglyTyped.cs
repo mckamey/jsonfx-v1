@@ -519,4 +519,19 @@ namespace JsonFx.Json.Test.UnitTests
 		Three,
 		Four
 	}
+
+	public class ErrorProneSimpleObject : SimpleObject
+	{
+		#region Init
+
+		/// <summary>
+		/// Ctor
+		/// </summary>
+		public ErrorProneSimpleObject()
+		{
+			throw new NotImplementedException("ErrorProneSimpleObject always throws an error in the constructor.");
+		}
+
+		#endregion Init
+	}
 }
