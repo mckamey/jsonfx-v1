@@ -167,6 +167,11 @@ namespace JsonFx.Handlers
 				throw new ArgumentNullException("context.Response");
 			}
 
+			// this is needed otherwise other headers aren't set
+			context.Response.Cache.SetCacheability(cacheability);
+			// this is needed otherwise other settings are ignored
+			context.Response.Cache.SetOmitVaryStar(true);
+
 			// check request ETag
 			bool isCached = false;
 			string requestETag = request.Headers[ETag.RequestETagHeader];
@@ -229,9 +234,6 @@ namespace JsonFx.Handlers
 					response.AddHeader(ETag.ResponseDateHeader, entityDate);
 				}
 			}
-
-			// this is needed otherwise other headers aren't set
-			context.Response.Cache.SetCacheability(cacheability);
 
 			return isCached;
 		}

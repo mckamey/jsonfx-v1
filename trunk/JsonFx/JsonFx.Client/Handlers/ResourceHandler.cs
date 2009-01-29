@@ -69,7 +69,7 @@ namespace JsonFx.Handlers
 			{
 				// if the content changes then so will the hash
 				// so we can effectively cache this forever
-				context.Response.ExpiresAbsolute = DateTime.UtcNow.AddYears(5);
+				context.Response.ExpiresAbsolute = DateTime.UtcNow.AddYears(1);
 			}
 
 			context.Response.ContentType = info.ContentType;
@@ -133,12 +133,15 @@ namespace JsonFx.Handlers
 			return path+query;
 		}
 
-		protected internal static string GetResourceUrl(string path, bool isDebug)
+		protected internal static string GetResourceUrl(CompiledBuildResult info, string path, bool isDebug)
 		{
-			CompiledBuildResult info = CompiledBuildResult.Create(path);
 			if (info == null)
 			{
-				return path;
+				info = CompiledBuildResult.Create(path);
+				if (info == null)
+				{
+					return path;
+				}
 			}
 
 			string cache;
