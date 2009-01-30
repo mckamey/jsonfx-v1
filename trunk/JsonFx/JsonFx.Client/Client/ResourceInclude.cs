@@ -165,18 +165,14 @@ namespace JsonFx.Client
 		protected override void Render(HtmlTextWriter writer)
 		{
 			string url = this.SourceUrl;
-			CompiledBuildResult info = CompiledBuildResult.Create(url);
+			IBuildResultMeta info = this.GetResourceInfo(url);
 			if (info == null)
 			{
-				info = this.ResolveUnknownResource(url);
-				if (info == null)
-				{
-					throw new ArgumentException(String.Format(
-						"Error loading resources for \"{0}\".\r\n"+
-						"This can be caused by an invalid path, build errors, or incorrect configuration.\r\n"+
-						"Check http://help.jsonfx.net/instructions for troubleshooting.",
-						url));
-				}
+				throw new ArgumentException(String.Format(
+					"Error loading resources for \"{0}\".\r\n"+
+					"This can be caused by an invalid path, build errors, or incorrect configuration.\r\n"+
+					"Check http://help.jsonfx.net/instructions for troubleshooting.",
+					url));
 			}
 
 			url = ResourceHandler.GetResourceUrl(info, url, this.isDebug);
@@ -223,9 +219,9 @@ namespace JsonFx.Client
 			}
 		}
 
-		protected virtual CompiledBuildResult ResolveUnknownResource(string url)
+		protected virtual IBuildResultMeta GetResourceInfo(string url)
 		{
-			return null;
+			return CompiledBuildResult.Create(url);
 		}
 
 		#endregion Page Event Handlers
