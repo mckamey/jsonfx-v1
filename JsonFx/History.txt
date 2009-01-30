@@ -1,6 +1,6 @@
 Release History
 
-v1.0.0901.xxxx
+v1.0.0901.2923
 - fixing long-standing caching bug whereby .NET added "Vary: *" header
 - adding hooks to reference resources which precompiled by BuildManager in ResourceIncludes
 - reduced one BuildManager instantiation ResourceHandler
