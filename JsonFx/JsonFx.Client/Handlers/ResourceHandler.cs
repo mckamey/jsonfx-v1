@@ -133,7 +133,7 @@ namespace JsonFx.Handlers
 			return path+query;
 		}
 
-		protected internal static string GetResourceUrl(CompiledBuildResult info, string path, bool isDebug)
+		protected internal static string GetResourceUrl(IBuildResultMeta info, string path, bool isDebug)
 		{
 			if (info == null)
 			{
@@ -149,9 +149,13 @@ namespace JsonFx.Handlers
 			{
 				cache = '?'+ResourceHandler.DebugFlag;
 			}
-			else
+			else if (!String.IsNullOrEmpty(info.Hash))
 			{
 				cache = '?'+info.Hash;
+			}
+			else
+			{
+				cache = "";
 			}
 
 			int index = path.IndexOf('?');

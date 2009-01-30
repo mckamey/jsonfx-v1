@@ -51,7 +51,25 @@ namespace JsonFx.Handlers
 		Deflate
 	}
 
-	public abstract class CompiledBuildResult
+	public interface IBuildResultMeta
+	{
+		/// <summary>
+		/// Gets the file hash for the resulting resource data
+		/// </summary>
+		string ContentType { get; }
+
+		/// <summary>
+		/// Gets the file extension for the resulting resource data
+		/// </summary>
+		string FileExtension { get; }
+
+		/// <summary>
+		/// Gets the file hash for the compacted resource data
+		/// </summary>
+		string Hash { get; }
+	}
+
+	public abstract class CompiledBuildResult : IBuildResultMeta
 	{
 		#region Constants
 
@@ -95,6 +113,16 @@ namespace JsonFx.Handlers
 		/// Gets the file hash for the compacted resource data
 		/// </summary>
 		public abstract string Hash { get; }
+
+		/// <summary>
+		/// Gets the MIME type for the resulting data
+		/// </summary>
+		public abstract string ContentType { get; }
+
+		/// <summary>
+		/// Gets the file extension for the resulting data
+		/// </summary>
+		public abstract string FileExtension { get; }
 
 		#endregion Properties
 
@@ -262,13 +290,5 @@ namespace JsonFx.Handlers
 		}
 
 		#endregion Factory Methods
-
-		#region CompiledBuildResult Members
-
-		public abstract string ContentType { get; }
-
-		public abstract string FileExtension { get; }
-
-		#endregion CompiledBuildResult Members
 	}
 }
