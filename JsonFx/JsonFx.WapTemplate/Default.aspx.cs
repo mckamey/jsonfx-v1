@@ -8,11 +8,13 @@ namespace JsonFx.WapTemplate
 		{
 			this.PageData["Example.renderTime"] = DateTime.Now;
 			this.PageData["Example.serverName"] = this.Server.MachineName;
+			this.PageData["Example.JsonFxVersion"] = JsonFx.About.Fx.Version;
 
-#if !DEBUG
-			// improve the Yslow rating
-			JsonFx.Handlers.CompiledBuildResult.EnableStreamCompression(this.Context);
-#endif
+			if (!this.Context.IsDebuggingEnabled)
+			{
+				// improve the Yslow rating
+				JsonFx.Handlers.CompiledBuildResult.EnableStreamCompression(this.Context);
+			}
 		}
 	}
 }

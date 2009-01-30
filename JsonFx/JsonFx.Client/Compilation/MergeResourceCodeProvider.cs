@@ -57,7 +57,6 @@ namespace JsonFx.Compilation
 		private string contentType;
 		private string fileExtension;
 		private bool isMimeSet;
-		private bool buildAboutScript;
 
 		#endregion Fields
 
@@ -82,7 +81,6 @@ namespace JsonFx.Compilation
 			this.contentType = "text/plain";
 			this.fileExtension = "txt";
 			this.isMimeSet = false;
-			this.buildAboutScript = false;
 		}
 
 		protected internal override void ProcessResource(
@@ -209,13 +207,9 @@ namespace JsonFx.Compilation
 				}
 			}
 
-			if (this.buildAboutScript)
-			{
-				string aboutDebug, about;
-				AboutScriptProvider.GetAboutScript(out aboutDebug, out about);
-				compacts.Append(about);
-				resources.Append(aboutDebug);
-			}
+			resources.AppendLine();
+			resources.AppendFormat("/* JsonFx v{0} */", JsonFx.About.Fx.Version);
+
 			resource = resources.ToString();
 			compacted = compacts.ToString();
 		}
@@ -243,13 +237,6 @@ namespace JsonFx.Compilation
 			// load resources from Assembly
 			Assembly assembly = Assembly.Load(parts[1]);
 			helper.AddAssemblyDependency(assembly);
-
-			// TODO: improve the robustness of this logic
-			// perhaps the public key?
-			if (assembly.FullName.StartsWith("JsonFx"))
-			{
-				this.buildAboutScript = true;
-			}
 
 			ManifestResourceInfo info = assembly.GetManifestResourceInfo(parts[0]);
 			if (info == null)
