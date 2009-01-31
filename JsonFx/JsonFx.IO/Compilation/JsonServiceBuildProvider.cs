@@ -182,7 +182,8 @@ namespace JsonFx.Compilation
 			resourceType.IsClass = true;
 			resourceType.Name = this.ResourceTypeName;
 			resourceType.Attributes = MemberAttributes.Public|MemberAttributes.Final;
-			resourceType.BaseTypes.Add(typeof(JsonServiceInfo));
+			resourceType.BaseTypes.Add(typeof(IJsonServiceInfo));
+			resourceType.BaseTypes.Add(typeof(IOptimizedResult));
 			ns.Types.Add(resourceType);
 
 			#endregion public sealed class ResourceTypeName : CompiledBuildResult
@@ -223,41 +224,41 @@ namespace JsonFx.Compilation
 
 			#endregion private static readonly byte[] DeflatedBytes
 
-			#region public override string PrettyPrinted { get; }
+			#region string IOptimizedResult.PrettyPrinted { get; }
 
 			// add a readonly property with the debug proxy code string
 			CodeMemberProperty property = new CodeMemberProperty();
 			property.Name = "PrettyPrinted";
 			property.Type = new CodeTypeReference(typeof(String));
-			property.Attributes = MemberAttributes.Public|MemberAttributes.Override;
+			property.PrivateImplementationType = new CodeTypeReference(typeof(IOptimizedResult));
 			property.HasGet = true;
 			// get { return debugProxyOutput; }
 			property.GetStatements.Add(new CodeMethodReturnStatement(new CodePrimitiveExpression(debugProxyOutput)));
 			resourceType.Members.Add(property);
 
-			#endregion public override string PrettyPrinted { get; }
+			#endregion string IOptimizedResult.PrettyPrinted { get; }
 
-			#region public override string Compacted { get; }
+			#region string IOptimizedResult.Compacted { get; }
 
 			// add a readonly property with the proxy code string
 			property = new CodeMemberProperty();
 			property.Name = "Compacted";
 			property.Type = new CodeTypeReference(typeof(String));
-			property.Attributes = MemberAttributes.Public|MemberAttributes.Override;
+			property.PrivateImplementationType = new CodeTypeReference(typeof(IOptimizedResult));
 			property.HasGet = true;
 			// get { return proxyOutput; }
 			property.GetStatements.Add(new CodeMethodReturnStatement(new CodePrimitiveExpression(proxyOutput)));
 			resourceType.Members.Add(property);
 
-			#endregion public override string Compacted { get; }
+			#endregion string IOptimizedResult.Compacted { get; }
 
-			#region public override byte[] Gzipped { get; }
+			#region byte[] IOptimizedResult.Gzipped { get; }
 
 			// add a readonly property with the gzipped proxy code
 			property = new CodeMemberProperty();
 			property.Name = "Gzipped";
 			property.Type = new CodeTypeReference(typeof(byte[]));
-			property.Attributes = MemberAttributes.Public|MemberAttributes.Override;
+			property.PrivateImplementationType = new CodeTypeReference(typeof(IOptimizedResult));
 			property.HasGet = true;
 			// get { return GzippedBytes; }
 			property.GetStatements.Add(new CodeMethodReturnStatement(
@@ -266,15 +267,15 @@ namespace JsonFx.Compilation
 					"GzippedBytes")));
 			resourceType.Members.Add(property);
 
-			#endregion public override byte[] Gzipped { get; }
+			#endregion byte[] IOptimizedResult.Gzipped { get; }
 
-			#region public override byte[] Deflated { get; }
+			#region byte[] IOptimizedResult.Deflated { get; }
 
 			// add a readonly property with the deflated proxy code
 			property = new CodeMemberProperty();
 			property.Name = "Deflated";
 			property.Type = new CodeTypeReference(typeof(byte[]));
-			property.Attributes = MemberAttributes.Public|MemberAttributes.Override;
+			property.PrivateImplementationType = new CodeTypeReference(typeof(IOptimizedResult));
 			property.HasGet = true;
 			// get { return DeflatedBytes; }
 			property.GetStatements.Add(new CodeMethodReturnStatement(
@@ -283,54 +284,85 @@ namespace JsonFx.Compilation
 					"DeflatedBytes")));
 			resourceType.Members.Add(property);
 
-			#endregion public override byte[] Deflated { get; }
+			#endregion byte[] IOptimizedResult.Deflated { get; }
 
-			#region public override string Hash { get; }
+			#region string IBuildResultMeta.Hash { get; }
 
-			// add a readonly property with the resource data
+			// add a readonly property with the hash of the resource data
 			property = new CodeMemberProperty();
 			property.Name = "Hash";
 			property.Type = new CodeTypeReference(typeof(String));
-			property.Attributes = MemberAttributes.Public|MemberAttributes.Override;
+			property.PrivateImplementationType = new CodeTypeReference(typeof(IBuildResultMeta));
 			property.HasGet = true;
 			// get { return hash; }
 
 			property.GetStatements.Add(new CodeMethodReturnStatement(new CodePrimitiveExpression(hash)));
 			resourceType.Members.Add(property);
 
-			#endregion public override string Hash { get; }
+			#endregion string IBuildResultMeta.Hash { get; }
 
-			#region public override Type ServiceType { get; }
+			#region string IBuildResultMeta.ContentType { get; }
+
+			// add a readonly property with the MIME of the resource data
+			property = new CodeMemberProperty();
+			property.Name = "ContentType";
+			property.Type = new CodeTypeReference(typeof(String));
+			property.PrivateImplementationType = new CodeTypeReference(typeof(IBuildResultMeta));
+			property.HasGet = true;
+			// get { return ScriptResourceCodeProvider.MimeType; }
+
+			property.GetStatements.Add(new CodeMethodReturnStatement(new CodePrimitiveExpression(ScriptResourceCodeProvider.MimeType)));
+			resourceType.Members.Add(property);
+
+			#endregion string IBuildResultMeta.ContentType { get; }
+
+			#region string IBuildResultMeta.FileExtension { get; }
+
+			// add a readonly property with the extension of the resource data
+			property = new CodeMemberProperty();
+			property.Name = "FileExtension";
+			property.Type = new CodeTypeReference(typeof(String));
+			property.PrivateImplementationType = new CodeTypeReference(typeof(IBuildResultMeta));
+			property.HasGet = true;
+			// get { return ScriptResourceCodeProvider.FileExt; }
+
+			property.GetStatements.Add(new CodeMethodReturnStatement(new CodePrimitiveExpression(ScriptResourceCodeProvider.FileExt)));
+			resourceType.Members.Add(property);
+
+			#endregion string IBuildResultMeta.FileExtension { get; }
+
+			#region public Type IJrpcServiceInfo.ServiceType { get; }
 
 			// add a static field with the service type
 			property = new CodeMemberProperty();
 			property.Name = "ServiceType";
 			property.Type = new CodeTypeReference(typeof(Type));
-			property.Attributes = MemberAttributes.Public|MemberAttributes.Override;
+			property.Attributes = MemberAttributes.Public;
+			property.ImplementationTypes.Add(new CodeTypeReference(typeof(IJsonServiceInfo)));
 			property.HasGet = true;
 			// get { return typeof(serviceType); }
 			property.GetStatements.Add(new CodeMethodReturnStatement(new CodeTypeOfExpression(serviceType.FullName)));
 			resourceType.Members.Add(property);
 
-			#endregion public override Type ServiceType { get; }
+			#endregion public Type IJrpcServiceInfo.ServiceType { get; }
 
-			#region public override object CreateService();
+			#region object IJrpcServiceInfo.CreateService();
 
 			CodeMemberMethod codeMethod = new CodeMemberMethod();
 			codeMethod.Name = "CreateService";
-			codeMethod.Attributes = MemberAttributes.Public|MemberAttributes.Override;
+			codeMethod.PrivateImplementationType = new CodeTypeReference(typeof(IJsonServiceInfo));
 			codeMethod.ReturnType = new CodeTypeReference(typeof(Object));
 			// return new serviceType();
 			codeMethod.Statements.Add(new CodeMethodReturnStatement(new CodeObjectCreateExpression(serviceType)));
 			resourceType.Members.Add(codeMethod);
 
-			#endregion public override object CreateService();
+			#endregion object IJrpcServiceInfo.CreateService();
 
-			#region public override MethodInfo ResolveMethodName(string name);
+			#region MethodInfo IJrpcServiceInfo.ResolveMethodName(string name);
 
 			codeMethod = new CodeMemberMethod();
 			codeMethod.Name = "ResolveMethodName";
-			codeMethod.Attributes = MemberAttributes.Public|MemberAttributes.Override;
+			codeMethod.PrivateImplementationType = new CodeTypeReference(typeof(IJsonServiceInfo));
 			codeMethod.Parameters.Add(new CodeParameterDeclarationExpression(typeof(String), "name"));
 			codeMethod.ReturnType = new CodeTypeReference(typeof(MethodInfo));
 			CodeVariableReferenceExpression nameParam = new CodeVariableReferenceExpression("name");
@@ -341,7 +373,7 @@ namespace JsonFx.Compilation
 			nullCheck.TrueStatements.Add(new CodeMethodReturnStatement(new CodePrimitiveExpression(null)));
 			codeMethod.Statements.Add(nullCheck);
 
-			Dictionary<string, MethodInfo> methodMap = JsonServiceInfo.CreateMethodMap(serviceType);
+			Dictionary<string, MethodInfo> methodMap = JsonServiceBuildProvider.CreateMethodMap(serviceType);
 			foreach (string name in methodMap.Keys)
 			{
 				CodeConditionStatement nameTest = new CodeConditionStatement();
@@ -365,13 +397,13 @@ namespace JsonFx.Compilation
 			codeMethod.Statements.Add(new CodeMethodReturnStatement(new CodePrimitiveExpression(null)));
 			resourceType.Members.Add(codeMethod);
 
-			#endregion public override MethodInfo ResolveMethodName(string name);
+			#endregion MethodInfo IJrpcServiceInfo.ResolveMethodName(string name);
 
-			#region public override string[] GetMethodParams(string name);
+			#region string[] IJrpcServiceInfo.GetMethodParams(string name);
 
 			codeMethod = new CodeMemberMethod();
 			codeMethod.Name = "GetMethodParams";
-			codeMethod.Attributes = MemberAttributes.Public|MemberAttributes.Override;
+			codeMethod.PrivateImplementationType = new CodeTypeReference(typeof(IJsonServiceInfo));
 			codeMethod.Parameters.Add(new CodeParameterDeclarationExpression(typeof(String), "name"));
 			codeMethod.ReturnType = new CodeTypeReference(typeof(String[]));
 			CodeVariableReferenceExpression nameParam2 = new CodeVariableReferenceExpression("name");
@@ -384,7 +416,7 @@ namespace JsonFx.Compilation
 
 			foreach (MethodInfo method in methodMap.Values)
 			{
-				string[] paramMap = JsonServiceInfo.CreateParamMap(method);
+				string[] paramMap = JsonServiceBuildProvider.CreateParamMap(method);
 
 				if (paramMap.Length < 1)
 					continue;
@@ -411,16 +443,16 @@ namespace JsonFx.Compilation
 			codeMethod.Statements.Add(new CodeMethodReturnStatement(new CodeArrayCreateExpression(typeof(String[]), 0)));
 			resourceType.Members.Add(codeMethod);
 
-			#endregion public override string[] GetMethodParams(string name);
+			#endregion string[] IJrpcServiceInfo.GetMethodParams(string name);
 
 			if (this.VirtualPathDependencies.Count > 0)
 			{
 				resourceType.BaseTypes.Add(typeof(IDependentResult));
 
-				#region private static readonly string[] vpathDependencies
+				#region private static readonly string[] Dependencies
 
 				field = new CodeMemberField();
-				field.Name = "vpathDependencies";
+				field.Name = "Dependencies";
 				field.Type = new CodeTypeReference(typeof(string[]));
 				field.Attributes = MemberAttributes.Private|MemberAttributes.Static|MemberAttributes.Final;
 
@@ -433,21 +465,21 @@ namespace JsonFx.Compilation
 
 				resourceType.Members.Add(field);
 
-				#endregion private static readonly string[] vpathDependencies
+				#endregion private static readonly string[] Dependencies
 
 				#region IEnumerable<string> IDependentResult.VirtualPathDependencies { get; }
 
 				// add a readonly property returning the static data
 				property = new CodeMemberProperty();
-				property.PrivateImplementationType = new CodeTypeReference(typeof(IDependentResult));
 				property.Name = "VirtualPathDependencies";
 				property.Type = new CodeTypeReference(typeof(IEnumerable<string>));
+				property.PrivateImplementationType = new CodeTypeReference(typeof(IDependentResult));
 				property.HasGet = true;
-				// get { return vpathDependencies; }
+				// get { return Dependencies; }
 				property.GetStatements.Add(new CodeMethodReturnStatement(
 					new CodeFieldReferenceExpression(
 						new CodeTypeReferenceExpression(resourceType.Name),
-						"vpathDependencies")));
+						"Dependencies")));
 				resourceType.Members.Add(property);
 
 				#endregion IEnumerable<string> IDependentResult.VirtualPathDependencies { get; }
@@ -514,6 +546,63 @@ namespace JsonFx.Compilation
 		}
 
 		#endregion BuildProvider Methods
+
+		#region Mapping Methods
+
+		/// <summary>
+		/// Gets a mapping of parameter position to parameter name for a given method.
+		/// </summary>
+		/// <param name="method"></param>
+		/// <returns></returns>
+		private static String[] CreateParamMap(MethodInfo method)
+		{
+			ParameterInfo[] parameters = method.GetParameters();
+			string[] paramMap = new string[parameters.Length];
+			for (int i=0; i<parameters.Length; i++)
+			{
+				// map name to position
+				paramMap[i] = parameters[i].Name;
+			}
+			return paramMap;
+		}
+
+		/// <summary>
+		/// Gets a mapping of method JsonName to MethodInfo for a given type.
+		/// </summary>
+		/// <param name="serviceType"></param>
+		/// <returns></returns>
+		private static Dictionary<String, MethodInfo> CreateMethodMap(Type serviceType)
+		{
+			Dictionary<string, MethodInfo> methodMap = new Dictionary<String, MethodInfo>();
+
+			// load methods into method map
+			foreach (MethodInfo info in serviceType.GetMethods())
+			{
+				if (!info.IsPublic)
+				{
+					continue;
+				}
+
+				if (!JsonMethodAttribute.IsJsonMethod(info))
+				{
+					continue;
+				}
+
+				string jsonName = JsonMethodAttribute.GetJsonName(info);
+				if (String.IsNullOrEmpty(jsonName))
+				{
+					methodMap[info.Name] = info;
+				}
+				else
+				{
+					methodMap[jsonName] = info;
+				}
+			}
+
+			return methodMap;
+		}
+
+		#endregion Mapping Methods
 
 		#region Directive Methods
 

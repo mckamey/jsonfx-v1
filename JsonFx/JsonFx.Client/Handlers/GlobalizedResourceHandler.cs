@@ -200,7 +200,7 @@ namespace JsonFx.Handlers
 			IDictionary<string, object> res = this.GetResourceStrings(target.GlobalizationKeys, targetPath);
 
 			HttpResponse response = context.Response;
-			response.ContentType = "text/javascript";
+			response.ContentType = ScriptResourceCodeProvider.MimeType;
 
 			response.AppendHeader(
 				"Content-Disposition",

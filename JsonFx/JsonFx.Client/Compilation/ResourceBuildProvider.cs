@@ -247,41 +247,41 @@ namespace JsonFx.Compilation
 
 			#endregion private static readonly byte[] DeflatedBytes;
 
-			#region public string PrettyPrinted { get; }
+			#region string IOptimizedResult.PrettyPrinted { get; }
 
 			// add a readonly property with the resource data
 			CodeMemberProperty property = new CodeMemberProperty();
 			property.Name = "PrettyPrinted";
 			property.Type = new CodeTypeReference(typeof(String));
-			property.Attributes = MemberAttributes.Public;
+			property.PrivateImplementationType = new CodeTypeReference(typeof(IOptimizedResult));
 			property.HasGet = true;
 			// get { return resource; }
 			property.GetStatements.Add(new CodeMethodReturnStatement(new CodePrimitiveExpression(prettyPrintResource)));
 			resourceType.Members.Add(property);
 
-			#endregion public string PrettyPrinted { get; }
+			#endregion string IOptimizedResult.PrettyPrinted { get; }
 
-			#region public string Compacted { get; }
+			#region string IOptimizedResult.Compacted { get; }
 
 			// add a readonly property with the compacted resource data
 			property = new CodeMemberProperty();
 			property.Name = "Compacted";
 			property.Type = new CodeTypeReference(typeof(String));
-			property.Attributes = MemberAttributes.Public;
+			property.PrivateImplementationType = new CodeTypeReference(typeof(IOptimizedResult));
 			property.HasGet = true;
 			// get { return compactedResource; }
 			property.GetStatements.Add(new CodeMethodReturnStatement(new CodePrimitiveExpression(compactedResource)));
 			resourceType.Members.Add(property);
 
-			#endregion public string Compacted { get; }
+			#endregion string IOptimizedResult.Compacted { get; }
 
-			#region public byte[] Gzipped { get; }
+			#region byte[] IOptimizedResult.Gzipped { get; }
 
 			// add a readonly property with the gzipped resource data
 			property = new CodeMemberProperty();
 			property.Name = "Gzipped";
 			property.Type = new CodeTypeReference(typeof(byte[]));
-			property.Attributes = MemberAttributes.Public;
+			property.PrivateImplementationType = new CodeTypeReference(typeof(IOptimizedResult));
 			property.HasGet = true;
 			// get { return GzippedBytes; }
 			property.GetStatements.Add(new CodeMethodReturnStatement(
@@ -290,15 +290,15 @@ namespace JsonFx.Compilation
 					"GzippedBytes")));
 			resourceType.Members.Add(property);
 
-			#endregion public byte[] Gzipped { get; }
+			#endregion byte[] IOptimizedResult.Gzipped { get; }
 
-			#region public byte[] Deflated { get; }
+			#region byte[] IOptimizedResult.Deflated { get; }
 
 			// add a readonly property with the deflated resource data
 			property = new CodeMemberProperty();
 			property.Name = "Deflated";
 			property.Type = new CodeTypeReference(typeof(byte[]));
-			property.Attributes = MemberAttributes.Public;
+			property.PrivateImplementationType = new CodeTypeReference(typeof(IOptimizedResult));
 			property.HasGet = true;
 			// get { return DeflatedBytes; }
 			property.GetStatements.Add(new CodeMethodReturnStatement(
@@ -307,59 +307,59 @@ namespace JsonFx.Compilation
 					"DeflatedBytes")));
 			resourceType.Members.Add(property);
 
-			#endregion public byte[] Deflated { get; }
+			#endregion byte[] IOptimizedResult.Deflated { get; }
 
-			#region public string ContentType { get; }
+			#region string IBuildResultMeta.ContentType { get; }
 
 			// add a readonly property with the MIME type
 			property = new CodeMemberProperty();
 			property.Name = "ContentType";
 			property.Type = new CodeTypeReference(typeof(String));
-			property.Attributes = MemberAttributes.Public;
+			property.PrivateImplementationType = new CodeTypeReference(typeof(IBuildResultMeta));
 			property.HasGet = true;
 			// get { return contentType; }
 			property.GetStatements.Add(new CodeMethodReturnStatement(new CodePrimitiveExpression(contentType)));
 			resourceType.Members.Add(property);
 
-			#endregion public string ContentType { get; }
+			#endregion string IBuildResultMeta.ContentType { get; }
 
-			#region public string FileExtension { get; }
+			#region string IBuildResultMeta.FileExtension { get; }
 
 			// add a readonly property with the MIME type
 			property = new CodeMemberProperty();
 			property.Name = "FileExtension";
 			property.Type = new CodeTypeReference(typeof(String));
-			property.Attributes = MemberAttributes.Public;
+			property.PrivateImplementationType = new CodeTypeReference(typeof(IBuildResultMeta));
 			property.HasGet = true;
 			// get { return fileExtension; }
 			property.GetStatements.Add(new CodeMethodReturnStatement(new CodePrimitiveExpression(fileExtension)));
 			resourceType.Members.Add(property);
 
-			#endregion public string FileExtension { get; }
+			#endregion string IBuildResultMeta.FileExtension { get; }
 
-			#region public string Hash { get; }
+			#region string IBuildResultMeta.Hash { get; }
 
 			// add a readonly property with the resource data
 			property = new CodeMemberProperty();
 			property.Name = "Hash";
 			property.Type = new CodeTypeReference(typeof(String));
-			property.Attributes = MemberAttributes.Public;
+			property.PrivateImplementationType = new CodeTypeReference(typeof(IBuildResultMeta));
 			property.HasGet = true;
 			// get { return hash); }
 
 			property.GetStatements.Add(new CodeMethodReturnStatement(new CodePrimitiveExpression(hash)));
 			resourceType.Members.Add(property);
 
-			#endregion public string Hash { get; }
+			#endregion string IBuildResultMeta.Hash { get; }
 
 			if (this.VirtualPathDependencies.Count > 0)
 			{
 				resourceType.BaseTypes.Add(typeof(IDependentResult));
 
-				#region private static readonly string[] vpathDependencies
+				#region private static readonly string[] Dependencies
 
 				field = new CodeMemberField();
-				field.Name = "vpathDependencies";
+				field.Name = "Dependencies";
 				field.Type = new CodeTypeReference(typeof(string[]));
 				field.Attributes = MemberAttributes.Private|MemberAttributes.Static|MemberAttributes.Final;
 
@@ -372,21 +372,21 @@ namespace JsonFx.Compilation
 
 				resourceType.Members.Add(field);
 
-				#endregion private static readonly string[] vpathDependencies
+				#endregion private static readonly string[] Dependencies
 
 				#region IEnumerable<string> IDependentResult.VirtualPathDependencies { get; }
 
 				// add a readonly property returning the static data
 				property = new CodeMemberProperty();
-				property.PrivateImplementationType = new CodeTypeReference(typeof(IDependentResult));
 				property.Name = "VirtualPathDependencies";
 				property.Type = new CodeTypeReference(typeof(IEnumerable<string>));
+				property.PrivateImplementationType = new CodeTypeReference(typeof(IDependentResult));
 				property.HasGet = true;
-				// get { return vpathDependencies; }
+				// get { return Dependencies; }
 				property.GetStatements.Add(new CodeMethodReturnStatement(
 					new CodeFieldReferenceExpression(
 						new CodeTypeReferenceExpression(resourceType.Name),
-						"vpathDependencies")));
+						"Dependencies")));
 				resourceType.Members.Add(property);
 
 				#endregion IEnumerable<string> IDependentResult.VirtualPathDependencies { get; }

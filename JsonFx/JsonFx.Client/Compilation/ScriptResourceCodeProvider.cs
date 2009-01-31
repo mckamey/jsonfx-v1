@@ -45,6 +45,7 @@ namespace JsonFx.Compilation
 		#region Constants
 
 		public const string MimeType = "text/javascript";
+		public const string FileExt = "js";
 
 		#endregion Constants
 
@@ -57,7 +58,7 @@ namespace JsonFx.Compilation
 
 		public override string FileExtension
 		{
-			get { return "js"; }
+			get { return FileExt; }
 		}
 
 		#endregion ResourceCodeProvider Properties

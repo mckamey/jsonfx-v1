@@ -47,12 +47,12 @@ namespace JsonFx.Compilation
 
 		public override string ContentType
 		{
-			get { return "text/javascript"; }
+			get { return ScriptResourceCodeProvider.MimeType; }
 		}
 
 		public override string FileExtension
 		{
-			get { return "js"; }
+			get { return ScriptResourceCodeProvider.FileExt; }
 		}
 
 		#endregion ResourceCodeProvider Properties
