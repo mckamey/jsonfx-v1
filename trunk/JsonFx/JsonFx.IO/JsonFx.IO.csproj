@@ -113,7 +113,7 @@
     <Compile Include="JsonRpc\JsonServiceException.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="JsonRpc\JsonServiceInfo.cs">
+    <Compile Include="JsonRpc\IJsonServiceInfo.cs">
       <SubType>Code</SubType>
     </Compile>
     <Compile Include="JsonRpc\Proxy\JsonServiceProxy.cs">
