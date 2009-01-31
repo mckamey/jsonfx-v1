@@ -11,7 +11,7 @@ public partial class _Default : System.Web.UI.Page
 		if (!this.Context.IsDebuggingEnabled)
 		{
 			// improve the Yslow rating
-			JsonFx.Handlers.CompiledBuildResult.EnableStreamCompression(this.Context);
+			JsonFx.Handlers.ResourceHandler.EnableStreamCompression(this.Context);
 		}
 	}
 }

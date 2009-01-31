@@ -13,7 +13,7 @@ namespace JsonFx.WapTemplate
 			if (!this.Context.IsDebuggingEnabled)
 			{
 				// improve the Yslow rating
-				JsonFx.Handlers.CompiledBuildResult.EnableStreamCompression(this.Context);
+				JsonFx.Handlers.ResourceHandler.EnableStreamCompression(this.Context);
 			}
 		}
 	}

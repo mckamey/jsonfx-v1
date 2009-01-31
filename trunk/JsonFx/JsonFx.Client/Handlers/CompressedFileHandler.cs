@@ -6,7 +6,7 @@ namespace JsonFx.Handlers
 	{
 		public override IAsyncResult BeginProcessRequest(System.Web.HttpContext context, AsyncCallback callback, object state)
 		{
-			CompiledBuildResult.EnableStreamCompression(context);
+			ResourceHandler.EnableStreamCompression(context);
 
 			return base.BeginProcessRequest(context, callback, state);
 		}
