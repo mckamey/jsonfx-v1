@@ -36,7 +36,7 @@ namespace JsonFx.Handlers
 	[Obsolete("JsonFx.Handlers.CompiledBuildResult has been split into corresponding components for geater modularity and extensibility.")]
 	public static class CompiledBuildResult
 	{
-		[Obsolete("This method has moved to ResourceHandler.EnableStreamCompression(HttpContext).")]
+		[Obsolete("EnableStreamCompression(HttpContext) has moved to ResourceHandler.")]
 		public static void EnableStreamCompression(HttpContext context)
 		{
 			ResourceHandler.EnableStreamCompression(context);
