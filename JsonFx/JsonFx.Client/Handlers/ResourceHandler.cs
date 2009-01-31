@@ -147,11 +147,11 @@ namespace JsonFx.Handlers
 			return path+query;
 		}
 
-		protected internal static string GetResourceUrl(IBuildResultMeta info, string path, bool isDebug)
+		protected internal static string GetResourceUrl(IBuildResult info, string path, bool isDebug)
 		{
 			if (info == null)
 			{
-				info = ResourceHandler.Create<IBuildResultMeta>(path);
+				info = ResourceHandler.Create<IBuildResult>(path);
 				if (info == null)
 				{
 					return path;
