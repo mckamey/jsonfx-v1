@@ -207,7 +207,7 @@ namespace JsonFx.Client
 			}
 			writer.Write(format, type, url, attrib);
 
-			if (info is GlobalizedCompiledBuildResult)
+			if (info is IGlobalizedBuildResult)
 			{
 				string culture = this.UsePageCulture ?
 					Thread.CurrentThread.CurrentCulture.Name :

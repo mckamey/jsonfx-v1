@@ -145,9 +145,9 @@ namespace JsonFx.Compilation
 							this.isMimeSet = true;
 						}
 
-						if (result is GlobalizedCompiledBuildResult)
+						if (result is IGlobalizedBuildResult)
 						{
-							this.GlobalizationKeys.AddRange(((GlobalizedCompiledBuildResult)result).GlobalizationKeys);
+							this.GlobalizationKeys.AddRange(((IGlobalizedBuildResult)result).GlobalizationKeys);
 						}
 
 						helper.AddVirtualPathDependency(files[i]);

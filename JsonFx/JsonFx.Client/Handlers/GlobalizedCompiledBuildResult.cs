@@ -30,25 +30,13 @@
 
 using System;
 
-using JsonFx.Handlers;
-
 namespace JsonFx.Compilation
 {
 	/// <summary>
-	/// A globalized compilation result which specifies the keys it needs.
+	/// A globalized compilation result which specifies the resource keys it needs.
 	/// </summary>
-	public abstract class GlobalizedCompiledBuildResult : CompiledBuildResult
+	public interface IGlobalizedBuildResult
 	{
-		#region Properties
-
-		/// <summary>
-		/// Gets the keys needed by the compiled JBST
-		/// </summary>
-		public abstract string[] GlobalizationKeys
-		{
-			get;
-		}
-
-		#endregion Properties
+		string[] GlobalizationKeys { get; }
 	}
 }
