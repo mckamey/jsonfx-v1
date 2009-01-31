@@ -37,10 +37,16 @@ using JsonFx.Handlers;
 
 namespace JsonFx.JsonRpc
 {
+	/// <summary>
+	/// Runtime adaptor between service infrastructure and service implementation
+	/// </summary>
 	public interface IJsonServiceInfo
 	{
 		#region Properties
 
+		/// <summary>
+		/// Gets the Type used to implement the service
+		/// </summary>
 		Type ServiceType { get; }
 
 		#endregion Properties
