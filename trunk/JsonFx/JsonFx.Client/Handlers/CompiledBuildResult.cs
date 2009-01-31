@@ -30,7 +30,6 @@
 
 using System;
 using System.IO;
-using System.IO.Compression;
 using System.Collections.Generic;
 using System.Text;
 using System.Web;
@@ -115,120 +114,13 @@ namespace JsonFx.Handlers
 
 	public static class CompiledBuildResult
 	{
-		#region Constants
+		#region Utility Methods
 
-		private const string RootNamespace = "__JsonFx";
-		internal const string GzipContentEncoding = "gzip";
-		internal const string DeflateContentEncoding = "deflate";
-
-		#endregion Constants
-
-		#region Static Methods
-
-		/// <summary>
-		/// Determines the most compact Content-Encoding supported by request.
-		/// </summary>
-		/// <param name="acceptEncoding"></param>
-		/// <param name="isDebug"></param>
-		/// <returns>optimal format</returns>
-		public static CompiledBuildResultType GetOutputEncoding(IOptimizedResult result, HttpContext context, bool isDebug)
-		{
-			if (isDebug)
-			{
-				// short cut all debug builds
-				return CompiledBuildResultType.PrettyPrint;
-			}
-
-			string acceptEncoding = context.Request.Headers["Accept-Encoding"];
-			if (String.IsNullOrEmpty(acceptEncoding))
-			{
-				// not compressed but fully compacted
-				return CompiledBuildResultType.Compact;
-			}
-
-			acceptEncoding = acceptEncoding.ToLowerInvariant();
-
-			if (result.Deflated != null &&
-				result.Deflated.Length > 0 &&
-				acceptEncoding.Contains("deflate"))
-			{
-				// compressed with Deflate
-				return CompiledBuildResultType.Deflate;
-			}
-
-			if (result.Gzipped != null &&
-				result.Gzipped.Length > 0 &&
-				acceptEncoding.Contains("gzip"))
-			{
-				// compressed with Gzip
-				return CompiledBuildResultType.Gzip;
-			}
-
-			// not compressed but fully compacted
-			return CompiledBuildResultType.Compact;
-		}
-
-		/// <summary>
-		/// If supported, adds a runtime compression filter to the response output.
-		/// </summary>
-		/// <param name="context"></param>
+		[Obsolete("This method is being moved.")]
 		public static void EnableStreamCompression(HttpContext context)
 		{
-			switch (CompiledBuildResult.GetOutputEncoding(context))
-			{
-				case CompiledBuildResultType.Gzip:
-				{
-					context.Response.AppendHeader("Content-Encoding", CompiledBuildResult.GzipContentEncoding);
-					context.Response.Filter = new GZipStream(context.Response.Filter, CompressionMode.Compress, true);
-					break;
-				}
-				case CompiledBuildResultType.Deflate:
-				{
-					context.Response.AppendHeader("Content-Encoding", CompiledBuildResult.DeflateContentEncoding);
-					context.Response.Filter = new DeflateStream(context.Response.Filter, CompressionMode.Compress, true);
-					break;
-				}
-			}
+			ResourceHandler.EnableStreamCompression(context);
 		}
-
-		/// <summary>
-		/// Determines appropriate content-encoding.
-		/// </summary>
-		/// <param name="context"></param>
-		/// <returns></returns>
-		private static CompiledBuildResultType GetOutputEncoding(HttpContext context)
-		{
-			string setting = context.Request.QueryString[null];
-			bool isDebug = ResourceHandler.DebugFlag.Equals(setting, StringComparison.OrdinalIgnoreCase);
-			if (isDebug)
-			{
-				return CompiledBuildResultType.PrettyPrint;
-			}
-
-			string acceptEncoding = context.Request.Headers["Accept-Encoding"];
-			if (String.IsNullOrEmpty(acceptEncoding))
-			{
-				return CompiledBuildResultType.Compact;
-			}
-
-			acceptEncoding = acceptEncoding.ToLowerInvariant();
-
-			if (acceptEncoding.Contains("deflate"))
-			{
-				return CompiledBuildResultType.Deflate;
-			}
-
-			if (acceptEncoding.Contains("gzip"))
-			{
-				return CompiledBuildResultType.Gzip;
-			}
-
-			return CompiledBuildResultType.Compact;
-		}
-
-		#endregion Static Methods
-
-		#region Factory Methods
 
 		/// <summary>
 		/// CompiledBuildResult Factory method
@@ -245,52 +137,6 @@ namespace JsonFx.Handlers
 			return (T)BuildManager.CreateInstanceFromVirtualPath(virtualPath, typeof(T));
 		}
 
-		/// <summary>
-		/// Generates a Type name for the compiled resource
-		/// </summary>
-		/// <param name="virtualPath"></param>
-		/// <returns></returns>
-		public static string GenerateTypeName(string virtualPath)
-		{
-			if (String.IsNullOrEmpty(virtualPath))
-			{
-				return CompiledBuildResult.RootNamespace+"._"+Guid.NewGuid().ToString("N");
-			}
-
-			StringBuilder builder = new StringBuilder(virtualPath);
-			if (builder[0] == '~')
-			{
-				builder.Remove(0, 1);
-			}
-
-			for (int i=0; i<builder.Length; i++)
-			{
-				if (Char.IsLetterOrDigit(builder[i]))
-				{
-					continue;
-				}
-
-				switch (builder[i])
-				{
-					case '\\':
-					case '/':
-					{
-						builder[i] = '.';
-						break;
-					}
-					case '-':
-					case '.':
-					default:
-					{
-						builder[i] = '_';
-						break;
-					}
-				}
-			}
-
-			return CompiledBuildResult.RootNamespace+builder.ToString();
-		}
-
-		#endregion Factory Methods
+		#endregion Utility Methods
 	}
 }
