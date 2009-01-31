@@ -53,7 +53,7 @@ namespace JsonFx.Handlers
 
 		#region Fields
 
-		private readonly JsonServiceInfo ServiceInfo;
+		private readonly IJsonServiceInfo ServiceInfo;
 		private object service = null;
 		private string serviceUrl = null;
 		private Exception error = null;
@@ -62,7 +62,7 @@ namespace JsonFx.Handlers
 
 		#region Init
 
-		internal JsonServiceHandler(JsonServiceInfo serviceInfo, string serviceUrl)
+		internal JsonServiceHandler(IJsonServiceInfo serviceInfo, string serviceUrl)
 		{
 			try
 			{

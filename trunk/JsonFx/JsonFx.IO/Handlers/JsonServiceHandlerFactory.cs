@@ -58,7 +58,8 @@ namespace JsonFx.Handlers
 			}
 
 			// handle service requests
-			JsonServiceInfo serviceInfo = JsonServiceInfo.Create(url);
+			string appUrl = context.Request.AppRelativeCurrentExecutionFilePath;
+			IJsonServiceInfo serviceInfo = CompiledBuildResult.Create<IJsonServiceInfo>(appUrl);
 
 			return new JsonFx.Handlers.JsonServiceHandler(serviceInfo, url);
 		}

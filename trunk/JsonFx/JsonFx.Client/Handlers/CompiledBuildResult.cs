@@ -74,8 +74,7 @@ namespace JsonFx.Handlers
 		#endregion Properties
 	}
 
-	public interface IOptimizedResult :
-		IBuildResultMeta
+	public interface IOptimizedResult : IBuildResultMeta
 	{
 		#region Properties
 
@@ -236,7 +235,7 @@ namespace JsonFx.Handlers
 		/// </summary>
 		/// <param name="virtualPath"></param>
 		/// <returns></returns>
-		internal static T Create<T>(string virtualPath)
+		public static T Create<T>(string virtualPath)
 		{
 			if (virtualPath.StartsWith("/"))
 			{

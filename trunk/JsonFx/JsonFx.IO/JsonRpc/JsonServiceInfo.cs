@@ -37,139 +37,36 @@ using JsonFx.Handlers;
 
 namespace JsonFx.JsonRpc
 {
-	public abstract class JsonServiceInfo : IOptimizedResult
+	public interface IJsonServiceInfo
 	{
-		#region JsonServiceInfo Properties
+		#region Properties
 
-		public abstract Type ServiceType { get; }
+		Type ServiceType { get; }
 
-		#endregion JsonServiceInfo Properties
+		#endregion Properties
 
-		#region JsonServiceInfo Methods
-
-		public abstract Object CreateService();
-
-		public abstract MethodInfo ResolveMethodName(string name);
-
-		public abstract String[] GetMethodParams(string name);
-
-		#endregion JsonServiceInfo Methods
-
-		#region Static Methods
+		#region Methods
 
 		/// <summary>
-		/// JsonServiceInfo Factory method
+		/// Factory Method for the Service class
 		/// </summary>
-		/// <param name="virtualPath"></param>
 		/// <returns></returns>
-		protected internal new static JsonServiceInfo Create(string virtualPath)
-		{
-			//if (virtualPath.StartsWith("/"))
-			//{
-			//    virtualPath = "~"+virtualPath;
-			//}
-
-			return (JsonServiceInfo)BuildManager.CreateInstanceFromVirtualPath(virtualPath, typeof(JsonServiceInfo));
-		}
+		Object CreateService();
 
 		/// <summary>
-		/// Gets a mapping of parameter position to parameter name for a given method.
+		/// Method map for the Service class
 		/// </summary>
-		/// <param name="method"></param>
+		/// <param name="name"></param>
 		/// <returns></returns>
-		internal static String[] CreateParamMap(MethodInfo method)
-		{
-			ParameterInfo[] parameters = method.GetParameters();
-			string[] paramMap = new string[parameters.Length];
-			for (int i=0; i<parameters.Length; i++)
-			{
-				// map name to position
-				paramMap[i] = parameters[i].Name;
-			}
-			return paramMap;
-		}
+		MethodInfo ResolveMethodName(string name);
 
 		/// <summary>
-		/// Gets a mapping of method JsonName to MethodInfo for a given type.
+		/// Param map for the Service class
 		/// </summary>
-		/// <param name="serviceType"></param>
+		/// <param name="name"></param>
 		/// <returns></returns>
-		internal static Dictionary<String, MethodInfo> CreateMethodMap(Type serviceType)
-		{
-			Dictionary<string, MethodInfo> methodMap = new Dictionary<String, MethodInfo>();
+		string[] GetMethodParams(string name);
 
-			// load methods into method map
-			foreach (MethodInfo info in serviceType.GetMethods())
-			{
-				if (!info.IsPublic)
-					continue;
-
-				if (!JsonMethodAttribute.IsJsonMethod(info))
-					continue;
-
-				string jsonName = JsonMethodAttribute.GetJsonName(info);
-				if (String.IsNullOrEmpty(jsonName))
-				{
-					methodMap[info.Name] = info;
-				}
-				else
-				{
-					methodMap[jsonName] = info;
-				}
-			}
-
-			return methodMap;
-		}
-
-		#endregion Static Methods
-
-		#region IBuildResultMeta Members
-
-		/// <summary>
-		/// Gets the MIME type for the proxy.
-		/// </summary>
-		public virtual string ContentType
-		{
-			get { return "text/javascript"; }
-		}
-
-		/// <summary>
-		/// Gets the file extension for the proxy.
-		/// </summary>
-		public virtual string FileExtension
-		{
-			get { return "js"; }
-		}
-
-		/// <summary>
-		/// Gets the file hash for the compacted resource data
-		/// </summary>
-		public abstract string Hash { get; }
-
-		#endregion IBuildResultMeta Members
-
-		#region IOptimizedResult Members
-
-		/// <summary>
-		/// Gets the pretty-printed resource data
-		/// </summary>
-		public abstract string PrettyPrinted { get; }
-
-		/// <summary>
-		/// Gets the compacted resource data
-		/// </summary>
-		public abstract string Compacted { get; }
-
-		/// <summary>
-		/// Gets the compacted resource data compressed with Gzip
-		/// </summary>
-		public abstract byte[] Gzipped { get; }
-
-		/// <summary>
-		/// Gets the compacted resource data compressed with Deflate
-		/// </summary>
-		public abstract byte[] Deflated { get; }
-
-		#endregion IOptimizedResult Members
+		#endregion Methods
 	}
 }
