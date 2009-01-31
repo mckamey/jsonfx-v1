@@ -37,7 +37,7 @@ using JsonFx.Handlers;
 
 namespace JsonFx.JsonRpc
 {
-	public abstract class JsonServiceInfo : CompiledBuildResult
+	public abstract class JsonServiceInfo : IOptimizedResult
 	{
 		#region JsonServiceInfo Properties
 
@@ -123,12 +123,12 @@ namespace JsonFx.JsonRpc
 
 		#endregion Static Methods
 
-		#region CompiledBuildResult Members
+		#region IBuildResultMeta Members
 
 		/// <summary>
 		/// Gets the MIME type for the proxy.
 		/// </summary>
-		public override string ContentType
+		public virtual string ContentType
 		{
 			get { return "text/javascript"; }
 		}
@@ -136,11 +136,40 @@ namespace JsonFx.JsonRpc
 		/// <summary>
 		/// Gets the file extension for the proxy.
 		/// </summary>
-		public override string FileExtension
+		public virtual string FileExtension
 		{
 			get { return "js"; }
 		}
 
-		#endregion CompiledBuildResult Members
+		/// <summary>
+		/// Gets the file hash for the compacted resource data
+		/// </summary>
+		public abstract string Hash { get; }
+
+		#endregion IBuildResultMeta Members
+
+		#region IOptimizedResult Members
+
+		/// <summary>
+		/// Gets the pretty-printed resource data
+		/// </summary>
+		public abstract string PrettyPrinted { get; }
+
+		/// <summary>
+		/// Gets the compacted resource data
+		/// </summary>
+		public abstract string Compacted { get; }
+
+		/// <summary>
+		/// Gets the compacted resource data compressed with Gzip
+		/// </summary>
+		public abstract byte[] Gzipped { get; }
+
+		/// <summary>
+		/// Gets the compacted resource data compressed with Deflate
+		/// </summary>
+		public abstract byte[] Deflated { get; }
+
+		#endregion IOptimizedResult Members
 	}
 }

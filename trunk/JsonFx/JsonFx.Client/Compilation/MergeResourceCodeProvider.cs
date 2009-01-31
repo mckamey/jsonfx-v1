@@ -133,7 +133,7 @@ namespace JsonFx.Compilation
 					}
 
 					// try to get as a CompiledBuildResult
-					CompiledBuildResult result = CompiledBuildResult.Create(files[i]);
+					IOptimizedResult result = CompiledBuildResult.Create<IOptimizedResult>(files[i]);
 					if (result != null)
 					{
 						if (!this.isMimeSet &&
@@ -161,10 +161,9 @@ namespace JsonFx.Compilation
 							}
 						}
 
-						dependencies = result.VirtualPathDependencies;
-						if (dependencies != null)
+						if (result is IDependentResult)
 						{
-							foreach (string dependency in dependencies)
+							foreach (string dependency in ((IDependentResult)result).VirtualPathDependencies)
 							{
 								helper.AddVirtualPathDependency(dependency);
 							}

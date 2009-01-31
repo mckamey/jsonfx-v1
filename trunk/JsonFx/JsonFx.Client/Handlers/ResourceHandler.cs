@@ -57,7 +57,7 @@ namespace JsonFx.Handlers
 			context.Response.BufferOutput = true;
 
 			// specifying "DEBUG" in the query string gets the non-compacted form
-			CompiledBuildResult info = this.GetResourceInfo(context, isDebug);
+			IOptimizedResult info = this.GetResourceInfo(context, isDebug);
 			if (info == null)
 			{
 				// either eTag 304 was sent or no resource found
@@ -78,7 +78,7 @@ namespace JsonFx.Handlers
 				"Content-Disposition",
 				"inline;filename="+Path.GetFileNameWithoutExtension(context.Request.FilePath)+'.'+info.FileExtension);
 
-			switch (info.GetOutputEncoding(context, isDebug))
+			switch (CompiledBuildResult.GetOutputEncoding(info, context, isDebug))
 			{
 				case CompiledBuildResultType.PrettyPrint:
 				{
@@ -137,7 +137,7 @@ namespace JsonFx.Handlers
 		{
 			if (info == null)
 			{
-				info = CompiledBuildResult.Create(path);
+				info = CompiledBuildResult.Create<IBuildResultMeta>(path);
 				if (info == null)
 				{
 					return path;
@@ -173,10 +173,10 @@ namespace JsonFx.Handlers
 		/// <param name="context"></param>
 		/// <param name="isDebug"></param>
 		/// <returns>CompiledBuildResult</returns>
-		protected virtual CompiledBuildResult GetResourceInfo(HttpContext context, bool isDebug)
+		protected virtual IOptimizedResult GetResourceInfo(HttpContext context, bool isDebug)
 		{
 			string virtualPath = context.Request.AppRelativeCurrentExecutionFilePath;
-			CompiledBuildResult info = CompiledBuildResult.Create(virtualPath);
+			IOptimizedResult info = CompiledBuildResult.Create<IOptimizedResult>(virtualPath);
 			if (info == null)
 			{
 				throw new HttpException(404, "Resource not found: "+virtualPath);

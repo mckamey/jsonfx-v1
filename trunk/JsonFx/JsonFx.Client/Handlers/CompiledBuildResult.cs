@@ -31,6 +31,7 @@
 using System;
 using System.IO;
 using System.IO.Compression;
+using System.Collections.Generic;
 using System.Text;
 using System.Web;
 using System.Web.Compilation;
@@ -53,6 +54,8 @@ namespace JsonFx.Handlers
 
 	public interface IBuildResultMeta
 	{
+		#region Properties
+
 		/// <summary>
 		/// Gets the file hash for the resulting resource data
 		/// </summary>
@@ -67,9 +70,51 @@ namespace JsonFx.Handlers
 		/// Gets the file hash for the compacted resource data
 		/// </summary>
 		string Hash { get; }
+
+		#endregion Properties
 	}
 
-	public abstract class CompiledBuildResult : IBuildResultMeta
+	public interface IOptimizedResult :
+		IBuildResultMeta
+	{
+		#region Properties
+
+		/// <summary>
+		/// Gets the pretty-printed resource data
+		/// </summary>
+		string PrettyPrinted { get; }
+
+		/// <summary>
+		/// Gets the compacted resource data
+		/// </summary>
+		string Compacted { get; }
+
+		/// <summary>
+		/// Gets the compacted resource data compressed with Gzip
+		/// </summary>
+		byte[] Gzipped { get; }
+
+		/// <summary>
+		/// Gets the compacted resource data compressed with Deflate
+		/// </summary>
+		byte[] Deflated { get; }
+
+		#endregion Properties
+	}
+
+	public interface IDependentResult
+	{
+		#region Properties
+
+		/// <summary>
+		/// Gets the virtual paths which this resource is dependent upon
+		/// </summary>
+		IEnumerable<string> VirtualPathDependencies { get; }
+
+		#endregion Properties
+	}
+
+	public static class CompiledBuildResult
 	{
 		#region Constants
 
@@ -79,54 +124,7 @@ namespace JsonFx.Handlers
 
 		#endregion Constants
 
-		#region Properties
-
-		/// <summary>
-		/// Gets the virtual paths which this resource is dependent upon
-		/// </summary>
-		protected internal abstract string[] VirtualPathDependencies
-		{
-			get;
-		}
-
-		/// <summary>
-		/// Gets the pretty-printed resource data
-		/// </summary>
-		public abstract string PrettyPrinted { get; }
-
-		/// <summary>
-		/// Gets the compacted resource data
-		/// </summary>
-		public abstract string Compacted { get; }
-
-		/// <summary>
-		/// Gets the compacted resource data compressed with Gzip
-		/// </summary>
-		public abstract byte[] Gzipped { get; }
-
-		/// <summary>
-		/// Gets the compacted resource data compressed with Deflate
-		/// </summary>
-		public abstract byte[] Deflated { get; }
-
-		/// <summary>
-		/// Gets the file hash for the compacted resource data
-		/// </summary>
-		public abstract string Hash { get; }
-
-		/// <summary>
-		/// Gets the MIME type for the resulting data
-		/// </summary>
-		public abstract string ContentType { get; }
-
-		/// <summary>
-		/// Gets the file extension for the resulting data
-		/// </summary>
-		public abstract string FileExtension { get; }
-
-		#endregion Properties
-
-		#region Methods
+		#region Static Methods
 
 		/// <summary>
 		/// Determines the most compact Content-Encoding supported by request.
@@ -134,35 +132,40 @@ namespace JsonFx.Handlers
 		/// <param name="acceptEncoding"></param>
 		/// <param name="isDebug"></param>
 		/// <returns>optimal format</returns>
-		public CompiledBuildResultType GetOutputEncoding(HttpContext context, bool isDebug)
+		public static CompiledBuildResultType GetOutputEncoding(IOptimizedResult result, HttpContext context, bool isDebug)
 		{
 			if (isDebug)
 			{
+				// short cut all debug builds
 				return CompiledBuildResultType.PrettyPrint;
 			}
 
 			string acceptEncoding = context.Request.Headers["Accept-Encoding"];
 			if (String.IsNullOrEmpty(acceptEncoding))
 			{
+				// not compressed but fully compacted
 				return CompiledBuildResultType.Compact;
 			}
 
 			acceptEncoding = acceptEncoding.ToLowerInvariant();
 
-			if (this.Deflated != null &&
-				this.Deflated.Length > 0 &&
+			if (result.Deflated != null &&
+				result.Deflated.Length > 0 &&
 				acceptEncoding.Contains("deflate"))
 			{
+				// compressed with Deflate
 				return CompiledBuildResultType.Deflate;
 			}
 
-			if (this.Gzipped != null &&
-				this.Gzipped.Length > 0 &&
+			if (result.Gzipped != null &&
+				result.Gzipped.Length > 0 &&
 				acceptEncoding.Contains("gzip"))
 			{
+				// compressed with Gzip
 				return CompiledBuildResultType.Gzip;
 			}
 
+			// not compressed but fully compacted
 			return CompiledBuildResultType.Compact;
 		}
 
@@ -224,7 +227,7 @@ namespace JsonFx.Handlers
 			return CompiledBuildResultType.Compact;
 		}
 
-		#endregion Methods
+		#endregion Static Methods
 
 		#region Factory Methods
 
@@ -233,14 +236,14 @@ namespace JsonFx.Handlers
 		/// </summary>
 		/// <param name="virtualPath"></param>
 		/// <returns></returns>
-		protected internal static CompiledBuildResult Create(string virtualPath)
+		internal static T Create<T>(string virtualPath)
 		{
 			if (virtualPath.StartsWith("/"))
 			{
 				virtualPath = "~"+virtualPath;
 			}
 
-			return (CompiledBuildResult)BuildManager.CreateInstanceFromVirtualPath(virtualPath, typeof(CompiledBuildResult));
+			return (T)BuildManager.CreateInstanceFromVirtualPath(virtualPath, typeof(T));
 		}
 
 		/// <summary>
