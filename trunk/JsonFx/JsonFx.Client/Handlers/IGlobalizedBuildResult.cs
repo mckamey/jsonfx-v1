@@ -29,6 +29,7 @@
 #endregion License
 
 using System;
+using System.Collections.Generic;
 
 namespace JsonFx.Compilation
 {
@@ -37,6 +38,6 @@ namespace JsonFx.Compilation
 	/// </summary>
 	public interface IGlobalizedBuildResult
 	{
-		string[] GlobalizationKeys { get; }
+		IEnumerable<string> GlobalizationKeys { get; }
 	}
 }
