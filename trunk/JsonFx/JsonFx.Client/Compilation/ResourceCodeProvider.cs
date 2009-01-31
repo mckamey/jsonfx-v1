@@ -96,21 +96,6 @@ namespace JsonFx.Compilation
 		}
 
 		/// <summary>
-		/// Gets the Type which is ultimately built
-		/// </summary>
-		protected internal virtual Type CompiledBuildResultType
-		{
-			get
-			{
-				if (this.g11nKeys.Count > 0)
-				{
-					return typeof(GlobalizedCompiledBuildResult);
-				}
-				return typeof(CompiledBuildResult);
-			}
-		}
-
-		/// <summary>
 		/// Gets the list of globalization keys used by this resource
 		/// </summary>
 		protected List<string> GlobalizationKeys
@@ -122,20 +107,9 @@ namespace JsonFx.Compilation
 
 		#region Methods
 
-		internal Type GetCompiledBuildResultType()
+		protected internal virtual Type GetCompiledBuildResultType()
 		{
-			Type type = this.CompiledBuildResultType;
-			if (type == null)
-			{
-				throw new NullReferenceException("CompiledBuildResultType is null.");
-			}
-
-			if (!typeof(CompiledBuildResult).IsAssignableFrom(type))
-			{
-				throw new ArgumentException(type.Name + "does not inherit from CompiledBuildResult");
-			}
-
-			return type;
+			return typeof(CompiledBuildResult);
 		}
 
 		/// <summary>
@@ -192,11 +166,13 @@ namespace JsonFx.Compilation
 
 		protected internal virtual void GenerateCodeExtensions(CodeTypeDeclaration resourceType)
 		{
-			if (this.CompiledBuildResultType != typeof(GlobalizedCompiledBuildResult))
+			if (this.g11nKeys.Count <= 0)
 			{
 				// no globalization strings were needed so don't gen code for the property
 				return;
 			}
+
+			resourceType.BaseTypes.Add(typeof(IGlobalizedBuildResult));
 
 			#region private static readonly string[] g11nKeys
 
@@ -216,13 +192,13 @@ namespace JsonFx.Compilation
 
 			#endregion private static readonly string[] g11nKeys
 
-			#region public override string[] GlobalizationKeys { get; }
+			#region public string[] GlobalizationKeys { get; }
 
 			// add a readonly property returning the static data
 			CodeMemberProperty property = new CodeMemberProperty();
 			property.Name = "GlobalizationKeys";
 			property.Type = field.Type;
-			property.Attributes = MemberAttributes.Public|MemberAttributes.Override;
+			property.Attributes = MemberAttributes.Public;
 			property.HasGet = true;
 			// get { return g11nKeys; }
 			property.GetStatements.Add(new CodeMethodReturnStatement(
@@ -231,7 +207,7 @@ namespace JsonFx.Compilation
 					field.Name)));
 			resourceType.Members.Add(property);
 
-			#endregion public override string[] GlobalizationKeys { get; }
+			#endregion public string[] GlobalizationKeys { get; }
 		}
 
 		public override CompilerResults CompileAssemblyFromFile(CompilerParameters options, params string[] fileNames)
