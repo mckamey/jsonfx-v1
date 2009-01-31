@@ -107,11 +107,6 @@ namespace JsonFx.Compilation
 
 		#region Methods
 
-		protected internal virtual Type GetCompiledBuildResultType()
-		{
-			return typeof(CompiledBuildResult);
-		}
-
 		/// <summary>
 		/// Delegates compilation to the compiler implementation
 		/// </summary>
