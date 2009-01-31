@@ -54,9 +54,14 @@ namespace JsonFx.Handlers
 		#region Constants
 
 		public const string DebugFlag = "debug";
-		public const string GlobalizationQuery = "lang";
+		internal const string GlobalizationQuery = "lang";
+
 		private const string GzipContentEncoding = "gzip";
 		private const string DeflateContentEncoding = "deflate";
+
+		private const string HeaderAcceptEncoding = "Accept-Encoding";
+		private const string HeaderContentEncoding = "Content-Encoding";
+		private const string HeaderContentDisposition= "Content-Disposition";
 
 		#endregion Constants
 
@@ -89,7 +94,7 @@ namespace JsonFx.Handlers
 			context.Response.ContentType = info.ContentType;
 
 			context.Response.AppendHeader(
-				"Content-Disposition",
+				ResourceHandler.HeaderContentDisposition,
 				"inline;filename="+Path.GetFileNameWithoutExtension(context.Request.FilePath)+'.'+info.FileExtension);
 
 			switch (ResourceHandler.GetOutputEncoding(info, context, isDebug))
@@ -102,13 +107,13 @@ namespace JsonFx.Handlers
 				}
 				case BuildResultType.Gzip:
 				{
-					context.Response.AppendHeader("Content-Encoding", ResourceHandler.GzipContentEncoding);
+					context.Response.AppendHeader(ResourceHandler.HeaderContentEncoding, ResourceHandler.GzipContentEncoding);
 					context.Response.OutputStream.Write(info.Gzipped, 0, info.Gzipped.Length);
 					break;
 				}
 				case BuildResultType.Deflate:
 				{
-					context.Response.AppendHeader("Content-Encoding", ResourceHandler.DeflateContentEncoding);
+					context.Response.AppendHeader(ResourceHandler.HeaderContentEncoding, ResourceHandler.DeflateContentEncoding);
 					context.Response.OutputStream.Write(info.Deflated, 0, info.Deflated.Length);
 					break;
 				}
@@ -221,13 +226,13 @@ namespace JsonFx.Handlers
 			{
 				case BuildResultType.Gzip:
 				{
-					context.Response.AppendHeader("Content-Encoding", ResourceHandler.GzipContentEncoding);
+					context.Response.AppendHeader(ResourceHandler.HeaderContentEncoding, ResourceHandler.GzipContentEncoding);
 					context.Response.Filter = new GZipStream(context.Response.Filter, CompressionMode.Compress, true);
 					break;
 				}
 				case BuildResultType.Deflate:
 				{
-					context.Response.AppendHeader("Content-Encoding", ResourceHandler.DeflateContentEncoding);
+					context.Response.AppendHeader(ResourceHandler.HeaderContentEncoding, ResourceHandler.DeflateContentEncoding);
 					context.Response.Filter = new DeflateStream(context.Response.Filter, CompressionMode.Compress, true);
 					break;
 				}
@@ -237,8 +242,8 @@ namespace JsonFx.Handlers
 		/// <summary>
 		/// Strongly typed build result factory method
 		/// </summary>
-		/// <param name="virtualPath"></param>
-		/// <returns></returns>
+		/// <param name="virtualPath">app-relative virtual path</param>
+		/// <returns>strongly typed compiled object</returns>
 		public static T Create<T>(string virtualPath)
 		{
 			if (virtualPath.StartsWith("/"))
@@ -263,7 +268,7 @@ namespace JsonFx.Handlers
 				return BuildResultType.PrettyPrint;
 			}
 
-			string acceptEncoding = context.Request.Headers["Accept-Encoding"];
+			string acceptEncoding = context.Request.Headers[ResourceHandler.HeaderAcceptEncoding];
 			if (String.IsNullOrEmpty(acceptEncoding))
 			{
 				return BuildResultType.Compact;
@@ -271,12 +276,12 @@ namespace JsonFx.Handlers
 
 			acceptEncoding = acceptEncoding.ToLowerInvariant();
 
-			if (acceptEncoding.Contains("deflate"))
+			if (acceptEncoding.Contains(ResourceHandler.DeflateContentEncoding))
 			{
 				return BuildResultType.Deflate;
 			}
 
-			if (acceptEncoding.Contains("gzip"))
+			if (acceptEncoding.Contains(ResourceHandler.GzipContentEncoding))
 			{
 				return BuildResultType.Gzip;
 			}
@@ -298,7 +303,7 @@ namespace JsonFx.Handlers
 				return BuildResultType.PrettyPrint;
 			}
 
-			string acceptEncoding = context.Request.Headers["Accept-Encoding"];
+			string acceptEncoding = context.Request.Headers[ResourceHandler.HeaderAcceptEncoding];
 			if (String.IsNullOrEmpty(acceptEncoding))
 			{
 				// not compressed but fully compacted
