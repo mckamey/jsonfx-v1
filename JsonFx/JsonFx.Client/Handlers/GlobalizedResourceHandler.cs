@@ -107,14 +107,14 @@ namespace JsonFx.Handlers
 			return fields.ClassKey.ToLowerInvariant() + ',' + fields.ResourceKey.ToLowerInvariant();
 		}
 
-		protected virtual IDictionary<string, object> GetResourceStrings(IList<string> keys, string path)
+		protected virtual IDictionary<string, object> GetResourceStrings(IEnumerable<string> keys, string path)
 		{
 			if (keys == null)
 			{
 				return null;
 			}
 
-			Dictionary<string, object> res = new Dictionary<string, object>(keys.Count);
+			Dictionary<string, object> res = new Dictionary<string, object>();
 			foreach (string key in keys)
 			{
 				ResourceExpressionFields fields = ResourceExpressionBuilder.ParseExpression(key);

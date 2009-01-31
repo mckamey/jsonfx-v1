@@ -187,12 +187,12 @@ namespace JsonFx.Compilation
 
 			#endregion private static readonly string[] g11nKeys
 
-			#region string[] IGlobalizedBuildResult.GlobalizationKeys { get; }
+			#region IEnumerable<string> IGlobalizedBuildResult.GlobalizationKeys { get; }
 
 			// add a readonly property returning the static data
 			CodeMemberProperty property = new CodeMemberProperty();
 			property.Name = "GlobalizationKeys";
-			property.Type = field.Type;
+			property.Type = new CodeTypeReference(typeof(IEnumerable<string>));
 			property.PrivateImplementationType = new CodeTypeReference(typeof(IGlobalizedBuildResult));
 			property.HasGet = true;
 			// get { return g11nKeys; }
@@ -202,7 +202,7 @@ namespace JsonFx.Compilation
 					field.Name)));
 			resourceType.Members.Add(property);
 
-			#endregion string[] IGlobalizedBuildResult.GlobalizationKeys { get; }
+			#endregion IEnumerable<string> IGlobalizedBuildResult.GlobalizationKeys { get; }
 		}
 
 		public override CompilerResults CompileAssemblyFromFile(CompilerParameters options, params string[] fileNames)
