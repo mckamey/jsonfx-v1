@@ -40,17 +40,6 @@ using JsonFx.Compilation;
 
 namespace JsonFx.Handlers
 {
-	/// <remarks>
-	/// Good request compression summary: http://www.west-wind.com/WebLog/posts/102969.aspx
-	/// </remarks>
-	public enum CompiledBuildResultType
-	{
-		PrettyPrint,
-		Compact,
-		Gzip,
-		Deflate
-	}
-
 	public interface IBuildResultMeta
 	{
 		#region Properties
@@ -112,29 +101,15 @@ namespace JsonFx.Handlers
 		#endregion Properties
 	}
 
+	[Obsolete("CompiledBuildResult has been split into corresponding components for geater modularity and extensibility.")]
 	public static class CompiledBuildResult
 	{
 		#region Utility Methods
 
-		[Obsolete("This method is being moved.")]
+		[Obsolete("This method has moved to ResourceHandler.EnableStreamCompression(HttpContext).")]
 		public static void EnableStreamCompression(HttpContext context)
 		{
 			ResourceHandler.EnableStreamCompression(context);
-		}
-
-		/// <summary>
-		/// CompiledBuildResult Factory method
-		/// </summary>
-		/// <param name="virtualPath"></param>
-		/// <returns></returns>
-		public static T Create<T>(string virtualPath)
-		{
-			if (virtualPath.StartsWith("/"))
-			{
-				virtualPath = "~"+virtualPath;
-			}
-
-			return (T)BuildManager.CreateInstanceFromVirtualPath(virtualPath, typeof(T));
 		}
 
 		#endregion Utility Methods

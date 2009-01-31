@@ -168,7 +168,7 @@ namespace JsonFx.Handlers
 			if (!isDebug)
 			{
 				// TODO: provide a mechanism for disabling compression?
-				CompiledBuildResult.EnableStreamCompression(context);
+				ResourceHandler.EnableStreamCompression(context);
 			}
 
 			string userCulture = context.Request.QueryString[ResourceHandler.GlobalizationQuery];

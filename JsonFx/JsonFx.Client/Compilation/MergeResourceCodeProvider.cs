@@ -133,7 +133,7 @@ namespace JsonFx.Compilation
 					}
 
 					// try to get as a CompiledBuildResult
-					IOptimizedResult result = CompiledBuildResult.Create<IOptimizedResult>(files[i]);
+					IOptimizedResult result = ResourceHandler.Create<IOptimizedResult>(files[i]);
 					if (result != null)
 					{
 						if (!this.isMimeSet &&

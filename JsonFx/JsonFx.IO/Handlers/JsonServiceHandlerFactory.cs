@@ -54,14 +54,14 @@ namespace JsonFx.Handlers
 			if (!isDebug)
 			{
 				// TODO: provide a mechanism for disabling compression?
-				CompiledBuildResult.EnableStreamCompression(context);
+				ResourceHandler.EnableStreamCompression(context);
 			}
 
 			// handle service requests
 			string appUrl = context.Request.AppRelativeCurrentExecutionFilePath;
-			IJsonServiceInfo serviceInfo = CompiledBuildResult.Create<IJsonServiceInfo>(appUrl);
+			IJsonServiceInfo serviceInfo = ResourceHandler.Create<IJsonServiceInfo>(appUrl);
 
-			return new JsonFx.Handlers.JsonServiceHandler(serviceInfo, url);
+			return new JsonServiceHandler(serviceInfo, url);
 		}
 
 		void IHttpHandlerFactory.ReleaseHandler(IHttpHandler handler)

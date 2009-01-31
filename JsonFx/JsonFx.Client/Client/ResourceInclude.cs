@@ -221,7 +221,7 @@ namespace JsonFx.Client
 
 		protected virtual IBuildResultMeta GetResourceInfo(string url)
 		{
-			return CompiledBuildResult.Create<IBuildResultMeta>(url);
+			return ResourceHandler.Create<IBuildResultMeta>(url);
 		}
 
 		#endregion Page Event Handlers

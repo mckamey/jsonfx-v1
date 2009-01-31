@@ -38,6 +38,17 @@ using System.Web.Compilation;
 
 namespace JsonFx.Handlers
 {
+	/// <remarks>
+	/// The possible encoding methods for build results
+	/// </remarks>
+	internal enum BuildResultType
+	{
+		PrettyPrint,
+		Compact,
+		Gzip,
+		Deflate
+	}
+
 	public class ResourceHandler : IHttpHandler
 	{
 		#region Constants
@@ -83,25 +94,25 @@ namespace JsonFx.Handlers
 
 			switch (ResourceHandler.GetOutputEncoding(info, context, isDebug))
 			{
-				case CompiledBuildResultType.PrettyPrint:
+				case BuildResultType.PrettyPrint:
 				{
 					context.Response.ContentEncoding = System.Text.Encoding.UTF8;
 					context.Response.Output.Write(info.PrettyPrinted);
 					break;
 				}
-				case CompiledBuildResultType.Gzip:
+				case BuildResultType.Gzip:
 				{
 					context.Response.AppendHeader("Content-Encoding", ResourceHandler.GzipContentEncoding);
 					context.Response.OutputStream.Write(info.Gzipped, 0, info.Gzipped.Length);
 					break;
 				}
-				case CompiledBuildResultType.Deflate:
+				case BuildResultType.Deflate:
 				{
 					context.Response.AppendHeader("Content-Encoding", ResourceHandler.DeflateContentEncoding);
 					context.Response.OutputStream.Write(info.Deflated, 0, info.Deflated.Length);
 					break;
 				}
-				case CompiledBuildResultType.Compact:
+				case BuildResultType.Compact:
 				default:
 				{
 					context.Response.ContentEncoding = System.Text.Encoding.UTF8;
@@ -140,7 +151,7 @@ namespace JsonFx.Handlers
 		{
 			if (info == null)
 			{
-				info = CompiledBuildResult.Create<IBuildResultMeta>(path);
+				info = ResourceHandler.Create<IBuildResultMeta>(path);
 				if (info == null)
 				{
 					return path;
@@ -179,7 +190,7 @@ namespace JsonFx.Handlers
 		protected virtual IOptimizedResult GetResourceInfo(HttpContext context, bool isDebug)
 		{
 			string virtualPath = context.Request.AppRelativeCurrentExecutionFilePath;
-			IOptimizedResult info = CompiledBuildResult.Create<IOptimizedResult>(virtualPath);
+			IOptimizedResult info = ResourceHandler.Create<IOptimizedResult>(virtualPath);
 			if (info == null)
 			{
 				throw new HttpException(404, "Resource not found: "+virtualPath);
@@ -205,15 +216,16 @@ namespace JsonFx.Handlers
 		/// <param name="context"></param>
 		public static void EnableStreamCompression(HttpContext context)
 		{
+			// Good request compression summary: http://www.west-wind.com/WebLog/posts/102969.aspx
 			switch (ResourceHandler.GetOutputEncoding(context))
 			{
-				case CompiledBuildResultType.Gzip:
+				case BuildResultType.Gzip:
 				{
 					context.Response.AppendHeader("Content-Encoding", ResourceHandler.GzipContentEncoding);
 					context.Response.Filter = new GZipStream(context.Response.Filter, CompressionMode.Compress, true);
 					break;
 				}
-				case CompiledBuildResultType.Deflate:
+				case BuildResultType.Deflate:
 				{
 					context.Response.AppendHeader("Content-Encoding", ResourceHandler.DeflateContentEncoding);
 					context.Response.Filter = new DeflateStream(context.Response.Filter, CompressionMode.Compress, true);
@@ -223,38 +235,53 @@ namespace JsonFx.Handlers
 		}
 
 		/// <summary>
+		/// Strongly typed build result factory method
+		/// </summary>
+		/// <param name="virtualPath"></param>
+		/// <returns></returns>
+		public static T Create<T>(string virtualPath)
+		{
+			if (virtualPath.StartsWith("/"))
+			{
+				virtualPath = "~"+virtualPath;
+			}
+
+			return (T)BuildManager.CreateInstanceFromVirtualPath(virtualPath, typeof(T));
+		}
+
+		/// <summary>
 		/// Determines appropriate content-encoding.
 		/// </summary>
 		/// <param name="context"></param>
 		/// <returns></returns>
-		private static CompiledBuildResultType GetOutputEncoding(HttpContext context)
+		private static BuildResultType GetOutputEncoding(HttpContext context)
 		{
 			string setting = context.Request.QueryString[null];
 			bool isDebug = ResourceHandler.DebugFlag.Equals(setting, StringComparison.OrdinalIgnoreCase);
 			if (isDebug)
 			{
-				return CompiledBuildResultType.PrettyPrint;
+				return BuildResultType.PrettyPrint;
 			}
 
 			string acceptEncoding = context.Request.Headers["Accept-Encoding"];
 			if (String.IsNullOrEmpty(acceptEncoding))
 			{
-				return CompiledBuildResultType.Compact;
+				return BuildResultType.Compact;
 			}
 
 			acceptEncoding = acceptEncoding.ToLowerInvariant();
 
 			if (acceptEncoding.Contains("deflate"))
 			{
-				return CompiledBuildResultType.Deflate;
+				return BuildResultType.Deflate;
 			}
 
 			if (acceptEncoding.Contains("gzip"))
 			{
-				return CompiledBuildResultType.Gzip;
+				return BuildResultType.Gzip;
 			}
 
-			return CompiledBuildResultType.Compact;
+			return BuildResultType.Compact;
 		}
 
 		/// <summary>
@@ -263,19 +290,19 @@ namespace JsonFx.Handlers
 		/// <param name="acceptEncoding"></param>
 		/// <param name="isDebug"></param>
 		/// <returns>optimal format</returns>
-		public static CompiledBuildResultType GetOutputEncoding(IOptimizedResult result, HttpContext context, bool isDebug)
+		private static BuildResultType GetOutputEncoding(IOptimizedResult result, HttpContext context, bool isDebug)
 		{
 			if (isDebug)
 			{
 				// short cut all debug builds
-				return CompiledBuildResultType.PrettyPrint;
+				return BuildResultType.PrettyPrint;
 			}
 
 			string acceptEncoding = context.Request.Headers["Accept-Encoding"];
 			if (String.IsNullOrEmpty(acceptEncoding))
 			{
 				// not compressed but fully compacted
-				return CompiledBuildResultType.Compact;
+				return BuildResultType.Compact;
 			}
 
 			acceptEncoding = acceptEncoding.ToLowerInvariant();
@@ -285,7 +312,7 @@ namespace JsonFx.Handlers
 				acceptEncoding.Contains(ResourceHandler.DeflateContentEncoding))
 			{
 				// compressed with Deflate
-				return CompiledBuildResultType.Deflate;
+				return BuildResultType.Deflate;
 			}
 
 			if (result.Gzipped != null &&
@@ -293,11 +320,11 @@ namespace JsonFx.Handlers
 				acceptEncoding.Contains(ResourceHandler.GzipContentEncoding))
 			{
 				// compressed with Gzip
-				return CompiledBuildResultType.Gzip;
+				return BuildResultType.Gzip;
 			}
 
 			// not compressed but fully compacted
-			return CompiledBuildResultType.Compact;
+			return BuildResultType.Compact;
 		}
 
 		#endregion Utility Methods
