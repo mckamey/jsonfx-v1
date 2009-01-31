@@ -30,6 +30,7 @@
 
 using System;
 using System.IO;
+using System.IO.Compression;
 using System.Web;
 using System.Reflection;
 using System.Text;
@@ -43,6 +44,8 @@ namespace JsonFx.Handlers
 
 		public const string DebugFlag = "debug";
 		public const string GlobalizationQuery = "lang";
+		private const string GzipContentEncoding = "gzip";
+		private const string DeflateContentEncoding = "deflate";
 
 		#endregion Constants
 
@@ -78,7 +81,7 @@ namespace JsonFx.Handlers
 				"Content-Disposition",
 				"inline;filename="+Path.GetFileNameWithoutExtension(context.Request.FilePath)+'.'+info.FileExtension);
 
-			switch (CompiledBuildResult.GetOutputEncoding(info, context, isDebug))
+			switch (ResourceHandler.GetOutputEncoding(info, context, isDebug))
 			{
 				case CompiledBuildResultType.PrettyPrint:
 				{
@@ -88,13 +91,13 @@ namespace JsonFx.Handlers
 				}
 				case CompiledBuildResultType.Gzip:
 				{
-					context.Response.AppendHeader("Content-Encoding", CompiledBuildResult.GzipContentEncoding);
+					context.Response.AppendHeader("Content-Encoding", ResourceHandler.GzipContentEncoding);
 					context.Response.OutputStream.Write(info.Gzipped, 0, info.Gzipped.Length);
 					break;
 				}
 				case CompiledBuildResultType.Deflate:
 				{
-					context.Response.AppendHeader("Content-Encoding", CompiledBuildResult.DeflateContentEncoding);
+					context.Response.AppendHeader("Content-Encoding", ResourceHandler.DeflateContentEncoding);
 					context.Response.OutputStream.Write(info.Deflated, 0, info.Deflated.Length);
 					break;
 				}
@@ -193,5 +196,110 @@ namespace JsonFx.Handlers
 		}
 
 		#endregion ResourceHandler Members
+
+		#region Utility Methods
+
+		/// <summary>
+		/// If supported, adds a runtime compression filter to the response output.
+		/// </summary>
+		/// <param name="context"></param>
+		public static void EnableStreamCompression(HttpContext context)
+		{
+			switch (ResourceHandler.GetOutputEncoding(context))
+			{
+				case CompiledBuildResultType.Gzip:
+				{
+					context.Response.AppendHeader("Content-Encoding", ResourceHandler.GzipContentEncoding);
+					context.Response.Filter = new GZipStream(context.Response.Filter, CompressionMode.Compress, true);
+					break;
+				}
+				case CompiledBuildResultType.Deflate:
+				{
+					context.Response.AppendHeader("Content-Encoding", ResourceHandler.DeflateContentEncoding);
+					context.Response.Filter = new DeflateStream(context.Response.Filter, CompressionMode.Compress, true);
+					break;
+				}
+			}
+		}
+
+		/// <summary>
+		/// Determines appropriate content-encoding.
+		/// </summary>
+		/// <param name="context"></param>
+		/// <returns></returns>
+		private static CompiledBuildResultType GetOutputEncoding(HttpContext context)
+		{
+			string setting = context.Request.QueryString[null];
+			bool isDebug = ResourceHandler.DebugFlag.Equals(setting, StringComparison.OrdinalIgnoreCase);
+			if (isDebug)
+			{
+				return CompiledBuildResultType.PrettyPrint;
+			}
+
+			string acceptEncoding = context.Request.Headers["Accept-Encoding"];
+			if (String.IsNullOrEmpty(acceptEncoding))
+			{
+				return CompiledBuildResultType.Compact;
+			}
+
+			acceptEncoding = acceptEncoding.ToLowerInvariant();
+
+			if (acceptEncoding.Contains("deflate"))
+			{
+				return CompiledBuildResultType.Deflate;
+			}
+
+			if (acceptEncoding.Contains("gzip"))
+			{
+				return CompiledBuildResultType.Gzip;
+			}
+
+			return CompiledBuildResultType.Compact;
+		}
+
+		/// <summary>
+		/// Determines the most compact Content-Encoding supported by request.
+		/// </summary>
+		/// <param name="acceptEncoding"></param>
+		/// <param name="isDebug"></param>
+		/// <returns>optimal format</returns>
+		public static CompiledBuildResultType GetOutputEncoding(IOptimizedResult result, HttpContext context, bool isDebug)
+		{
+			if (isDebug)
+			{
+				// short cut all debug builds
+				return CompiledBuildResultType.PrettyPrint;
+			}
+
+			string acceptEncoding = context.Request.Headers["Accept-Encoding"];
+			if (String.IsNullOrEmpty(acceptEncoding))
+			{
+				// not compressed but fully compacted
+				return CompiledBuildResultType.Compact;
+			}
+
+			acceptEncoding = acceptEncoding.ToLowerInvariant();
+
+			if (result.Deflated != null &&
+				result.Deflated.Length > 0 &&
+				acceptEncoding.Contains(ResourceHandler.DeflateContentEncoding))
+			{
+				// compressed with Deflate
+				return CompiledBuildResultType.Deflate;
+			}
+
+			if (result.Gzipped != null &&
+				result.Gzipped.Length > 0 &&
+				acceptEncoding.Contains(ResourceHandler.GzipContentEncoding))
+			{
+				// compressed with Gzip
+				return CompiledBuildResultType.Gzip;
+			}
+
+			// not compressed but fully compacted
+			return CompiledBuildResultType.Compact;
+		}
+
+		#endregion Utility Methods
 	}
 }

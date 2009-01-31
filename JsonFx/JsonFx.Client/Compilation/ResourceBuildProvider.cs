@@ -66,6 +66,7 @@ namespace JsonFx.Compilation
 	{
 		#region Constants
 
+		private const string RootNamespace = "__JsonFx";
 		private static readonly SHA1 HashProvider = SHA1.Create();
 
 		#endregion Constants
@@ -88,7 +89,7 @@ namespace JsonFx.Compilation
 			{
 				if (String.IsNullOrEmpty(this.resourceFullName))
 				{
-					this.resourceFullName = CompiledBuildResult.GenerateTypeName(base.VirtualPath);
+					this.resourceFullName = ResourceBuildProvider.GenerateTypeName(base.VirtualPath);
 				}
 				return this.resourceFullName;
 			}
@@ -515,6 +516,52 @@ namespace JsonFx.Compilation
 		#endregion ResourceBuildHelper Members
 
 		#region Utility Methods
+
+		/// <summary>
+		/// Generates a Type name for the compiled resource
+		/// </summary>
+		/// <param name="virtualPath"></param>
+		/// <returns></returns>
+		public static string GenerateTypeName(string virtualPath)
+		{
+			if (String.IsNullOrEmpty(virtualPath))
+			{
+				return ResourceBuildProvider.RootNamespace+"._"+Guid.NewGuid().ToString("N");
+			}
+
+			StringBuilder builder = new StringBuilder(virtualPath);
+			if (builder[0] == '~')
+			{
+				builder.Remove(0, 1);
+			}
+
+			for (int i=0; i<builder.Length; i++)
+			{
+				if (Char.IsLetterOrDigit(builder[i]))
+				{
+					continue;
+				}
+
+				switch (builder[i])
+				{
+					case '\\':
+					case '/':
+					{
+						builder[i] = '.';
+						break;
+					}
+					case '-':
+					case '.':
+					default:
+					{
+						builder[i] = '_';
+						break;
+					}
+				}
+			}
+
+			return ResourceBuildProvider.RootNamespace+builder.ToString();
+		}
 
 		/// <summary>
 		/// Generates a unique hash from string
