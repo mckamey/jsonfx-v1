@@ -292,7 +292,7 @@ namespace JsonFx.Compilation
 			property = new CodeMemberProperty();
 			property.Name = "Hash";
 			property.Type = new CodeTypeReference(typeof(String));
-			property.PrivateImplementationType = new CodeTypeReference(typeof(IBuildResultMeta));
+			property.PrivateImplementationType = new CodeTypeReference(typeof(IBuildResult));
 			property.HasGet = true;
 			// get { return hash; }
 
@@ -307,7 +307,7 @@ namespace JsonFx.Compilation
 			property = new CodeMemberProperty();
 			property.Name = "ContentType";
 			property.Type = new CodeTypeReference(typeof(String));
-			property.PrivateImplementationType = new CodeTypeReference(typeof(IBuildResultMeta));
+			property.PrivateImplementationType = new CodeTypeReference(typeof(IBuildResult));
 			property.HasGet = true;
 			// get { return ScriptResourceCodeProvider.MimeType; }
 
@@ -322,7 +322,7 @@ namespace JsonFx.Compilation
 			property = new CodeMemberProperty();
 			property.Name = "FileExtension";
 			property.Type = new CodeTypeReference(typeof(String));
-			property.PrivateImplementationType = new CodeTypeReference(typeof(IBuildResultMeta));
+			property.PrivateImplementationType = new CodeTypeReference(typeof(IBuildResult));
 			property.HasGet = true;
 			// get { return ScriptResourceCodeProvider.FileExt; }
 

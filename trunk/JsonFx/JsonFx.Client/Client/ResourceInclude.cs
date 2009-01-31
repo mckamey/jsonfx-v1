@@ -165,7 +165,7 @@ namespace JsonFx.Client
 		protected override void Render(HtmlTextWriter writer)
 		{
 			string url = this.SourceUrl;
-			IBuildResultMeta info = this.GetResourceInfo(url);
+			IBuildResult info = this.GetResourceInfo(url);
 			if (info == null)
 			{
 				throw new ArgumentException(String.Format(
@@ -219,9 +219,9 @@ namespace JsonFx.Client
 			}
 		}
 
-		protected virtual IBuildResultMeta GetResourceInfo(string url)
+		protected virtual IBuildResult GetResourceInfo(string url)
 		{
-			return ResourceHandler.Create<IBuildResultMeta>(url);
+			return ResourceHandler.Create<IBuildResult>(url);
 		}
 
 		#endregion Page Event Handlers
