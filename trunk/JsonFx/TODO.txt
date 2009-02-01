@@ -1,5 +1,6 @@
 2009-01-25 @ 13:32
 
+- resolve "~/" vs. HostingEnvironment.AppVirtualPath
 - clean up server-side jbst:control
 - update any documentation that might be affected
 - reconcile overlap between JsonFx libs and jQuery:
