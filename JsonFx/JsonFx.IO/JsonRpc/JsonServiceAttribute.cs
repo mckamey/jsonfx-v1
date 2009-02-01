@@ -30,6 +30,8 @@
 
 using System;
 
+using JsonFx.Json;
+
 namespace JsonFx.JsonRpc
 {
 	/// <summary>
@@ -63,7 +65,7 @@ namespace JsonFx.JsonRpc
 		public string Namespace
 		{
 			get { return this.nameSpace; }
-			set { this.nameSpace = value; }
+			set { this.nameSpace = JsonWriter.EnsureValidIdentifier(value, true); }
 		}
 
 		#endregion Properties
