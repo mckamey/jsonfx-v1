@@ -42,9 +42,6 @@ namespace JsonFx.UI.Jbst.Extensions
 
 		private const string ResourceLookupFormat =
 			@"function() {{
-				if (!JsonFx.Lang) {{
-					return ""$$""+{0}+""$$"";
-				}}
 				return JsonFx.Lang.get({0});
 			}}";
 
@@ -74,6 +71,9 @@ namespace JsonFx.UI.Jbst.Extensions
 
 		#region Properties
 
+		/// <summary>
+		/// Gets the resource key for this expression
+		/// </summary>
 		public string GlobalizationKey
 		{
 			get
