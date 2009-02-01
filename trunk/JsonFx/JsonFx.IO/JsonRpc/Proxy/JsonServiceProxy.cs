@@ -130,21 +130,7 @@ namespace JsonFx.JsonRpc.Proxy
 
 				this.WriteNamespaces(writer);
 
-				writer.Write(this.formatter.ClassBeginFormat, this.ProxyNamespace, this.Service.Name);
-
-				this.WriteProperty(writer, "proxyName", proxyNamespace+this.service.Name);
-
-				this.WriteProperty(writer, "name", this.service.Name);
-
-				this.WriteProperty(writer, "id", this.service.ID);
-
-				this.WriteProperty(writer, "version", this.service.Version);
-
-				this.WriteProperty(writer, "summary", this.service.Summary);
-
-				this.WriteProperty(writer, "help", this.service.Help);
-
-				this.WriteProperty(writer, "address", this.service.Address);
+				writer.Write(this.formatter.ProxyInstantiationFormat, this.ProxyNamespace, this.Service.Name, this.service.Address);
 
 				foreach (JsonMethodDescription method in this.Service.Methods)
 				{
@@ -155,10 +141,6 @@ namespace JsonFx.JsonRpc.Proxy
 				{
 					this.WriteProperty(writer, "isDebug", "true");
 				}
-
-				writer.Write(this.formatter.ClassEnd);
-
-				writer.Write(this.formatter.ProxyInstantiation, this.ProxyNamespace, this.Service.Name);
 			}
 		}
 
@@ -275,11 +257,7 @@ namespace JsonFx.JsonRpc.Proxy
 
 		internal abstract string NamespaceFormat { get; }
 
-		internal abstract string ClassBeginFormat { get; }
-
-		internal abstract string ClassEnd { get; }
-
-		internal abstract string ProxyInstantiation { get; }
+		internal abstract string ProxyInstantiationFormat { get; }
 
 		internal abstract string PropertyFormat { get; }
 
@@ -317,39 +295,29 @@ namespace JsonFx.JsonRpc.Proxy
 			get { return "if(\"undefined\"===typeof window.{0}){{window.{0}={{}};}}"; }
 		}
 
-		internal override string ClassBeginFormat
+		internal override string ProxyInstantiationFormat
 		{
-			get { return "if(\"undefined\"===typeof {0}{1}){{{0}{1}=function(url){{if(url){{this.address=url;}}}};{0}{1}.prototype=new JsonFx.IO.Service();"; }
-		}
-
-		internal override string ClassEnd
-		{
-			get { return "}"; }
-		}
-
-		internal override string ProxyInstantiation
-		{
-			get { return "{0}{1}=new {0}{1}();"; }
+			get { return "{0}{1}=new JsonFx.IO.Service(\"{2}\");"; }
 		}
 
 		internal override string PropertyFormat
 		{
-			get { return "{0}{1}.prototype.{2}=\"{3}\";"; }
+			get { return "{0}{1}.{2}=\"{3}\";"; }
 		}
 
 		internal override string SafePropertyFormat
 		{
-			get { return "{0}{1}.prototype[\"{2}\"]=\"{3}\";"; }
+			get { return "{0}{1}.\"{2}\"]=\"{3}\";"; }
 		}
 
 		internal override string MethodBeginFormat
 		{
-			get { return "{0}{1}.prototype.{3}=function("; }
+			get { return "{0}{1}.{3}=function("; }
 		}
 
 		internal override string SafeMethodBeginFormat
 		{
-			get { return "{0}{1}.prototype[\"{3}\"]=function("; }
+			get { return "{0}{1}[\"{3}\"]=function("; }
 		}
 
 		internal override string MethodMiddleFormat
@@ -376,7 +344,7 @@ namespace JsonFx.JsonRpc.Proxy
 
 		internal override string ExternFormat
 		{
-			get { return "/*global JsonFx, {0}*/\r\n"; }
+			get { return "/*global JsonFx, {0}*/\r\n\r\n"; }
 		}
 
 		internal override string NamespaceFormat
@@ -384,49 +352,39 @@ namespace JsonFx.JsonRpc.Proxy
 			get { return "if (\"undefined\" === typeof window.{0}) {{\r\n\twindow.{0} = {{}};\r\n}}\r\n"; }
 		}
 
-		internal override string ClassBeginFormat
+		internal override string ProxyInstantiationFormat
 		{
-			get { return "if (\"undefined\" === typeof {0}{1}) {{\r\n\r\n\t/*ctor*/\r\n\t{0}{1} = function(/*string*/ serviceUrl) {{\r\n\t\tif (serviceUrl) {{\r\n\t\t\tthis.address = serviceUrl;\r\n\t\t}}\r\n\t}};\r\n\r\n\t/*base*/\r\n\t{0}{1}.prototype = new JsonFx.IO.Service();\r\n\r\n"; }
-		}
-
-		internal override string ClassEnd
-		{
-			get { return "}\r\n"; }
-		}
-
-		internal override string ProxyInstantiation
-		{
-			get { return "/* create singleton instance destroying the ctor */\r\n/*{0}{1}*/ {0}{1} = new {0}{1}();"; }
+			get { return "\r\n/*proxy*/ {0}{1} = new JsonFx.IO.Service(\"{2}\");\r\n\r\n"; }
 		}
 
 		internal override string PropertyFormat
 		{
-			get { return "\t/*string*/ {0}{1}.prototype.{2} = \"{3}\";\r\n\r\n"; }
+			get { return "/*string*/ {0}{1}.{2} = \"{3}\";\r\n\r\n"; }
 		}
 
 		internal override string SafePropertyFormat
 		{
-			get { return "\t/*string*/ {0}{1}.prototype[\"{2}\"] = \"{3}\";\r\n\r\n"; }
+			get { return "/*string*/ {0}{1}[\"{2}\"] = \"{3}\";\r\n\r\n"; }
 		}
 
 		internal override string MethodBeginFormat
 		{
-			get { return "\t/*{2}*/ {0}{1}.prototype.{3} = function("; }
+			get { return "/*{2}*/ {0}{1}.{3} = function("; }
 		}
 
 		internal override string SafeMethodBeginFormat
 		{
-			get { return "\t/*{2}*/ {0}{1}.prototype[\"{3}\"] = function("; }
+			get { return "/*{2}*/ {0}{1}[\"{3}\"] = function("; }
 		}
 
 		internal override string MethodMiddleFormat
 		{
-			get { return "/*RequestOptions*/ options) {{\r\n\t\tthis.invoke(\"{0}\", "; }
+			get { return "/*RequestOptions*/ options) {{\r\n\tthis.invoke(\"{0}\", "; }
 		}
 
 		internal override string MethodEndFormat
 		{
-			get { return ", options);\r\n\t};\r\n\r\n"; }
+			get { return ", options);\r\n};\r\n\r\n"; }
 		}
 
 		internal override string ParamFormat

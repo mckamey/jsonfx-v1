@@ -4,7 +4,7 @@
 	Ajax & JSON-RPC support
 
 	Created: 2006-11-09-0120
-	Modified: 2008-05-25-2253
+	Modified: 2009-01-31-1544
 
 	Copyright (c)2006-2009 Stephen M. McKamey
 	Released under an open-source license: http://jsonfx.net/license
@@ -495,7 +495,9 @@ if ("undefined" === typeof JsonFx.jsonReviver) {
 if ("undefined" === typeof JsonFx.IO.Service) {
 
 	/* Ctor */
-	JsonFx.IO.Service = function() {};
+	JsonFx.IO.Service = function(/*string*/ url) {
+		this.address = url||"";
+	};
 
 	/*string*/ JsonFx.IO.Service.appRoot = "";
 	/*void*/ JsonFx.IO.Service.setAppRoot = function(/*string*/ root) {
