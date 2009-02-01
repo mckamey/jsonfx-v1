@@ -1186,7 +1186,7 @@ namespace JsonFx.Json
 					continue;
 				}
 
-				throw new ArgumentException("Variable expression \""+varExpr+"\" is invalid in JavaScript.");
+				throw new ArgumentException("Variable expression \""+varExpr+"\" is not supported.");
 			}
 
 			return varExpr;
