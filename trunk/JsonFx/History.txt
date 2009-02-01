@@ -1,10 +1,11 @@
 Release History
 
-v1.0.0901.31xx
+v1.0.0902.01xx
 - split CompiledBuildResult into a couple interfaces for better modularity and extensibility
 - improved generated C#
 - simplified and reduced the bulk of generated JSON-RPC proxies
 - JSON-RPC proxies should cache better now that SHA1 isn't rolling with each rebuild
+- fixed a bug in the ECMAScript indentifier check for ScriptDataBlock control
 
 v1.0.0901.2923
 - fixed long-standing caching bug whereby .NET added "Vary: *" header
