@@ -1133,6 +1133,67 @@ namespace JsonFx.Json
 
 		#endregion Private Methods
 
+		#region Utility Methods
+
+		/// <summary>
+		/// Verifies is a valid EcmaScript variable expression.
+		/// </summary>
+		/// <param name="varExpr">the variable expression</param>
+		/// <returns>varExpr</returns>
+		/// <remarks>
+		/// http://www.ecma-international.org/publications/files/ECMA-ST/Ecma-262.pdf
+		/// 
+		/// IdentifierName =
+		///		IdentifierStart | IdentifierName IdentifierPart
+		/// IdentifierStart =
+		///		Letter | '$' | '_'
+		/// IdentifierPart =
+		///		IdentifierStart | Digit
+		/// </remarks>
+		public static string EnsureValidIdentifier(string varExpr, bool nested)
+		{
+			if (String.IsNullOrEmpty(varExpr))
+			{
+				throw new ArgumentException("Variable expression is empty.");
+			}
+
+			varExpr = varExpr.Replace(" ", "");
+
+			bool indentPart = false;
+
+			// TODO: ensure not a keyword
+			foreach (char ch in varExpr)
+			{
+				if (indentPart)
+				{
+					if (ch == '.' && nested)
+					{
+						// reset to IndentifierStart
+						indentPart = false;
+						continue;
+					}
+
+					if (Char.IsDigit(ch))
+					{
+						continue;
+					}
+				}
+
+				// can be start or part
+				if (Char.IsLetter(ch) || ch == '_' || ch == '$')
+				{
+					indentPart = true;
+					continue;
+				}
+
+				throw new ArgumentException("Variable expression \""+varExpr+"\" is invalid in JavaScript.");
+			}
+
+			return varExpr;
+		}
+
+		#endregion Utility Methods
+
 		#region IDisposable Members
 
 		void IDisposable.Dispose()

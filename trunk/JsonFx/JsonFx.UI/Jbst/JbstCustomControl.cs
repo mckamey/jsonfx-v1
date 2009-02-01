@@ -145,7 +145,7 @@ namespace JsonFx.UI.Jbst
 					// backwards compatibility with "jbst:name"
 					this.controlName = this.Attributes[ControlNameKeyAlt] as string;
 				}
-				this.controlName = JbstCompiler.EnsureIdent(this.controlName);
+				this.controlName = JsonWriter.EnsureValidIdentifier(this.controlName, true);
 			}
 
 			#endregion Control Name

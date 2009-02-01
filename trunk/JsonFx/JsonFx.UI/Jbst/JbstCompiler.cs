@@ -39,6 +39,7 @@ using BuildTools.HtmlDistiller;
 using BuildTools.HtmlDistiller.Filters;
 using BuildTools.HtmlDistiller.Writers;
 using BuildTools.ScriptCompactor;
+using JsonFx.Json;
 using JsonFx.Compilation;
 
 namespace JsonFx.UI.Jbst
@@ -838,7 +839,7 @@ if (""undefined"" === typeof {0}) {{
 				case "control":
 				{
 					this.Name = attribs.ContainsKey("name") ?
-						JbstCompiler.EnsureIdent(attribs["name"]) :
+						JsonWriter.EnsureValidIdentifier(attribs["name"], true) :
 						null;
 
 					string package = attribs.ContainsKey("import") ? attribs["import"] : null;
@@ -869,23 +870,6 @@ if (""undefined"" === typeof {0}) {{
 		}
 
 		/// <summary>
-		/// Validates that the value is a valid JavaScript identifier.
-		/// </summary>
-		/// <param name="ident"></param>
-		/// <returns></returns>
-		public static string EnsureIdent(string ident)
-		{
-			if (String.IsNullOrEmpty(ident))
-			{
-				// TODO: handle this more gracefully
-				throw new InvalidOperationException("Invalid identifier.");
-			}
-
-			// TODO: scrub name for valid identifier
-			return ident.Trim();
-		}
-
-		/// <summary>
 		/// Generates a globals list from import directives
 		/// </summary>
 		/// <returns></returns>
@@ -898,7 +882,7 @@ if (""undefined"" === typeof {0}) {{
 
 			foreach (string import in this.Imports)
 			{
-				string ident = JbstCompiler.EnsureIdent(import);
+				string ident = JsonWriter.EnsureValidIdentifier(import, true);
 
 				if (String.IsNullOrEmpty(ident))
 				{

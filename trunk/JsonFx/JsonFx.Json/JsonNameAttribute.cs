@@ -61,7 +61,7 @@ namespace JsonFx.Json
 		/// <param name="jsonName"></param>
 		public JsonNameAttribute(string jsonName)
 		{
-			this.jsonName = jsonName;
+			this.jsonName = JsonWriter.EnsureValidIdentifier(jsonName, false);
 		}
 
 		#endregion Init
@@ -74,7 +74,7 @@ namespace JsonFx.Json
 		public string Name
 		{
 			get { return this.jsonName; }
-			set { this.jsonName = value; }
+			set { this.jsonName = JsonWriter.EnsureValidIdentifier(value, false); }
 		}
 
 		#endregion Properties
