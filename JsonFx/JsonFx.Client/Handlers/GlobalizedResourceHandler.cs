@@ -70,8 +70,6 @@ namespace JsonFx.Handlers
 						continue;
 					}
 
-					// TODO: normalize keys
-					key = key.ToLowerInvariant();
 					if (!globalizationKeys.Contains(key))
 					{
 						globalizationKeys.Add(key);

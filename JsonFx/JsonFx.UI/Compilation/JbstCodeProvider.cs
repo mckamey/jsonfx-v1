@@ -152,8 +152,7 @@ namespace JsonFx.Compilation
 					continue;
 				}
 
-				// TODO: normalize keys
-				string key = res.GlobalizationKey.ToLowerInvariant();
+				string key = res.GlobalizationKey;
 				if (!this.GlobalizationKeys.Contains(key))
 				{
 					this.GlobalizationKeys.Add(key);
