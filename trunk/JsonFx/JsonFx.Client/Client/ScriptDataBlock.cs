@@ -239,7 +239,7 @@ namespace JsonFx.Client
 				throw new ArgumentException("Variable expression is empty.");
 			}
 
-			varExpr = varExpr.Trim();
+			varExpr = varExpr.Replace(" ", "");
 
 			bool indentPart = false;
 
