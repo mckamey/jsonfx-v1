@@ -1,10 +1,10 @@
-/*global JsonFx */
+/*global JsonFx, Resources */
 /*
 	JsonFx_Lang.js
 	client-size globalization support
 
 	Created: 2008-09-04-0845
-	Modified: 2008-09-05-2250
+	Modified: 2009-02-01-0946
 
 	Copyright (c)2006-2009 Stephen M. McKamey
 	Distributed under an open-source license: http://jsonfx.net/license
@@ -19,9 +19,44 @@ if ("undefined" === typeof JsonFx.Lang) {
 
 	/* ctor */
 	JsonFx.Lang = function() {
-		// create private member via closure
-		var rsrc = {};
+		// current culture
 		var lang = "";
+
+		// internal lookup table
+		var rsrc = {};
+		
+		// global Resources object		
+		var rsrcG = {};
+
+		// normalize key
+		/*string*/ function normKey(/*string*/ k) {
+			k = k.replace(/^\s+|\s+$/g, "");
+			k = k.replace(/\s+,|,\s+/g, ",");
+			k = k.toLowerCase();
+			return k;
+		}
+
+		/*void*/ function build(/*string*/ k, /*string*/ v) {
+			if (!k) {
+				return;
+			}
+
+			// add to internal lookup
+			rsrc[normKey(k)] = v;
+
+			// build out global Resources object
+			k = k.split(',', 2);
+			
+			if (!k || k.length < 2) {
+				return;
+			}
+
+			if (!rsrcG.hasOwnProperty(k)) {
+				rsrcG[k[0]] = {};
+			}
+			
+			rsrcG[k[0]][k[1]] = v;
+		}
 
 		/*void*/ this.add = function(/*object*/ r, /*string*/ c) {
 			if (!r) {
@@ -35,7 +70,7 @@ if ("undefined" === typeof JsonFx.Lang) {
 			// merge in the new values
 			for (var k in r) {
 				if (r.hasOwnProperty(k)) {
-					rsrc[k] = r[k];
+					build(k, r[k]);
 				}
 			}
 		};
@@ -45,10 +80,7 @@ if ("undefined" === typeof JsonFx.Lang) {
 				k = "";
 			}
 
-			// normalize key
-			k = k.replace(/^\s+|\s+$/g, "");
-			k = k.replace(/\s+,|,\s+/g, ",");
-			k = k.toLowerCase();
+			k = normKey(k);
 
 			return rsrc.hasOwnProperty(k) ? rsrc[k] : "$$"+k+"$$";
 		};
@@ -56,6 +88,13 @@ if ("undefined" === typeof JsonFx.Lang) {
 		/*void*/ this.getLang = function() {
 			return lang;
 		};
+
+		if ("undefined" !== typeof window.Resources) {
+			// store to be able to revert
+			this._Resources = window.Resources;
+		}
+
+		window.Resources = rsrcG;
 	};
 
 	/*singleton, destroy the ctor*/
