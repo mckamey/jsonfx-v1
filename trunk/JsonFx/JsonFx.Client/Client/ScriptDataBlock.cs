@@ -99,7 +99,7 @@ namespace JsonFx.Client
 			}
 			set
 			{
-				varName = this.EnsureEcmaScriptVar(varName);
+				varName = this.EnsureEcmaScriptIdentifier(varName);
 				this.data[varName] = value;
 			}
 		}
@@ -218,27 +218,60 @@ namespace JsonFx.Client
 		#region Methods
 
 		/// <summary>
-		/// Verifies the validity of the EcmaScript variable name.
+		/// Verifies is a valid EcmaScript variable expression.
 		/// </summary>
-		/// <param name="key"></param>
-		/// <returns></returns>
-		private string EnsureEcmaScriptVar(string varName)
+		/// <param name="varExpr">the variable expression</param>
+		/// <returns>varExpr</returns>
+		/// <remarks>
+		/// http://www.ecma-international.org/publications/files/ECMA-ST/Ecma-262.pdf
+		/// 
+		/// IdentifierName =
+		///		IdentifierStart | IdentifierName IdentifierPart
+		/// IdentifierStart =
+		///		Letter | '$' | '_'
+		/// IdentifierPart =
+		///		IdentifierStart | Digit
+		/// </remarks>
+		private string EnsureEcmaScriptIdentifier(string varExpr)
 		{
-			if (String.IsNullOrEmpty(varName))
+			if (String.IsNullOrEmpty(varExpr))
 			{
 				throw new ArgumentException("Variable name is empty.");
 			}
 
-			// TODO: improve validation that is valid EcmaScript variable pattern, not keyword
-			foreach (char ch in varName)
+			varExpr = varExpr.Trim();
+
+			bool indentPart = false;
+
+			// TODO: ensure not a keyword
+			foreach (char ch in varExpr)
 			{
-				if (!Char.IsLetterOrDigit(ch) && ch != '.' && ch != '$')
+				if (indentPart)
 				{
-					throw new ArgumentException("Variable \""+varName+"\" is invalid in JavaScript.");
+					if (ch == '.')
+					{
+						// reset to IndentifierStart
+						indentPart = false;
+						continue;
+					}
+
+					if (Char.IsDigit(ch))
+					{
+						continue;
+					}
 				}
+
+				// can be start or part
+				if (Char.IsLetter(ch) || ch == '_' || ch == '$')
+				{
+					indentPart = true;
+					continue;
+				}
+
+				throw new ArgumentException("Variable expression \""+varExpr+"\" is invalid in JavaScript.");
 			}
 
-			return varName.Trim();
+			return varExpr;
 		}
 
 		#endregion Methods
