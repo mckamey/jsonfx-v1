@@ -236,7 +236,7 @@ namespace JsonFx.Client
 		{
 			if (String.IsNullOrEmpty(varExpr))
 			{
-				throw new ArgumentException("Variable name is empty.");
+				throw new ArgumentException("Variable expression is empty.");
 			}
 
 			varExpr = varExpr.Trim();
