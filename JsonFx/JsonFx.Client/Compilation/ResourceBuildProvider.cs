@@ -131,10 +131,8 @@ namespace JsonFx.Compilation
 		{
 			get
 			{
-				if (this.pathDependencies == null)
-				{
-					return base.VirtualPathDependencies;
-				}
+				this.EnsureDependencies();
+
 				return this.pathDependencies;
 			}
 		}
@@ -461,11 +459,31 @@ namespace JsonFx.Compilation
 
 		void IResourceBuildHelper.AddVirtualPathDependency(string virtualPath)
 		{
-			if (this.pathDependencies == null)
+			this.EnsureDependencies();
+
+			this.AddDependency(virtualPath);
+		}
+
+		private void EnsureDependencies()
+		{
+			if (this.pathDependencies != null)
 			{
-				this.pathDependencies = new List<string>();
-				this.pathDependencies.Add(base.VirtualPath);
+				return;
 			}
+
+			this.pathDependencies = new List<string>();
+
+			this.AddDependency(base.VirtualPath);
+
+			foreach (string virtualPath in base.VirtualPathDependencies)
+			{
+				this.AddDependency(virtualPath);
+			}
+		}
+
+		private void AddDependency(string virtualPath)
+		{
+			virtualPath = ResourceHandler.EnsureAppRelative(virtualPath);
 
 			// attempt to dedup
 			if (!this.pathDependencies.Contains(virtualPath))

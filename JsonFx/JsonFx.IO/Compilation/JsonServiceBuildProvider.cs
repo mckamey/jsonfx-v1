@@ -149,13 +149,7 @@ namespace JsonFx.Compilation
 		{
 			// TODO: consolidate app relative path conversion
 			// calculate the service end-point path
-			string proxyPath = base.VirtualPath;
-			string appRoot = HostingEnvironment.ApplicationVirtualPath;
-			if (appRoot != null && appRoot.Length > 1 &&
-				proxyPath.StartsWith(appRoot, StringComparison.OrdinalIgnoreCase))
-			{
-				proxyPath = proxyPath.Substring(appRoot.Length);
-			}
+			string proxyPath = ResourceHandler.EnsureAppRelative(base.VirtualPath).TrimStart('~');
 
 			// build proxy from main service type
 			JsonServiceDescription desc = new JsonServiceDescription(serviceType, proxyPath);

@@ -35,6 +35,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Reflection;
 using System.Web;
+using System.Web.Hosting;
 using System.Web.Compilation;
 using System.CodeDom;
 using System.CodeDom.Compiler;

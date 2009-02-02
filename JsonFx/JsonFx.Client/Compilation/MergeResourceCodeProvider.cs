@@ -32,7 +32,6 @@ using System;
 using System.IO;
 using System.Collections;
 using System.Collections.Generic;
-using System.Web.Hosting;
 using System.Web.Compilation;
 using System.CodeDom;
 using System.CodeDom.Compiler;
@@ -127,18 +126,7 @@ namespace JsonFx.Compilation
 						continue;
 					}
 
-					// TODO: consolidate app relative path conversion
-					// ensure app-relative BuildManager paths
-					string appRoot = HostingEnvironment.ApplicationVirtualPath;
-					if (appRoot != null && appRoot.Length > 1 &&
-						files[i].StartsWith(appRoot, StringComparison.OrdinalIgnoreCase))
-					{
-						files[i] = "~"+files[i].Substring(appRoot.Length);
-					}
-					else if (files[i].StartsWith("/"))
-					{
-						files[i] = "~"+files[i];
-					}
+					files[i] = ResourceHandler.EnsureAppRelative(files[i]);
 
 					// try to get as a CompiledBuildResult
 					IOptimizedResult result = ResourceHandler.Create<IOptimizedResult>(files[i]);

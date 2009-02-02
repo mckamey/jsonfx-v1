@@ -95,20 +95,8 @@ namespace JsonFx.Handlers
 				{
 					return fields.ResourceKey;
 				}
-				else if (path.StartsWith("~"))
-				{
-					path = path.Substring(1);
-				}
-				else
-				{
-					// TODO: consolidate app relative path conversion
-					string appRoot = HostingEnvironment.ApplicationVirtualPath;
-					if (appRoot != null && appRoot.Length > 1 &&
-						path.StartsWith(appRoot, StringComparison.OrdinalIgnoreCase))
-					{
-						path = path.Substring(appRoot.Length);
-					}
-				}
+
+				path = ResourceHandler.EnsureAppRelative(path).TrimStart('~');
 
 				return path + ',' + fields.ResourceKey;
 			}
@@ -144,17 +132,7 @@ namespace JsonFx.Handlers
 
 					if (isLocal)
 					{
-						if (path.StartsWith("~"))
-						{
-							path = path.Substring(1);
-						}
-						// TODO: consolidate app relative path conversion
-						string appRoot = HostingEnvironment.ApplicationVirtualPath;
-						string lookupPath = path;
-						if (appRoot != null && appRoot.Length > 1)
-						{
-							lookupPath = appRoot+lookupPath;
-						}
+						string lookupPath = ResourceHandler.EnsureAppRelative(path).TrimStart('~');
 						value = HttpContext.GetLocalResourceObject(lookupPath, fields.ResourceKey);
 					}
 					else
