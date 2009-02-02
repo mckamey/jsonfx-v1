@@ -33,6 +33,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
 using System.Web;
+using System.Web.Hosting;
 using System.Web.Compilation;
 using System.CodeDom;
 using System.CodeDom.Compiler;
@@ -146,13 +147,14 @@ namespace JsonFx.Compilation
 
 		private void GenerateServiceProxyCode(AssemblyBuilder assemblyBuilder, Type serviceType)
 		{
+			// TODO: consolidate app relative path conversion
 			// calculate the service end-point path
 			string proxyPath = base.VirtualPath;
-			string appPath = System.Web.Hosting.HostingEnvironment.ApplicationVirtualPath;
-			if (appPath != null && appPath.Length > 1 &&
-				proxyPath.StartsWith(appPath, StringComparison.OrdinalIgnoreCase))
+			string appRoot = HostingEnvironment.ApplicationVirtualPath;
+			if (appRoot != null && appRoot.Length > 1 &&
+				proxyPath.StartsWith(appRoot, StringComparison.OrdinalIgnoreCase))
 			{
-				proxyPath = proxyPath.Substring(appPath.Length);
+				proxyPath = proxyPath.Substring(appRoot.Length);
 			}
 
 			// build proxy from main service type

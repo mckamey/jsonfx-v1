@@ -32,6 +32,7 @@ using System;
 using System.IO;
 using System.Collections.Generic;
 using System.Web;
+using System.Web.Hosting;
 using System.Web.Compilation;
 using System.Globalization;
 using System.Threading;
@@ -92,17 +93,27 @@ namespace JsonFx.Handlers
 			{
 				if (String.IsNullOrEmpty(path))
 				{
-					return fields.ResourceKey.ToLowerInvariant();
+					return fields.ResourceKey;
 				}
 				else if (path.StartsWith("~"))
 				{
 					path = path.Substring(1);
 				}
+				else
+				{
+					// TODO: consolidate app relative path conversion
+					string appRoot = HostingEnvironment.ApplicationVirtualPath;
+					if (appRoot != null && appRoot.Length > 1 &&
+						path.StartsWith(appRoot, StringComparison.OrdinalIgnoreCase))
+					{
+						path = path.Substring(appRoot.Length);
+					}
+				}
 
-				return path.ToLowerInvariant() + ',' + fields.ResourceKey.ToLowerInvariant();
+				return path + ',' + fields.ResourceKey;
 			}
 
-			return fields.ClassKey.ToLowerInvariant() + ',' + fields.ResourceKey.ToLowerInvariant();
+			return fields.ClassKey + ',' + fields.ResourceKey;
 		}
 
 		protected virtual IDictionary<string, object> GetResourceStrings(IEnumerable<string> keys, string path)
@@ -133,7 +144,18 @@ namespace JsonFx.Handlers
 
 					if (isLocal)
 					{
-						value = HttpContext.GetLocalResourceObject(path, fields.ResourceKey);
+						if (path.StartsWith("~"))
+						{
+							path = path.Substring(1);
+						}
+						// TODO: consolidate app relative path conversion
+						string appRoot = HostingEnvironment.ApplicationVirtualPath;
+						string lookupPath = path;
+						if (appRoot != null && appRoot.Length > 1)
+						{
+							lookupPath = appRoot+lookupPath;
+						}
+						value = HttpContext.GetLocalResourceObject(lookupPath, fields.ResourceKey);
 					}
 					else
 					{
