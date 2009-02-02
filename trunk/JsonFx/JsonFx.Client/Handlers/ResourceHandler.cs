@@ -335,20 +335,27 @@ namespace JsonFx.Handlers
 
 		public static string EnsureAppRelative(string path)
 		{
-			// TODO: consolidate app relative path conversion
 			// ensure app-relative BuildManager paths
 			string appRoot = HostingEnvironment.ApplicationVirtualPath;
 			if (appRoot != null && appRoot.Length > 1 &&
-						path.StartsWith(appRoot, StringComparison.OrdinalIgnoreCase))
+				path.StartsWith(appRoot, StringComparison.OrdinalIgnoreCase))
 			{
 				path = "~"+path.Substring(appRoot.Length);
 			}
 			else if (path.StartsWith("/") ||
-						path.StartsWith("\\"))
+				path.StartsWith("\\"))
 			{
 				path = "~"+path;
 			}
 			return path;
+		}
+
+		public static string EnsureAppAbsolute(string path)
+		{
+			// TODO: improve efficiency
+			path = EnsureAppRelative(path).TrimStart('~');
+
+			return HostingEnvironment.ApplicationVirtualPath+path;
 		}
 
 		#endregion Utility Methods
