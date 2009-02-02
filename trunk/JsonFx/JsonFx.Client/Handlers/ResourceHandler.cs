@@ -34,6 +34,7 @@ using System.IO.Compression;
 using System.Web;
 using System.Reflection;
 using System.Text;
+using System.Web.Hosting;
 using System.Web.Compilation;
 
 namespace JsonFx.Handlers
@@ -330,6 +331,24 @@ namespace JsonFx.Handlers
 
 			// not compressed but fully compacted
 			return BuildResultType.Compact;
+		}
+
+		public static string EnsureAppRelative(string path)
+		{
+			// TODO: consolidate app relative path conversion
+			// ensure app-relative BuildManager paths
+			string appRoot = HostingEnvironment.ApplicationVirtualPath;
+			if (appRoot != null && appRoot.Length > 1 &&
+						path.StartsWith(appRoot, StringComparison.OrdinalIgnoreCase))
+			{
+				path = "~"+path.Substring(appRoot.Length);
+			}
+			else if (path.StartsWith("/") ||
+						path.StartsWith("\\"))
+			{
+				path = "~"+path;
+			}
+			return path;
 		}
 
 		#endregion Utility Methods
