@@ -89,12 +89,12 @@ if ("undefined" === typeof JsonFx.Lang) {
 			return lang;
 		};
 
-		if ("undefined" !== typeof window.Resources) {
-			// store to be able to revert
-			this._Resources = window.Resources;
-		}
+//		if ("undefined" !== typeof window.Resources) {
+//			// store to be able to revert
+//			this._Resources = window.Resources;
+//		}
 
-		window.Resources = rsrcG;
+//		window.Resources = rsrcG;
 	};
 
 	/*singleton, destroy the ctor*/
