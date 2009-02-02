@@ -132,7 +132,7 @@ namespace JsonFx.Handlers
 
 					if (isLocal)
 					{
-						string lookupPath = ResourceHandler.EnsureAppRelative(path).TrimStart('~');
+						string lookupPath = ResourceHandler.EnsureAppAbsolute(path).TrimStart('~');
 						value = HttpContext.GetLocalResourceObject(lookupPath, fields.ResourceKey);
 					}
 					else
@@ -142,7 +142,7 @@ namespace JsonFx.Handlers
 				}
 				catch (Exception ex)
 				{
-					value = ex.Message;
+					value = "$$"+ex.Message+"$$";
 				}
 
 				if (value == null)
