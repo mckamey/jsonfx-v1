@@ -42,7 +42,7 @@ using JsonFx.JsonRpc.Proxy;
 
 namespace JsonFx.Handlers
 {
-	internal class JsonServiceHandler : System.Web.IHttpHandler
+	internal class JsonServiceHandler : IHttpHandler
 	{
 		#region Constants
 
@@ -62,7 +62,12 @@ namespace JsonFx.Handlers
 
 		#region Init
 
-		internal JsonServiceHandler(IJsonServiceInfo serviceInfo, string serviceUrl)
+		/// <summary>
+		/// Ctor
+		/// </summary>
+		/// <param name="serviceInfo"></param>
+		/// <param name="serviceUrl"></param>
+		public JsonServiceHandler(IJsonServiceInfo serviceInfo, string serviceUrl)
 		{
 			try
 			{
@@ -79,6 +84,9 @@ namespace JsonFx.Handlers
 
 		#region Properties
 
+		/// <summary>
+		/// Gets the service object servicing the request
+		/// </summary>
 		protected object Service
 		{
 			get
@@ -224,7 +232,7 @@ namespace JsonFx.Handlers
 
 		#region IHttpHandler Members
 
-		void System.Web.IHttpHandler.ProcessRequest(System.Web.HttpContext context)
+		void IHttpHandler.ProcessRequest(HttpContext context)
 		{
 			context.Response.Cache.SetCacheability(HttpCacheability.Private);
 
@@ -322,7 +330,7 @@ namespace JsonFx.Handlers
 			}
 		}
 
-		bool System.Web.IHttpHandler.IsReusable
+		bool IHttpHandler.IsReusable
 		{
 			get { return true; }
 		}

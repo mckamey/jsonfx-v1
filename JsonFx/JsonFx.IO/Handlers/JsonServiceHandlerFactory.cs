@@ -40,7 +40,7 @@ namespace JsonFx.Handlers
 	{
 		#region IHttpHandlerFactory Methods
 
-		IHttpHandler IHttpHandlerFactory.GetHandler(HttpContext context, string verb, string url, string path)
+		public virtual IHttpHandler GetHandler(HttpContext context, string verb, string url, string path)
 		{
 			if ("GET".Equals(verb, StringComparison.OrdinalIgnoreCase) &&
 				String.IsNullOrEmpty(context.Request.PathInfo))
@@ -64,7 +64,7 @@ namespace JsonFx.Handlers
 			return new JsonServiceHandler(serviceInfo, url);
 		}
 
-		void IHttpHandlerFactory.ReleaseHandler(IHttpHandler handler)
+		public virtual void ReleaseHandler(IHttpHandler handler)
 		{
 		}
 
