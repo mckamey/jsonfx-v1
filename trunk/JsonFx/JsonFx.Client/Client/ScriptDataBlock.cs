@@ -41,7 +41,7 @@ namespace JsonFx.Client
 	/// <summary>
 	/// Specifically for emitting runtime data to the page as JavaScript variables.
 	/// </summary>
-	[ToolboxData("<{0}:DataBlock runat=\"server\"></{0}:DataBlock>")]
+	[ToolboxData("<{0}:ScriptDataBlock runat=\"server\"></{0}:ScriptDataBlock>")]
 	public class ScriptDataBlock : Control
 	{
 		#region Constants
@@ -63,7 +63,7 @@ namespace JsonFx.Client
 		#region Fields
 
 		private bool isDebug;
-		private readonly Dictionary<string, object> data = new Dictionary<string, object>(StringComparer.Ordinal);
+		private readonly Dictionary<string, object> Data = new Dictionary<string, object>(StringComparer.Ordinal);
 
 		#endregion Fields
 
@@ -91,21 +91,29 @@ namespace JsonFx.Client
 		{
 			get
 			{
-				if (!this.data.ContainsKey(varName))
+				if (!this.Data.ContainsKey(varName))
 				{
 					return null;
 				}
-				return this.data[varName];
+				return this.Data[varName];
 			}
 			set
 			{
 				varName = JsonWriter.EnsureValidIdentifier(varName, true);
-				this.data[varName] = value;
+				this.Data[varName] = value;
 			}
 		}
 
 		/// <summary>
-		/// Gets and sets if should render a debuggable ("Pretty-Print") block.
+		/// Gets access to 
+		/// </summary>
+		public IDictionary<string, object> DataItems
+		{
+			get { return this.Data; }
+		}
+
+		/// <summary>
+		/// Gets and sets if should render as a debuggable ("Pretty-Print") block.
 		/// </summary>
 		[DefaultValue(false)]
 		public bool IsDebug
@@ -119,12 +127,12 @@ namespace JsonFx.Client
 		#region Page Event Handlers
 
 		/// <summary>
-		/// Renders the dictionary as a block of JavaScript
+		/// Renders the data items as a block of JavaScript
 		/// </summary>
 		/// <param name="writer"></param>
 		protected override void Render(HtmlTextWriter writer)
 		{
-			if (this.data.Count < 1)
+			if (this.Data.Count < 1)
 			{
 				// emit nothing if empty
 				return;
@@ -143,7 +151,7 @@ namespace JsonFx.Client
 
 				writer.Write(ScriptOpen);
 
-				foreach (string key in this.data.Keys)
+				foreach (string key in this.Data.Keys)
 				{
 					string[] nsParts = key.Split(VariableDelims, StringSplitOptions.RemoveEmptyEntries);
 					for (int i = 0; i<nsParts.Length-1; i++)
@@ -184,8 +192,8 @@ namespace JsonFx.Client
 						writer.Indent += 3;
 						writer.Write(VarDeclarationDebug, declaration);
 						writer.Indent -= 3;
-						if (this.data[key] != null &&
-							this.data[key].GetType().IsClass)
+						if (this.Data[key] != null &&
+							this.Data[key].GetType().IsClass)
 						{
 							writer.WriteLine();
 						}
@@ -196,7 +204,7 @@ namespace JsonFx.Client
 					}
 
 					// emit the value as JSON
-					jsonWriter.Write(this.data[key]);
+					jsonWriter.Write(this.Data[key]);
 					writer.Write(VarDeclarationEnd);
 
 					if (this.IsDebug)
