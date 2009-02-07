@@ -67,8 +67,9 @@ namespace JsonFx.Client
 		private bool isDebug;
 		private string sourceUrl;
 		private bool usePageCulture = true;
+		private bool suppressLocalization;
 		private StyleIncludeType styleFormat = StyleIncludeType.Import;
-		private Dictionary<string, string> attributes = null;
+		private Dictionary<string, string> attributes;
 
 		#endregion Fields
 
@@ -122,6 +123,16 @@ namespace JsonFx.Client
 		{
 			get { return this.usePageCulture; }
 			set { this.usePageCulture = value; }
+		}
+
+		/// <summary>
+		/// Gets and sets if will be manually emitting localization values
+		/// </summary>
+		[DefaultValue(false)]
+		public bool SuppressLocalization
+		{
+			get { return this.suppressLocalization; }
+			set { this.suppressLocalization = value; }
 		}
 
 		/// <summary>
@@ -207,7 +218,8 @@ namespace JsonFx.Client
 			}
 			writer.Write(format, type, url, attrib);
 
-			if (info is IGlobalizedBuildResult)
+			if (!this.SuppressLocalization &&
+				info is IGlobalizedBuildResult)
 			{
 				string culture = this.UsePageCulture ?
 					Thread.CurrentThread.CurrentCulture.Name :
