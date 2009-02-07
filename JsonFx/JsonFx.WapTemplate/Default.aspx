@@ -15,7 +15,7 @@
 	<%-- one tag to include all the client scripts --%>
 	<JsonFx:ResourceInclude runat="server" SourceUrl="~/Scripts.merge" />
 
-	<%-- one control to emit page data as JavaScript --%>
+	<%-- control to emit page data as JavaScript --%>
 	<JsonFx:ScriptDataBlock runat="server" ID="PageData" />
 
 	<%--
@@ -30,6 +30,8 @@
 	<% } %>
 
 <form id="F" runat="server">
+
+<%-- declaratively add a JBST control to the page and bind example data --%>
 <jbst:Control runat="server"
 	name="Example.congrats"
 	data="{hostName:window.location.host,renderTime:Example.renderTime,serverName:Example.serverName}">
