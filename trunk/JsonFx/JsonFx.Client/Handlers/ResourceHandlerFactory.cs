@@ -39,7 +39,7 @@ namespace JsonFx.Handlers
 	{
 		#region IHttpHandlerFactory Methods
 
-		IHttpHandler IHttpHandlerFactory.GetHandler(HttpContext context, string verb, string url, string path)
+		public virtual IHttpHandler GetHandler(HttpContext context, string verb, string url, string path)
 		{
 			if (context.Request.QueryString[ResourceHandler.GlobalizationQuery] != null)
 			{
@@ -51,7 +51,7 @@ namespace JsonFx.Handlers
 			return new ResourceHandler();
 		}
 
-		void IHttpHandlerFactory.ReleaseHandler(IHttpHandler handler)
+		public virtual void ReleaseHandler(IHttpHandler handler)
 		{
 		}
 
