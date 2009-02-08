@@ -48,8 +48,8 @@ JsonFx.Bindings = function() {
 
 	// due to EMCA bug this RegExp is limited to max one of each
 	// https://bugzilla.mozilla.org/show_bug.cgi?id=351349
-	///*RegExp*/ var re = /^([\w-]*|[*])(?:#([\w-]+)|\.([\w-]+))*$/;
-	/*RegExp*/ var re = /^([\w-]*|[*])(?:#([\w-]+)|\.([\w-]+))?(?:#([\w-]+)|\.([\w-]+))?$/;
+	///*RegExp*/ var re = /^([\w\-]*|[*])(?:#([\w\-]+)|\.([\w\-]+))*$/;
+	/*RegExp*/ var re = /^([\w\-]*|[*])(?:#([\w\-]+)|\.([\w\-]+))?(?:#([\w\-]+)|\.([\w\-]+))?$/;
 
 	/*void*/ b.add = function(/*string*/ selector, /*function(elem)*/ bind, /*function(elem)*/ unbind) {
 		var s = re.exec(selector);
@@ -108,8 +108,8 @@ JsonFx.Bindings = function() {
 							// perform action on element and
 							// allow binding to replace element
 							elem = tagBindings[css][a](elem) || elem;
-						} catch (ex2) {
-							window.alert("Error binding "+tag+"."+css+":\n\n\""+ex2.message+"\"");
+						} catch (ex) {
+							window.alert("Error binding "+tag+"."+css+":\n\n\""+ex.message+"\"");
 						}
 					}
 				}
