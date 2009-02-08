@@ -46,39 +46,52 @@ JsonFx.Bindings = function() {
 
 	/*hashtable[tag] of object*/ var bindings = {};
 
-	/*void*/ b.register = function(/*string*/ tag, /*string*/ css, /*function(elem,options)*/ bind, /*function(elem,options)*/ unbind, /*bool*/ overwrite) {
+	// due to EMCA bug this RegExp is limited to max one of each
+	// https://bugzilla.mozilla.org/show_bug.cgi?id=351349
+	///*RegExp*/ var re = /^([\w-]*|[*])(?:#([\w-]+)|\.([\w-]+))*$/;
+	/*RegExp*/ var re = /^([\w-]*|[*])(?:#([\w-]+)|\.([\w-]+))?(?:#([\w-]+)|\.([\w-]+))?$/;
 
-//		alert(tag+"."+css+":\n"+bind+"\n"+unbind);
+	/*void*/ b.add = function(/*string*/ selector, /*function(elem)*/ bind, /*function(elem)*/ unbind) {
+		var s = re.exec(selector);
+		if (!s) {
+			// http://www.w3.org/TR/css3-selectors/#simple-selectors
+			throw new Error("JsonFx.Bindings only supports simple tag, class, and id selectors. Invalid: \""+selector+"\"");
+		}
 
-		if (typeof css !== "string") {
-			throw new Error("Binding CSS is not a string.");
-		}
-		if (typeof tag !== "string") {
-			throw new Error("Binding tag for \""+css+"\" is not a string.");
-		}
+		s = {
+			tag: (s[1] || "*").toLowerCase(),
+			id: (s[2] || ""),
+			css: (s[3] || "")
+		};
+
 		if (bind && typeof bind !== "function") {
-			throw new Error("Binding method for \""+css+"\" is not a function.");
+			throw new Error("Binding method for \""+selector+"\" is not a function.");
 		}
 		if (unbind && typeof unbind !== "function") {
-			throw new Error("Unbinding method for \""+css+"\" is not a function.");
+			throw new Error("Unbinding method for \""+selector+"\" is not a function.");
 		}
 
+// TODO: add ability to execute on ID, className, tagName
+
 		if (bind || unbind) {
-			tag = tag.toLowerCase();
-			if ("undefined" === typeof bindings[tag]) {
-				/*object*/ bindings[tag] = {};
-			} else if (!overwrite && bindings[tag][css]) {
-				throw new Error("Binding for "+tag+"."+css+" has already been registered.");
+			if ("undefined" === typeof bindings[s.tag]) {
+				/*object*/ bindings[s.tag] = {};
+			} else if (bindings[s.tag][s.css]) {
+				throw new Error("A binding for "+selector+" has already been registered.");
 			}
 
-			/*object*/ bindings[tag][css] = {};
-			bindings[tag][css][BIND] = bind || null;
-			bindings[tag][css][UNBIND] = unbind || null;
+			/*object*/ bindings[s.tag][s.css] = {};
+			bindings[s.tag][s.css][BIND] = bind || null;
+			bindings[s.tag][s.css][UNBIND] = unbind || null;
 		}
 	};
 
+	/*void*/ b.register = function(/*string*/ tag, /*string*/ css, /*function(elem)*/ bind, /*function(elem)*/ unbind) {
+		b.add(tag+'.'+css, bind, unbind);
+	};
+
 	/*element*/ var performOne = function(/*element*/ elem, /*actionKey*/ a) {
-		var tag, tagBindings, classes, i, css, options;
+		var tag, tagBindings, classes, i, css;
 		if (elem && elem.tagName && elem.className) {
 
 			// only perform on registered tags
@@ -94,7 +107,7 @@ JsonFx.Bindings = function() {
 						try {
 							// perform action on element and
 							// allow binding to replace element
-							elem = tagBindings[css][a](elem, options) || elem;
+							elem = tagBindings[css][a](elem) || elem;
 						} catch (ex2) {
 							window.alert("Error binding "+tag+"."+css+":\n\n\""+ex2.message+"\"");
 						}
@@ -107,7 +120,6 @@ JsonFx.Bindings = function() {
 
 	// perform a binding action on child elements
 	/*void*/ var perform = function(/*element*/ root, /*actionKey*/ a) {
-		var elems, i, replace;
 		if (root && root.getElementsByTagName) {
 
 			// for each registered tag
@@ -115,11 +127,11 @@ JsonFx.Bindings = function() {
 				if (bindings.hasOwnProperty(tag)) {
 
 					// for each element in root with tagName
-					elems = root.getElementsByTagName(tag);
-					for (i=0; i<elems.length; i++) {
+					var elems = root.getElementsByTagName(tag);
+					for (var i=0; i<elems.length; i++) {
 						// perform action on element and
 						// allow binding to replace element
-						replace = performOne(elems[i], a);
+						var replace = performOne(elems[i], a);
 						if (replace !== elems[i] && elems[i].parentNode) {
 							elems[i].parentNode.replaceChild(replace, elems[i]);
 						}
