@@ -62,27 +62,31 @@ JsonFx.Bindings = function() {
 		var s = re.exec(selector);
 		if (!s) {
 			// http://www.w3.org/TR/css3-selectors/#simple-selectors
-			throw new Error("JsonFx.Bindings only supports simple tag, class, and id selectors. Invalid: \""+selector+"\"");
+			throw new Error("JsonFx.Bindings only supports simple tag, class, and id selectors. Selector: \""+selector+"\"");
 		}
 
 		s = {
 			tag: (s[1]||"*").toLowerCase(),
-			id: (s[2]||s[4]||"*"),
-			css: (s[3]||s[5]||"*")
+			css: (s[3]||s[5]||"*"),
+			id: (s[2]||s[4]||"")
 		};
 
 // TODO: add ability to bind on ID, className, tagName or any combination
 // determine how to most efficiently store binding references for arbitrary combinations
 
-		if ("undefined" === typeof bindings[s.tag]) {
-			/*object*/ bindings[s.tag] = {};
-		} else if (bindings[s.tag][s.css]) {
-			throw new Error("A binding for "+selector+" has already been registered.");
-		}
+		if (s.id) {
+			throw new Error("JsonFx.Bindings does not yet support tag selectors. Selector: \""+selector+"\"");
+		} else {
+			if ("undefined" === typeof bindings[s.tag]) {
+				/*object*/ bindings[s.tag] = {};
+			} else if (bindings[s.tag][s.css]) {
+				throw new Error("A binding for "+selector+" has already been registered.");
+			}
 
-		/*object*/ bindings[s.tag][s.css] = {};
-		bindings[s.tag][s.css][BIND] = bind;
-		bindings[s.tag][s.css][UNBIND] = unbind;
+			/*object*/ bindings[s.tag][s.css] = {};
+			bindings[s.tag][s.css][BIND] = bind;
+			bindings[s.tag][s.css][UNBIND] = unbind;
+		}
 	};
 
 	/*void*/ b.register = function(/*string*/ tag, /*string*/ css, /*function(elem)*/ bind, /*function(elem)*/ unbind) {
