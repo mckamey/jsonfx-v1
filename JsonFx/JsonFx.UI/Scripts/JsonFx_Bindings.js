@@ -137,7 +137,7 @@ JsonFx.Bindings = function() {
 	/*void*/ var perform = function(/*element*/ root, /*actionKey*/ a) {
 
 // TODO: add ability to bind on ID, className, tagName or any combination
-// determine how to most efficiently select the smallest set of elligable elements
+// determine how to most efficiently select the smallest set of eligible elements
 
 		if (root && root.getElementsByTagName) {
 
