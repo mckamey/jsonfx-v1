@@ -44,7 +44,7 @@ JsonFx.Bindings = function() {
 	/*object*/ var b = this;
 	/*const string*/ var BIND = "B", UNBIND = "U";
 
-	/*hashtable[tag] of object*/ var bindings = {};
+	/*Dictionary<string,object>*/ var bindings = {};
 
 	// due to EMCA bug this RegExp is limited to max one of each
 	// https://bugzilla.mozilla.org/show_bug.cgi?id=351349
@@ -91,23 +91,32 @@ JsonFx.Bindings = function() {
 	};
 
 	/*element*/ var performOne = function(/*element*/ elem, /*actionKey*/ a) {
-		var tag, tagBindings, classes, i, css;
 		if (elem && elem.tagName && elem.className) {
 
 			// only perform on registered tags
-			tag = elem.tagName.toLowerCase();
-			if (bindings[tag]) {
-				tagBindings = bindings[tag];
-				classes = elem.className.split(/\s+/);
+			var tag = elem.tagName.toLowerCase();
+			var tagBinds = bindings[tag];
+			var starBinds = bindings["*"];
+			if (tagBinds || starBinds) {
+				var classes = elem.className.split(/\s+/);
 
 				// for each css class in elem
-				for (i=0; i<classes.length; i++) {
-					css = classes[i];
-					if (css && tagBindings[css] && tagBindings[css][a]) {
+				for (var i=0; i<classes.length; i++) {
+					var css = classes[i];
+					if (starBinds && starBinds[css] && starBinds[css][a]) {
 						try {
 							// perform action on element and
 							// allow binding to replace element
-							elem = tagBindings[css][a](elem) || elem;
+							elem = starBinds[css][a](elem) || elem;
+						} catch (ex) {
+							window.alert("Error binding *."+css+":\n\n\""+ex.message+"\"");
+						}
+					}
+					if (tagBinds && tagBinds[css] && tagBinds[css][a]) {
+						try {
+							// perform action on element and
+							// allow binding to replace element
+							elem = tagBinds[css][a](elem) || elem;
 						} catch (ex) {
 							window.alert("Error binding "+tag+"."+css+":\n\n\""+ex.message+"\"");
 						}
