@@ -4,7 +4,7 @@
 	dynamic behavior binding support
 
 	Created: 2006-11-11-1759
-	Modified: 2009-01-17-1315
+	Modified: 2009-02-08-2103
 
 	Copyright (c)2006-2009 Stephen M. McKamey
 	Distributed under an open-source license: http://jsonfx.net/license
@@ -46,12 +46,19 @@ JsonFx.Bindings = function() {
 
 	/*Dictionary<string,object>*/ var bindings = {};
 
-	// due to EMCA bug this RegExp is limited to max one of each
-	// https://bugzilla.mozilla.org/show_bug.cgi?id=351349
-	///*RegExp*/ var re = /^([\w\-]*|[*])(?:#([\w\-]+)|\.([\w\-]+))*$/;
 	/*RegExp*/ var re = /^([\w\-]*|[*])(?:#([\w\-]+)|\.([\w\-]+))?(?:#([\w\-]+)|\.([\w\-]+))?$/;
 
 	/*void*/ b.add = function(/*string*/ selector, /*function(elem)*/ bind, /*function(elem)*/ unbind) {
+		if (typeof bind !== "function") {
+			bind = null;
+		}
+		if (typeof unbind !== "function") {
+			unbind = null;
+		}
+		if (!bind && !unbind) {
+			return;
+		}
+
 		var s = re.exec(selector);
 		if (!s) {
 			// http://www.w3.org/TR/css3-selectors/#simple-selectors
@@ -59,106 +66,104 @@ JsonFx.Bindings = function() {
 		}
 
 		s = {
-			tag: (s[1] || "*").toLowerCase(),
-			id: (s[2] || ""),
-			css: (s[3] || "")
+			tag: (s[1]||"*").toLowerCase(),
+			id: (s[2]||s[4]||"*"),
+			css: (s[3]||s[5]||"*")
 		};
-
-		if (bind && typeof bind !== "function") {
-			throw new Error("Binding method for \""+selector+"\" is not a function.");
-		}
-		if (unbind && typeof unbind !== "function") {
-			throw new Error("Unbinding method for \""+selector+"\" is not a function.");
-		}
 
 // TODO: add ability to bind on ID, className, tagName or any combination
 // determine how to most efficiently store binding references for arbitrary combinations
 
-		if (bind || unbind) {
-			if ("undefined" === typeof bindings[s.tag]) {
-				/*object*/ bindings[s.tag] = {};
-			} else if (bindings[s.tag][s.css]) {
-				throw new Error("A binding for "+selector+" has already been registered.");
-			}
-
-			/*object*/ bindings[s.tag][s.css] = {};
-			bindings[s.tag][s.css][BIND] = bind || null;
-			bindings[s.tag][s.css][UNBIND] = unbind || null;
+		if ("undefined" === typeof bindings[s.tag]) {
+			/*object*/ bindings[s.tag] = {};
+		} else if (bindings[s.tag][s.css]) {
+			throw new Error("A binding for "+selector+" has already been registered.");
 		}
+
+		/*object*/ bindings[s.tag][s.css] = {};
+		bindings[s.tag][s.css][BIND] = bind;
+		bindings[s.tag][s.css][UNBIND] = unbind;
 	};
 
 	/*void*/ b.register = function(/*string*/ tag, /*string*/ css, /*function(elem)*/ bind, /*function(elem)*/ unbind) {
 		b.add(tag+'.'+css, bind, unbind);
 	};
 
-	/*element*/ var performOne = function(/*element*/ elem, /*actionKey*/ a) {
+	/*element*/ function performOne(/*element*/ elem, /*actionKey*/ a) {
 
 // TODO: add ability to bind on ID, className, tagName or any combination
 // ultimately this means being able to grab an arbitrary element and determine
 // which if any bindings need to be performed.
 
-		if (elem && elem.tagName && elem.className) {
+		function bindSet(/*object*/ binds, /*string*/ css) {
+			if (binds && binds[css] && binds[css][a]) {
+				try {
+					// perform action on element and
+					// allow binding to replace element
+					elem = binds[css][a](elem) || elem;
+				} catch (ex) {
+					window.alert("Error binding "+elem.tagName+"."+css+":\n\n\""+ex.message+"\"");
+				}
+			}
+		}
+
+		if (elem && elem.tagName) {
 
 			// only perform on registered tags
 			var tag = elem.tagName.toLowerCase();
+			var allBinds = bindings["*"];
 			var tagBinds = bindings[tag];
-			var starBinds = bindings["*"];
-			if (tagBinds || starBinds) {
-				var classes = elem.className.split(/\s+/);
+
+			if (tagBinds || allBinds) {
+				var classes = (elem.className||"").split(/\s+/);
+
+				bindSet(tagBinds, "*");
+				bindSet(allBinds, "*");
 
 				// for each css class in elem
 				for (var i=0; i<classes.length; i++) {
 					var css = classes[i];
-					if (starBinds && starBinds[css] && starBinds[css][a]) {
-						try {
-							// perform action on element and
-							// allow binding to replace element
-							elem = starBinds[css][a](elem) || elem;
-						} catch (ex) {
-							window.alert("Error binding *."+css+":\n\n\""+ex.message+"\"");
-						}
-					}
-					if (tagBinds && tagBinds[css] && tagBinds[css][a]) {
-						try {
-							// perform action on element and
-							// allow binding to replace element
-							elem = tagBinds[css][a](elem) || elem;
-						} catch (ex) {
-							window.alert("Error binding "+tag+"."+css+":\n\n\""+ex.message+"\"");
-						}
-					}
+					bindSet(tagBinds, css);
+					bindSet(allBinds, css);
 				}
 			}
 		}
 		return elem;
-	};
+	}
 
 	// perform a binding action on child elements
-	/*void*/ var perform = function(/*element*/ root, /*actionKey*/ a) {
+	/*void*/ function perform(/*element*/ root, /*actionKey*/ a) {
 
 // TODO: add ability to bind on ID, className, tagName or any combination
 // determine how to most efficiently select the smallest set of eligible elements
 
+		function bindTagSet(/*string*/ tag) {
+			// for each element in root with tagName
+			var elems = root.getElementsByTagName(tag);
+			for (var i=0; i<elems.length; i++) {
+				// perform action on element and
+				// allow binding to replace element
+				var replace = performOne(elems[i], a);
+				if (replace !== elems[i] && elems[i].parentNode) {
+					elems[i].parentNode.replaceChild(replace, elems[i]);
+				}
+			}
+		}
+
 		if (root && root.getElementsByTagName) {
-
-			// for each registered tag
-			for (var tag in bindings) {
-				if (bindings.hasOwnProperty(tag)) {
-
-					// for each element in root with tagName
-					var elems = root.getElementsByTagName(tag);
-					for (var i=0; i<elems.length; i++) {
-						// perform action on element and
-						// allow binding to replace element
-						var replace = performOne(elems[i], a);
-						if (replace !== elems[i] && elems[i].parentNode) {
-							elems[i].parentNode.replaceChild(replace, elems[i]);
-						}
+			if (bindings["*"]) {
+				// if star rule, then must apply to all
+				bindTagSet("*");
+			} else {
+				// only apply to tags with rules
+				for (var tag in bindings) {
+					if (tag !== "*" && bindings.hasOwnProperty(tag)) {
+						bindTagSet(tag);
 					}
 				}
 			}
 		}
-	};
+	}
 
 	// used as JsonML filter
 	/*element*/ b.bindOne = function(/*element*/ elem) {
