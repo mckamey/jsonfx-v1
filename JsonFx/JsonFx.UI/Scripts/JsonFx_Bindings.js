@@ -4,7 +4,7 @@
 	dynamic behavior binding support
 
 	Created: 2006-11-11-1759
-	Modified: 2009-02-08-2103
+	Modified: 2009-02-08-2236
 
 	Copyright (c)2006-2009 Stephen M. McKamey
 	Distributed under an open-source license: http://jsonfx.net/license
@@ -115,16 +115,18 @@ JsonFx.Bindings = function() {
 			var tagBinds = bindings[tag];
 
 			if (tagBinds || allBinds) {
-				var classes = (elem.className||"").split(/\s+/);
 
 				bindSet(tagBinds, "*");
 				bindSet(allBinds, "*");
 
-				// for each css class in elem
-				for (var i=0; i<classes.length; i++) {
-					var css = classes[i];
-					bindSet(tagBinds, css);
-					bindSet(allBinds, css);
+				if (elem.className) {
+					// for each css class in elem
+					var classes = elem.className.split(/\s+/);
+					for (var i=0; i<classes.length; i++) {
+						var css = classes[i];
+						bindSet(tagBinds, css);
+						bindSet(allBinds, css);
+					}
 				}
 			}
 		}
