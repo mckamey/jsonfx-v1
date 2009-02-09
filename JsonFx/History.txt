@@ -1,9 +1,10 @@
 Release History
 
-v1.0.0902.07xx
+v1.0.0902.0823
 - added ability to emit data blocks directly from server jbst:Control (doesn't require additional ScriptDataBlock)
 - changed IHttpHanderFactory implementations from explicit to virtual to allow easier extension
 - added ability to manually control emitting of localization values
+- began refactoring behavior bindings to allow more flexible mappings
 
 v1.0.0902.0201
 - split CompiledBuildResult into a couple interfaces for better modularity and extensibility
