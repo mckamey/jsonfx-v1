@@ -71,7 +71,8 @@ JsonFx.Bindings = function() {
 			throw new Error("Unbinding method for \""+selector+"\" is not a function.");
 		}
 
-// TODO: add ability to execute on ID, className, tagName
+// TODO: add ability to bind on ID, className, tagName or any combination
+// determine how to most efficiently store binding references for arbitrary combinations
 
 		if (bind || unbind) {
 			if ("undefined" === typeof bindings[s.tag]) {
@@ -91,6 +92,11 @@ JsonFx.Bindings = function() {
 	};
 
 	/*element*/ var performOne = function(/*element*/ elem, /*actionKey*/ a) {
+
+// TODO: add ability to bind on ID, className, tagName or any combination
+// ultimately this means being able to grab an arbitrary element and determine
+// which if any bindings need to be performed.
+
 		if (elem && elem.tagName && elem.className) {
 
 			// only perform on registered tags
@@ -129,6 +135,10 @@ JsonFx.Bindings = function() {
 
 	// perform a binding action on child elements
 	/*void*/ var perform = function(/*element*/ root, /*actionKey*/ a) {
+
+// TODO: add ability to bind on ID, className, tagName or any combination
+// determine how to most efficiently select the smallest set of elligable elements
+
 		if (root && root.getElementsByTagName) {
 
 			// for each registered tag
