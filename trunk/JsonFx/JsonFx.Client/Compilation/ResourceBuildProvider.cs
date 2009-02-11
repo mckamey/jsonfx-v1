@@ -36,6 +36,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Reflection;
 using System.Web;
+using System.Web.Hosting;
 using System.Web.Compilation;
 using System.CodeDom;
 using System.CodeDom.Compiler;
@@ -143,7 +144,7 @@ namespace JsonFx.Compilation
 			{
 				if (this.assemblyDependencies == null)
 				{
-					return base.ReferencedAssemblies;
+					this.EnsureAssemblyDependencies();
 				}
 				return this.assemblyDependencies;
 			}
@@ -483,6 +484,11 @@ namespace JsonFx.Compilation
 
 		private void AddDependency(string virtualPath)
 		{
+			if (String.IsNullOrEmpty(virtualPath))
+			{
+				return;
+			}
+
 			virtualPath = ResourceHandler.EnsureAppRelative(virtualPath);
 
 			// attempt to dedup
@@ -505,6 +511,17 @@ namespace JsonFx.Compilation
 
 		protected void AddAssemblyDependency(Assembly assembly)
 		{
+			this.EnsureAssemblyDependencies();
+
+			// attempt to dedup
+			if (!this.assemblyDependencies.Contains(assembly))
+			{
+				this.assemblyDependencies.Add(assembly);
+			}
+		}
+
+		private void EnsureAssemblyDependencies()
+		{
 			if (this.assemblyDependencies == null)
 			{
 				this.assemblyDependencies = new List<Assembly>();
@@ -512,12 +529,26 @@ namespace JsonFx.Compilation
 				{
 					this.assemblyDependencies.Add(asm);
 				}
-			}
 
-			// attempt to dedup
-			if (!this.assemblyDependencies.Contains(assembly))
-			{
-				this.assemblyDependencies.Add(assembly);
+				if (this.assemblyDependencies.Count < 1)
+				{
+					// this is where the Mono issue is: no referenced assemblies are passed in
+					Console.Error.WriteLine("ReferencedAssemblies were empty.");
+					string[] asmList = Directory.GetFiles(HttpRuntime.CodegenDir, "*.dll", SearchOption.AllDirectories);
+					foreach (string asm in asmList)
+					{
+						Assembly assembly = Assembly.LoadFile(asm);
+						if (assembly == null)
+						{
+							Console.Error.WriteLine("Assembly load failed from: "+asm);
+						}
+						else
+						{
+							Console.Error.WriteLine("Loaded assembly from: "+asm);
+							this.assemblyDependencies.Add(assembly);
+						}
+					}
+				}
 			}
 		}
 

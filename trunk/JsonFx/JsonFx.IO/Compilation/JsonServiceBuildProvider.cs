@@ -81,17 +81,6 @@ namespace JsonFx.Compilation
 
 		public override void GenerateCode(AssemblyBuilder assemblyBuilder)
 		{
-//#if DEBUG
-//            // this is where the Mono issue is: no referenced assemblies are passed in
-//            Console.Error.WriteLine(this.ReferencedAssemblies.Count+" referenced assemblies");
-//            foreach (Assembly assembly in this.ReferencedAssemblies)
-//            {
-//                Console.Error.WriteLine(assembly.FullName);
-//                Console.Error.WriteLine(assembly.CodeBase);
-//                Console.Error.WriteLine();
-//            }
-//#endif
-
 			try
 			{
 				this.EnsureDirective();
