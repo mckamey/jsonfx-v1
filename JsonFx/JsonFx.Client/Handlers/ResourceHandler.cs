@@ -335,6 +335,11 @@ namespace JsonFx.Handlers
 
 		public static string EnsureAppRelative(string path)
 		{
+			if (String.IsNullOrEmpty(path))
+			{
+				return path;
+			}
+
 			// ensure app-relative BuildManager paths
 			string appRoot = HostingEnvironment.ApplicationVirtualPath;
 			if (appRoot != null && appRoot.Length > 1 &&
