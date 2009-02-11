@@ -1,23 +1,26 @@
 2009-01-25 @ 13:32
 
+- consolidate type loading logic (see System.Workflow.ComponentModel.Compiler.TypeProvider.GetType(string))
 - resolve "~/" vs. HostingEnvironment.AppVirtualPath
-- clean up server-side jbst:control
+- resolve JsonFx.UI.bind !== JsonML.BST.dataBind, JsonML.parse
+- clean up server-side jbst:control (esp. emitting of CSS classes)
 - update any documentation that might be affected
 - reconcile overlap between JsonFx libs and jQuery:
 	- JsonFx.UI.Binding vs. jQuery.ready
+	- enable binding by ID, one-time binding
+- rebuild JsonFx Ajax History to use doc frag
 - fully support Mod_mono Apache hosting
 - client-side localization: add support for <%= Resources.Foo.Bar %>
-- rebuild JsonFx Ajax History to use doc frag
-- add CDN support to JsonFx:ResourceInclude  (e.g. Google AJAX APIs)
+- add CDN support to JsonFx:ResourceInclude (e.g. Google AJAX APIs)
 - convert VSS2SVN
 	- Create a Google Code repository http://code.google.com/hosting/createProject
 - release CssUserAgent as a stand-alone script
+- create build provider for generating a list of localization values
 - emit CSS merge as imports during debug
 - build jQuery extension for JsonML / JSBT (e.g. jQuery plugin )
 - add VS2K8 IntelliSense support for JsonFx libs:
 	- add XML comments
-	- ease the burden of adding resource include tags
-
+	- ease the burden of adding VS Script resource include tags
 
 ___________________________________________________________________________________
 
