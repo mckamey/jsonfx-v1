@@ -3,8 +3,8 @@ Release History
 v1.0.0902.15xx
 - fixed a bug in CSS compaction when specifying web fonts with @font-face blocks:
 	- fixed at-rules which do not have a value after the identifier
-	- fixed at-rules which have a block of declarations instead of rule-sets
-- improved whitespace removal in CSS compaction
+	- fixed at-rules with blocks of declarations (rather than rule-sets)
+	- improved whitespace removal in at-rules with blocks of declarations
 - fixed a situation where a JBST expression result of undefined or null could generate attributes with that value
 - enabled ResourceBuildProviders to be able to load referenced assemblies in Mono
 - changed "BuildTools" namespace to "JsonFx.BuildTools" for consistency
