@@ -32,8 +32,8 @@ using System;
 using System.IO;
 using System.Collections.Generic;
 
-using BuildTools;
-using BuildTools.CssCompactor;
+using JsonFx.BuildTools;
+using JsonFx.BuildTools.CssCompactor;
 
 namespace JsonFx.Compilation
 {

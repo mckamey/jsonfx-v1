@@ -31,7 +31,7 @@
 using System;
 using System.Collections.Generic;
 
-using BuildTools.ScriptCompactor;
+using JsonFx.BuildTools.ScriptCompactor;
 using JsonFx.Json;
 using JsonFx.UI.Jbst.Extensions;
 

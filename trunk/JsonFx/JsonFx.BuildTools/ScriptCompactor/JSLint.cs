@@ -70,9 +70,9 @@ using System.Reflection;
 using System.ComponentModel;
 using System.Runtime.InteropServices;
 
-using BuildTools;
+using JsonFx.BuildTools;
 
-namespace BuildTools.ScriptCompactor
+namespace JsonFx.BuildTools.ScriptCompactor
 {
 	/// <summary>
 	/// Implements .NET wrapper for JSLint

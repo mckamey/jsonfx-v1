@@ -37,9 +37,9 @@ using System;
 using System.IO;
 using System.Collections.Generic;
 
-using BuildTools.IO;
+using JsonFx.BuildTools.IO;
 
-namespace BuildTools.ScriptCompactor
+namespace JsonFx.BuildTools.ScriptCompactor
 {
 	public static class ScriptCompactor
 	{

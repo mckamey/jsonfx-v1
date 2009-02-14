@@ -30,7 +30,7 @@
 
 using System;
 
-namespace BuildTools.HtmlDistiller.Filters
+namespace JsonFx.BuildTools.HtmlDistiller.Filters
 {
 	/// <summary>
 	/// Defines a set of HTML tag/attribute/style filters

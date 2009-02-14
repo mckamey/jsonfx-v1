@@ -31,9 +31,9 @@
 using System;
 using System.Collections.Generic;
 
-using BuildTools.Collections;
+using JsonFx.BuildTools.Collections;
 
-namespace BuildTools.IO
+namespace JsonFx.BuildTools.IO
 {
 	/// <summary>
 	/// Defines a character sequence to filter out when reading.

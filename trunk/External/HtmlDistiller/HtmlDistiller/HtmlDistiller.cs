@@ -34,10 +34,10 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Text;
 
-using BuildTools.HtmlDistiller.Filters;
-using BuildTools.HtmlDistiller.Writers;
+using JsonFx.BuildTools.HtmlDistiller.Filters;
+using JsonFx.BuildTools.HtmlDistiller.Writers;
 
-namespace BuildTools.HtmlDistiller
+namespace JsonFx.BuildTools.HtmlDistiller
 {
 	/// <summary>
 	/// Parses HTML, repairing and scrubbing against various whitelist filters.

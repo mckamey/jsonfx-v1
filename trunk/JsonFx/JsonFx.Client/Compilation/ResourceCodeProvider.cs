@@ -41,7 +41,7 @@ using System.CodeDom;
 using System.CodeDom.Compiler;
 using System.Security.Permissions;
 
-using BuildTools;
+using JsonFx.BuildTools;
 using JsonFx.Handlers;
 
 namespace JsonFx.Compilation

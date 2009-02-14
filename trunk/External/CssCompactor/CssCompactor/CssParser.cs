@@ -32,10 +32,10 @@ using System;
 using System.IO;
 using System.Collections.Generic;
 
-using BuildTools;
-using BuildTools.IO;
+using JsonFx.BuildTools;
+using JsonFx.BuildTools.IO;
 
-namespace BuildTools.CssCompactor
+namespace JsonFx.BuildTools.CssCompactor
 {
 	public class CssParser
 	{

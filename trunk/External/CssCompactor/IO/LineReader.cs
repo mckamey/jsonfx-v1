@@ -32,9 +32,9 @@ using System;
 using System.IO;
 using System.Collections.Generic;
 
-using BuildTools.Collections;
+using JsonFx.BuildTools.Collections;
 
-namespace BuildTools.IO
+namespace JsonFx.BuildTools.IO
 {
 	public class LineReader : System.IO.TextReader
 	{

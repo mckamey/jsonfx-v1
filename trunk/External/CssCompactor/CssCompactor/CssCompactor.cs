@@ -32,9 +32,9 @@ using System;
 using System.IO;
 using System.Collections.Generic;
 
-using BuildTools.IO;
+using JsonFx.BuildTools.IO;
 
-namespace BuildTools.CssCompactor
+namespace JsonFx.BuildTools.CssCompactor
 {
 	public static class CssCompactor
 	{

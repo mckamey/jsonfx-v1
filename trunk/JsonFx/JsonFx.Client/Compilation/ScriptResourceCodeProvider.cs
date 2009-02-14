@@ -33,8 +33,8 @@ using System.IO;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 
-using BuildTools;
-using BuildTools.ScriptCompactor;
+using JsonFx.BuildTools;
+using JsonFx.BuildTools.ScriptCompactor;
 using JsonFx.Json;
 using JsonFx.Handlers;
 

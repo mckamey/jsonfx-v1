@@ -34,11 +34,11 @@ using System.IO;
 using System.Web;
 using System.Text;
 
-using BuildTools;
-using BuildTools.HtmlDistiller;
-using BuildTools.HtmlDistiller.Filters;
-using BuildTools.HtmlDistiller.Writers;
-using BuildTools.ScriptCompactor;
+using JsonFx.BuildTools;
+using JsonFx.BuildTools.HtmlDistiller;
+using JsonFx.BuildTools.HtmlDistiller.Filters;
+using JsonFx.BuildTools.HtmlDistiller.Writers;
+using JsonFx.BuildTools.ScriptCompactor;
 using JsonFx.Json;
 using JsonFx.Compilation;
 
