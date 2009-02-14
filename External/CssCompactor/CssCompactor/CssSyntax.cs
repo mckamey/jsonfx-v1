@@ -38,7 +38,9 @@ namespace JsonFx.BuildTools.CssCompactor
 	#region Base Types
 
 	/// <summary>
+	/// CSS3 inconsistently specifies more than one grammar:
 	/// http://www.w3.org/TR/css3-syntax/#style
+	/// http://www.w3.org/TR/css3-syntax/#detailed-grammar
 	/// </summary>
 	public abstract class CssObject
 	{
@@ -76,21 +78,13 @@ namespace JsonFx.BuildTools.CssCompactor
 		#endregion Methods
 	}
 
-	public class CssString : CssObject, ICssValue
+	public class CssString : CssObject
 	{
 		#region Fields
 
-		private string value = null;
+		private string value;
 
 		#endregion Fields
-
-		#region Init
-
-		public CssString()
-		{
-		}
-
-		#endregion Init
 
 		#region Properties
 
@@ -120,7 +114,7 @@ namespace JsonFx.BuildTools.CssCompactor
 	{
 		#region Fields
 
-		private List<CssStatement> statements = new List<CssStatement>();
+		private readonly List<CssStatement> statements = new List<CssStatement>();
 
 		#endregion Fields
 
@@ -152,20 +146,32 @@ namespace JsonFx.BuildTools.CssCompactor
 		#endregion Methods
 	}
 
-	public abstract class CssStatement : CssObject
+	public abstract class CssStatement : CssObject, ICssValue
 	{
 	}
 
-	public class CssAtRule : CssStatement, ICssValue
+	/// <summary>
+	/// 
+	/// </summary>
+	/// <remarks>
+	/// NOTE: each at-rule might parse differently according to CSS3
+	/// The @media block for example contains a block of statements
+	/// while other at-rules with a block contain a block of declarations
+	/// </remarks>
+	public class CssAtRule : CssStatement
 	{
+		#region Constants
+
+		internal const string MediaIdent = "media";
+
+		#endregion Constants
+
 		#region Fields
 
-		private string ident = null;
-		private string value = null;
+		private string ident;
+		private string value;
 
-		// replacing block with Statement list
-		//private CssBlock block = null;
-		private List<CssStatement> block = new List<CssStatement>();
+		private CssBlock block;
 
 		#endregion Fields
 
@@ -183,11 +189,16 @@ namespace JsonFx.BuildTools.CssCompactor
 			set { this.value = value; }
 		}
 
-		// replacing block with Statement list
-		//public CssBlock Block
-		public List<CssStatement> Block
+		public CssBlock Block
 		{
-			get { return this.block; }
+			get
+			{
+				if (this.block == null)
+				{
+					this.block = new CssBlock();
+				}
+				return this.block;
+			}
 			set { this.block = value; }
 		}
 
@@ -208,43 +219,45 @@ namespace JsonFx.BuildTools.CssCompactor
 				writer.Write(this.value);
 			}
 
-			if (this.block.Count > 0)
+			if (this.block != null)
 			{
 				if (prettyPrint)
 				{
 					writer.WriteLine();
 				}
-				writer.Write('{');
-				if (prettyPrint)
-				{
-					writer.WriteLine();
-				}
-				//this.block.Write(writer, options);
-				foreach (CssStatement statement in this.block)
-				{
-					statement.Write(writer, options);
-				}
-				if (prettyPrint)
-				{
-					writer.WriteLine();
-				}
-				writer.Write('}');
-				if (prettyPrint)
-				{
-					writer.WriteLine();
-				}
+				this.block.Write(writer, options);
 			}
 			else
 			{
 				writer.Write(';');
+			}
+
+			if (prettyPrint)
+			{
+				writer.WriteLine();
 			}
 		}
 
 		#endregion Methods
 	}
 
-	public class CssBlock : CssValueList, ICssValue
+	public class CssBlock : CssObject, ICssValue
 	{
+		#region Fields
+
+		private readonly List<ICssValue> values = new List<ICssValue>();
+
+		#endregion Fields
+
+		#region Properties
+
+		public List<ICssValue> Values
+		{
+			get { return this.values; }
+		}
+
+		#endregion Properties
+
 		#region Methods
 
 		public override void Write(TextWriter writer, CssCompactor.Options options)
@@ -256,7 +269,12 @@ namespace JsonFx.BuildTools.CssCompactor
 			{
 				writer.WriteLine();
 			}
-			base.Write(writer, options);
+
+			foreach (ICssValue value in this.Values)
+			{
+				value.Write(writer, options);
+			}
+
 			if (prettyPrint)
 			{
 				writer.WriteLine();
@@ -271,8 +289,8 @@ namespace JsonFx.BuildTools.CssCompactor
 	{
 		#region Fields
 
-		private List<CssSelector> selectors = new List<CssSelector>();
-		private List<CssDeclaration> declarations = new List<CssDeclaration>();
+		private readonly List<CssSelector> selectors = new List<CssSelector>();
+		private readonly List<CssDeclaration> declarations = new List<CssDeclaration>();
 
 		#endregion Fields
 
@@ -345,12 +363,12 @@ namespace JsonFx.BuildTools.CssCompactor
 	{
 	}
 
-	public class CssDeclaration : CssObject
+	public class CssDeclaration : CssObject, ICssValue
 	{
 		#region Fields
 
-		private string property = null;
-		private CssValueList value = null;
+		private string property;
+		private CssValueList value;
 
 		#endregion Fields
 
@@ -400,13 +418,13 @@ namespace JsonFx.BuildTools.CssCompactor
 	{
 		#region Fields
 
-		private List<ICssValue> values = new List<ICssValue>();
+		private readonly List<CssString> values = new List<CssString>();
 
 		#endregion Fields
 
 		#region Properties
 
-		public List<ICssValue> Values
+		public List<CssString> Values
 		{
 			get { return this.values; }
 		}
@@ -419,7 +437,7 @@ namespace JsonFx.BuildTools.CssCompactor
 		{
 			bool space = false;
 
-			foreach (ICssValue value in this.Values)
+			foreach (CssString value in this.Values)
 			{
 				if (space)
 				{

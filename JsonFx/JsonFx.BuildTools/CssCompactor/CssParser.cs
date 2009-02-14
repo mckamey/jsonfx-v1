@@ -49,11 +49,11 @@ namespace JsonFx.BuildTools.CssCompactor
 
 		#region Fields
 
-		private List<ParseException> errors = new List<ParseException>();
+		private readonly List<ParseException> errors = new List<ParseException>();
 		private LineReader reader;
-		private CssStyleSheet styleSheet = null;
-		private string filePath = null;
-		private string source = null;
+		private CssStyleSheet styleSheet;
+		private string filePath;
+		private string source;
 
 		#endregion Fields
 
@@ -180,7 +180,7 @@ namespace JsonFx.BuildTools.CssCompactor
 
 								while (this.Read(out ch) && ch != '}')
 								{
-									// restabalize on next statement
+									// restabilize on next statement
 								}
 							}
 							continue;
@@ -229,12 +229,17 @@ namespace JsonFx.BuildTools.CssCompactor
 		/// (BNF) at-rule : ATKEYWORD S* any* [ block | ';' S* ];
 		/// </summary>
 		/// <returns></returns>
+		/// <remarks>
+		/// NOTE: each at-rule might parse differently according to CSS3
+		/// The @media block for example contains a block of statements
+		/// while other at-rules with a block contain a block of declarations
+		/// </remarks>
 		private CssAtRule ParseAtRule()
 		{
 			CssAtRule atRule = new CssAtRule();
 			int start = this.Position+1;// start with first char of ident
-			char ch;
 
+			char ch;
 			while (this.Read(out ch) && !Char.IsWhiteSpace(ch))
 			{
 				// continue consuming
@@ -248,16 +253,15 @@ namespace JsonFx.BuildTools.CssCompactor
 			}
 
 			start = this.Position;// start with current char
-			while (this.Read(out ch))
+			do
 			{
 				switch (ch)
 				{
 					case '{': //Block Begin
 					{
 						atRule.Value = this.Copy(start);
-						//CssBlock block = this.ParseBlock();
-						//atRule.Block = block;
 
+						bool containsRuleSets = String.Equals(atRule.Ident, CssAtRule.MediaIdent, StringComparison.Ordinal);
 						while (true)
 						{
 							while (this.Read(out ch) && Char.IsWhiteSpace(ch))
@@ -265,15 +269,39 @@ namespace JsonFx.BuildTools.CssCompactor
 								// consume whitespace
 							}
 
-							if (ch != '}')
+							if (ch == '}')
 							{
-								CssStatement statement = this.ParseStatement();
-								atRule.Block.Add(statement);
-								continue;
+								break;
 							}
 
-							return atRule;
+							try
+							{
+								if (containsRuleSets)
+								{
+									// includes @media
+									CssStatement statement = this.ParseStatement();
+									atRule.Block.Values.Add(statement);
+								}
+								else
+								{
+									// includes @font-face, @page
+									this.PutBack();
+									CssDeclaration declaration = this.ParseDeclaration();
+									atRule.Block.Values.Add(declaration);
+								}
+							}
+							catch (ParseException ex)
+							{
+								this.errors.Add(ex);
+
+								while (this.Read(out ch) && ch != '}')
+								{
+									// restabilize on block end
+								}
+								break;
+							}
 						}
+						return atRule;
 					}
 					case ';': //At-Rule End
 					{
@@ -281,7 +309,8 @@ namespace JsonFx.BuildTools.CssCompactor
 						return atRule;
 					}
 				}
-			}
+			} while (this.Read(out ch));
+
 			throw new UnexpectedEndOfFile("Unclosed At-Rule", this.reader.FilePath, this.reader.Line, this.reader.Column);
 		}
 
@@ -289,16 +318,17 @@ namespace JsonFx.BuildTools.CssCompactor
 
 		#region Block
 
+		/*
 		/// <summary>
-		/// NBF block : '{' S* [ any | block | ATKEYWORD S* | ';' S* ]* '}' S*;
+		/// (BNF) block : '{' S* [ any | block | ATKEYWORD S* | ';' S* ]* '}' S*;
 		/// </summary>
 		/// <returns></returns>
 		private CssBlock ParseBlock()
 		{
 			CssBlock block = new CssBlock();
 			int start = this.Position;// start with current char
-			char ch;
 
+			char ch;
 			while (this.Read(out ch))
 			{
 				switch (ch)
@@ -359,6 +389,7 @@ namespace JsonFx.BuildTools.CssCompactor
 
 			throw new UnexpectedEndOfFile("Unclosed block", this.reader.FilePath, this.reader.Line, this.reader.Column);
 		}
+		*/
 
 		#endregion Block
 
