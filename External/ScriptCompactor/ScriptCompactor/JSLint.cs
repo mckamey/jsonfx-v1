@@ -215,7 +215,7 @@ namespace JsonFx.BuildTools.ScriptCompactor
 
 		#region Constants
 
-		private const string JSLintScript = "BuildTools.ScriptCompactor.jslint.js";
+		private const string JSLintScript = "JsonFx.BuildTools.ScriptCompactor.jslint.js";
 		private const string MSScriptError =
 			"JSLint is disabled.\r\n"+
 			"Syntax checking requires MSScriptControl COM component be registered:\r\n"+
