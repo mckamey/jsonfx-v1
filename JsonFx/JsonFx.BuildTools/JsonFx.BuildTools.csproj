@@ -7,7 +7,7 @@
     <ProjectGuid>{7E5F1250-473C-494F-BFBD-835A1CE9CC13}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>BuildTools</RootNamespace>
+    <RootNamespace>JsonFx.BuildTools</RootNamespace>
     <AssemblyName>JsonFx.BuildTools</AssemblyName>
     <SccProjectName>SAK</SccProjectName>
     <SccLocalPath>SAK</SccLocalPath>

@@ -33,9 +33,9 @@ using System.IO;
 using System.Collections.Generic;
 using System.Text;
 
-using BuildTools.HtmlDistiller.Filters;
+using JsonFx.BuildTools.HtmlDistiller.Filters;
 
-namespace BuildTools.HtmlDistiller.Writers
+namespace JsonFx.BuildTools.HtmlDistiller.Writers
 {
 	public interface IHtmlWriter
 	{

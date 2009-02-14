@@ -33,7 +33,7 @@ using System.IO;
 using System.Collections.Generic;
 using System.Text;
 
-namespace BuildTools.CssCompactor
+namespace JsonFx.BuildTools.CssCompactor
 {
 	#region Base Types
 

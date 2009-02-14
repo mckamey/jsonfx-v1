@@ -43,7 +43,7 @@ using System.CodeDom.Compiler;
 using System.Security.Permissions;
 using System.Security.Cryptography;
 
-using BuildTools;
+using JsonFx.BuildTools;
 using JsonFx.Handlers;
 
 namespace JsonFx.Compilation

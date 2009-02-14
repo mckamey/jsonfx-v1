@@ -31,9 +31,9 @@
 using System;
 using System.IO;
 
-using BuildTools.IO;
+using JsonFx.BuildTools.IO;
 
-namespace BuildTools.ScriptCompactor
+namespace JsonFx.BuildTools.ScriptCompactor
 {
 	/// <summary>
 	/// Implements minimal wrapper for JSMin

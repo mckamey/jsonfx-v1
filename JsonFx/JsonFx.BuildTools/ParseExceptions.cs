@@ -31,7 +31,7 @@
 using System;
 using System.Runtime.Serialization;
 
-namespace BuildTools
+namespace JsonFx.BuildTools
 {
 	public enum ParseExceptionType
 	{

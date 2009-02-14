@@ -32,7 +32,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 
-namespace BuildTools.IO
+namespace JsonFx.BuildTools.IO
 {
 	public class FileUtility
 	{

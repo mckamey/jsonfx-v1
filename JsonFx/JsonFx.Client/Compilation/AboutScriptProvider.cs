@@ -34,8 +34,8 @@ using System.Collections.Generic;
 using System.Text;
 using System.Reflection;
 
-using BuildTools;
-using BuildTools.ScriptCompactor;
+using JsonFx.BuildTools;
+using JsonFx.BuildTools.ScriptCompactor;
 using JsonFx.Json;
 
 namespace JsonFx.Compilation

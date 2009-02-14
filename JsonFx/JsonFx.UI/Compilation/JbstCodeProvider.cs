@@ -34,7 +34,7 @@ using System.Collections.Generic;
 using System.Web.Compilation;
 using System.CodeDom;
 
-using BuildTools;
+using JsonFx.BuildTools;
 using JsonFx.Handlers;
 using JsonFx.UI.Jbst;
 using JsonFx.UI.Jbst.Extensions;

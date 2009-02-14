@@ -31,7 +31,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace BuildTools.Collections
+namespace JsonFx.BuildTools.Collections
 {
 	/// <summary>
 	/// A generic node for building a Trie

@@ -38,7 +38,7 @@ using System.CodeDom.Compiler;
 using System.Reflection;
 using System.Text;
 
-using BuildTools;
+using JsonFx.BuildTools;
 using JsonFx.Handlers;
 
 namespace JsonFx.Compilation
