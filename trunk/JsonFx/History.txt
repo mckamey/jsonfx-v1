@@ -5,9 +5,9 @@ v1.0.0902.15xx
 	- fixed at-rules which do not have a value after the identifier
 	- fixed at-rules with blocks of declarations (rather than rule-sets)
 	- improved whitespace removal in at-rules with blocks of declarations
-- fixed a situation where a JBST expression result of undefined or null could generate attributes with that value
-- enabled ResourceBuildProviders to be able to load referenced assemblies in Mono
+- fixed a situation where a JBST expression result of undefined or null could generate DOM attributes with that value
 - changed "BuildTools" namespace to "JsonFx.BuildTools" for consistency
+- enabled ResourceBuildProviders to be able to load referenced assemblies in Mono
 
 v1.0.0902.0823
 - added ability to emit data blocks directly from server jbst:Control (doesn't require additional ScriptDataBlock)
