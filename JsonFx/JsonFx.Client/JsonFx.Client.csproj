@@ -23,6 +23,8 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <UseVSHostingProcess>false</UseVSHostingProcess>
+    <DocumentationFile>bin\Debug\JsonFx.Client.XML</DocumentationFile>
+    <NoWarn>1570,1571,1572,1573,1591,1592</NoWarn>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -31,6 +33,8 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <DocumentationFile>bin\Release\JsonFx.Client.XML</DocumentationFile>
+    <NoWarn>1570,1571,1572,1573,1591,1592</NoWarn>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Signed|AnyCPU' ">
     <OutputPath>bin\Signed\</OutputPath>
@@ -43,6 +47,8 @@
     <DelaySign>false</DelaySign>
     <AssemblyOriginatorKeyFile>..\SolnItems\Keys\JsonFx_Key.pfx</AssemblyOriginatorKeyFile>
     <UseVSHostingProcess>false</UseVSHostingProcess>
+    <DocumentationFile>bin\Signed\JsonFx.Client.XML</DocumentationFile>
+    <NoWarn>1570,1571,1572,1573,1591,1592</NoWarn>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
