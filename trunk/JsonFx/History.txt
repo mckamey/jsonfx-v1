@@ -8,6 +8,7 @@ v1.0.0902.15xx
 - fixed a situation where a JBST expression result of undefined or null could generate DOM attributes with that value
 - changed "BuildTools" namespace to "JsonFx.BuildTools" for consistency
 - enabled ResourceBuildProviders to be able to load referenced assemblies in Mono
+- enabled XML comment documentation output and added project warning suppression for 1570,1571,1572,1573,1591,1592
 
 v1.0.0902.0823
 - added ability to emit data blocks directly from server jbst:Control (doesn't require additional ScriptDataBlock)
