@@ -1,6 +1,6 @@
 Release History
 
-v1.0.0902.15xx
+v1.0.0902.1608
 - fixed a bug in CSS compaction when specifying web fonts with @font-face blocks:
 	- fixed at-rules which do not have a value after the identifier
 	- fixed at-rules with blocks of declarations (rather than rule-sets)
