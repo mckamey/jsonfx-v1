@@ -1,6 +1,5 @@
 2009-02-15 @ 11:51
 
-- generate Assembly XML docs, add pragma to suppress warning missing comments
 - consolidate type loading logic (see System.Workflow.ComponentModel.Compiler.TypeProvider.GetType(string))
 - resolve "~/" vs. HostingEnvironment.AppVirtualPath
 - resolve JsonFx.UI.bind !== JsonML.BST.dataBind, JsonML.parse
