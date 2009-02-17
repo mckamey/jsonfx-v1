@@ -1,7 +1,7 @@
 Release History
 
 v1.0.0902.1623
-- added an InlineData property on the server jbst:control to directly serialize data without naming it
+- added an InlineData property on the server jbst:control to directly serialize data to bind without needing to name it
 
 v1.0.0902.1608
 - fixed a bug in CSS compaction when specifying web fonts with @font-face blocks:
