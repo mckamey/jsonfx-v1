@@ -9,25 +9,33 @@ using JsonFx.Client;
 namespace JsonFx.UI.Jbst
 {
 	/// <summary>
-	/// Allows easily attaching JBST controls and JSON data to an ASP.NET page.
+	/// Convenience control for combining JBST controls and JSON data on an ASP.NET page.
 	/// </summary>
-	[ToolboxData("<{0}:Control runat=\"server\"></{0}:Control>")]
+	[ToolboxData("<{0}:Control runat=\"server\" Name=\"\"></{0}:Control>")]
 	public class Control : System.Web.UI.Control
 	{
-		#region Constants
-
-		private const string EmptyJsonObject = "{}";
-
-		#endregion Constants
-
 		#region Fields
 
+		private bool isDebug;
 		private string name;
 		private string data;
+		private object inlineData;
 		private int? index;
 		private ScriptDataBlock dataBlock;
 
 		#endregion Fields
+
+		#region Init
+
+		/// <summary>
+		/// Ctor
+		/// </summary>
+		public Control()
+		{
+			this.isDebug = this.Context.IsDebuggingEnabled;
+		}
+
+		#endregion Init
 
 		#region Properties
 
@@ -49,20 +57,30 @@ namespace JsonFx.UI.Jbst
 		}
 
 		/// <summary>
-		/// Gets and sets the script variable name of the JSON data to be bound.
+		/// Gets and sets data to be bound as JavaScript literal or variable reference.
 		/// </summary>
-		[DefaultValue(EmptyJsonObject)]
+		[DefaultValue("")]
 		public virtual string Data
 		{
 			get
 			{
-				if (String.IsNullOrEmpty(this.data))
+				if (this.data == null)
 				{
-					return EmptyJsonObject;
+					return String.Empty;
 				}
 				return this.data;
 			}
 			set { this.data = value; }
+		}
+
+		/// <summary>
+		/// Gets and sets data to be bound as an object which will be serialized.
+		/// </summary>
+		[DefaultValue(null)]
+		public virtual object InlineData
+		{
+			get { return this.inlineData; }
+			set { this.inlineData = value; }
 		}
 
 		/// <summary>
@@ -106,15 +124,15 @@ namespace JsonFx.UI.Jbst
 			}
 		}
 
-		///// <summary>
-		///// Gets and sets if should render as a debuggable ("Pretty-Print") block.
-		///// </summary>
-		//[DefaultValue(false)]
-		//public bool IsDebug
-		//{
-		//    get { return this.isDebug; }
-		//    set { this.isDebug = value; }
-		//}
+		/// <summary>
+		/// Gets and sets if should render as a debuggable ("Pretty-Print") block.
+		/// </summary>
+		[DefaultValue(false)]
+		public bool IsDebug
+		{
+			get { return this.isDebug; }
+			set { this.isDebug = value; }
+		}
 
 		#endregion Properties
 
@@ -155,12 +173,32 @@ namespace JsonFx.UI.Jbst
 				writer.Write("</div>");
 
 				// render the binding script
-				writer.Write("<script type=\"text/javascript\">JsonFx.Bindings.register(\"div\",\"");
+				writer.Write("<script type=\"text/javascript\">JsonFx.Bindings.add(\"div.");
 				writer.Write(hook);
 				writer.Write("\",function(elem){return JsonFx.UI.bind((");
 				writer.Write(this.Name);
 				writer.Write("),(");
-				writer.Write(this.Data);
+				if (this.InlineData != null)
+				{
+					// serialize InlineData as a JavaScript literal
+					JsonWriter jsonWriter = new JsonWriter(writer);
+					jsonWriter.PrettyPrint = this.IsDebug;
+					jsonWriter.NewLine = Environment.NewLine;
+					jsonWriter.Tab = "\t";
+					jsonWriter.DateTimeSerializer = JsonWriter.WriteEcmaScriptDate;
+					jsonWriter.Write(this.InlineData);
+				}
+				else if (!String.IsNullOrEmpty(this.Data))
+				{
+					// assume Data is either a JavaScript literal or variable reference
+					writer.Write(this.Data);
+				}
+				else
+				{
+					// smallest most innocuous default data
+					writer.Write("{}");
+				}
+
 				if (this.Index >= 0)
 				{
 					writer.Write("),(");
