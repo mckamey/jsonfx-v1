@@ -1,6 +1,6 @@
 Release History
 
-v1.0.0902.1619
+v1.0.0902.1623
 - added an InlineData property on the server jbst:control to directly serialize data without naming it
 
 v1.0.0902.1608
