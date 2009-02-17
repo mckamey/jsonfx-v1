@@ -47,7 +47,7 @@ namespace JsonFx.UI.Jbst
 	/// <summary>
 	/// JBST Template Compiler
 	/// </summary>
-	internal class JbstCompiler : IHtmlFilter, IHtmlWriter
+	public class JbstCompiler : IHtmlFilter, IHtmlWriter
 	{
 		#region Constants
 
@@ -108,7 +108,7 @@ if (""undefined"" === typeof {0}) {{
 		/// </summary>
 		/// <param name="virtualPath"></param>
 		/// <param name="isTemplate">JBST</param>
-		internal JbstCompiler(string virtualPath, bool isTemplate)
+		public JbstCompiler(string virtualPath, bool isTemplate)
 		{
 			this.path = virtualPath;
 			this.isTemplate = isTemplate;
@@ -151,7 +151,7 @@ if (""undefined"" === typeof {0}) {{
 		/// <summary>
 		/// Gets the document root
 		/// </summary>
-		public JbstContainerControl Document
+		internal JbstContainerControl Document
 		{
 			get { return this.document; }
 		}
