@@ -26,7 +26,7 @@
 	THE SOFTWARE.
 
 \*---------------------------------------------------------------------------------*/
-#endregion BuildTools License
+#endregion License
 
 using System;
 

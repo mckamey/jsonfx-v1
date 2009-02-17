@@ -26,7 +26,7 @@
 	THE SOFTWARE.
 
 \*---------------------------------------------------------------------------------*/
-#endregion BuildTools License
+#endregion License
 
 #if __MonoCS__
 // remove JSLINT for Mono Framework
