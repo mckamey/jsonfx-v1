@@ -1,7 +1,7 @@
-2009-02-16 @ 19:32
+2009-02-17 @ 09:42
 
 - refresh the various BuildTools
-- create a stand-alone JBST compiler (Console adapter for the JsonFx JbstCompiler)
+- release the stand-alone JBST compiler as Console adapter for the JsonFx.UI.Jbst.JbstCompiler
 - consolidate type loading logic (see System.Workflow.ComponentModel.Compiler.TypeProvider.GetType(string))
 - resolve "~/" vs. HostingEnvironment.AppVirtualPath
 - resolve JsonFx.UI.bind !== JsonML.BST.dataBind, JsonML.parse
