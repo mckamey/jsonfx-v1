@@ -107,8 +107,17 @@ if (""undefined"" === typeof {0}) {{
 		/// Ctor
 		/// </summary>
 		/// <param name="virtualPath"></param>
+		public JbstCompiler(string virtualPath)
+			: this(virtualPath, true)
+		{
+		}
+
+		/// <summary>
+		/// Ctor
+		/// </summary>
+		/// <param name="virtualPath"></param>
 		/// <param name="isTemplate">JBST</param>
-		public JbstCompiler(string virtualPath, bool isTemplate)
+		internal JbstCompiler(string virtualPath, bool isTemplate)
 		{
 			this.path = virtualPath;
 			this.isTemplate = isTemplate;
@@ -128,14 +137,14 @@ if (""undefined"" === typeof {0}) {{
 		/// <summary>
 		/// Gets a list of any errors that were encountered during parsing
 		/// </summary>
-		internal List<ParseException> Errors
+		public List<ParseException> Errors
 		{
 			get { return this.errors; }
 		}
 
 		internal event EventHandler DocumentReady;
 
-		protected string Name
+		public string Name
 		{
 			get
 			{
@@ -149,20 +158,20 @@ if (""undefined"" === typeof {0}) {{
 		}
 
 		/// <summary>
-		/// Gets the document root
-		/// </summary>
-		internal JbstContainerControl Document
-		{
-			get { return this.document; }
-		}
-
-		/// <summary>
 		/// Gets and sets if literal output should have whitespace normalized
 		/// </summary>
 		public bool NormalizeLiterals
 		{
 			get { return this.normalizeLiterals; }
 			set { this.normalizeLiterals = value; }
+		}
+
+		/// <summary>
+		/// Gets the document root
+		/// </summary>
+		internal JbstContainerControl Document
+		{
+			get { return this.document; }
 		}
 
 		#endregion Properties
@@ -173,7 +182,7 @@ if (""undefined"" === typeof {0}) {{
 		/// Parses markup.
 		/// </summary>
 		/// <param name="literal"></param>
-		internal void Parse(string source)
+		public void Parse(string source)
 		{
 			try
 			{
