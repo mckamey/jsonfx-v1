@@ -2,8 +2,8 @@
 
 - Solve inserting HTML data into JBST (special <%# this.data.foo %> or <%= HTML(this.data.foo)%>)
 - Find concise way to specify iterating over list with different templates (callback for switch?)
-- refresh the various BuildTools
 - release the stand-alone JBST compiler as Console adapter for the JsonFx.UI.Jbst.JbstCompiler
+- refresh the various BuildTools
 - consolidate type loading logic (see System.Workflow.ComponentModel.Compiler.TypeProvider.GetType(string))
 - resolve "~/" vs. HostingEnvironment.AppVirtualPath
 - resolve JsonFx.UI.bind !== JsonML.BST.dataBind, JsonML.parse
