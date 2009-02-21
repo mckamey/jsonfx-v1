@@ -553,11 +553,6 @@ namespace JsonFx.BuildTools.ScriptCompactor
 				sc.Language = "JScript";
 				sc.AddCode(JSLint.JSLintSource);
 
-				this.IsBrowser = true;
-				this.AllowDebugger = true;
-				this.RequireStrictEquals = true;
-				this.NoUndefVars = true;
-
 				object[] p = new object[] { script, this.options };
 
 				bool result = false;

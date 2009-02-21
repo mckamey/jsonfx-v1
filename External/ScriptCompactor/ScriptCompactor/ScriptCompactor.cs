@@ -94,6 +94,11 @@ namespace JsonFx.BuildTools.ScriptCompactor
 #if JSLINT
 			// verify
 			JSLint jslint = new JSLint();
+			jslint.IsBrowser = true;
+			jslint.AllowDebugger = true;
+			jslint.RequireStrictEquals = true;
+			jslint.NoUndefVars = true;
+
 			jslint.Run(inputFile, inputSource);
 			errors = jslint.Errors;
 #else
