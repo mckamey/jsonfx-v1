@@ -85,130 +85,160 @@ namespace JsonFx.BuildTools.ScriptCompactor
 		public class Options
 		{
 			/// <summary>
-			/// true if use of some browser features should be restricted
+			/// true if ADsafe should be enforced
 			/// </summary>
 			[Description("IsAdSafe")]
-			public bool adsafe = false;
+			public bool adsafe;
 
 			/// <summary>
 			/// true if bitwise operators should not be allowed
 			/// </summary>
 			[Description("DisallowBitwise")]
-			public bool bitwise = false;
+			public bool bitwise;
 
 			/// <summary>
 			/// true if the standard browser globals should be predefined
 			/// </summary>
 			[Description("IsBrowser")]
-			public bool browser = true;
+			public bool browser;
 
 			/// <summary>
 			/// true if upper case HTML should be allowed
 			/// </summary>
 			[Description("AllowUpperCaseHtml")]
-			public bool cap = false;
+			public bool cap;
+
+			/// <summary>
+			/// true if CSS workarounds should be tolerated
+			/// </summary>
+			[Description("AllowCSSWorkarounds")]
+			public bool css;
 
 			/// <summary>
 			/// true if debugger statements should be allowed
 			/// </summary>
 			[Description("AllowDebugger")]
-			public bool debug = false;
+			public bool debug;
 
 			/// <summary>
 			/// true if === should be required
 			/// </summary>
 			[Description("RequireStrictEquals")]
-			public bool eqeqeq = true;
+			public bool eqeqeq;
 
 			/// <summary>
 			/// true if eval should be allowed
 			/// </summary>
 			[Description("AllowEval")]
-			public bool evil = false;
+			public bool evil;
 
 			/// <summary>
 			/// true if for...in statements must filter
 			/// </summary>
 			[Description("AllowForIn")]
-			public bool forin = false;
+			public bool forin;
 
 			/// <summary>
 			/// true if HTML fragments should be allowed
 			/// </summary>
 			[Description("AllowHtmlFragments")]
-			public bool fragment = false;
-
-			/// <summary>
-			/// true if var should not be allowed to declare global variables
-			/// </summary>
-			[Description("DisallowGlobalVariables")]
-			public bool glovar = false;
+			public bool fragment;
 
 			/// <summary>
 			/// true if line breaks should not be checked
 			/// </summary>
 			[Description("AllowLaxNewLines")]
-			public bool laxbreak = false;
+			public bool laxbreak;
+
+			/// <summary>
+			/// true if constructor names must be capitalized
+			/// </summary>
+			[Description("CtorCapitalized")]
+			public bool newcap;
 
 			/// <summary>
 			/// true if names should be checked
 			/// </summary>
 			[Description("CheckIdentifiers")]
-			public bool nomen = false;
+			public bool nomen;
 
 			/// <summary>
 			/// true if HTML event handlers should be allowed
 			/// </summary>
-			[Description("OnEventHandlers")]
-			public bool on = true;
+			[Description("AllowEventHandlers")]
+			public bool on;
+
+			/// <summary>
+			/// true if only one var statement per function should be allowed
+			/// </summary>
+			[Description("OneVar")]
+			public bool onevar;
 
 			/// <summary>
 			/// true if the scan should stop on first error
 			/// </summary>
 			[Description("StopOnFirstError")]
-			public bool passfail = false;
+			public bool passfail;
 
 			/// <summary>
 			/// true if increment/decrement should not be allowed
 			/// </summary>
 			[Description("NoIncDec")]
-			public bool plusplus = false;
+			public bool plusplus;
 
 			/// <summary>
 			/// true if the . should not be allowed in regexp literals
 			/// </summary>
 			[Description("CheckRegExp")]
-			public bool regexp = false;
+			public bool regexp;
 
 			/// <summary>
 			/// true if the Rhino environment globals should be predefined
 			/// </summary>
 			[Description("IsRhino")]
-			public bool rhino = false;
-
-			/// <summary>
-			/// true if the Windows Siderbar Gadget globals should be predefined
-			/// </summary>
-			[Description("IsSidebar")]
-			public bool sidebar = false;
+			public bool rhino;
 
 			/// <summary>
 			/// true if variables should be declared before used
 			/// </summary>
 			[Description("NoUndefVars")]
-			public bool undef = true;
+			public bool undef;
+
+			/// <summary>
+			/// true if use of some browser features should be restricted
+			/// </summary>
+			[Description("SafeBrowser")]
+			public bool safe;
+
+			/// <summary>
+			/// true if the Windows Siderbar Gadget globals should be predefined
+			/// </summary>
+			[Description("IsSidebar")]
+			public bool sidebar;
+
+			/// <summary>
+			/// true if requires the "use strict"; pragma
+			/// </summary>
+			[Description("RequireStrict")]
+			public bool strict;
+
+			/// <summary>
+			/// true if all forms of subscript notation are tolerated
+			/// </summary>
+			[Description("Subscript")]
+			public bool sub;
 
 			/// <summary>
 			/// true if strict whitespace rules apply
 			/// </summary>
 			[Description("StrictWhitespace")]
-			public bool white = false;
+			public bool white;
 
 			/// <summary>
 			/// true if the Yahoo Widgets globals should be predefined
 			/// </summary>
 			[Description("IsYahooWidget")]
-			public bool widget = false;
+			public bool widget;
 		}
 
 		#endregion JSLint.Options
@@ -243,7 +273,7 @@ namespace JsonFx.BuildTools.ScriptCompactor
 		}
 
 		/// <summary>
-		/// true if use of some browser features should be restricted
+		/// true if ADsafe should be enforced
 		/// </summary>
 		public bool IsAdSafe
 		{
@@ -279,6 +309,15 @@ namespace JsonFx.BuildTools.ScriptCompactor
 		}
 
 		/// <summary>
+		/// true if CSS workarounds should be tolerated
+		/// </summary>
+		public bool AllowCSSWorkarounds
+		{
+			get { return this.options.css; }
+			set { this.options.css = value; }
+		}
+
+		/// <summary>
 		/// true if debugger statements should be allowed
 		/// </summary>
 		public bool AllowDebugger
@@ -306,21 +345,21 @@ namespace JsonFx.BuildTools.ScriptCompactor
 		}
 
 		/// <summary>
+		/// true if for...in statements must filter
+		/// </summary>
+		public bool AllowForIn
+		{
+			get { return this.options.forin; }
+			set { this.options.forin = value; }
+		}
+
+		/// <summary>
 		/// true if HTML fragments should be allowed
 		/// </summary>
 		public bool AllowHtmlFragments
 		{
 			get { return this.options.fragment; }
 			set { this.options.fragment = value; }
-		}
-
-		/// <summary>
-		/// true if var should not be allowed to declare global variables
-		/// </summary>
-		public bool DisallowGlobalVariables
-		{
-			get { return this.options.glovar; }
-			set { this.options.glovar = value; }
 		}
 
 		/// <summary>
@@ -333,12 +372,39 @@ namespace JsonFx.BuildTools.ScriptCompactor
 		}
 
 		/// <summary>
+		/// true if constructor names must be capitalized
+		/// </summary>
+		public bool CtorCapitalized
+		{
+			get { return this.options.newcap; }
+			set { this.options.newcap = value; }
+		}
+
+		/// <summary>
 		/// true if names should be checked
 		/// </summary>
 		public bool CheckIdentifiers
 		{
 			get { return this.options.nomen; }
 			set { this.options.nomen = value; }
+		}
+
+		/// <summary>
+		/// true if HTML event handlers should be allowed
+		/// </summary>
+		public bool AllowEventHandlers
+		{
+			get { return this.options.on; }
+			set { this.options.on = value; }
+		}
+
+		/// <summary>
+		/// true if only one var statement per function should be allowed
+		/// </summary>
+		public bool OneVar
+		{
+			get { return this.options.onevar; }
+			set { this.options.onevar = value; }
 		}
 
 		/// <summary>
@@ -360,6 +426,15 @@ namespace JsonFx.BuildTools.ScriptCompactor
 		}
 
 		/// <summary>
+		/// true if the . should not be allowed in regexp literals
+		/// </summary>
+		public bool CheckRegExp
+		{
+			get { return this.options.regexp; }
+			set { this.options.regexp = value; }
+		}
+
+		/// <summary>
 		/// true if the Rhino environment globals should be predefined
 		/// </summary>
 		public bool IsRhino
@@ -375,6 +450,42 @@ namespace JsonFx.BuildTools.ScriptCompactor
 		{
 			get { return this.options.undef; }
 			set { this.options.undef = value; }
+		}
+
+		/// <summary>
+		/// true if use of some browser features should be restricted
+		/// </summary>
+		public bool SafeBrowser
+		{
+			get { return this.options.safe; }
+			set { this.options.safe = value; }
+		}
+
+		/// <summary>
+		/// true if the System object should be predefined
+		/// </summary>
+		public bool IsSidebar
+		{
+			get { return this.options.sidebar; }
+			set { this.options.sidebar = value; }
+		}
+
+		/// <summary>
+		/// true if requires the "use strict"; pragma
+		/// </summary>
+		public bool RequireStrict
+		{
+			get { return this.options.strict; }
+			set { this.options.strict = value; }
+		}
+
+		/// <summary>
+		/// true if all forms of subscript notation are tolerated
+		/// </summary>
+		public bool Subscript
+		{
+			get { return this.options.sub; }
+			set { this.options.sub = value; }
 		}
 
 		/// <summary>
