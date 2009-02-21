@@ -239,6 +239,15 @@ namespace JsonFx.BuildTools.ScriptCompactor
 			/// </summary>
 			[Description("IsYahooWidget")]
 			public bool widget;
+
+			/// <summary>
+			/// number of spaces to force indention
+			/// </summary>
+			/// <remarks>
+			/// JSLINT writes to this property so it has to be here
+			/// otherwise a vague "Object does not support this property or method"
+			/// </remarks>
+			public int indent;
 		}
 
 		#endregion JSLint.Options
@@ -551,6 +560,7 @@ namespace JsonFx.BuildTools.ScriptCompactor
 
 				MSScriptControl.ScriptControlClass sc = new MSScriptControl.ScriptControlClass();
 				sc.Language = "JScript";
+				sc.AllowUI = false;
 				sc.AddCode(JSLint.JSLintSource);
 
 				object[] p = new object[] { script, this.options };
@@ -562,7 +572,23 @@ namespace JsonFx.BuildTools.ScriptCompactor
 				}
 				catch (Exception ex)
 				{
-					this.errors.Add(new ParseWarning(ex.Message, filename, -1, -1, ex));
+					// IMPORTANT!
+					// JSLINT writes to the options object so it must have all properties predefined
+					// otherwise it throws a vague "Object does not support this property or method"
+
+					string message = ex.Message;
+					int	line = -1,
+						column = -1;
+
+					try
+					{
+						line = ((MSScriptControl.ErrorClass)(sc.Error)).Line;
+						column = ((MSScriptControl.ErrorClass)(sc.Error)).Column;
+						message = ((MSScriptControl.ErrorClass)(sc.Error)).Description;
+					}
+					catch {}
+
+					this.errors.Add(new ParseWarning(message, JSLint.JSLintScript, line, column, ex));
 				}
 
 				if (!result)
