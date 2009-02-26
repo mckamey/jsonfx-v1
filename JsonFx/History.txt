@@ -1,6 +1,7 @@
 Release History
 
-v1.0.0902.25xx
+v1.0.0902.2522
+- fix for binding issue where elements getting added may alter the set of elements being processed
 - being less aggressive about CF/LF suppression in JavaScript compaction
 - fixed long-standing issue with JSLint which prevented upgrading to latest version
 - upgraded JSLINT to rev 2009-02-13
