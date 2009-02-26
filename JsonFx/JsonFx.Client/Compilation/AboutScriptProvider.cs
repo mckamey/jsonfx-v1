@@ -73,7 +73,7 @@ if (""undefined"" === typeof window.JsonFx) {
 
 			using (StringWriter writer = new StringWriter())
 			{
-				new JSMin().Run(resource, writer);
+				new JSMin().Run(resource, writer, true);
 				writer.Flush();
 
 				compacted = writer.ToString();

@@ -613,7 +613,7 @@ if (""undefined"" === typeof {0}) {{
 						// signal to JSMin that isn't linted so
 						// doesn't break users code if they leave
 						// off semicolons, etc.
-						new JSMin().Run(declarations, writer);
+						new JSMin().Run(declarations, writer, false, true);
 					}
 				}
 			}
