@@ -140,6 +140,15 @@ JsonFx.Bindings = function() {
 	// perform a binding action on child elements
 	/*void*/ function perform(/*element*/ root, /*actionKey*/ a) {
 
+		/*create a closure for replacement*/
+		function getReplacer(newer, older) {
+			return function replaceElem() {
+				older.parentNode.replaceChild(newer, older);
+				// free references
+				newer = older = null;
+			};
+		}
+
 // TODO: add ability to bind on ID, className, tagName or any combination
 // determine how to most efficiently select the smallest set of eligible elements
 
@@ -151,7 +160,8 @@ JsonFx.Bindings = function() {
 				// allow binding to replace element
 				var replace = performOne(elems[i], a);
 				if (replace !== elems[i] && elems[i].parentNode) {
-					elems[i].parentNode.replaceChild(replace, elems[i]);
+					// perform replacement at the end so as not to disrupt the list
+					window.setTimeout(getReplacer(replace, elems[i]), 0);
 				}
 			}
 		}
