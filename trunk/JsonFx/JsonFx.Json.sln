@@ -14,19 +14,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JsonFx.Json.UnitTests", "Js
 	EndProjectSection
 EndProject
 Global
-	GlobalSection(SourceCodeControl) = preSolution
-		SccNumberOfProjects = 3
-		SccLocalPath0 = .
-		CanCheckoutShared = false
-		SccProjectUniqueName1 = JsonFx.Json\\JsonFx.Json.csproj
-		SccProjectName1 = \u0022$/PseudoCode/Dev/JsonFx/JsonFx.Json\u0022,\u0020SPDAAAAA
-		SccLocalPath1 = JsonFx.Json
-		CanCheckoutShared = false
-		SccProjectUniqueName2 = JsonFx.Json.UnitTests\\JsonFx.Json.UnitTests.csproj
-		SccProjectName2 = \u0022$/PseudoCode/Dev/JsonFx/JsonFx.Json.UnitTests\u0022,\u0020LJFAAAAA
-		SccLocalPath2 = JsonFx.Json.UnitTests
-		CanCheckoutShared = false
-	EndGlobalSection
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|.NET = Debug|.NET
 		Debug|Any CPU = Debug|Any CPU
