@@ -1,9 +1,9 @@
 Release History
 
 v1.0.0902.2522
-- fix for binding issue where elements getting added may alter the set of elements being processed
-- being less aggressive about CF/LF suppression in JavaScript compaction
-- fixed long-standing issue with JSLint which prevented upgrading to latest version
+- fix for binding issue where elements getting added may alter the set of elements still being processed
+- being less aggressive about CF/LF suppression in JavaScript compaction to be more compatible with broken scripts
+- fixed long-standing issue with JSLint which prevented upgrading to latest version of Crockford's code
 - upgraded JSLINT to rev 2009-02-13
 - adding basic IIS7 handler mappings to web.configs
 
