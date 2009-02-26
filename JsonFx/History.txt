@@ -1,8 +1,10 @@
 Release History
 
-v1.0.0902.21xx
+v1.0.0902.25xx
+- being less aggressive about CF/LF suppression in JavaScript compaction
 - fixed long-standing issue with JSLint which prevented upgrading to latest version
 - upgraded JSLINT to rev 2009-02-13
+- adding basic IIS7 handler mappings
 
 v1.0.0902.1623
 - added an InlineData property on the server jbst:control to directly serialize and bind one-time-use data without needing to name it
