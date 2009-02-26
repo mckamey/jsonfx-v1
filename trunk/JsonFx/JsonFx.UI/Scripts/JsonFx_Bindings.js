@@ -4,7 +4,7 @@
 	dynamic behavior binding support
 
 	Created: 2006-11-11-1759
-	Modified: 2009-02-08-2236
+	Modified: 2009-02-25-2205
 
 	Copyright (c)2006-2009 Stephen M. McKamey
 	Distributed under an open-source license: http://jsonfx.net/license
