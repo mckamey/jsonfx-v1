@@ -242,25 +242,6 @@ JsonFx.Bindings = function() {
 			}
 		};
 
-	/*DOM*/ bindOne = function(/*DOM*/ elem) {
-		return performOne(elem, BIND);
-	};
-
-	// use bindOne as the default JBST filter
-	if ("undefined" !== typeof JsonML && JsonML.BST) {
-		if ("function" !== typeof JsonML.BST.filter) {
-			JsonML.BST.filter = bindOne;
-		} else {
-			JsonML.BST.filter = (function() {
-				var jbstFilter = JsonML.BST.filter;
-				return function(/*DOM*/ elem) {
-					elem = jbstFilter(elem);
-					return elem && bindOne(elem);
-				};
-			})();
-		}
-	}
-
 	// bind
 	/*void*/ b.bind = function(/*DOM*/ root) {
 		if (!isFinite(root.nodeType)) {
@@ -278,6 +259,25 @@ JsonFx.Bindings = function() {
 
 		perform(root || document.body, UNBIND);
 	};
+
+	// use bindOne as the default JBST filter
+	if ("undefined" !== typeof JsonML && JsonML.BST) {
+		/*DOM*/ function bindOne(/*DOM*/ elem) {
+			return performOne(elem, BIND);
+		};
+
+		if ("function" !== typeof JsonML.BST.filter) {
+			JsonML.BST.filter = bindOne;
+		} else {
+			JsonML.BST.filter = (function() {
+				var jbstFilter = JsonML.BST.filter;
+				return function(/*DOM*/ elem) {
+					elem = jbstFilter(elem);
+					return elem && bindOne(elem);
+				};
+			})();
+		}
+	}
 
 	// register bind events
 	if (typeof jQuery !== "undefined") {
