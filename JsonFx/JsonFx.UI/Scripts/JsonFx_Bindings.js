@@ -67,7 +67,7 @@ JsonFx.Bindings = function() {
 			if (!selector || (!bind && !unbind)) {
 				return;
 			}
-	
+
 			var binding = { selector: selector };
 			binding[BIND] = bind;
 			binding[UNBIND] = unbind;
@@ -191,17 +191,6 @@ JsonFx.Bindings = function() {
 			return elem;
 		};
 
-	/*create a closure for replacement*/
-	function queueReplacer(newer, older) {
-		window.setTimeout(function() {
-			if (older && older.parentNode) {
-				older.parentNode.replaceChild(newer, older);
-			}
-			// free references
-			newer = older = null;
-		}, 0);
-	}
-
 	// perform a binding action on all child elements
 	/*void*/ var perform = jQ ?
 		// jQuery perform implementation
@@ -215,8 +204,7 @@ JsonFx.Bindings = function() {
 							try {
 								var elem = action(this) || this;
 								if (elem !== this) {
-									// queue up replacement at the end so as not to disrupt the list
-									queueReplacer(elem, this);
+									this.parentNode.replaceChild(elem, this);
 								}
 							} catch (ex) {
 								window.alert("Error binding "+bindings[i].selector+":\n\n\""+ex.message+"\"");
@@ -230,6 +218,17 @@ JsonFx.Bindings = function() {
 
 	// TODO: add ability to bind on ID, className, tagName or any combination
 	// determine how to most efficiently select the smallest set of eligible elements
+
+			/*create a closure for replacement*/
+			function queueReplacer(newer, older) {
+				window.setTimeout(function() {
+					if (older && older.parentNode) {
+						older.parentNode.replaceChild(newer, older);
+					}
+					// free references
+					newer = older = null;
+				}, 0);
+			}
 
 			function bindTagSet(/*string*/ tag) {
 				// for each element in root with tagName

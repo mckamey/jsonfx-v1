@@ -3,7 +3,6 @@
 - Find concise way to specify iterating over list with different templates (callback for switch?)
 
 - clean up server-side jbst:control (esp. emitting of CSS classes)
-- BUG: HTML collections processed by JsonFx.Bindings continually change while iterating
 - enable binding by ID, one-time binding
 - reconcile overlap between JsonFx.UI.Binding vs. jQuery.ready
 
