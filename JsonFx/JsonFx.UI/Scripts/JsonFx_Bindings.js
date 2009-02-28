@@ -4,7 +4,7 @@
 	dynamic behavior binding support
 
 	Created: 2006-11-11-1759
-	Modified: 2009-02-28-0839
+	Modified: 2009-02-28-1047
 
 	Copyright (c)2006-2009 Stephen M. McKamey
 	Distributed under an open-source license: http://jsonfx.net/license
@@ -42,153 +42,223 @@ if ("undefined" === typeof JsonFx.jsonReviver) {
 JsonFx.Bindings = function() {
 
 	/*object*/ var b = this;
+	/*bool*/ var jQ = ("undefined" !== typeof jQuery);
 	/*const string*/ var BIND = 1, UNBIND = 2;
 
-	/*Dictionary<string,object>*/ var bindings = {};
+	/*
+		the structure of bindings and the implementation of add, bind, and unbind fork on presence of jQuery.
+		if jQuery is present before JsonFx.Bindings, then the selector implementation is delegated to jQuery.
+		otherwise a simple selector lookup structure is built to very specifically allow lookups without
+		a lot of iterations.
+	*/
+	/*Dictionary<string,object>*/ var bindings = jQ ? [] : {};
 
 	/*RegExp*/ var re = /^\s*([\w\-]*|[*])(?:#([\w\-]+)|\.([\w\-]+))?(?:#([\w\-]+)|\.([\w\-]+))?\s*$/;
 
-	/*void*/ b.add = function(/*string*/ selector, /*function(elem)*/ bind, /*function(elem)*/ unbind) {
-		if (typeof bind !== "function") {
-			bind = null;
-		}
-		if (typeof unbind !== "function") {
-			unbind = null;
-		}
-		if (!selector || (!bind && !unbind)) {
-			return;
-		}
-
-		var s = selector instanceof Array ?
-			selector :
-			String(selector).split(',');
-		while (s.length > 1) {
-			b.add(s.shift(), bind, unbind);
-		}
-		selector = s.shift();
-
-		s = re.exec(selector);
-		if (!s) {
-			// http://www.w3.org/TR/css3-selectors/#simple-selectors
-			throw new Error("JsonFx.Bindings only supports simple tag, class, and id selectors. Selector: \""+selector+"\"");
-		}
-
-		s = {
-			tag: (s[1]||"*").toLowerCase(),
-			css: (s[3]||s[5]||"*"),
-			id: (s[2]||s[4]||"")
-		};
-
-// TODO: add ability to bind on ID, className, tagName or any combination
-// determine how to most efficiently store binding references for arbitrary combinations
-
-		if (s.id) {
-			throw new Error("JsonFx.Bindings does not yet support tag selectors. Selector: \""+selector+"\"");
-		} else {
-			if ("undefined" === typeof bindings[s.tag]) {
-				/*object*/ bindings[s.tag] = {};
-			} else if (bindings[s.tag][s.css]) {
-				throw new Error("A binding for "+selector+" has already been registered.");
+	/*void*/ b.add = jQ ?
+		// jQuery JsonFx.Bindings.add implementation
+		function(/*string*/ selector, /*function(elem)*/ bind, /*function(elem)*/ unbind) {
+			if (typeof bind !== "function") {
+				bind = null;
+			}
+			if (typeof unbind !== "function") {
+				unbind = null;
+			}
+			if (!selector || (!bind && !unbind)) {
+				return;
+			}
+	
+			var binding = { selector: selector };
+			binding[BIND] = bind;
+			binding[UNBIND] = unbind;
+			bindings.push(binding);
+		} :
+		// simple JsonFx.Bindings.add implementation
+		function(/*string*/ selector, /*function(elem)*/ bind, /*function(elem)*/ unbind) {
+			if (typeof bind !== "function") {
+				bind = null;
+			}
+			if (typeof unbind !== "function") {
+				unbind = null;
+			}
+			if (!selector || (!bind && !unbind)) {
+				return;
 			}
 
-			/*object*/ bindings[s.tag][s.css] = {};
-			bindings[s.tag][s.css][BIND] = bind;
-			bindings[s.tag][s.css][UNBIND] = unbind;
-		}
-	};
+			var s = selector instanceof Array ?
+				selector :
+				String(selector).split(',');
+			while (s.length > 1) {
+				b.add(s.shift(), bind, unbind);
+			}
+			selector = s.shift();
+
+			s = re.exec(selector);
+			if (!s) {
+				// http://www.w3.org/TR/css3-selectors/#simple-selectors
+				throw new Error("JsonFx.Bindings only supports simple tag, class, and id selectors. Selector: \""+selector+"\"");
+			}
+
+			s = {
+				tag: (s[1]||"*").toLowerCase(),
+				css: (s[3]||s[5]||"*"),
+				id: (s[2]||s[4]||"")
+			};
+
+	// TODO: add ability to bind on ID, className, tagName or any combination
+	// determine how to most efficiently store binding references for arbitrary combinations
+
+			if (s.id) {
+				throw new Error("JsonFx.Bindings does not yet support tag selectors. Selector: \""+selector+"\"");
+			} else {
+				if ("undefined" === typeof bindings[s.tag]) {
+					/*object*/ bindings[s.tag] = {};
+				} else if (bindings[s.tag][s.css]) {
+					throw new Error("A binding for "+selector+" has already been registered.");
+				}
+
+				/*object*/ bindings[s.tag][s.css] = {};
+				bindings[s.tag][s.css][BIND] = bind;
+				bindings[s.tag][s.css][UNBIND] = unbind;
+			}
+		};
 
 	/*deprecated*/
 	/*void*/ b.register = function(/*string*/ tag, /*string*/ css, /*function(elem)*/ bind, /*function(elem)*/ unbind) {
 		b.add(tag+'.'+css, bind, unbind);
 	};
 
-	/*DOM*/ function performOne(/*DOM*/ elem, /*actionKey*/ a) {
+	/*DOM*/ var performOne = jQ ?
+		// jQuery performOne implementation
+		function(/*DOM*/ elem, /*actionKey*/ a) {
+			for (var i=0; i<bindings.length; i++) {
+				if (bindings[i][a]) {
+					var action = bindings[i][a];
+					jQuery(elem).filter(bindings[i].selector).each(
+						function() {
+							try {
+								elem = action(this) || this;
+							} catch (ex) {
+								window.alert("Error binding "+bindings[i].selector+":\n\n\""+ex.message+"\"");
+							}
+						});
+				}
+			}
+			return elem;
+		} :
+		// simple performOne implementation
+		function(/*DOM*/ elem, /*actionKey*/ a) {
 
 // TODO: add ability to bind on ID, className, tagName or any combination
 // ultimately this means being able to grab an arbitrary element and determine
 // which if any bindings need to be performed.
 
-		function bindSet(/*object*/ binds, /*string*/ css) {
-			if (binds && binds[css] && binds[css][a]) {
-				try {
+			function bindSet(/*object*/ binds, /*string*/ css) {
+				if (binds && binds[css] && binds[css][a]) {
+					try {
+						// perform action on element and
+						// allow binding to replace element
+						elem = binds[css][a](elem) || elem;
+					} catch (ex) {
+						window.alert("Error binding "+elem.tagName+"."+css+":\n\n\""+ex.message+"\"");
+					}
+				}
+			}
+
+			if (elem && elem.tagName) {
+
+				// only perform on registered tags
+				var tag = elem.tagName.toLowerCase();
+				var allBinds = bindings["*"];
+				var tagBinds = bindings[tag];
+
+				if (tagBinds || allBinds) {
+
+					bindSet(tagBinds, "*");
+					bindSet(allBinds, "*");
+
+					if (elem.className) {
+						// for each css class in elem
+						var classes = elem.className.split(/\s+/);
+						for (var i=0; i<classes.length; i++) {
+							var css = classes[i];
+							bindSet(tagBinds, css);
+							bindSet(allBinds, css);
+						}
+					}
+				}
+			}
+			return elem;
+		};
+
+	/*create a closure for replacement*/
+	function queueReplacer(newer, older) {
+		window.setTimeout(function() {
+			if (older && older.parentNode) {
+				older.parentNode.replaceChild(newer, older);
+			}
+			// free references
+			newer = older = null;
+		}, 0);
+	}
+
+	// perform a binding action on all child elements
+	/*void*/ var perform = jQ ?
+		// jQuery perform implementation
+		function(/*DOM*/ root, /*actionKey*/ a) {
+			root = jQuery(root);
+			for (var i=0; i<bindings.length; i++) {
+				if (bindings[i][a]) {
+					var action = bindings[i][a];
+					root.find(bindings[i].selector).each(
+						function() {
+							try {
+								var elem = action(this) || this;
+								if (elem !== this) {
+									// queue up replacement at the end so as not to disrupt the list
+									queueReplacer(elem, this);
+								}
+							} catch (ex) {
+								window.alert("Error binding "+bindings[i].selector+":\n\n\""+ex.message+"\"");
+							}
+						});
+				}
+			}
+		} :
+		// simple perform implementation
+		function(/*DOM*/ root, /*actionKey*/ a) {
+
+	// TODO: add ability to bind on ID, className, tagName or any combination
+	// determine how to most efficiently select the smallest set of eligible elements
+
+			function bindTagSet(/*string*/ tag) {
+				// for each element in root with tagName
+				var elems = root.getElementsByTagName(tag);
+				for (var i=0; i<elems.length; i++) {
 					// perform action on element and
 					// allow binding to replace element
-					elem = binds[css][a](elem) || elem;
-				} catch (ex) {
-					window.alert("Error binding "+elem.tagName+"."+css+":\n\n\""+ex.message+"\"");
-				}
-			}
-		}
-
-		if (elem && elem.tagName) {
-
-			// only perform on registered tags
-			var tag = elem.tagName.toLowerCase();
-			var allBinds = bindings["*"];
-			var tagBinds = bindings[tag];
-
-			if (tagBinds || allBinds) {
-
-				bindSet(tagBinds, "*");
-				bindSet(allBinds, "*");
-
-				if (elem.className) {
-					// for each css class in elem
-					var classes = elem.className.split(/\s+/);
-					for (var i=0; i<classes.length; i++) {
-						var css = classes[i];
-						bindSet(tagBinds, css);
-						bindSet(allBinds, css);
+					var replace = performOne(elems[i], a);
+					if (replace !== elems[i] && elems[i].parentNode) {
+						// queue up replacement at the end so as not to disrupt the list
+						queueReplacer(replace, elems[i]);
 					}
 				}
 			}
-		}
-		return elem;
-	}
 
-	// perform a binding action on child elements
-	/*void*/ function perform(/*DOM*/ root, /*actionKey*/ a) {
-
-		/*create a closure for replacement*/
-		function getReplacer(newer, older) {
-			return function replaceElem() {
-				older.parentNode.replaceChild(newer, older);
-				// free references
-				newer = older = null;
-			};
-		}
-
-// TODO: add ability to bind on ID, className, tagName or any combination
-// determine how to most efficiently select the smallest set of eligible elements
-
-		function bindTagSet(/*string*/ tag) {
-			// for each element in root with tagName
-			var elems = root.getElementsByTagName(tag);
-			for (var i=0; i<elems.length; i++) {
-				// perform action on element and
-				// allow binding to replace element
-				var replace = performOne(elems[i], a);
-				if (replace !== elems[i] && elems[i].parentNode) {
-					// perform replacement at the end so as not to disrupt the list
-					window.setTimeout(getReplacer(replace, elems[i]), 0);
-				}
-			}
-		}
-
-		if (root && root.getElementsByTagName) {
-			if (bindings["*"]) {
-				// if star rule, then must apply to all
-				bindTagSet("*");
-			} else {
-				// only apply to tags with rules
-				for (var tag in bindings) {
-					if (tag !== "*" && bindings.hasOwnProperty(tag)) {
-						bindTagSet(tag);
+			if (root && root.getElementsByTagName) {
+				if (bindings["*"]) {
+					// if star rule, then must apply to all
+					bindTagSet("*");
+				} else {
+					// only apply to tags with rules
+					for (var tag in bindings) {
+						if (tag !== "*" && bindings.hasOwnProperty(tag)) {
+							bindTagSet(tag);
+						}
 					}
 				}
 			}
-		}
-	}
+		};
 
 	/*DOM*/ bindOne = function(/*DOM*/ elem) {
 		return performOne(elem, BIND);
@@ -211,20 +281,20 @@ JsonFx.Bindings = function() {
 
 	// bind
 	/*void*/ b.bind = function(/*DOM*/ root) {
-		if ("object" !== typeof root || root instanceof Event) {
+		if (!isFinite(root.nodeType)) {
 			root = null;
 		}
 
-		perform(root || document, BIND);
+		perform(root || document.body, BIND);
 	};
 
 	// unbind
 	/*void*/ b.unbind = function(/*DOM*/ root) {
-		if ("object" !== typeof root || root instanceof Event) {
+		if (!isFinite(root.nodeType)) {
 			root = null;
 		}
 
-		perform(root || document, UNBIND);
+		perform(root || document.body, UNBIND);
 	};
 
 	// register bind events
