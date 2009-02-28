@@ -1,10 +1,8 @@
-2009-02-28 @ 10:47
+2009-02-28 @ 14:07
 
 - Find concise way to specify iterating over list with different templates (callback for switch?)
 
-- clean up server-side jbst:control (esp. emitting of CSS classes)
-- enable binding by ID, one-time binding
-- reconcile overlap between JsonFx.UI.Binding vs. jQuery.ready
+- explain difference between JsonFx.UI.Binding vs. jQuery.ready
 
 - Solve inserting HTML data into JBST (special <%# this.data.foo %> or <%= HTML(this.data.foo)%>)
 - BUG: something looking like a tag, e.g. "for (var i=0;i<total; i++)", inside a <script> block breaks the block!
