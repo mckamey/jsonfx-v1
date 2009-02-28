@@ -1,4 +1,4 @@
-2009-02-28 @ 10:22
+2009-02-28 @ 10:47
 
 - Find concise way to specify iterating over list with different templates (callback for switch?)
 
@@ -8,26 +8,24 @@
 	- JsonFx.UI.Binding vs. jQuery.ready
 	- enable binding by ID, one-time binding
 
+- Solve inserting HTML data into JBST (special <%# this.data.foo %> or <%= HTML(this.data.foo)%>)
 - BUG: something looking like a tag, e.g. "for (var i=0;i<total; i++)", inside a <script> block breaks the block!
 - Solve extra (unwanted) whitespace around template (i.e. if around template then just trim)
-- Solve inserting HTML data into JBST (special <%# this.data.foo %> or <%= HTML(this.data.foo)%>)
 
 - release the stand-alone JBST compiler as Console adapter for the JsonFx.UI.Jbst.JbstCompiler
 - refresh the various BuildTools
+- release CssUserAgent as a stand-alone script
 
+- rebuild JsonFx Ajax History to use doc frag
 - consolidate type loading logic (see System.Workflow.ComponentModel.Compiler.TypeProvider.GetType(string))
 - resolve "~/" vs. HostingEnvironment.AppVirtualPath
-- update any documentation that might be affected
-- rebuild JsonFx Ajax History to use doc frag
 - fully support Mod_mono Apache hosting
 - client-side localization: add support for <%= Resources.Foo.Bar %>
 - add CDN support to JsonFx:ResourceInclude (e.g. Google AJAX APIs)
-- convert VSS2SVN
-	- Create a Google Code repository http://code.google.com/hosting/createProject
-- release CssUserAgent as a stand-alone script
+- Create a Google Code repository http://code.google.com/hosting/createProject
 - create build provider for generating a list of localization values
 - emit CSS merge as imports during debug
-- build jQuery extension for JsonML / JSBT (e.g. jQuery plugin )
+- build jQuery plugin for JsonML / JSBT
 - add VS2K8 IntelliSense support for JsonFx libs:
 	- add XML comments
 	- ease the burden of adding VS Script resource include tags
