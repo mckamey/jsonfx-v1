@@ -1,10 +1,10 @@
-/*global JsonFx, JsonML, JSON, jQuery */
+/*global JsonFx, JsonML, jQuery */
 /*
 	JsonFx_Bindings.js
 	dynamic behavior binding support
 
 	Created: 2006-11-11-1759
-	Modified: 2009-02-28-1047
+	Modified: 2009-02-28-1345
 
 	Copyright (c)2006-2009 Stephen M. McKamey
 	Distributed under an open-source license: http://jsonfx.net/license
@@ -20,23 +20,6 @@ if ("undefined" === typeof JsonFx.UI) {
 }
 
 /* dependency checks --------------------------------------------*/
-
-if ("undefined" === typeof window.JSON) {
-	throw new Error("JsonFx_Bindings.js requires json2.js");
-}
-
-if ("undefined" === typeof JsonFx.jsonReviver) {
-	/*object*/ JsonFx.jsonReviver = function(/*string*/ key, /*object*/ value) {
-		var a;
-		if ("string" === typeof value) {
-			a = /^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2}):(\d{2}(?:\.\d*)?)Z$/.exec(value);
-			if (a) {
-				return new Date(Date.UTC(+a[1], +a[2] - 1, +a[3], +a[4], +a[5], +a[6]));
-			}
-		}
-		return value;
-	};
-}
 
 /* singleton JsonFx.Bindings */
 JsonFx.Bindings = function() {
