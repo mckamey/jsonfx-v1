@@ -159,13 +159,7 @@ if ("undefined" === typeof JsonFx.Bindings) {
 
 /* JsonML utilities ---------------------------------------------*/
 
-/* JBST + JSON => JsonML => DOM */
-/*DOM*/ JsonFx.UI.bind = function(/*JBST*/ jbst, /*object*/ data) {
-
-	if (!(jbst instanceof JsonML.BST)) {
-		// assume template already is JsonML
-		jbst = new JsonML.BST(jbst);
-	}
-
-	return jbst.bind(data);
+/* deprecated */
+/*DOM*/ JsonFx.UI.bind = function(/*JBST*/ jbst, /*JSON*/ data, /*int*/ index) {
+	return jbst.bind(data, index);
 };

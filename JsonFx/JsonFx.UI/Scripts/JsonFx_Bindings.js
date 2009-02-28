@@ -46,7 +46,7 @@ JsonFx.Bindings = function() {
 
 	/*Dictionary<string,object>*/ var bindings = {};
 
-	/*RegExp*/ var re = /^([\w\-]*|[*])(?:#([\w\-]+)|\.([\w\-]+))?(?:#([\w\-]+)|\.([\w\-]+))?$/;
+	/*RegExp*/ var re = /^\s*([\w\-]*|[*])(?:#([\w\-]+)|\.([\w\-]+))?(?:#([\w\-]+)|\.([\w\-]+))?\s*$/;
 
 	/*void*/ b.add = function(/*string*/ selector, /*function(elem)*/ bind, /*function(elem)*/ unbind) {
 		if (typeof bind !== "function") {
@@ -55,11 +55,19 @@ JsonFx.Bindings = function() {
 		if (typeof unbind !== "function") {
 			unbind = null;
 		}
-		if (!bind && !unbind) {
+		if (!selector || (!bind && !unbind)) {
 			return;
 		}
 
-		var s = re.exec(selector);
+		var s = selector instanceof Array ?
+			selector :
+			String(selector).split(',');
+		while (s.length > 1) {
+			b.add(s.shift(), bind, unbind);
+		}
+		selector = s.shift();
+
+		s = re.exec(selector);
 		if (!s) {
 			// http://www.w3.org/TR/css3-selectors/#simple-selectors
 			throw new Error("JsonFx.Bindings only supports simple tag, class, and id selectors. Selector: \""+selector+"\"");
