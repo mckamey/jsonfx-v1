@@ -175,7 +175,7 @@ namespace JsonFx.UI.Jbst
 				// render the binding script
 				writer.Write("<script type=\"text/javascript\">JsonFx.Bindings.add(\"div.");
 				writer.Write(hook);
-				writer.Write("\",function(elem){return new JsonML.BST((");
+				writer.Write("\",function(elem){return new JsonML.BST(");
 				writer.Write(this.Name);
 				writer.Write(").bind((");
 				if (this.InlineData != null)

@@ -26,7 +26,7 @@ if ("undefined" === typeof window.Example) {
 
 	// these are the options for the service proxy
 	var options = {
-		onSuccess: Example.results.bind, // defined in Results.jbst
+		onSuccess: Example.results.success, // defined in Results.jbst
 		onFailure: Example.asyncError,
 		context: { elem: elem, foo: "bar" }
 	};
