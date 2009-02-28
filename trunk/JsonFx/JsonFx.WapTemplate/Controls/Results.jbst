@@ -18,7 +18,7 @@
 		elem = elem.parentNode;
 
 		// this databinds the data to the template and rehydrates to DOM
-		var jbst = JsonFx.UI.bind(Example.results, data);
+		var jbst = Example.results.bind(data);
 
 		// add the result to the container
 		if (jbst) {

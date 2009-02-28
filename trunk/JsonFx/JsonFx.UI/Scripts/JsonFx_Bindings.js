@@ -1,10 +1,10 @@
-/*global JsonFx, JSON, jQuery */
+/*global JsonFx, JsonML, JSON, jQuery */
 /*
 	JsonFx_Bindings.js
 	dynamic behavior binding support
 
 	Created: 2006-11-11-1759
-	Modified: 2009-02-25-2205
+	Modified: 2009-02-28-0839
 
 	Copyright (c)2006-2009 Stephen M. McKamey
 	Distributed under an open-source license: http://jsonfx.net/license
@@ -93,7 +93,7 @@ JsonFx.Bindings = function() {
 		b.add(tag+'.'+css, bind, unbind);
 	};
 
-	/*element*/ function performOne(/*element*/ elem, /*actionKey*/ a) {
+	/*DOM*/ function performOne(/*DOM*/ elem, /*actionKey*/ a) {
 
 // TODO: add ability to bind on ID, className, tagName or any combination
 // ultimately this means being able to grab an arbitrary element and determine
@@ -138,7 +138,7 @@ JsonFx.Bindings = function() {
 	}
 
 	// perform a binding action on child elements
-	/*void*/ function perform(/*element*/ root, /*actionKey*/ a) {
+	/*void*/ function perform(/*DOM*/ root, /*actionKey*/ a) {
 
 		/*create a closure for replacement*/
 		function getReplacer(newer, older) {
@@ -181,18 +181,32 @@ JsonFx.Bindings = function() {
 		}
 	}
 
-	// used as JsonML filter
-	/*element*/ b.bindOne = function(/*element*/ elem) {
+	/*DOM*/ b.bindOne = function(/*DOM*/ elem) {
 		return performOne(elem, BIND);
 	};
 
+	// use bindOne as the default JBST filter
+	if ("undefined" !== typeof JsonML && JsonML.BST) {
+		if ("function" !== typeof JsonML.BST.filter) {
+			JsonML.BST.filter = b.bindOne;
+		} else {
+			JsonML.BST.filter = (function() {
+				var jbstFilter = JsonML.BST.filter;
+				return function(/*DOM*/ elem) {
+					elem = jbstFilter(elem);
+					return b.bindOne(elem);
+				};
+			})();
+		}
+	}
+
 	// bind
-	/*void*/ b.bind = function(/*element*/ root) {
+	/*void*/ b.bind = function(/*DOM*/ root) {
 		perform(root, BIND);
 	};
 
 	// unbind
-	/*void*/ b.unbind = function(/*element*/ root) {
+	/*void*/ b.unbind = function(/*DOM*/ root) {
 		perform(root, UNBIND);
 	};
 

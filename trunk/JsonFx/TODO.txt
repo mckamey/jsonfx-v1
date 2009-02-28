@@ -1,11 +1,9 @@
-2009-02-25 @ 21:39
+2009-02-28 @ 08:33
 
 - BUG: HTML collections processed by JsonFx.Bindings continually change while iterating
 - BUG: something looking like a tag, e.g. "for (var i=0;i<total; i++)", inside a <script> block breaks the block!
 - Solve extra (unwanted) whitespace around template (i.e. if around template then just trim)
 - Solve inserting HTML data into JBST (special <%# this.data.foo %> or <%= HTML(this.data.foo)%>)
-- resolve JsonFx.UI.bind !== JsonML.BST.dataBind, JsonML.parse
-	- override using "var base = ..."
 - Find concise way to specify iterating over list with different templates (callback for switch?)
 - release the stand-alone JBST compiler as Console adapter for the JsonFx.UI.Jbst.JbstCompiler
 - refresh the various BuildTools
