@@ -4,7 +4,7 @@
 	dynamic behavior binding support
 
 	Created: 2006-11-11-1759
-	Modified: 2009-02-28-1345
+	Modified: 2009-02-28-1407
 
 	Copyright (c)2006-2009 Stephen M. McKamey
 	Distributed under an open-source license: http://jsonfx.net/license
@@ -88,11 +88,17 @@ JsonFx.Bindings = function() {
 				id: (s[2]||s[4]||"")
 			};
 
-	// TODO: add ability to bind on ID, className, tagName or any combination
-	// determine how to most efficiently store binding references for arbitrary combinations
-
 			if (s.id) {
-				throw new Error("JsonFx.Bindings does not yet support tag selectors. Selector: \""+selector+"\"");
+				if (s.tag !== "*" || s.css !== "*") {
+					throw new Error("JsonFx.Bindings only supports simple ID selectors. Add jQuery to enable full selector support. Selector: \""+selector+"\"");
+				}
+				if ("undefined" === typeof bindings["#"]) {
+					/*object*/ bindings["#"] = {};
+				}
+
+				/*object*/ bindings["#"][s.id] = {};
+				bindings["#"][s.id][BIND] = bind;
+				bindings["#"][s.id][UNBIND] = unbind;
 			} else {
 				if ("undefined" === typeof bindings[s.tag]) {
 					/*object*/ bindings[s.tag] = {};
@@ -132,10 +138,6 @@ JsonFx.Bindings = function() {
 		// simple performOne implementation
 		function(/*DOM*/ elem, /*actionKey*/ a) {
 
-// TODO: add ability to bind on ID, className, tagName or any combination
-// ultimately this means being able to grab an arbitrary element and determine
-// which if any bindings need to be performed.
-
 			function bindSet(/*object*/ binds, /*string*/ css) {
 				if (binds && binds[css] && binds[css][a]) {
 					try {
@@ -174,15 +176,24 @@ JsonFx.Bindings = function() {
 			return elem;
 		};
 
+	var performOneID = jQ ?
+		// no jQuery performOneID implementation
+		null :
+		// simple performOneID implementation
+		function (/*DOM*/ elem, /*actionKey*/ a) {
+			var action = bindings["#"][elem.id];
+			action = action && action[a];
+			return (action && action(elem)) || elem;
+		};
+
 	// perform a binding action on all child elements
 	/*void*/ var perform = jQ ?
 		// jQuery perform implementation
 		function(/*DOM*/ root, /*actionKey*/ a) {
-			root = jQuery(root);
 			for (var i=0; i<bindings.length; i++) {
 				if (bindings[i][a]) {
 					var action = bindings[i][a];
-					root.find(bindings[i].selector).each(
+					jQuery(bindings[i].selector, root).each(
 						function() {
 							try {
 								var elem = action(this) || this;
@@ -227,14 +238,27 @@ JsonFx.Bindings = function() {
 				}
 			}
 
-			if (root && root.getElementsByTagName) {
+			if (bindings["#"]) {
+				for (var id in bindings["#"]) {
+					if (bindings["#"].hasOwnProperty(id)) {
+						var elem = document.getElementById(id);
+						var replace = performOneID(elem, a);
+						if (replace !== elem) {
+							// queue up replacement at the end so as not to disrupt the list
+							queueReplacer(replace, elem);
+						}
+					}
+				}
+			}
+			root = root || document.body;
+			if (root.getElementsByTagName) {
 				if (bindings["*"]) {
 					// if star rule, then must apply to all
 					bindTagSet("*");
 				} else {
 					// only apply to tags with rules
 					for (var tag in bindings) {
-						if (tag !== "*" && bindings.hasOwnProperty(tag)) {
+						if (bindings.hasOwnProperty(tag) && tag !== "*" && tag !== "#") {
 							bindTagSet(tag);
 						}
 					}
@@ -248,7 +272,7 @@ JsonFx.Bindings = function() {
 			root = null;
 		}
 
-		perform(root || document.body, BIND);
+		perform(root, BIND);
 	};
 
 	// unbind
@@ -257,13 +281,17 @@ JsonFx.Bindings = function() {
 			root = null;
 		}
 
-		perform(root || document.body, UNBIND);
+		perform(root, UNBIND);
 	};
 
 	// use bindOne as the default JBST filter
 	if ("undefined" !== typeof JsonML && JsonML.BST) {
 		/*DOM*/ function bindOne(/*DOM*/ elem) {
-			return performOne(elem, BIND);
+			if (performOneID) {
+				elem = performOneID(elem, BIND);
+			}
+			elem = performOne(elem, BIND);
+			return elem;
 		};
 
 		if ("function" !== typeof JsonML.BST.filter) {

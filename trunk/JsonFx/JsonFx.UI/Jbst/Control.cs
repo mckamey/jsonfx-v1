@@ -152,11 +152,12 @@ namespace JsonFx.UI.Jbst
 					throw new ArgumentNullException("jbst:Control Name cannot be empty.");
 				}
 
-				string hook = "_"+Guid.NewGuid().ToString("N");
+				// generate an ID for controls which do not have explicit
+				this.EnsureID();
 
 				// render the placeholder hook
-				writer.Write("<div class=\"");
-				writer.Write(hook);
+				writer.Write("<div id=\"");
+				writer.Write(this.ClientID);
 				writer.Write("\">");
 
 				writer.BeginRender();
@@ -173,8 +174,8 @@ namespace JsonFx.UI.Jbst
 				writer.Write("</div>");
 
 				// render the binding script
-				writer.Write("<script type=\"text/javascript\">JsonFx.Bindings.add(\"div.");
-				writer.Write(hook);
+				writer.Write("<script type=\"text/javascript\">JsonFx.Bindings.add(\"#");
+				writer.Write(this.ClientID);
 				writer.Write("\",function(elem){return new JsonML.BST(");
 				writer.Write(this.Name);
 				writer.Write(").bind((");
