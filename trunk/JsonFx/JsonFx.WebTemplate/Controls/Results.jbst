@@ -5,7 +5,7 @@
 	/* NOTE: the template name is an object which can be added to */
 
 	/* this method is used as a callback in a service method */
-	/*void*/ Example.results.bind = function(/*object*/ data, /*object*/ cx) {
+	/*void*/ Example.results.success = function(/*object*/ data, /*object*/ cx) {
 		if (!data) {
 			return;
 		}
