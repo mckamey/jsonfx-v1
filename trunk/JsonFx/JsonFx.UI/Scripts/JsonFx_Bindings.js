@@ -42,7 +42,7 @@ if ("undefined" === typeof JsonFx.jsonReviver) {
 JsonFx.Bindings = function() {
 
 	/*object*/ var b = this;
-	/*const string*/ var BIND = "B", UNBIND = "U";
+	/*const string*/ var BIND = 1, UNBIND = 2;
 
 	/*Dictionary<string,object>*/ var bindings = {};
 
@@ -89,6 +89,7 @@ JsonFx.Bindings = function() {
 		}
 	};
 
+	/*deprecated*/
 	/*void*/ b.register = function(/*string*/ tag, /*string*/ css, /*function(elem)*/ bind, /*function(elem)*/ unbind) {
 		b.add(tag+'.'+css, bind, unbind);
 	};
@@ -181,20 +182,20 @@ JsonFx.Bindings = function() {
 		}
 	}
 
-	/*DOM*/ b.bindOne = function(/*DOM*/ elem) {
+	/*DOM*/ bindOne = function(/*DOM*/ elem) {
 		return performOne(elem, BIND);
 	};
 
 	// use bindOne as the default JBST filter
 	if ("undefined" !== typeof JsonML && JsonML.BST) {
 		if ("function" !== typeof JsonML.BST.filter) {
-			JsonML.BST.filter = b.bindOne;
+			JsonML.BST.filter = bindOne;
 		} else {
 			JsonML.BST.filter = (function() {
 				var jbstFilter = JsonML.BST.filter;
 				return function(/*DOM*/ elem) {
 					elem = jbstFilter(elem);
-					return b.bindOne(elem);
+					return elem && bindOne(elem);
 				};
 			})();
 		}
@@ -202,49 +203,47 @@ JsonFx.Bindings = function() {
 
 	// bind
 	/*void*/ b.bind = function(/*DOM*/ root) {
-		perform(root, BIND);
+		if ("object" !== typeof root || root instanceof Event) {
+			root = null;
+		}
+
+		perform(root || document, BIND);
 	};
 
 	// unbind
 	/*void*/ b.unbind = function(/*DOM*/ root) {
-		perform(root, UNBIND);
-	};
+		if ("object" !== typeof root || root instanceof Event) {
+			root = null;
+		}
 
-	// bind
-	/*void*/ b.bindAll = function() {
-		b.bind(document);
-	};
-
-	// unbind
-	/*void*/ b.unbindAll = function() {
-		b.unbind(document);
+		perform(root || document, UNBIND);
 	};
 
 	// register bind events
 	if (typeof jQuery !== "undefined") {
-		jQuery(b.bindAll);
-		jQuery(window).bind("unload", b.unbindAll);
+		jQuery(b.bind);
+		jQuery(window).bind("unload", b.unbind);
 	} else if (window.addEventListener) {
 		//DOM Level 2 model for binding events
-		window.addEventListener("load", b.bindAll, false);
-		window.addEventListener("unload", b.unbindAll, false);
+		window.addEventListener("load", b.bind, false);
+		window.addEventListener("unload", b.unbind, false);
 	} else if (window.attachEvent) {
 		//IE model for binding events
-		window.attachEvent("onload", b.bindAll);
-		window.attachEvent("onunload", b.unbindAll);
+		window.attachEvent("onload", b.bind);
+		window.attachEvent("onunload", b.unbind);
 	} else {
 		//DOM Level 0 model for binding events
 		var onload = window.onload;
 		window.onload =
 			("function" === typeof onload) ?
-			function(/*Event*/ evt) { b.bindAll(evt); return onload(evt); } :
-			b.bindAll;
+			function(/*Event*/ evt) { b.bind(evt); return onload(evt); } :
+			b.bind;
 
 		var onunload = window.onunload;
 		window.onunload =
 			("function" === typeof onunload) ?
-			function(/*Event*/ evt) { b.unbindAll(evt); return onunload(evt); } :
-			b.unbindAll;
+			function(/*Event*/ evt) { b.unbind(evt); return onunload(evt); } :
+			b.unbind;
 	}
 };
 

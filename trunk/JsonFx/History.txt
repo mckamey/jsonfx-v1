@@ -1,6 +1,7 @@
 Release History
 
 v1.0.0902.29xx
+- deprecated JsonFx.Bindings.register(tag,css,bind,unbind) in favor of more flexible JsonFx.Bindings.add(selector,bind,unbind)
 - added JsonML.BST.bind to dataBind and hydrate all in one step (including JsonFx behavior binding)
 - better reconciled JsonFx.UI.bind, JsonML.BST.dataBind, JsonML.parse
 - went through and cleaned up all examples to use JBST.bind

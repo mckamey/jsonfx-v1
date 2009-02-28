@@ -1,19 +1,23 @@
-2009-02-28 @ 08:33
+2009-02-28 @ 10:22
+
+- Find concise way to specify iterating over list with different templates (callback for switch?)
 
 - BUG: HTML collections processed by JsonFx.Bindings continually change while iterating
-- BUG: something looking like a tag, e.g. "for (var i=0;i<total; i++)", inside a <script> block breaks the block!
-- Solve extra (unwanted) whitespace around template (i.e. if around template then just trim)
-- Solve inserting HTML data into JBST (special <%# this.data.foo %> or <%= HTML(this.data.foo)%>)
-- Find concise way to specify iterating over list with different templates (callback for switch?)
-- release the stand-alone JBST compiler as Console adapter for the JsonFx.UI.Jbst.JbstCompiler
-- refresh the various BuildTools
-- consolidate type loading logic (see System.Workflow.ComponentModel.Compiler.TypeProvider.GetType(string))
-- resolve "~/" vs. HostingEnvironment.AppVirtualPath
 - clean up server-side jbst:control (esp. emitting of CSS classes)
-- update any documentation that might be affected
 - reconcile overlap between JsonFx libs and jQuery:
 	- JsonFx.UI.Binding vs. jQuery.ready
 	- enable binding by ID, one-time binding
+
+- BUG: something looking like a tag, e.g. "for (var i=0;i<total; i++)", inside a <script> block breaks the block!
+- Solve extra (unwanted) whitespace around template (i.e. if around template then just trim)
+- Solve inserting HTML data into JBST (special <%# this.data.foo %> or <%= HTML(this.data.foo)%>)
+
+- release the stand-alone JBST compiler as Console adapter for the JsonFx.UI.Jbst.JbstCompiler
+- refresh the various BuildTools
+
+- consolidate type loading logic (see System.Workflow.ComponentModel.Compiler.TypeProvider.GetType(string))
+- resolve "~/" vs. HostingEnvironment.AppVirtualPath
+- update any documentation that might be affected
 - rebuild JsonFx Ajax History to use doc frag
 - fully support Mod_mono Apache hosting
 - client-side localization: add support for <%= Resources.Foo.Bar %>

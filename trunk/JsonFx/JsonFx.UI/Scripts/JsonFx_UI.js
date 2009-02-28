@@ -37,6 +37,7 @@ if ("undefined" === typeof JsonFx.Bindings) {
 	if (!elem) {
 		return;
 	}
+
 	// unbind to prevent memory leaks
 	JsonFx.Bindings.unbind(elem);
 
