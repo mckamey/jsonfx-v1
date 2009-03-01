@@ -290,7 +290,7 @@ JsonFx.Bindings = function() {
 	// use bindOne as the default JBST filter
 	if ("undefined" !== typeof JsonML && JsonML.BST) {
 		/*DOM*/ function bindOne(/*DOM*/ elem) {
-			if (performOneID) {
+			if (performOneID && bindings["#"]) {
 				elem = performOneID(elem, BIND);
 			}
 			elem = performOne(elem, BIND);
