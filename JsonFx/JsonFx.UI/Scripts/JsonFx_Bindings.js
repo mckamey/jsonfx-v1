@@ -242,6 +242,9 @@ JsonFx.Bindings = function() {
 				for (var id in bindings["#"]) {
 					if (bindings["#"].hasOwnProperty(id)) {
 						var elem = document.getElementById(id);
+						if (!elem) {
+							continue;
+						}
 						var replace = performOneID(elem, a);
 						if (replace !== elem) {
 							// queue up replacement at the end so as not to disrupt the list
