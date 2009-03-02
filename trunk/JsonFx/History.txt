@@ -1,6 +1,6 @@
 Release History
 
-v1.0.0903.01xx
+v1.0.0903.0117
 - added JsonML.BST.bind to dataBind and hydrate all in one step (including JsonFx behavior binding)
 - deprecated JsonFx.UI.bind(jbst,data) in favor of myJBST.bind(data,index) on JBSTs
 - updated documentation examples to use myJBST.bind
@@ -9,6 +9,7 @@ v1.0.0903.01xx
 - eneabled native JsonFx.Bindings.add to accept lists of simple selectors and simple ID selectors
 - updated documentation examples to use JsonFx.Bindings.add
 - changed JsonML.BST from constructor to factory (i.e. "JsonML.BST(jbst);" rather than "new JsonML.BST(jbst);")
+- allowed JsonML.BST factory to accept a function which switches templates based upon input data
 - added JsonFx.Bindings.replace to further reduce redundant output of jbst server control
 
 v1.0.0902.2522

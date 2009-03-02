@@ -1,12 +1,11 @@
-2009-03-01 @ 16:23
-
-- Find concise way to specify iterating over list with different templates (callback for switch?)
+2009-03-01 @ 17:27
 
 - explain difference between JsonFx.UI.Binding vs. jQuery.ready
+- explain how to switch templates in list JBSTs
+- explain inserting HTML data into JBST (special <%# this.data.foo %> or <%= HTML(this.data.foo)%>)
 
-- Solve inserting HTML data into JBST (special <%# this.data.foo %> or <%= HTML(this.data.foo)%>)
-- BUG: something looking like a tag, e.g. "for (var i=0;i<total; i++)", inside a <script> block breaks the block!
 - Solve extra (unwanted) whitespace around template (i.e. if around template then just trim)
+- BUG: something looking like a tag, e.g. "for (var i=0;i<total; i++)", inside a <script> block breaks the block!
 
 - release the stand-alone JBST compiler as Console adapter for the JsonFx.UI.Jbst.JbstCompiler
 - refresh the various BuildTools
