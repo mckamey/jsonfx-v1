@@ -540,20 +540,11 @@ if (""undefined"" === typeof {0}) {{
 				writer.Write(this.Name);
 				if (prettyPrint)
 				{
-					writer.Write(" = ");
+					writer.WriteLine(" = JsonML.BST(");
 				}
 				else
 				{
-					writer.Write("=");
-				}
-
-				if (prettyPrint)
-				{
-					writer.WriteLine("new JsonML.BST(");
-				}
-				else
-				{
-					writer.Write("new JsonML.BST(");
+					writer.Write("=JsonML.BST(");
 				}
 			}
 
@@ -572,6 +563,8 @@ if (""undefined"" === typeof {0}) {{
 
 				if (control != null)
 				{
+					// TODO: research the effect of stripping whitespace literals regardless
+
 					// found 2 or more in root
 					// render with document wrapper
 					control = this.document;

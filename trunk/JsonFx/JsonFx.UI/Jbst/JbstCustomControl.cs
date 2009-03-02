@@ -46,7 +46,7 @@ namespace JsonFx.UI.Jbst
 		private const string PlaceholderCommand = "placeholder";
 
 		private const string PlaceholderStatement =
-			@"return (this.jbst instanceof JsonML.BST) ? this.jbst.dataBind({0}, {1}) : """";";
+			@"return this.jbst?JsonML.BST(this.jbst).dataBind({0},{1}):"""";";
 
 		private const string ControlCommand = "control";
 		private const string ControlNameKey = "name";
@@ -57,27 +57,27 @@ namespace JsonFx.UI.Jbst
 		private const string ControlIndexKeyAlt = JbstCustomControl.JbstPrefix+JbstCustomControl.ControlIndexKey;
 
 		private const string ControlSimple =
-			@"function(){{return {0}.dataBind({1},{2});}}";
+			@"function(){{return JsonML.BST({0}).dataBind({1},{2});}}";
 
 		private const string ControlSimpleDebug =
 			@"function() {{
-				return {0}.dataBind({1}, {2});
+				return JsonML.BST({0}).dataBind({1}, {2});
 			}}";
 
 		private const string ControlStart =
-			@"function(){var t=new JsonML.BST(";
+			@"function(){var t=JsonML.BST(";
 
 		private const string ControlStartDebug =
 			@"function() {
-				var t = new JsonML.BST(";
+				var t = JsonML.BST(";
 
 		private const string ControlEndFormat =
-			@");t.prototype=this;return {0}.dataBind({1},{2},t);}}";
+			@");t.prototype=this;return JsonML.BST({0}).dataBind({1},{2},t);}}";
 
 		private const string ControlEndFormatDebug =
 			@");
 				t.prototype = this;
-				return {0}.dataBind({1}, {2}, t);
+				return JsonML.BST({0}).dataBind({1}, {2}, t);
 			}}";
 
 		private const string FunctionEvalExpression = "({0})()";
