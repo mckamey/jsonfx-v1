@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Text;
 using System.Web.UI;
 
 using JsonFx.Json;
@@ -173,16 +174,18 @@ namespace JsonFx.UI.Jbst
 
 				writer.Write("</div>");
 
-				// render the binding script
-				writer.Write("<script type=\"text/javascript\">JsonFx.Bindings.replace(\"#");
-				writer.Write(this.ClientID);
-				writer.Write("\",");
-				writer.Write(this.Name);
-				writer.Write(",");
+				// build the binding script
+				StringBuilder builder = new StringBuilder();
+
+				builder.Append("JsonFx.Bindings.replace(\"#");
+				builder.Append(this.ClientID);
+				builder.Append("\",");
+				builder.Append(this.Name);
+				builder.Append(",");
 				if (this.InlineData != null)
 				{
 					// serialize InlineData as a JavaScript literal
-					JsonWriter jsonWriter = new JsonWriter(writer);
+					JsonWriter jsonWriter = new JsonWriter(builder);
 					jsonWriter.PrettyPrint = this.IsDebug;
 					jsonWriter.NewLine = Environment.NewLine;
 					jsonWriter.Tab = "\t";
@@ -192,23 +195,40 @@ namespace JsonFx.UI.Jbst
 				else if (!String.IsNullOrEmpty(this.Data))
 				{
 					// assume Data is either a JavaScript literal or variable reference
-					writer.Write('(');
-					writer.Write(this.Data);
-					writer.Write(')');
+					builder.Append('(');
+					builder.Append(this.Data);
+					builder.Append(')');
 				}
 				else
 				{
 					// smallest most innocuous default data
-					writer.Write("{}");
+					builder.Append("{}");
 				}
 
 				if (this.Index >= 0)
 				{
-					writer.Write(",(");
-					writer.Write(this.Index);
-					writer.Write(')');
+					builder.Append(",(");
+					builder.Append(this.Index);
+					builder.Append(')');
 				}
-				writer.Write(");</script>");
+				builder.Append(");");
+
+				if (this.Page.Form != null)
+				{
+					// register the binding script
+					this.Page.ClientScript.RegisterStartupScript(
+						typeof(Control),
+						this.ClientID + "_init",
+						builder.ToString(),
+						true);
+				}
+				else
+				{
+					// render the binding script
+					writer.Write("<script type=\"text/javascript\">");
+					writer.Write(builder.ToString());
+					writer.Write("</script>");
+				}
 			}
 			finally
 			{
