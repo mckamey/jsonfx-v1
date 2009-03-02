@@ -161,18 +161,8 @@ namespace JsonFx.UI.Jbst
 				writer.Write(this.ClientID);
 				writer.Write("\">");
 
-				writer.BeginRender();
-				try
-				{
-					// render out any children as loading/error markup
-					base.RenderChildren(writer);
-				}
-				finally
-				{
-					writer.EndRender();
-				}
-
-				writer.Write("</div>");
+				// render out any children as loading/error markup
+				base.RenderChildren(writer);
 
 				// build the binding script
 				StringBuilder builder = new StringBuilder();
@@ -229,6 +219,8 @@ namespace JsonFx.UI.Jbst
 					writer.Write(builder.ToString());
 					writer.Write("</script>");
 				}
+
+				writer.Write("</div>");
 			}
 			finally
 			{
