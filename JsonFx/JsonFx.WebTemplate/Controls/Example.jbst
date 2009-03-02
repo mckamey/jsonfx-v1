@@ -14,7 +14,7 @@
 	<p class="ReadMe">
 		Congratulations!
 		As of <%= this.data.renderTime.getHours()+":"+this.format(this.data.renderTime.getMinutes()) %>,
-		setup appears to be configured correctly on <strong><%= this.data.hostName %> (<%= this.data.serverName %>)</strong>.
+		setup appears to be configured correctly on <strong><%= window.location.host %> (<%= this.data.serverName %>)</strong>.
 	</p>
 	<p class="ReadMe">See <a href="http://help.jsonfx.net/instructions">http://help.jsonfx.net/instructions</a> for JsonFx customizations to Visual Studio.</p>
 	<p class="ReadMe"><input type="button" value="Try Service" onclick="Example.tryService(this);" /></p>
