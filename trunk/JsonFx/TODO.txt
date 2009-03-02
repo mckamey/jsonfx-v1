@@ -2,6 +2,7 @@
 
 - explain difference between JsonFx.UI.Binding vs. jQuery.ready
 - explain how to switch templates in list JBSTs
+- explain using Linq in JSON-RPC
 - explain inserting HTML data into JBST (special <%# this.data.foo %> or <%= HTML(this.data.foo)%>)
 
 - Solve extra (unwanted) whitespace around template (i.e. if around template then just trim)
