@@ -32,9 +32,7 @@
 <form id="F" runat="server">
 
 <%-- declaratively add a JBST control to the page and bind example data --%>
-<jbst:Control runat="server"
-	name="Example.congrats"
-	data="{hostName:window.location.host,renderTime:Example.renderTime,serverName:Example.serverName}">
+<jbst:Control runat="server" name="Example.congrats" data="Example.myData">
 
 	<p class="ReadMe">See <a href="http://help.jsonfx.net/instructions">http://help.jsonfx.net/instructions</a> for configuration help.</p>
     
