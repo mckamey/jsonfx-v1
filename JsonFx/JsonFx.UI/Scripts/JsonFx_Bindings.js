@@ -4,7 +4,7 @@
 	dynamic behavior binding support
 
 	Created: 2006-11-11-1759
-	Modified: 2009-02-28-1407
+	Modified: 2009-03-01-1621
 
 	Copyright (c)2006-2009 Stephen M. McKamey
 	Distributed under an open-source license: http://jsonfx.net/license
@@ -301,14 +301,23 @@ JsonFx.Bindings = function() {
 			JsonML.BST.filter = bindOne;
 		} else {
 			JsonML.BST.filter = (function() {
-				var jbstFilter = JsonML.BST.filter;
+				var old = JsonML.BST.filter;
 				return function(/*DOM*/ elem) {
-					elem = jbstFilter(elem);
+					elem = old(elem);
 					return elem && bindOne(elem);
 				};
 			})();
 		}
 	}
+
+	// shorthand for auto-replacing an element with JBST bind
+	/*void*/ b.replace = function(/*string*/ selector, /*JBST*/ jbst, /*object*/ data, /*int*/ index) {
+		JsonFx.Bindings.add(
+			selector,
+			function(elem) {
+				return JsonML.BST(jbst).bind(data, index) || elem;
+			});
+	};
 
 	// register bind events
 	if (typeof jQuery !== "undefined") {

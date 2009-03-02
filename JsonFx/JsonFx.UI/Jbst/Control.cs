@@ -174,11 +174,11 @@ namespace JsonFx.UI.Jbst
 				writer.Write("</div>");
 
 				// render the binding script
-				writer.Write("<script type=\"text/javascript\">JsonFx.Bindings.add(\"#");
+				writer.Write("<script type=\"text/javascript\">JsonFx.Bindings.replace(\"#");
 				writer.Write(this.ClientID);
-				writer.Write("\",function(elem){return new JsonML.BST(");
+				writer.Write("\",");
 				writer.Write(this.Name);
-				writer.Write(").bind((");
+				writer.Write(",");
 				if (this.InlineData != null)
 				{
 					// serialize InlineData as a JavaScript literal
@@ -192,7 +192,9 @@ namespace JsonFx.UI.Jbst
 				else if (!String.IsNullOrEmpty(this.Data))
 				{
 					// assume Data is either a JavaScript literal or variable reference
+					writer.Write('(');
 					writer.Write(this.Data);
+					writer.Write(')');
 				}
 				else
 				{
@@ -202,10 +204,11 @@ namespace JsonFx.UI.Jbst
 
 				if (this.Index >= 0)
 				{
-					writer.Write("),(");
+					writer.Write(",(");
 					writer.Write(this.Index);
+					writer.Write(')');
 				}
-				writer.Write("))||elem;});</script>");
+				writer.Write(");</script>");
 			}
 			finally
 			{

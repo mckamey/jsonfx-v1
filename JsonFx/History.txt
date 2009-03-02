@@ -8,6 +8,8 @@ v1.0.0903.01xx
 - enabled JsonFx.Bindings.add to accept any jQuery selector if jQuery is present
 - eneabled native JsonFx.Bindings.add to accept lists of simple selectors and simple ID selectors
 - updated documentation examples to use JsonFx.Bindings.add
+- changed JsonML.BST from constructor to factory (i.e. "JsonML.BST(jbst);" rather than "new JsonML.BST(jbst);")
+- added JsonFx.Bindings.replace to further reduce redundant output of jbst server control
 
 v1.0.0902.2522
 - fix for binding issue where elements getting added may alter the set of elements still being processed
