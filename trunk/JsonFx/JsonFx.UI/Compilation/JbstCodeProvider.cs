@@ -119,9 +119,22 @@ namespace JsonFx.Compilation
 
 				// queue up children
 				JbstContainerControl container = control as JbstContainerControl;
-				if (container != null && container.ChildControlsSpecified)
+				if (container != null)
 				{
-					queue.AddRange(container.ChildControls);
+					if (container.ChildControlsSpecified)
+					{
+						queue.AddRange(container.ChildControls);
+					}
+					if (container.AttributesSpecified)
+					{
+						foreach (object value in container.Attributes.Values)
+						{
+							if (value is JbstControl)
+							{
+								queue.Add((JbstControl)value);
+							}
+						}
+					}
 					continue;
 				}
 
