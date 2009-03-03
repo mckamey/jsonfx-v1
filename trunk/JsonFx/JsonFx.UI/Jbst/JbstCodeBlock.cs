@@ -181,7 +181,6 @@ namespace JsonFx.UI.Jbst
 		/// Ctor
 		/// </summary>
 		/// <param name="code"></param>
-		/// <param name="path"></param>
 		public JbstExpressionBlock(string code)
 			: base(code)
 		{
@@ -198,6 +197,28 @@ namespace JsonFx.UI.Jbst
 		}
 
 		#endregion JbstCodeBlock Members
+	}
+
+	internal class JbstUnparsedBlock : JbstExpressionBlock
+	{
+		#region Constants
+
+		private const string UnparsedFormat = "JsonML.raw({0})";
+
+		#endregion Constants
+
+		#region Init
+
+		/// <summary>
+		/// Ctor
+		/// </summary>
+		/// <param name="code"></param>
+		public JbstUnparsedBlock(string code)
+			: base(String.Format(UnparsedFormat, code))
+		{
+		}
+
+		#endregion Init
 	}
 
 	internal class JbstStatementBlock : JbstCodeBlock

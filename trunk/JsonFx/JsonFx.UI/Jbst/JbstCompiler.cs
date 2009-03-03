@@ -736,10 +736,16 @@ if (""undefined"" === typeof {0}) {{
 							break;
 						}
 						case "%=": // inline expression
-						case "%#": // databinding expression
 						{
 							// expressions are emitted directly into JBST
 							JbstExpressionBlock code = new JbstExpressionBlock(tag.Content);
+							this.AppendChild(code);
+							break;
+						}
+						case "%#": // databinding expression
+						{
+							// unparsed expressions are emitted directly into JBST
+							JbstUnparsedBlock code = new JbstUnparsedBlock(tag.Content);
 							this.AppendChild(code);
 							break;
 						}
