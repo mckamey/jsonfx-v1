@@ -1,5 +1,9 @@
 Release History
 
+v1.0.0903.0309
+- added unparsed block syntax <%# %> for data that contains markup
+- fixing bug where globalization keys weren't being correctly picked up in attributes
+
 v1.0.0903.0117
 - added JsonML.BST.bind to dataBind and hydrate all in one step (including JsonFx behavior binding)
 - deprecated JsonFx.UI.bind(jbst,data) in favor of myJBST.bind(data,index) on JBSTs

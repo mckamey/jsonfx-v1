@@ -1,9 +1,9 @@
-2009-03-01 @ 17:27
+2009-03-03 @ 08:59
 
 - explain difference between JsonFx.UI.Binding vs. jQuery.ready
 - explain how to switch templates in list JBSTs
 - explain using Linq in JSON-RPC
-- explain inserting HTML data into JBST (special <%# this.data.foo %> or <%= HTML(this.data.foo)%>)
+- explain inserting HTML data into JBST
 
 - Solve extra (unwanted) whitespace around template (i.e. if around template then just trim)
 - BUG: something looking like a tag, e.g. "for (var i=0;i<total; i++)", inside a <script> block breaks the block!
@@ -12,13 +12,18 @@
 - refresh the various BuildTools
 - release CssUserAgent as a stand-alone script
 
+- consider how to do a wrapper around every two elements (e.g. rows of two cells)
+- consider way of specifying named templates inside JBSTs, alternatively inline anonymous templates
+
 - rebuild JsonFx Ajax History to use doc frag
 - consolidate type loading logic (see System.Workflow.ComponentModel.Compiler.TypeProvider.GetType(string))
 - resolve "~/" vs. HostingEnvironment.AppVirtualPath
 - fully support Mod_mono Apache hosting
 - client-side localization: add support for <%= Resources.Foo.Bar %>
 - add CDN support to JsonFx:ResourceInclude (e.g. Google AJAX APIs)
-- Create a Google Code repository http://code.google.com/hosting/createProject
+- Create a Google Code repository
+	- http://code.google.com/hosting/createProject
+	- use svnsync to import an existing repository (http://code.google.com/p/support/wiki/FAQ#Subversion)
 - create build provider for generating a list of localization values
 - emit CSS merge as imports during debug
 - build jQuery plugin for JsonML / JSBT
