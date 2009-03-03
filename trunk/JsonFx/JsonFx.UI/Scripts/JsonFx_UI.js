@@ -4,7 +4,7 @@
 	DOM utilities
 
 	Created: 2006-11-11-1759
-	Modified: 2009-02-28-0839
+	Modified: 2009-03-03-0833
 
 	Copyright (c)2006-2009 Stephen M. McKamey
 	Distributed under an open-source license: http://jsonfx.net/license
@@ -161,5 +161,5 @@ if ("undefined" === typeof JsonFx.Bindings) {
 
 /* deprecated */
 /*DOM*/ JsonFx.UI.bind = function(/*JBST*/ jbst, /*JSON*/ data, /*int*/ index) {
-	return jbst.bind(data, index);
+	return JsonML.BST(jbst).bind(data, index);
 };
