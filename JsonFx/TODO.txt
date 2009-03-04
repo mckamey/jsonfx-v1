@@ -5,6 +5,8 @@
 - explain using Linq in JSON-RPC
 - explain inserting HTML data into JBST
 
+- figure out pattern for creating closures in DOM events without behavior binding
+
 - BUG: something looking like a tag, e.g. "for (var i=0;i<total; i++)", inside a <script> block breaks the block
 - Solve extra (unwanted) whitespace around template (i.e. if around template then just trim)
 - consider how to do a wrapper around every two elements (e.g. rows of two cells)
