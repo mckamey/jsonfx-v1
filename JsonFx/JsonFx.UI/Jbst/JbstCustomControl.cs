@@ -46,7 +46,7 @@ namespace JsonFx.UI.Jbst
 		private const string PlaceholderCommand = "placeholder";
 
 		private const string PlaceholderStatement =
-			@"return this.jbst?JsonML.BST(this.jbst).dataBind({0},{1}):"""";";
+			@"return this.$jbst?JsonML.BST(this.$jbst).dataBind({0},{1}):"""";";
 
 		private const string ControlCommand = "control";
 		private const string ControlNameKey = "name";
