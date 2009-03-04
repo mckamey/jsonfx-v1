@@ -1140,6 +1140,16 @@ namespace JsonFx.Json
 		/// </summary>
 		/// <param name="varExpr">the variable expression</param>
 		/// <returns>varExpr</returns>
+		public static string EnsureValidIdentifier(string varExpr, bool nested)
+		{
+			return JsonWriter.EnsureValidIdentifier(varExpr, nested, true);
+		}
+
+		/// <summary>
+		/// Verifies is a valid EcmaScript variable expression.
+		/// </summary>
+		/// <param name="varExpr">the variable expression</param>
+		/// <returns>varExpr</returns>
 		/// <remarks>
 		/// http://www.ecma-international.org/publications/files/ECMA-ST/Ecma-262.pdf
 		/// 
@@ -1150,11 +1160,15 @@ namespace JsonFx.Json
 		/// IdentifierPart =
 		///		IdentifierStart | Digit
 		/// </remarks>
-		public static string EnsureValidIdentifier(string varExpr, bool nested)
+		public static string EnsureValidIdentifier(string varExpr, bool nested, bool throwOnEmpty)
 		{
 			if (String.IsNullOrEmpty(varExpr))
 			{
-				throw new ArgumentException("Variable expression is empty.");
+				if (throwOnEmpty)
+				{
+					throw new ArgumentException("Variable expression is empty.");
+				}
+				return String.Empty;
 			}
 
 			varExpr = varExpr.Replace(" ", "");
