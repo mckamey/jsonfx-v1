@@ -80,6 +80,20 @@ namespace JsonFx.UI.Jbst
 				return JsonML.BST({0}).dataBind({1}, {2}, t);
 			}}";
 
+		private const string ControlInlineStart =
+			@"function(){return JsonML.BST(";
+
+		private const string ControlInlineStartDebug =
+			@"function() {
+				return JsonML.BST(";
+
+		private const string ControlInlineEndFormat =
+			@").dataBind({0},{1});}}";
+
+		private const string ControlInlineEndFormatDebug =
+			@").dataBind({0}, {1});
+			}}";
+
 		private const string FunctionEvalExpression = "({0})()";
 
 		private const string DefaultDataExpression = "this.data";
@@ -145,7 +159,12 @@ namespace JsonFx.UI.Jbst
 					// backwards compatibility with "jbst:name"
 					this.controlName = this.Attributes[ControlNameKeyAlt] as string;
 				}
-				this.controlName = JsonWriter.EnsureValidIdentifier(this.controlName, true);
+				this.controlName = JsonWriter.EnsureValidIdentifier(this.controlName, true, false);
+
+				if (String.IsNullOrEmpty(this.controlName) && !this.ChildControlsSpecified)
+				{
+					throw new InvalidOperationException("JBST Control requires either a named template or an anonymous inline template.");
+				}
 			}
 
 			#endregion Control Name
@@ -230,21 +249,75 @@ namespace JsonFx.UI.Jbst
 			this.isProcessed = true;
 		}
 
+		/// <summary>
+		/// Controls the control rendering style
+		/// </summary>
+		/// <param name="writer"></param>
 		private void RenderCustomControl(JsonWriter writer)
 		{
 			if (!this.ChildControlsSpecified)
 			{
-				if (writer.PrettyPrint)
-				{
-					writer.TextWriter.Write(ControlSimpleDebug, this.controlName, this.dataExpr, this.indexExpr);
-				}
-				else
-				{
-					writer.TextWriter.Write(ControlSimple, this.controlName, this.dataExpr, this.indexExpr);
-				}
-				return;
+				this.RenderSimpleCustomControl(writer);
+			}
+			else if (String.IsNullOrEmpty(this.controlName))
+			{
+				this.RenderInlineCustomControl(writer);
+			}
+			else
+			{
+				RenderNestedCustomControl(writer);
+			}
+		}
+
+		/// <summary>
+		/// Renders a simple data binding call to a named template.
+		/// </summary>
+		/// <param name="writer"></param>
+		private void RenderSimpleCustomControl(JsonWriter writer)
+		{
+			if (writer.PrettyPrint)
+			{
+				writer.TextWriter.Write(ControlSimpleDebug, this.controlName, this.dataExpr, this.indexExpr);
+			}
+			else
+			{
+				writer.TextWriter.Write(ControlSimple, this.controlName, this.dataExpr, this.indexExpr);
+			}
+		}
+
+		/// <summary>
+		/// Renders a data binding call to an inline anonymous template.
+		/// </summary>
+		/// <param name="writer"></param>
+		private void RenderInlineCustomControl(JsonWriter writer)
+		{
+			if (writer.PrettyPrint)
+			{
+				writer.TextWriter.Write(ControlInlineStartDebug);
+			}
+			else
+			{
+				writer.TextWriter.Write(ControlInlineStart);
 			}
 
+			writer.Write(new EnumerableAdapter(this));
+
+			if (writer.PrettyPrint)
+			{
+				writer.TextWriter.Write(ControlInlineEndFormatDebug, this.dataExpr, this.indexExpr);
+			}
+			else
+			{
+				writer.TextWriter.Write(ControlInlineEndFormat, this.dataExpr, this.indexExpr);
+			}
+		}
+
+		/// <summary>
+		/// Renders a data binding call to a named template with a nested inline anonymous template.
+		/// </summary>
+		/// <param name="writer"></param>
+		private void RenderNestedCustomControl(JsonWriter writer)
+		{
 			if (writer.PrettyPrint)
 			{
 				writer.TextWriter.Write(ControlStartDebug);
