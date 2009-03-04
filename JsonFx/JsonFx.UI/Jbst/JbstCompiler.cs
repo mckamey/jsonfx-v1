@@ -62,13 +62,13 @@ namespace JsonFx.UI.Jbst
 		private const string DeclarationFormat =
 			@"try {{
 				// setup context for declarations
-				{0}[""$jbst.init""] = function() {{
+				{0}.$$jbst_init = function() {{
 					{1}
 				}};
-				// execute in the context of template as ""this""
-				{0}[""$jbst.init""]();
+				// execute template in the context of ""this""
+				{0}.$$jbst_init();
 			}} finally {{
-				delete {0}[""$jbst.init""];
+				delete {0}.$$jbst_init;
 			}}";
 
 		private const string NamespaceFormatPrettyPrint = 
