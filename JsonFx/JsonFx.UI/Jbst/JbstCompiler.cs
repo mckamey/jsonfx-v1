@@ -60,16 +60,10 @@ namespace JsonFx.UI.Jbst
 		private const string AnonymousPrefix = "anonymous_";
 
 		private const string DeclarationFormat =
-			@"try {{
-				// setup context for declarations
-				{0}.$$jbst_init = function() {{
-					{1}
-				}};
-				// execute template in the context of ""this""
-				{0}.$$jbst_init();
-			}} finally {{
-				delete {0}.$$jbst_init;
-			}}";
+			@"// execute template in the context of ""this""
+			(function(){{
+				{1}
+			}}).call({0});";
 
 		private const string NamespaceFormatPrettyPrint = 
 @"/* namespace {0} */
@@ -594,7 +588,7 @@ if (""undefined"" === typeof {0}) {{
 					string declarations = String.Format(
 						JbstCompiler.DeclarationFormat,
 						this.Name,
-						this.Declarations.ToString());
+						this.Declarations);
 
 					if (prettyPrint)
 					{
