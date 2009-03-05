@@ -92,14 +92,44 @@ namespace JsonFx.Json
 
 		#endregion Constants
 
+		#region ReaderState
+
+		private class ReaderState
+		{
+			#region Fields
+
+			private Dictionary<Type, Dictionary<string, MemberInfo>> memberMapCache;
+			public bool AllowNullValueTypes;
+			public string TypeHintName;
+			public int Index;
+
+			#endregion Fields
+
+			#region Properties
+
+			public Dictionary<Type, Dictionary<string, MemberInfo>> MemberMapCache
+			{
+				get
+				{
+					if (this.memberMapCache == null)
+					{
+						// instantiate space for cache
+						this.memberMapCache = new Dictionary<Type, Dictionary<string, MemberInfo>>();
+					}
+					return this.memberMapCache;
+				}
+			}
+
+			#endregion Properties
+		}
+
+		#endregion ReaderState
+
 		#region Fields
 
-		private Dictionary<Type, Dictionary<string, MemberInfo>> MemberMapCache = null;
+		private readonly ReaderState State = new ReaderState();
 		private readonly string Source = null;
 		private readonly int SourceLength = 0;
-		private int index = 0;
-		private bool allowNullValueTypes = false;
-		private string typeHintName = null;
 
 		#endregion Fields
 
@@ -163,8 +193,8 @@ namespace JsonFx.Json
 		/// </remarks>
 		public bool AllowNullValueTypes
 		{
-			get { return this.allowNullValueTypes; }
-			set { this.allowNullValueTypes = value; }
+			get { return this.State.AllowNullValueTypes; }
+			set { this.State.AllowNullValueTypes = value; }
 		}
 
 		/// <summary>
@@ -172,8 +202,8 @@ namespace JsonFx.Json
 		/// </summary>
 		public string TypeHintName
 		{
-			get { return this.typeHintName; }
-			set { this.typeHintName = value; }
+			get { return this.State.TypeHintName; }
+			set { this.State.TypeHintName = value; }
 		}
 
 		#endregion Properties
@@ -195,7 +225,7 @@ namespace JsonFx.Json
 		/// <returns></returns>
 		public object Deserialize(int start)
 		{
-			this.index = start;
+			this.State.Index = start;
 			return this.Deserialize((Type)null);
 		}
 
@@ -228,7 +258,7 @@ namespace JsonFx.Json
 		/// <returns></returns>
 		public object Deserialize(int start, Type type)
 		{
-			this.index = start;
+			this.State.Index = start;
 
 			// should this run through a preliminary test here?
 			return this.Read(type, false);
@@ -241,7 +271,7 @@ namespace JsonFx.Json
 		/// <returns></returns>
 		public T Deserialize<T>(int start)
 		{
-			this.index = start;
+			this.State.Index = start;
 
 			// should this run through a preliminary test here?
 			return (T)this.Read(typeof(T), false);
@@ -276,37 +306,37 @@ namespace JsonFx.Json
 				}
 				case JsonToken.False:
 				{
-					this.index += JsonReader.LiteralFalse.Length;
+					this.State.Index += JsonReader.LiteralFalse.Length;
 					return false;
 				}
 				case JsonToken.True:
 				{
-					this.index += JsonReader.LiteralTrue.Length;
+					this.State.Index += JsonReader.LiteralTrue.Length;
 					return true;
 				}
 				case JsonToken.Null:
 				{
-					this.index += JsonReader.LiteralNull.Length;
+					this.State.Index += JsonReader.LiteralNull.Length;
 					return null;
 				}
 				case JsonToken.NaN:
 				{
-					this.index += JsonReader.LiteralNotANumber.Length;
+					this.State.Index += JsonReader.LiteralNotANumber.Length;
 					return Double.NaN;
 				}
 				case JsonToken.PositiveInfinity:
 				{
-					this.index += JsonReader.LiteralPositiveInfinity.Length;
+					this.State.Index += JsonReader.LiteralPositiveInfinity.Length;
 					return Double.PositiveInfinity;
 				}
 				case JsonToken.NegativeInfinity:
 				{
-					this.index += JsonReader.LiteralNegativeInfinity.Length;
+					this.State.Index += JsonReader.LiteralNegativeInfinity.Length;
 					return Double.NegativeInfinity;
 				}
 				case JsonToken.Undefined:
 				{
-					this.index += JsonReader.LiteralUndefined.Length;
+					this.State.Index += JsonReader.LiteralUndefined.Length;
 					return null;
 				}
 				case JsonToken.End:
@@ -319,9 +349,9 @@ namespace JsonFx.Json
 
 		private object ReadObject(Type objectType)
 		{
-			if (this.Source[this.index] != JsonReader.OperatorObjectStart)
+			if (this.Source[this.State.Index] != JsonReader.OperatorObjectStart)
 			{
-				throw new JsonDeserializationException(JsonReader.ErrorExpectedObject, this.index);
+				throw new JsonDeserializationException(JsonReader.ErrorExpectedObject, this.State.Index);
 			}
 
 			Type genericDictionaryType = null;
@@ -329,7 +359,7 @@ namespace JsonFx.Json
 			Object result;
 			if (objectType != null)
 			{
-				result = this.InstantiateObject(objectType, ref memberMap);
+				result = JsonReader.InstantiateObject(objectType, out memberMap, this.State);
 
 				if (memberMap == null)
 				{
@@ -344,7 +374,7 @@ namespace JsonFx.Json
 							{
 								throw new JsonDeserializationException(
 									String.Format(JsonReader.ErrorGenericIDictionaryKeys, objectType),
-									this.index);
+									this.State.Index);
 							}
 
 							if (genericArgs[1] != typeof(Object))
@@ -367,10 +397,10 @@ namespace JsonFx.Json
 				MemberInfo memberInfo;
 
 				// consume opening brace or delim
-				this.index++;
-				if (this.index >= this.SourceLength)
+				this.State.Index++;
+				if (this.State.Index >= this.SourceLength)
 				{
-					throw new JsonDeserializationException(JsonReader.ErrorUnterminatedObject, this.index);
+					throw new JsonDeserializationException(JsonReader.ErrorUnterminatedObject, this.State.Index);
 				}
 
 				// get next token
@@ -382,7 +412,7 @@ namespace JsonFx.Json
 
 				if (token != JsonToken.String)
 				{
-					throw new JsonDeserializationException(JsonReader.ErrorExpectedPropertyName, this.index);
+					throw new JsonDeserializationException(JsonReader.ErrorExpectedPropertyName, this.State.Index);
 				}
 
 				// parse object member value
@@ -403,14 +433,14 @@ namespace JsonFx.Json
 				token = this.Tokenize();
 				if (token != JsonToken.NameDelim)
 				{
-					throw new JsonDeserializationException(JsonReader.ErrorExpectedPropertyNameDelim, this.index);
+					throw new JsonDeserializationException(JsonReader.ErrorExpectedPropertyNameDelim, this.State.Index);
 				}
 
 				// consume delim
-				this.index++;
-				if (this.index >= this.SourceLength)
+				this.State.Index++;
+				if (this.State.Index >= this.SourceLength)
 				{
-					throw new JsonDeserializationException(JsonReader.ErrorUnterminatedObject, this.index);
+					throw new JsonDeserializationException(JsonReader.ErrorUnterminatedObject, this.State.Index);
 				}
 
 				// parse object member value
@@ -419,10 +449,10 @@ namespace JsonFx.Json
 				if (result is IDictionary)
 				{
 					if (objectType == null &&
-						!String.IsNullOrEmpty(this.typeHintName) &&
-						this.typeHintName.Equals(memberName, StringComparison.InvariantCulture))
+						!String.IsNullOrEmpty(this.State.TypeHintName) &&
+						this.State.TypeHintName.Equals(memberName, StringComparison.InvariantCulture))
 					{
-						result = this.ProcessTypeHint(ref objectType, ref memberMap, (IDictionary)result, value as string);
+						result = this.ProcessTypeHint((IDictionary)result, value as string, out objectType, out memberMap);
 					}
 					else
 					{
@@ -433,11 +463,11 @@ namespace JsonFx.Json
 				{
 					throw new JsonDeserializationException(
 						String.Format(JsonReader.ErrorGenericIDictionary, objectType),
-						this.index);
+						this.State.Index);
 				}
 				else
 				{
-					this.SetMemberValue(result, memberType, memberInfo, value);
+					JsonReader.SetMemberValue(result, memberType, memberInfo, value, this.State);
 				}
 
 				// get next token
@@ -446,20 +476,20 @@ namespace JsonFx.Json
 
 			if (token != JsonToken.ObjectEnd)
 			{
-				throw new JsonDeserializationException(JsonReader.ErrorUnterminatedObject, this.index);
+				throw new JsonDeserializationException(JsonReader.ErrorUnterminatedObject, this.State.Index);
 			}
 
 			// consume closing brace
-			this.index++;
+			this.State.Index++;
 
 			return result;
 		}
 
 		private IEnumerable ReadArray(Type arrayType)
 		{
-			if (this.Source[this.index] != JsonReader.OperatorArrayStart)
+			if (this.Source[this.State.Index] != JsonReader.OperatorArrayStart)
 			{
-				throw new JsonDeserializationException(JsonReader.ErrorExpectedArray, this.index);
+				throw new JsonDeserializationException(JsonReader.ErrorExpectedArray, this.State.Index);
 			}
 
 			bool isArrayItemTypeSet = (arrayType != null);
@@ -491,10 +521,10 @@ namespace JsonFx.Json
 			do
 			{
 				// consume opening bracket or delim
-				this.index++;
-				if (this.index >= this.SourceLength)
+				this.State.Index++;
+				if (this.State.Index >= this.SourceLength)
 				{
-					throw new JsonDeserializationException(JsonReader.ErrorUnterminatedArray, this.index);
+					throw new JsonDeserializationException(JsonReader.ErrorUnterminatedArray, this.State.Index);
 				}
 
 				// get next token
@@ -546,11 +576,11 @@ namespace JsonFx.Json
 
 			if (token != JsonToken.ArrayEnd)
 			{
-				throw new JsonDeserializationException(JsonReader.ErrorUnterminatedArray, this.index);
+				throw new JsonDeserializationException(JsonReader.ErrorUnterminatedArray, this.State.Index);
 			}
 
 			// consume closing bracket
-			this.index++;
+			this.State.Index++;
 
 			// TODO: optimize to reduce number of conversions on lists
 
@@ -571,40 +601,40 @@ namespace JsonFx.Json
 		/// <returns>string or value which is represented as a string in JSON</returns>
 		private object ReadString(Type expectedType)
 		{
-			if (this.Source[this.index] != JsonReader.OperatorStringDelim &&
-				this.Source[this.index] != JsonReader.OperatorStringDelimAlt)
+			if (this.Source[this.State.Index] != JsonReader.OperatorStringDelim &&
+				this.Source[this.State.Index] != JsonReader.OperatorStringDelimAlt)
 			{
-				throw new JsonDeserializationException(JsonReader.ErrorExpectedString, this.index);
+				throw new JsonDeserializationException(JsonReader.ErrorExpectedString, this.State.Index);
 			}
 
-			char startStringDelim = this.Source[this.index];
+			char startStringDelim = this.Source[this.State.Index];
 
 			// consume opening quote
-			this.index++;
-			if (this.index >= this.SourceLength)
+			this.State.Index++;
+			if (this.State.Index >= this.SourceLength)
 			{
-				throw new JsonDeserializationException(JsonReader.ErrorUnterminatedString, this.index);
+				throw new JsonDeserializationException(JsonReader.ErrorUnterminatedString, this.State.Index);
 			}
 
-			int start = this.index;
+			int start = this.State.Index;
 			StringBuilder builder = new StringBuilder();
 
-			while (this.Source[this.index] != startStringDelim)
+			while (this.Source[this.State.Index] != startStringDelim)
 			{
-				if (this.Source[this.index] == JsonReader.OperatorCharEscape)
+				if (this.Source[this.State.Index] == JsonReader.OperatorCharEscape)
 				{
 					// copy chunk before decoding
-					builder.Append(this.Source, start, this.index - start);
+					builder.Append(this.Source, start, this.State.Index - start);
 
 					// consume escape char
-					this.index++;
-					if (this.index >= this.SourceLength)
+					this.State.Index++;
+					if (this.State.Index >= this.SourceLength)
 					{
-						throw new JsonDeserializationException(JsonReader.ErrorUnterminatedString, this.index);
+						throw new JsonDeserializationException(JsonReader.ErrorUnterminatedString, this.State.Index);
 					}
 
 					// decode
-					switch (this.Source[this.index])
+					switch (this.Source[this.State.Index])
 					{
 						case '0':
 						{
@@ -649,60 +679,60 @@ namespace JsonFx.Json
 
 							// unicode ordinal
 							int utf16;
-							if (this.index+4 < this.SourceLength &&
+							if (this.State.Index+4 < this.SourceLength &&
 								Int32.TryParse(
-									this.Source.Substring(this.index+1, 4),
+									this.Source.Substring(this.State.Index+1, 4),
 									NumberStyles.AllowHexSpecifier,
 									NumberFormatInfo.InvariantInfo,
 									out utf16))
 							{
 								builder.Append(Char.ConvertFromUtf32(utf16));
-								this.index += 4;
+								this.State.Index += 4;
 							}
 							else
 							{
 								// using FireFox style recovery, if not a valid hex
 								// escape sequence then treat as single escaped 'u'
 								// followed by rest of string
-								builder.Append(this.Source[this.index]);
+								builder.Append(this.Source[this.State.Index]);
 							}
 							break;
 						}
 						default:
 						{
-							builder.Append(this.Source[this.index]);
+							builder.Append(this.Source[this.State.Index]);
 							break;
 						}
 					}
 
-					this.index++;
-					if (this.index >= this.SourceLength)
+					this.State.Index++;
+					if (this.State.Index >= this.SourceLength)
 					{
-						throw new JsonDeserializationException(JsonReader.ErrorUnterminatedString, this.index);
+						throw new JsonDeserializationException(JsonReader.ErrorUnterminatedString, this.State.Index);
 					}
 
-					start = this.index;
+					start = this.State.Index;
 				}
 				else
 				{
 					// next char
-					this.index++;
-					if (this.index >= this.SourceLength)
+					this.State.Index++;
+					if (this.State.Index >= this.SourceLength)
 					{
-						throw new JsonDeserializationException(JsonReader.ErrorUnterminatedString, this.index);
+						throw new JsonDeserializationException(JsonReader.ErrorUnterminatedString, this.State.Index);
 					}
 				}
 			}
 
 			// copy rest of string
-			builder.Append(this.Source, start, this.index-start);
+			builder.Append(this.Source, start, this.State.Index-start);
 
 			// consume closing quote
-			this.index++;
+			this.State.Index++;
 
 			if (expectedType != null && expectedType != typeof(String))
 			{
-				return JsonReader.CoerceType(expectedType, builder.ToString(), this.index, this.AllowNullValueTypes);
+				return JsonReader.CoerceType(expectedType, builder.ToString(), this.State);
 			}
 
 			return builder.ToString();
@@ -712,94 +742,94 @@ namespace JsonFx.Json
 		{
 			bool hasDecimal = false;
 			bool hasExponent = false;
-			int start = this.index;
+			int start = this.State.Index;
 			int precision = 0;
 			int exponent = 0;
 
 			// optional minus part
-			if (this.Source[this.index] == JsonReader.OperatorNegate)
+			if (this.Source[this.State.Index] == JsonReader.OperatorNegate)
 			{
 				// consume sign
-				this.index++;
-				if (this.index >= this.SourceLength || !Char.IsDigit(this.Source[this.index]))
-					throw new JsonDeserializationException(JsonReader.ErrorIllegalNumber, this.index);
+				this.State.Index++;
+				if (this.State.Index >= this.SourceLength || !Char.IsDigit(this.Source[this.State.Index]))
+					throw new JsonDeserializationException(JsonReader.ErrorIllegalNumber, this.State.Index);
 			}
 
 			// integer part
-			while ((this.index < this.SourceLength) && Char.IsDigit(this.Source[this.index]))
+			while ((this.State.Index < this.SourceLength) && Char.IsDigit(this.Source[this.State.Index]))
 			{
 				// consume digit
-				this.index++;
+				this.State.Index++;
 			}
 
 			// optional decimal part
-			if ((this.index < this.SourceLength) && (this.Source[this.index] == '.'))
+			if ((this.State.Index < this.SourceLength) && (this.Source[this.State.Index] == '.'))
 			{
 				hasDecimal = true;
 
 				// consume decimal
-				this.index++;
-				if (this.index >= this.SourceLength || !Char.IsDigit(this.Source[this.index]))
+				this.State.Index++;
+				if (this.State.Index >= this.SourceLength || !Char.IsDigit(this.Source[this.State.Index]))
 				{
-					throw new JsonDeserializationException(JsonReader.ErrorIllegalNumber, this.index);
+					throw new JsonDeserializationException(JsonReader.ErrorIllegalNumber, this.State.Index);
 				}
 
 				// fraction part
-				while (this.index < this.SourceLength && Char.IsDigit(this.Source[this.index]))
+				while (this.State.Index < this.SourceLength && Char.IsDigit(this.Source[this.State.Index]))
 				{
 					// consume digit
-					this.index++;
+					this.State.Index++;
 				}
 			}
 
 			// note the number of significant digits
-			precision = this.index-start - (hasDecimal ? 1 : 0);
+			precision = this.State.Index-start - (hasDecimal ? 1 : 0);
 
 			// optional exponent part
-			if (this.index < this.SourceLength && (this.Source[this.index] == 'e' || this.Source[this.index] == 'E'))
+			if (this.State.Index < this.SourceLength && (this.Source[this.State.Index] == 'e' || this.Source[this.State.Index] == 'E'))
 			{
 				hasExponent = true;
 
 				// consume 'e'
-				this.index++;
-				if (this.index >= this.SourceLength)
+				this.State.Index++;
+				if (this.State.Index >= this.SourceLength)
 				{
-					throw new JsonDeserializationException(JsonReader.ErrorIllegalNumber, this.index);
+					throw new JsonDeserializationException(JsonReader.ErrorIllegalNumber, this.State.Index);
 				}
 
-				int expStart = this.index;
+				int expStart = this.State.Index;
 
 				// optional minus/plus part
-				if (this.Source[this.index] == JsonReader.OperatorNegate || this.Source[this.index] == JsonReader.OperatorUnaryPlus)
+				if (this.Source[this.State.Index] == JsonReader.OperatorNegate || this.Source[this.State.Index] == JsonReader.OperatorUnaryPlus)
 				{
 					// consume sign
-					this.index++;
-					if (this.index >= this.SourceLength || !Char.IsDigit(this.Source[this.index]))
+					this.State.Index++;
+					if (this.State.Index >= this.SourceLength || !Char.IsDigit(this.Source[this.State.Index]))
 					{
-						throw new JsonDeserializationException(JsonReader.ErrorIllegalNumber, this.index);
+						throw new JsonDeserializationException(JsonReader.ErrorIllegalNumber, this.State.Index);
 					}
 				}
 				else
 				{
-					if (!Char.IsDigit(this.Source[this.index]))
+					if (!Char.IsDigit(this.Source[this.State.Index]))
 					{
-						throw new JsonDeserializationException(JsonReader.ErrorIllegalNumber, this.index);
+						throw new JsonDeserializationException(JsonReader.ErrorIllegalNumber, this.State.Index);
 					}
 				}
 
 				// exp part
-				while (this.index < this.SourceLength && Char.IsDigit(this.Source[this.index]))
+				while (this.State.Index < this.SourceLength && Char.IsDigit(this.Source[this.State.Index]))
 				{
 					// consume digit
-					this.index++;
+					this.State.Index++;
 				}
 
-				Int32.TryParse(this.Source.Substring(expStart, this.index-expStart), NumberStyles.Integer,
+				Int32.TryParse(this.Source.Substring(expStart, this.State.Index-expStart), NumberStyles.Integer,
 					NumberFormatInfo.InvariantInfo, out exponent);
 			}
 
 			// at this point, we have the full number string and know its characteristics
-			string numberString = this.Source.Substring(start, this.index - start);
+			string numberString = this.Source.Substring(start, this.State.Index - start);
 
 			if (!hasDecimal && !hasExponent && precision < 19)
 			{
@@ -813,7 +843,7 @@ namespace JsonFx.Json
 
 				if (expectedType != null)
 				{
-					return JsonReader.CoerceType(expectedType, number, this.index, this.AllowNullValueTypes);
+					return JsonReader.CoerceType(expectedType, number, this.State);
 				}
 
 				if (number >= Int32.MinValue && number <= Int32.MaxValue)
@@ -851,7 +881,7 @@ namespace JsonFx.Json
 
 				if (expectedType != null)
 				{
-					return JsonReader.CoerceType(expectedType, number, this.index, this.AllowNullValueTypes);
+					return JsonReader.CoerceType(expectedType, number, this.State);
 				}
 
 				return number;
@@ -937,53 +967,43 @@ namespace JsonFx.Json
 		/// If a Type Hint is present then this method attempts to
 		/// use it and move any previously parsed data over.
 		/// </summary>
-		/// <param name="objectType">reference to the objectType</param>
-		/// <param name="memberMap">reference to the memberMap</param>
 		/// <param name="result">the previous result</param>
 		/// <param name="typeInfo">the type info string to use</param>
+		/// <param name="objectType">reference to the objectType</param>
+		/// <param name="memberMap">reference to the memberMap</param>
 		/// <returns></returns>
 		private Object ProcessTypeHint(
-			ref Type objectType,
-			ref Dictionary<string, MemberInfo> memberMap,
-			IDictionary result,
-			string typeInfo)
+			IDictionary result, 
+			string typeInfo, 
+			out Type objectType, 
+			out Dictionary<string, MemberInfo> memberMap)
 		{
 			if (String.IsNullOrEmpty(typeInfo))
 			{
+				objectType = null;
+				memberMap = null;
 				return result;
 			}
 
 			Type hintedType = Type.GetType(typeInfo, false);
 			if (hintedType == null)
 			{
+				objectType = null;
+				memberMap = null;
 				return result;
 			}
+
 			objectType = hintedType;
-
-			object newResult = this.InstantiateObject(hintedType, ref memberMap);
-			if (memberMap != null)
-			{
-				Type memberType;
-				MemberInfo memberInfo;
-
-				// copy any values into new object
-				foreach (object key in result.Keys)
-				{
-					JsonReader.GetMemberInfo(memberMap, key as String, out memberType, out memberInfo);
-					this.SetMemberValue(newResult, memberType, memberInfo, result[key]);
-				}
-			}
-
-			return newResult;
+			return JsonReader.CoerceType(hintedType, result, out memberMap, this.State);
 		}
 
-		private Object InstantiateObject(Type objectType, ref Dictionary<string, MemberInfo> memberMap)
+		private static Object InstantiateObject(Type objectType, out Dictionary<string, MemberInfo> memberMap, ReaderState state)
 		{
 			if (objectType.IsInterface || objectType.IsAbstract || objectType.IsValueType)
 			{
 				throw new JsonDeserializationException(
 					String.Format(JsonReader.ErrorCannotInstantiate, objectType.FullName),
-					this.index);
+					state.Index);
 			}
 
 			ConstructorInfo ctor = objectType.GetConstructor(Type.EmptyTypes);
@@ -991,7 +1011,7 @@ namespace JsonFx.Json
 			{
 				throw new JsonDeserializationException(
 					String.Format(JsonReader.ErrorDefaultCtor, objectType.FullName),
-					this.index);
+					state.Index);
 			}
 			Object result;
 			try
@@ -1003,30 +1023,29 @@ namespace JsonFx.Json
 			{
 				if (ex.InnerException != null)
 				{
-					throw new JsonDeserializationException(ex.InnerException.Message, ex.InnerException, this.index);
+					throw new JsonDeserializationException(ex.InnerException.Message, ex.InnerException, state.Index);
 				}
-				throw new JsonDeserializationException("Error instantiating "+objectType.FullName, ex, this.index);
+				throw new JsonDeserializationException("Error instantiating " + objectType.FullName, ex, state.Index);
 			}
 
 			// don't incurr the cost of member map for dictionaries
-			if (!typeof(IDictionary).IsAssignableFrom(objectType))
+			if (typeof(IDictionary).IsAssignableFrom(objectType))
 			{
-				memberMap = this.CreateMemberMap(objectType);
+				memberMap = null;
+			}
+			else
+			{
+				memberMap = CreateMemberMap(objectType, state);
 			}
 			return result;
 		}
 
-		private Dictionary<string, MemberInfo> CreateMemberMap(Type objectType)
+		private static Dictionary<string, MemberInfo> CreateMemberMap(Type objectType, ReaderState state)
 		{
-			if (this.MemberMapCache == null)
-			{
-				// instantiate space for cache
-				this.MemberMapCache = new Dictionary<Type, Dictionary<string, MemberInfo>>();
-			}
-			else if (this.MemberMapCache.ContainsKey(objectType))
+			if (state.MemberMapCache.ContainsKey(objectType))
 			{
 				// map was stored in cache
-				return this.MemberMapCache[objectType];
+				return state.MemberMapCache[objectType];
 			}
 
 			// create a new map
@@ -1083,7 +1102,7 @@ namespace JsonFx.Json
 			}
 
 			// store in cache for repeated usage
-			this.MemberMapCache[objectType] = memberMap;
+			state.MemberMapCache[objectType] = memberMap;
 
 			return memberMap;
 		}
@@ -1123,14 +1142,14 @@ namespace JsonFx.Json
 		/// <param name="memberType"></param>
 		/// <param name="memberInfo"></param>
 		/// <param name="value"></param>
-		private void SetMemberValue(Object result, Type memberType, MemberInfo memberInfo, object value)
+		private static void SetMemberValue(Object result, Type memberType, MemberInfo memberInfo, object value, ReaderState state)
 		{
 			if (memberInfo is PropertyInfo)
 			{
 				// set value of public property
 				((PropertyInfo)memberInfo).SetValue(
 					result,
-					JsonReader.CoerceType(memberType, value, this.index, this.AllowNullValueTypes),
+					JsonReader.CoerceType(memberType, value, state),
 					null);
 			}
 			else if (memberInfo is FieldInfo)
@@ -1138,7 +1157,7 @@ namespace JsonFx.Json
 				// set value of public field
 				((FieldInfo)memberInfo).SetValue(
 					result,
-					JsonReader.CoerceType(memberType, value, this.index, this.AllowNullValueTypes));
+					JsonReader.CoerceType(memberType, value, state));
 			}
 
 			// all other values are ignored
@@ -1157,7 +1176,7 @@ namespace JsonFx.Json
 		/// <returns></returns>
 		public static T CoerceType<T>(object value, T typeToMatch)
 		{
-			return (T)JsonReader.CoerceType(typeof(T), value, -1, false);
+			return (T)JsonReader.CoerceType(typeof(T), value, new ReaderState());
 		}
 
 		/// <summary>
@@ -1168,7 +1187,7 @@ namespace JsonFx.Json
 		/// <returns></returns>
 		public static T CoerceType<T>(object value)
 		{
-			return (T)JsonReader.CoerceType(typeof(T), value, -1, false);
+			return (T)JsonReader.CoerceType(typeof(T), value, new ReaderState());
 		}
 
 		/// <summary>
@@ -1179,19 +1198,19 @@ namespace JsonFx.Json
 		/// <returns></returns>
 		public static object CoerceType(Type targetType, object value)
 		{
-			return JsonReader.CoerceType(targetType, value, -1, false);
+			return JsonReader.CoerceType(targetType, value, new ReaderState());
 		}
 
-		private static object CoerceType(Type targetType, object value, int index, bool allowNullValueTypes)
+		private static object CoerceType(Type targetType, object value, ReaderState state)
 		{
 			bool isNullable = JsonReader.IsNullable(targetType);
 			if (value == null)
 			{
-				if (allowNullValueTypes &&
+				if (state.AllowNullValueTypes &&
 					targetType.IsValueType &&
 					!isNullable)
 				{
-					throw new JsonDeserializationException(String.Format(JsonReader.ErrorNullValueType, targetType.FullName), index);
+					throw new JsonDeserializationException(String.Format(JsonReader.ErrorNullValueType, targetType.FullName), state.Index);
 				}
 				return value;
 			}
@@ -1239,10 +1258,16 @@ namespace JsonFx.Json
 				}
 			}
 
+			if (value is IDictionary)
+			{
+				Dictionary<string, MemberInfo> memberMap;
+				return JsonReader.CoerceType(targetType, (IDictionary)value, out memberMap, state);
+			}
+
 			if (typeof(IEnumerable).IsAssignableFrom(targetType) &&
 				typeof(IEnumerable).IsAssignableFrom(actualType))
 			{
-				return JsonReader.CoerceArray(targetType, actualType, value, index, allowNullValueTypes);
+				return JsonReader.CoerceArray(targetType, actualType, value, state);
 			}
 
 			if (value is String)
@@ -1285,10 +1310,9 @@ namespace JsonFx.Json
 					return new Version((string)value);
 				}
 			}
-
 			else if (targetType == typeof(TimeSpan))
 			{
-				return new TimeSpan((long)JsonReader.CoerceType(typeof(Int64), value, index, allowNullValueTypes));
+				return new TimeSpan((long)JsonReader.CoerceType(typeof(Int64), value, state));
 			}
 
 			TypeConverter converter = TypeDescriptor.GetConverter(targetType);
@@ -1306,7 +1330,25 @@ namespace JsonFx.Json
 			return Convert.ChangeType(value, targetType);
 		}
 
-		private static object CoerceArray(Type targetType, Type arrayType, object value, int index, bool allowNullValueTypes)
+		private static object CoerceType(Type targetType, IDictionary value, out Dictionary<string, MemberInfo> memberMap, ReaderState state)
+		{
+			object newValue = JsonReader.InstantiateObject(targetType, out memberMap, state);
+			if (memberMap != null)
+			{
+				Type memberType;
+				MemberInfo memberInfo;
+
+				// copy any values into new object
+				foreach (object key in value.Keys)
+				{
+					JsonReader.GetMemberInfo(memberMap, key as String, out memberType, out memberInfo);
+					JsonReader.SetMemberValue(newValue, memberType, memberInfo, value[key], state);
+				}
+			}
+			return newValue;
+		}
+
+		private static object CoerceArray(Type targetType, Type arrayType, object value, ReaderState state)
 		{
 			// targetType serializes as a JSON array but is not an array
 			// assume is an ICollection / IEnumerable with AddRange, Add,
@@ -1349,7 +1391,7 @@ namespace JsonFx.Json
 			{
 				throw new JsonDeserializationException(
 					String.Format(JsonReader.ErrorDefaultCtor, targetType.FullName),
-					index);
+					state.Index);
 			}
 			object collection;
 			try
@@ -1361,9 +1403,9 @@ namespace JsonFx.Json
 			{
 				if (ex.InnerException != null)
 				{
-					throw new JsonDeserializationException(ex.InnerException.Message, ex.InnerException, index);
+					throw new JsonDeserializationException(ex.InnerException.Message, ex.InnerException, state.Index);
 				}
-				throw new JsonDeserializationException("Error instantiating "+targetType.FullName, ex, index);
+				throw new JsonDeserializationException("Error instantiating "+targetType.FullName, ex, state.Index);
 			}
 
 			// many ICollection types have an AddRange method
@@ -1388,9 +1430,9 @@ namespace JsonFx.Json
 				{
 					if (ex.InnerException != null)
 					{
-						throw new JsonDeserializationException(ex.InnerException.Message, ex.InnerException, index);
+						throw new JsonDeserializationException(ex.InnerException.Message, ex.InnerException, state.Index);
 					}
-					throw new JsonDeserializationException("Error calling AddRange on "+targetType.FullName, ex, index);
+					throw new JsonDeserializationException("Error calling AddRange on " + targetType.FullName, ex, state.Index);
 				}
 				return collection;
 			}
@@ -1414,16 +1456,16 @@ namespace JsonFx.Json
 							method.Invoke(
 								collection,
 								new object[] {
-									JsonReader.CoerceType(paramType, item, index, allowNullValueTypes)
+									JsonReader.CoerceType(paramType, item, state)
 								});
 						}
 						catch (TargetInvocationException ex)
 						{
 							if (ex.InnerException != null)
 							{
-								throw new JsonDeserializationException(ex.InnerException.Message, ex.InnerException, index);
+								throw new JsonDeserializationException(ex.InnerException.Message, ex.InnerException, state.Index);
 							}
-							throw new JsonDeserializationException("Error calling Add on "+targetType.FullName, ex, index);
+							throw new JsonDeserializationException("Error calling Add on " + targetType.FullName, ex, state.Index);
 						}
 					}
 					return collection;
@@ -1445,16 +1487,16 @@ namespace JsonFx.Json
 
 		private JsonToken Tokenize()
 		{
-			if (this.index >= this.SourceLength)
+			if (this.State.Index >= this.SourceLength)
 			{
 				return JsonToken.End;
 			}
 
 			// skip whitespace
-			while (Char.IsWhiteSpace(this.Source[this.index]))
+			while (Char.IsWhiteSpace(this.Source[this.State.Index]))
 			{
-				this.index++;
-				if (this.index >= this.SourceLength)
+				this.State.Index++;
+				if (this.State.Index >= this.SourceLength)
 				{
 					return JsonToken.End;
 				}
@@ -1463,52 +1505,52 @@ namespace JsonFx.Json
 			#region Skip Comments
 
 			// skip block and line comments
-			if (this.Source[this.index] == JsonReader.CommentStart[0])
+			if (this.Source[this.State.Index] == JsonReader.CommentStart[0])
 			{
-				if (this.index+1 >= this.SourceLength)
+				if (this.State.Index+1 >= this.SourceLength)
 				{
-					throw new JsonDeserializationException(JsonReader.ErrorUnrecognizedToken, this.index);
+					throw new JsonDeserializationException(JsonReader.ErrorUnrecognizedToken, this.State.Index);
 				}
 
 				// skip over first char of comment start
-				this.index++;
+				this.State.Index++;
 
 				bool isBlockComment = false;
-				if (this.Source[this.index] == JsonReader.CommentStart[1])
+				if (this.Source[this.State.Index] == JsonReader.CommentStart[1])
 				{
 					isBlockComment = true;
 				}
-				else if (this.Source[this.index] != JsonReader.CommentLine[1])
+				else if (this.Source[this.State.Index] != JsonReader.CommentLine[1])
 				{
-					throw new JsonDeserializationException(JsonReader.ErrorUnrecognizedToken, this.index);
+					throw new JsonDeserializationException(JsonReader.ErrorUnrecognizedToken, this.State.Index);
 				}
 				// skip over second char of comment start
-				this.index++;
+				this.State.Index++;
 
 				if (isBlockComment)
 				{
 					// store index for unterminated case
-					int commentStart = this.index-2;
+					int commentStart = this.State.Index-2;
 
-					if (this.index+1 >= this.SourceLength)
+					if (this.State.Index+1 >= this.SourceLength)
 					{
 						throw new JsonDeserializationException(JsonReader.ErrorUnterminatedComment, commentStart);
 					}
 
 					// skip over everything until reach block comment ending
-					while (this.Source[this.index] != JsonReader.CommentEnd[0] ||
-						this.Source[this.index+1] != JsonReader.CommentEnd[1])
+					while (this.Source[this.State.Index] != JsonReader.CommentEnd[0] ||
+						this.Source[this.State.Index+1] != JsonReader.CommentEnd[1])
 					{
-						this.index++;
-						if (this.index+1 >= this.SourceLength)
+						this.State.Index++;
+						if (this.State.Index+1 >= this.SourceLength)
 						{
 							throw new JsonDeserializationException(JsonReader.ErrorUnterminatedComment, commentStart);
 						}
 					}
 
 					// skip block comment end token
-					this.index += 2;
-					if (this.index >= this.SourceLength)
+					this.State.Index += 2;
+					if (this.State.Index >= this.SourceLength)
 					{
 						return JsonToken.End;
 					}
@@ -1516,10 +1558,10 @@ namespace JsonFx.Json
 				else
 				{
 					// skip over everything until reach line ending
-					while (JsonReader.LineEndings.IndexOf(this.Source[this.index]) < 0)
+					while (JsonReader.LineEndings.IndexOf(this.Source[this.State.Index]) < 0)
 					{
-						this.index++;
-						if (this.index >= this.SourceLength)
+						this.State.Index++;
+						if (this.State.Index >= this.SourceLength)
 						{
 							return JsonToken.End;
 						}
@@ -1527,10 +1569,10 @@ namespace JsonFx.Json
 				}
 
 				// skip whitespace again
-				while (Char.IsWhiteSpace(this.Source[this.index]))
+				while (Char.IsWhiteSpace(this.Source[this.State.Index]))
 				{
-					this.index++;
-					if (this.index >= this.SourceLength)
+					this.State.Index++;
+					if (this.State.Index >= this.SourceLength)
 					{
 						return JsonToken.End;
 					}
@@ -1540,16 +1582,16 @@ namespace JsonFx.Json
 			#endregion Skip Comments
 
 			// consume positive signing (as is extraneous)
-			if (this.Source[this.index] == JsonReader.OperatorUnaryPlus)
+			if (this.Source[this.State.Index] == JsonReader.OperatorUnaryPlus)
 			{
-				this.index++;
-				if (this.index >= this.SourceLength)
+				this.State.Index++;
+				if (this.State.Index >= this.SourceLength)
 				{
 					return JsonToken.End;
 				}
 			}
 
-			switch (this.Source[this.index])
+			switch (this.Source[this.State.Index])
 			{
 				case JsonReader.OperatorArrayStart:
 				{
@@ -1587,8 +1629,8 @@ namespace JsonFx.Json
 			}
 
 			// number
-			if (Char.IsDigit(this.Source[this.index]) ||
-				((this.Source[this.index] == JsonReader.OperatorNegate) && (this.index+1 < this.SourceLength) && Char.IsDigit(this.Source[this.index+1])))
+			if (Char.IsDigit(this.Source[this.State.Index]) ||
+				((this.Source[this.State.Index] == JsonReader.OperatorNegate) && (this.State.Index+1 < this.SourceLength) && Char.IsDigit(this.Source[this.State.Index+1])))
 			{
 				return JsonToken.Number;
 			}
@@ -1635,7 +1677,7 @@ namespace JsonFx.Json
 				return JsonToken.Undefined;
 			}
 
-			throw new JsonDeserializationException(JsonReader.ErrorUnrecognizedToken, this.index);
+			throw new JsonDeserializationException(JsonReader.ErrorUnrecognizedToken, this.State.Index);
 		}
 
 		/// <summary>
@@ -1646,7 +1688,7 @@ namespace JsonFx.Json
 		private bool MatchLiteral(string literal)
 		{
 			int literalLength = literal.Length;
-			for (int i=0, j=this.index; i<literalLength && j<this.SourceLength; i++, j++)
+			for (int i=0, j=this.State.Index; i<literalLength && j<this.SourceLength; i++, j++)
 			{
 				if (literal[i] != this.Source[j])
 				{
