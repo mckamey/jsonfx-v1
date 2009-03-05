@@ -387,7 +387,7 @@ namespace JsonFx.Json
 				if (genericDictionaryType == null && memberMap != null)
 				{
 					// determine the type of the property/field
-					TypeCoercionUtility.GetMemberInfo(memberMap, memberName, out memberType, out memberInfo);
+					memberType = TypeCoercionUtility.GetMemberInfo(memberMap, memberName, out memberInfo);
 				}
 				else
 				{
@@ -1309,7 +1309,7 @@ namespace JsonFx.Json
 				}
 				else
 				{
-					memberMap = CreateMemberMap(objectType);
+					memberMap = this.CreateMemberMap(objectType);
 				}
 				return result;
 			}
@@ -1381,15 +1381,11 @@ namespace JsonFx.Json
 				return memberMap;
 			}
 
-			internal static void GetMemberInfo(
+			internal static Type GetMemberInfo(
 				Dictionary<string, MemberInfo> memberMap,
 				string memberName,
-				out Type memberType,
 				out MemberInfo memberInfo)
 			{
-				memberType = null;
-				memberInfo = null;
-
 				if (memberMap != null &&
 					memberMap.ContainsKey(memberName))
 				{
@@ -1399,14 +1395,17 @@ namespace JsonFx.Json
 					if (memberInfo is PropertyInfo)
 					{
 						// maps to public property
-						memberType = ((PropertyInfo)memberInfo).PropertyType;
+						return ((PropertyInfo)memberInfo).PropertyType;
 					}
 					else if (memberInfo is FieldInfo)
 					{
 						// maps to public field
-						memberType = ((FieldInfo)memberInfo).FieldType;
+						return ((FieldInfo)memberInfo).FieldType;
 					}
 				}
+
+				memberInfo = null;
+				return null;
 			}
 
 			/// <summary>
@@ -1584,13 +1583,11 @@ namespace JsonFx.Json
 				object newValue = this.InstantiateObject(targetType, out memberMap);
 				if (memberMap != null)
 				{
-					Type memberType;
-					MemberInfo memberInfo;
-
 					// copy any values into new object
 					foreach (object key in value.Keys)
 					{
-						TypeCoercionUtility.GetMemberInfo(memberMap, key as String, out memberType, out memberInfo);
+						MemberInfo memberInfo;
+						Type memberType = TypeCoercionUtility.GetMemberInfo(memberMap, key as String, out memberInfo);
 						this.SetMemberValue(newValue, memberType, memberInfo, value[key]);
 					}
 				}
