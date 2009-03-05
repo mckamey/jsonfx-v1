@@ -1,5 +1,9 @@
 Release History
 
+v1.0.0903.0509
+- refactored type-coercion code out of JsonReader into utility class
+- improved type coercion between sequences of strongly types objects
+
 v1.0.0903.0408
 - added ability to specify inline anonymous templates in JBST using declarative <jbst:control></jbst:control> syntax
 - cleaned up calling template parts in the context of "this"
