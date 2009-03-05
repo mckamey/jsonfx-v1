@@ -89,40 +89,6 @@ namespace JsonFx.Json
 
 		#endregion Constants
 
-		#region ReaderState
-
-		private class ReaderState
-		{
-			#region Fields
-
-			private Dictionary<Type, Dictionary<string, MemberInfo>> memberMapCache;
-
-			internal bool AllowNullValueTypes;
-			internal string TypeHintName;
-			internal int Index;
-
-			#endregion Fields
-
-			#region Properties
-
-			internal Dictionary<Type, Dictionary<string, MemberInfo>> MemberMapCache
-			{
-				get
-				{
-					if (this.memberMapCache == null)
-					{
-						// instantiate space for cache
-						this.memberMapCache = new Dictionary<Type, Dictionary<string, MemberInfo>>();
-					}
-					return this.memberMapCache;
-				}
-			}
-
-			#endregion Properties
-		}
-
-		#endregion ReaderState
-
 		#region Fields
 
 		private readonly ReaderState State = new ReaderState();
@@ -1220,7 +1186,41 @@ namespace JsonFx.Json
 
 		#endregion Type Methods
 
-		#region TypeHelper
+		#region ReaderState
+
+		private class ReaderState
+		{
+			#region Fields
+
+			private Dictionary<Type, Dictionary<string, MemberInfo>> memberMapCache;
+
+			internal bool AllowNullValueTypes;
+			internal string TypeHintName;
+			internal int Index;
+
+			#endregion Fields
+
+			#region Properties
+
+			internal Dictionary<Type, Dictionary<string, MemberInfo>> MemberMapCache
+			{
+				get
+				{
+					if (this.memberMapCache == null)
+					{
+						// instantiate space for cache
+						this.memberMapCache = new Dictionary<Type, Dictionary<string, MemberInfo>>();
+					}
+					return this.memberMapCache;
+				}
+			}
+
+			#endregion Properties
+		}
+
+		#endregion ReaderState
+
+		#region TypeCoercionUtility
 
 		/// <summary>
 		/// Utility for forcing conversion between types
@@ -1766,6 +1766,6 @@ namespace JsonFx.Json
 			#endregion Type Methods
 		}
 
-		#endregion TypeHelper
+		#endregion TypeCoercionUtility
 	}
 }
