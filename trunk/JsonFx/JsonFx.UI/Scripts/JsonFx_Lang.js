@@ -4,7 +4,7 @@
 	client-size globalization support
 
 	Created: 2008-09-04-0845
-	Modified: 2009-02-01-0946
+	Modified: 2009-03-07-1044
 
 	Copyright (c)2006-2009 Stephen M. McKamey
 	Distributed under an open-source license: http://jsonfx.net/license
@@ -89,14 +89,15 @@ if ("undefined" === typeof JsonFx.Lang) {
 			return lang;
 		};
 
-//		if ("undefined" !== typeof window.Resources) {
-//			// store to be able to revert
-//			this._Resources = window.Resources;
-//		}
-
-//		window.Resources = rsrcG;
+		// get as global Resources object
+		/*object*/ this.getAll = function() {
+			return rsrcG;
+		};
 	};
 
 	/*singleton, destroy the ctor*/
 	JsonFx.Lang = new JsonFx.Lang();
+
+	// uncomment to access like .NET Resources object
+//	window.Resources = JsonFx.Lang.getAll();
 }
