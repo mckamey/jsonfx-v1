@@ -5,6 +5,7 @@ v1.0.0903.07xx
 - where this.index is the current data index, this.count is the number of data items being bound
 - reduced extraneous whitespace nodes around templates
 - added unwrapping of documentFragment results when only contain single element
+- improved parser's ability to understand difference between tags and unescaped less-than literals
 - updated StarterKit documentation
 
 v1.0.0903.0509
