@@ -1,8 +1,13 @@
 Release History
 
+v1.0.0903.07xx
+- add new intrinsic member to JBSTs: this.count
+- where this.index is the current data index, this.count is the number of data items being bound
+- updated StarterKit documentation
+
 v1.0.0903.0509
-- refactored type-coercion code out of JsonReader into utility class
 - improved type coercion between sequences of strongly types objects
+- refactored type-coercion code out of JsonReader into utility class
 
 v1.0.0903.0408
 - added ability to specify inline anonymous templates in JBST using declarative <jbst:control></jbst:control> syntax
