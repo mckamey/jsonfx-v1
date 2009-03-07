@@ -3,6 +3,8 @@ Release History
 v1.0.0903.07xx
 - add new intrinsic member to JBSTs: this.count
 - where this.index is the current data index, this.count is the number of data items being bound
+- reduced extraneous whitespace nodes around templates
+- added unwrapping of documentFragment results when only contain single element
 - updated StarterKit documentation
 
 v1.0.0903.0509

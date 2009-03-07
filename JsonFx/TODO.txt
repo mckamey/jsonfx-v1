@@ -1,4 +1,4 @@
-2009-03-07 @ 08:34
+2009-03-07 @ 11:51
 
 - explain difference between JsonFx.UI.Binding vs. jQuery.ready
 - explain how to switch templates in list JBSTs
@@ -8,7 +8,6 @@
 - figure out pattern for creating closures in DOM events without behavior binding
 
 - BUG: something looking like a tag, e.g. "for (var i=0;i<total; i++)", inside a <script> block breaks the block
-- Solve extra (unwanted) whitespace around template (i.e. if around template then just trim)
 - consider how to do a wrapper around every two elements (e.g. rows of two cells)
 
 - release the stand-alone JBST compiler as Console adapter for the JsonFx.UI.Jbst.JbstCompiler
