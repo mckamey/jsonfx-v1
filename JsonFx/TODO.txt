@@ -42,10 +42,6 @@ ________________________________________________________________________________
 	- http://blogs.msdn.com/webdevtools/archive/2007/11/06/jscript-intellisense-a-reference-for-the-reference-tag.aspx
 	- http://blogs.msdn.com/webdevtools/archive/tags/IntelliSense/default.aspx
 
-- JSON-RPC debug
-	- Need to disable Ajax timeout on debugging.  Perhaps switched on a JsonFx setting for isDebug.
-	- StackTrace on non-debug builds of JsonError.  Needs to be a switch of some kind to enable this as most people will have Signed build.
-
 - customize VS templates
 	http://msdn.microsoft.com/en-us/library/ms185314(VS.80).aspx
 	http://msdn.microsoft.com/en-us/library/ms246580(VS.80).aspx
@@ -62,11 +58,6 @@ ________________________________________________________________________________
 	see: http://www.jsptut.com/
 	see: http://java.sun.com/products/jsp/pdf/card11.pdf
 	see: http://domscripting.com/presentations/fowa07/slides/03_data_formats.html
-
-- add delay signing of JsonFx assemblies
-	http://blogs.msdn.com/shawnfa/archive/2006/04/24/582278.aspx
-	http://bloggingabout.net/blogs/ramon/archive/2005/12/26/sign-assembly-with-microsoft-visual-csharp-2005-express-edition.aspx
-	http://dougrohm.com/blog/post/2006/06/17/Visual-Studio-2005-amp3b-AssemblyKeyFile-Warnings.aspx
 
 - define mechanism for loading scripts with dependencies
 
