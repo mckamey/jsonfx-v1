@@ -2,10 +2,10 @@ Release History
 
 v1.0.0903.0714
 - add new intrinsic member to JBSTs: this.count
-- where this.index is the current data index, this.count is the number of data items being bound
+  where this.index is the current data index, this.count is the number of data items being bound
 - reduced extraneous whitespace nodes around templates
 - added unwrapping of documentFragment results when only contain single element
-- improved parser's ability to understand difference between tags and unescaped less-than literals
+- improved HtmlDistiller's ability to understand difference between tags and unescaped less-than literals
 - updated StarterKit documentation
 
 v1.0.0903.0509
@@ -17,7 +17,7 @@ v1.0.0903.0408
 - cleaned up calling template parts in the context of "this"
 
 v1.0.0903.0309
-- added unparsed block syntax <%# %> for inserting data that contains markup
+- added unparsed block syntax <%# ... %> for inserting data that contains markup
 - fixed bug where globalization keys weren't being correctly picked up in DOM attributes
 
 v1.0.0903.0117
