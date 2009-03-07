@@ -160,6 +160,6 @@ if ("undefined" === typeof JsonFx.Bindings) {
 /* JsonML utilities ---------------------------------------------*/
 
 /* deprecated */
-/*DOM*/ JsonFx.UI.bind = function(/*JBST*/ jbst, /*JSON*/ data, /*int*/ index) {
-	return JsonML.BST(jbst).bind(data, index);
+/*DOM*/ JsonFx.UI.bind = function(/*JBST*/ jbst, /*JSON*/ data, /*int*/ index, /*int*/ count) {
+	return JsonML.BST(jbst).bind(data, index, count);
 };

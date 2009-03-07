@@ -22,6 +22,7 @@ namespace JsonFx.UI.Jbst
 		private string data;
 		private object inlineData;
 		private int? index;
+		private int? count;
 		private ScriptDataBlock dataBlock;
 
 		#endregion Fields
@@ -85,7 +86,7 @@ namespace JsonFx.UI.Jbst
 		}
 
 		/// <summary>
-		/// Gets and sets the index to pass in when binding the data and JBST.
+		/// Gets and sets the data index, passed in when binding the data and JBST.
 		/// </summary>
 		[DefaultValue(-1)]
 		public virtual int Index
@@ -106,6 +107,31 @@ namespace JsonFx.UI.Jbst
 					return;
 				}
 				this.index = value;
+			}
+		}
+
+		/// <summary>
+		/// Gets and sets the total data count, passed in when binding the data and JBST.
+		/// </summary>
+		[DefaultValue(-1)]
+		public virtual int Count
+		{
+			get
+			{
+				if (!this.count.HasValue)
+				{
+					return -1;
+				}
+				return this.count.Value;
+			}
+			set
+			{
+				if (value < 0)
+				{
+					this.count = null;
+					return;
+				}
+				this.count = value;
 			}
 		}
 
@@ -199,6 +225,17 @@ namespace JsonFx.UI.Jbst
 				{
 					builder.Append(",(");
 					builder.Append(this.Index);
+					builder.Append(')');
+				}
+				else
+				{
+					builder.Append(",NaN");
+				}
+
+				if (this.Count >= 0)
+				{
+					builder.Append(",(");
+					builder.Append(this.Count);
 					builder.Append(')');
 				}
 				builder.Append(");");

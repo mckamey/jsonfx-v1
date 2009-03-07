@@ -46,7 +46,7 @@ namespace JsonFx.UI.Jbst
 		private const string PlaceholderCommand = "placeholder";
 
 		private const string PlaceholderStatement =
-			@"return this.$jbst?JsonML.BST(this.$jbst).dataBind({0},{1}):"""";";
+			@"return this.$jbst?JsonML.BST(this.$jbst).dataBind({0},{1},{2}):"""";";
 
 		private const string ControlCommand = "control";
 		private const string ControlNameKey = "name";
@@ -55,13 +55,15 @@ namespace JsonFx.UI.Jbst
 		private const string ControlDataKeyAlt = JbstCustomControl.JbstPrefix+JbstCustomControl.ControlDataKey;
 		private const string ControlIndexKey = "index";
 		private const string ControlIndexKeyAlt = JbstCustomControl.JbstPrefix+JbstCustomControl.ControlIndexKey;
+		private const string ControlCountKey = "count";
+		private const string ControlCountKeyAlt = JbstCustomControl.JbstPrefix+JbstCustomControl.ControlIndexKey;
 
 		private const string ControlSimple =
-			@"function(){{return JsonML.BST({0}).dataBind({1},{2});}}";
+			@"function(){{return JsonML.BST({0}).dataBind({1},{2},{3});}}";
 
 		private const string ControlSimpleDebug =
 			@"function() {{
-				return JsonML.BST({0}).dataBind({1}, {2});
+				return JsonML.BST({0}).dataBind({1}, {2}, {3});
 			}}";
 
 		private const string ControlStart =
@@ -72,12 +74,12 @@ namespace JsonFx.UI.Jbst
 				var t = JsonML.BST(";
 
 		private const string ControlEndFormat =
-			@");t.prototype=this;return JsonML.BST({0}).dataBind({1},{2},t);}}";
+			@");t.prototype=this;return JsonML.BST({0}).dataBind({1},{2},{3},t);}}";
 
 		private const string ControlEndFormatDebug =
 			@");
 				t.prototype = this;
-				return JsonML.BST({0}).dataBind({1}, {2}, t);
+				return JsonML.BST({0}).dataBind({1}, {2}, {3}, t);
 			}}";
 
 		private const string ControlInlineStart =
@@ -88,16 +90,17 @@ namespace JsonFx.UI.Jbst
 				return JsonML.BST(";
 
 		private const string ControlInlineEndFormat =
-			@").dataBind({0},{1});}}";
+			@").dataBind({0},{1},{2});}}";
 
 		private const string ControlInlineEndFormatDebug =
-			@").dataBind({0}, {1});
+			@").dataBind({0}, {1}, {2});
 			}}";
 
 		private const string FunctionEvalExpression = "({0})()";
 
 		private const string DefaultDataExpression = "this.data";
 		private const string DefaultIndexExpression = "this.index";
+		private const string DefaultCountExpression = "this.count";
 
 		#endregion Constants
 
@@ -108,6 +111,7 @@ namespace JsonFx.UI.Jbst
 		private string controlName;
 		private string dataExpr;
 		private string indexExpr;
+		private string countExpr;
 
 		#endregion Fields
 
@@ -245,6 +249,44 @@ namespace JsonFx.UI.Jbst
 
 			#endregion Control Index
 
+			#region Control Count
+
+			object countParam = null;
+			if (this.Attributes.ContainsKey(ControlCountKey))
+			{
+				countParam = this.Attributes[ControlCountKey];
+			}
+			else if (this.Attributes.ContainsKey(ControlCountKeyAlt))
+			{
+				// backwards compatibility with "jbst:count"
+				countParam = this.Attributes[ControlCountKeyAlt];
+			}
+
+			if (countParam == null)
+			{
+				this.countExpr = DefaultCountExpression;
+			}
+			else if (countParam is JbstExpressionBlock)
+			{
+				// convert to inline expression
+				this.countExpr = ((JbstExpressionBlock)countParam).Code;
+			}
+			else if (countParam is JbstCodeBlock)
+			{
+				// convert to anonymous function expression
+				this.countExpr = String.Format(
+					FunctionEvalExpression,
+					JsonWriter.Serialize(countParam));
+			}
+			else
+			{
+				// convert to literal expression
+				this.countExpr = JsonWriter.Serialize(countParam);
+			}
+			this.countExpr = this.countExpr.Trim();
+
+			#endregion Control Count
+
 			this.Attributes.Clear();
 			this.isProcessed = true;
 		}
@@ -277,11 +319,21 @@ namespace JsonFx.UI.Jbst
 		{
 			if (writer.PrettyPrint)
 			{
-				writer.TextWriter.Write(ControlSimpleDebug, this.controlName, this.dataExpr, this.indexExpr);
+				writer.TextWriter.Write(
+					ControlSimpleDebug,
+					this.controlName,
+					this.dataExpr,
+					this.indexExpr,
+					this.countExpr);
 			}
 			else
 			{
-				writer.TextWriter.Write(ControlSimple, this.controlName, this.dataExpr, this.indexExpr);
+				writer.TextWriter.Write(
+					ControlSimple,
+					this.controlName,
+					this.dataExpr,
+					this.indexExpr,
+					this.countExpr);
 			}
 		}
 
@@ -304,11 +356,19 @@ namespace JsonFx.UI.Jbst
 
 			if (writer.PrettyPrint)
 			{
-				writer.TextWriter.Write(ControlInlineEndFormatDebug, this.dataExpr, this.indexExpr);
+				writer.TextWriter.Write(
+					ControlInlineEndFormatDebug,
+					this.dataExpr,
+					this.indexExpr,
+					this.countExpr);
 			}
 			else
 			{
-				writer.TextWriter.Write(ControlInlineEndFormat, this.dataExpr, this.indexExpr);
+				writer.TextWriter.Write(
+					ControlInlineEndFormat,
+					this.dataExpr,
+					this.indexExpr,
+					this.countExpr);
 			}
 		}
 
@@ -331,11 +391,21 @@ namespace JsonFx.UI.Jbst
 
 			if (writer.PrettyPrint)
 			{
-				writer.TextWriter.Write(ControlEndFormatDebug, this.controlName, this.dataExpr, this.indexExpr);
+				writer.TextWriter.Write(
+					ControlEndFormatDebug,
+					this.controlName,
+					this.dataExpr,
+					this.indexExpr,
+					this.countExpr);
 			}
 			else
 			{
-				writer.TextWriter.Write(ControlEndFormat, this.controlName, this.dataExpr, this.indexExpr);
+				writer.TextWriter.Write(
+					ControlEndFormat,
+					this.controlName,
+					this.dataExpr,
+					this.indexExpr,
+					this.countExpr);
 			}
 		}
 
@@ -344,8 +414,8 @@ namespace JsonFx.UI.Jbst
 			string placeholder = String.Format(
 					JbstCustomControl.PlaceholderStatement,
 					this.dataExpr,
-					this.indexExpr
-				);
+					this.indexExpr,
+					this.countExpr);
 
 			writer.Write(new JbstStatementBlock(placeholder));
 		}
