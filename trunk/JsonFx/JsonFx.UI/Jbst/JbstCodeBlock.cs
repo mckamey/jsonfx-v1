@@ -230,17 +230,6 @@ namespace JsonFx.UI.Jbst
 				{0}
 			}}";
 
-		private const string StatementLegacyFormat =
-			@"function() {{
-				var {1} = new JsonML.Response();
-				{0}
-				return {1}.render();
-			}}";
-
-		private const string AspResponse = "Reponse";
-		private const string JspResponse = "out";
-		private const string JspResponseVar = "System = {}; System.out";
-
 		#endregion Constants
 
 		#region Init
@@ -261,30 +250,9 @@ namespace JsonFx.UI.Jbst
 
 		protected override string GetCodeBlock()
 		{
-
 			// analogous to instance code, or JSP scriptlets
 			// executed each time template is bound
-
-			// add legacy support for those coming from ASP/JSP
-			if (this.Code.IndexOf(AspResponse+'.') >= 0)
-			{
-				// Response.write
-				return String.Format(StatementLegacyFormat, this.Code, AspResponse);
-			}
-			else if (this.Code.IndexOf("System.out.") >= 0)
-			{
-				// System.out.print
-				return String.Format(StatementLegacyFormat, this.Code, JspResponseVar);
-			}
-			else if (this.Code.IndexOf(JspResponse+'.') >= 0)
-			{
-				// out.print
-				return String.Format(StatementLegacyFormat, this.Code, JspResponse);
-			}
-			else
-			{
-				return String.Format(StatementFormat, this.Code);
-			}
+			return String.Format(StatementFormat, this.Code);
 		}
 
 		#endregion JbstCodeBlock Members
