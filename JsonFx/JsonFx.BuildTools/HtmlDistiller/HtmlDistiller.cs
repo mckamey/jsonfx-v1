@@ -66,16 +66,11 @@ namespace JsonFx.BuildTools.HtmlDistiller
 		private const char OpenTagChar = '<';
 		private const char CloseTagChar = '>';
 		private const char EndTagChar = '/';
-		private const char NamespacePrefixChar = ':';
 		private const char AttrDelimChar = '=';
 		private const char SingleQuoteChar = '\'';
 		private const char DoubleQuoteChar = '\"';
 		private const char StylePropChar = ':';
 		private const char StyleDelimChar = ';';
-		private const char AlphaStartChar = 'a';
-		private const char AlphaEndChar = 'z';
-		private const char NumStartChar = '0';
-		private const char NumEndChar = '9';
 		private const char AsciiHighChar = (char)0x7F;
 
 		public const char EntityStartChar = '&';
@@ -695,9 +690,29 @@ namespace JsonFx.BuildTools.HtmlDistiller
 				return tag;
 			}
 
-			char ch = Char.ToLowerInvariant(this.Peek(1));
-			if ((ch < AlphaStartChar || ch > AlphaEndChar) &&
-				(ch != EndTagChar) && (ch != NullChar))
+			int i = 1;
+			char ch = this.Peek(i);
+			if (ch == EndTagChar)
+			{
+				i++;
+				ch = this.Peek(i);
+			}
+
+			if (!IsNameStartChar(ch))
+			{
+				// not a tag, treat as LessThan char
+				return null;
+			}
+
+			while (IsNameChar(ch))
+			{
+				i++;
+				ch = this.Peek(i);
+			}
+
+			if (!Char.IsWhiteSpace(ch) &&
+				ch != EndTagChar &&
+				ch != CloseTagChar)
 			{
 				// not a tag, treat as LessThan char
 				return null;
@@ -706,24 +721,7 @@ namespace JsonFx.BuildTools.HtmlDistiller
 			// remove tag open char
 			this.EmptyBuffer(1);
 
-			while (!this.IsEOF)
-			{
-				// tag name chars
-				this.Advance();
-
-				ch = Char.ToLowerInvariant(this.Current);
-				if ((ch < AlphaStartChar || ch > AlphaEndChar) &&
-					(ch < NumStartChar || ch > NumEndChar) &&
-					(ch != NamespacePrefixChar) &&
-					(ch != '-') &&
-					(ch != '_') &&
-					(ch != '.'))
-				{
-					break;
-				}
-			}
-
-			tag = new HtmlTag(this.FlushBuffer());
+			tag = new HtmlTag(this.FlushBuffer(i-1));
 
 			this.ParseSyncPoint();
 
@@ -1153,6 +1151,54 @@ namespace JsonFx.BuildTools.HtmlDistiller
 		#endregion Parse Methods
 
 		#region Methods
+
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="ch"></param>
+		/// <returns></returns>
+		/// <remarks>
+		/// http://www.w3.org/TR/REC-xml/#NT-NameStartChar
+		/// </remarks>
+		private bool IsNameStartChar(char ch)
+		{
+			return
+				(ch >= 'a' && ch <= 'z') ||
+				(ch >= 'A' && ch <= 'Z') ||
+				(ch == ':') ||
+				(ch == '_') ||
+				(ch >= '\u00C0' && ch <= '\u00D6') ||
+				(ch >= '\u00D8' && ch <= '\u00F6') ||
+				(ch >= '\u00F8' && ch <= '\u02FF') ||
+				(ch >= '\u0370' && ch <= '\u037D') ||
+				(ch >= '\u037F' && ch <= '\u1FFF') ||
+				(ch >= '\u200C' && ch <= '\u200D') ||
+				(ch >= '\u2070' && ch <= '\u218F') ||
+				(ch >= '\u2C00' && ch <= '\u2FEF') ||
+				(ch >= '\u3001' && ch <= '\uD7FF') ||
+				(ch >= '\uF900' && ch <= '\uFDCF') ||
+				(ch >= '\uFDF0' && ch <= '\uFFFD');
+				//(ch >= '\u10000' && ch <= '\uEFFFF');
+		}
+
+		/// <summary>
+		/// 
+		/// </summary>
+		/// <param name="ch"></param>
+		/// <returns></returns>
+		/// <remarks>
+		/// http://www.w3.org/TR/REC-xml/#NT-NameChar
+		/// </remarks>
+		private bool IsNameChar(char ch)
+		{
+			return IsNameStartChar(ch) ||
+				(ch >= '0' && ch <= '9') ||
+				(ch == '-') ||
+				(ch == '.') ||
+				(ch == '\u00B7') ||
+				(ch >= '\u0300' && ch <= '\u036F') ||
+				(ch >= '\u203F' && ch <= '\u2040');
+		}
 
 		/// <summary>
 		/// Remove whitespace from the input source
