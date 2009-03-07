@@ -18,7 +18,7 @@ v1.0.0903.0408
 
 v1.0.0903.0309
 - added unparsed block syntax <%# %> for inserting data that contains markup
-- fixing bug where globalization keys weren't being correctly picked up in DOM attributes
+- fixed bug where globalization keys weren't being correctly picked up in DOM attributes
 
 v1.0.0903.0117
 - added JsonML.BST.bind to dataBind and hydrate all in one step (including JsonFx behavior binding)
