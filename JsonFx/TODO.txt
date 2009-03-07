@@ -1,9 +1,9 @@
-2009-03-04 @ 08:25
+2009-03-07 @ 08:34
 
 - explain difference between JsonFx.UI.Binding vs. jQuery.ready
 - explain how to switch templates in list JBSTs
 - explain using Linq in JSON-RPC
-- explain inserting HTML data into JBST
+- explain inserting markup data into JBST
 
 - figure out pattern for creating closures in DOM events without behavior binding
 
