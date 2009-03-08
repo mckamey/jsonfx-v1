@@ -1,13 +1,13 @@
 2009-03-07 @ 11:51
 
-- release the stand-alone JBST compiler as Console adapter for the JsonFx.UI.Jbst.JbstCompiler
 - refresh the various BuildTools
-- release CssUserAgent as a stand-alone script
 
 - explain difference between JsonFx.UI.Binding vs. jQuery.ready
 - explain how to switch templates in list JBSTs
 - explain using Linq in JSON-RPC
 - explain inserting markup data into JBST
+
+- release CssUserAgent as a stand-alone script
 
 - figure out pattern for creating closures in DOM events without behavior binding
 - consider how to do a wrapper around every two elements (e.g. rows of two cells)
