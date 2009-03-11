@@ -1,27 +1,28 @@
-2009-03-11 @ 08:17
+2009-03-11 @ 08:51
+
+- add autoparsing of URLs into <a href="url">url</a>
+- rebuild JsonFx Ajax History to use doc frag
+- figure out pattern for creating closures in DOM events without behavior binding
 
 - explain difference between JsonFx.UI.Binding vs. jQuery.ready
 - explain how to switch templates in list JBSTs
 - explain using Linq in JSON-RPC
 - explain inserting markup data into JBST
 
-- figure out pattern for creating closures in DOM events without behavior binding
-- consider how to do a wrapper around every two elements (e.g. rows of two cells)
-- rebuild JsonFx Ajax History to use doc frag
-
 - create build provider for generating a list of localization values
 - client-side localization: add support for <%= Resources.Foo.Bar %>
 - emit CSS merge as imports during debug
-- consolidate type loading logic (see System.Workflow.ComponentModel.Compiler.TypeProvider.GetType(string))
-- resolve "~/" vs. HostingEnvironment.AppVirtualPath
-- fully support Mod_mono Apache hosting
 - add CDN support to JsonFx:ResourceInclude (e.g. Google AJAX APIs)
-- Create a Google Code repository
-	- http://code.google.com/hosting/createProject
-	- use svnsync to import an existing repository (http://code.google.com/p/support/wiki/FAQ#Subversion)
 - add VS2K8 IntelliSense support for JsonFx libs:
 	- add XML comments
 	- ease the burden of adding VS Script resource include tags
+
+- consolidate type loading logic (see System.Workflow.ComponentModel.Compiler.TypeProvider.GetType(string))
+- resolve "~/" vs. HostingEnvironment.AppVirtualPath
+- fully support Mod_mono Apache hosting
+- Create a Google Code repository
+	- http://code.google.com/hosting/createProject
+	- use svnsync to import an existing repository (http://code.google.com/p/support/wiki/FAQ#Subversion)
 - build jQuery plugin for JsonML / JSBT
 
 ___________________________________________________________________________________
