@@ -32,7 +32,6 @@ using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
-[assembly: AssemblyFileVersion("1.0.0.0")]
 [assembly: AssemblyTitle("JsonFx.Json")]
 [assembly: AssemblyDescription("JsonFx.NET JSON Serialization")]
 [assembly: AssemblyProduct("JsonFx.NET")]
