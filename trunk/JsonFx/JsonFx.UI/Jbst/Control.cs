@@ -201,12 +201,11 @@ namespace JsonFx.UI.Jbst
 				if (this.InlineData != null)
 				{
 					// serialize InlineData as a JavaScript literal
-					JsonWriter jsonWriter = new JsonWriter(builder);
-					jsonWriter.PrettyPrint = this.IsDebug;
-					jsonWriter.NewLine = Environment.NewLine;
-					jsonWriter.Tab = "\t";
-					jsonWriter.DateTimeSerializer = JsonWriter.WriteEcmaScriptDate;
-					jsonWriter.Write(this.InlineData);
+					EcmaScriptWriter jsWriter = new EcmaScriptWriter(builder);
+					jsWriter.PrettyPrint = this.IsDebug;
+					jsWriter.NewLine = Environment.NewLine;
+					jsWriter.Tab = "\t";
+					jsWriter.Write(this.InlineData);
 				}
 				else if (!String.IsNullOrEmpty(this.Data))
 				{

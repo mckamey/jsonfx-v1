@@ -34,7 +34,6 @@ using System.ComponentModel;
 using System.Collections;
 using System.Collections.Generic;
 using System.Text;
-using System.Text.RegularExpressions;
 using System.Reflection;
 using System.Xml;
 
@@ -57,16 +56,11 @@ namespace JsonFx.Json
 
 		public const string JsonMimeType = "application/json";
 
-		private static readonly DateTime EcmaScriptEpoch = new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc);
-		private const string EcmaScriptDateCtor = "new Date({0})";
-		private const string EmptyRegExpLiteral = "(?:)";
-		private const char RegExpLiteralDelim = '/';
-
 		private const string AnonymousTypePrefix = "<>f__AnonymousType";
 		private const string ErrorMaxDepth = "The maxiumum depth of {0} was exceeded. Check for cycles in object graph.";
 
 		#endregion Constants
-		
+
 		#region Fields
 
 		private readonly TextWriter writer = null;
@@ -243,12 +237,12 @@ namespace JsonFx.Json
 
 		#region Public Methods
 
-		public virtual void Write(object value)
+		public void Write(object value)
 		{
 			this.Write(value, false);
 		}
 
-		private void Write(object value, bool isProperty)
+		protected virtual void Write(object value, bool isProperty)
 		{
 			if (isProperty && this.prettyPrint)
 			{
@@ -651,102 +645,6 @@ namespace JsonFx.Json
 			this.writer.Write(value.Substring(start, length-start));
 
 			this.writer.Write(JsonReader.OperatorStringDelim);
-		}
-
-		public static void WriteEcmaScriptDate(JsonWriter writer, DateTime value)
-		{
-			// find the time since Jan 1, 1970
-			TimeSpan duration = value.ToUniversalTime().Subtract(EcmaScriptEpoch);
-
-			// get the total milliseconds
-			long ticks = (long)duration.TotalMilliseconds;
-
-			// write out as a Date constructor
-			writer.TextWriter.Write(EcmaScriptDateCtor, ticks);
-		}
-
-		/// <summary>
-		/// Outputs a .NET Regex as an ECMAScript RegExp literal.
-		/// Defaults to global matching.
-		/// </summary>
-		/// <param name="writer"></param>
-		/// <param name="regex"></param>
-		/// <remarks>
-		/// http://www.ecma-international.org/publications/files/ECMA-ST/Ecma-262.pdf
-		/// </remarks>
-		public static void WriteEcmaScriptRegExp(JsonWriter writer, Regex regex)
-		{
-			JsonWriter.WriteEcmaScriptRegExp(writer, regex, true);
-		}
-
-		/// <summary>
-		/// Outputs a .NET Regex as an ECMAScript RegExp literal.
-		/// </summary>
-		/// <param name="writer"></param>
-		/// <param name="regex"></param>
-		/// <param name="isGlobal"></param>
-		/// <remarks>
-		/// http://www.ecma-international.org/publications/files/ECMA-ST/Ecma-262.pdf
-		/// </remarks>
-		public static void WriteEcmaScriptRegExp(JsonWriter writer, Regex regex, bool isGlobal)
-		{
-			if (regex == null)
-			{
-				writer.TextWriter.Write("null");
-				return;
-			}
-
-			// Regex.ToString() returns the original pattern
-			string pattern = regex.ToString();
-			if (String.IsNullOrEmpty(pattern))
-			{
-				// must output something otherwise becomes a code comment
-				pattern = EmptyRegExpLiteral;
-			}
-
-			string modifiers = isGlobal ? "g" : "";
-			switch (regex.Options & (RegexOptions.IgnoreCase|RegexOptions.Multiline))
-			{
-				case RegexOptions.IgnoreCase:
-				{
-					modifiers += "i";
-					break;
-				}
-				case RegexOptions.Multiline:
-				{
-					modifiers += "m";
-					break;
-				}
-				case RegexOptions.IgnoreCase|RegexOptions.Multiline:
-				{
-					modifiers += "im";
-					break;
-				}
-			}
-
-			writer.TextWriter.Write(RegExpLiteralDelim);
-
-			int length = pattern.Length;
-			int start = 0;
-
-			for (int i = start; i < length; i++)
-			{
-				switch (pattern[i])
-				{
-					case RegExpLiteralDelim:
-					{
-						writer.TextWriter.Write(pattern.Substring(start, i - start));
-						start = i+1;
-						writer.TextWriter.Write(JsonReader.OperatorCharEscape);
-						writer.TextWriter.Write(pattern[i]);
-						break;
-					}
-				}
-			}
-
-			writer.TextWriter.Write(pattern.Substring(start, length - start));
-			writer.TextWriter.Write(RegExpLiteralDelim);
-			writer.TextWriter.Write(modifiers);
 		}
 
 		#endregion Public Methods
