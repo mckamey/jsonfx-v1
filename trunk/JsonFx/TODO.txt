@@ -1,11 +1,11 @@
-2009-03-12 @ 07:10
+2009-03-12 @ 08:43
 
-- add rendering of Regex as RegExp literal
 - add autoparsing of URLs into <a href="url">url</a>
 - add anonymous templates inside server jbst:control
 	- just parse on the fly?
 	- default inner property for default content?
 - rebuild JsonFx Ajax History to use doc frag
+- figure out a way to custom serialize objects which are closed source
 - add use of custom type descriptors to define properties (e.g. convert a Dictionary to object)
 - BUG: dictionaries without keys round-trip-able as strings should be rendered as key-value lists
 - figure out pattern for creating closures in DOM events without storing data as special HTML attributes

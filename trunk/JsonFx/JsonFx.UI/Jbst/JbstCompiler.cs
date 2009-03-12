@@ -542,8 +542,8 @@ if (""undefined"" === typeof {0}) {{
 				}
 			}
 
-			JsonFx.Json.JsonWriter jw = new JsonFx.Json.JsonWriter(writer);
-			jw.PrettyPrint = prettyPrint;
+			JsonFx.Json.EcmaScriptWriter jsWriter = new JsonFx.Json.EcmaScriptWriter(writer);
+			jsWriter.PrettyPrint = prettyPrint;
 
 			JbstControl control = null;
 			foreach (JbstControl child in this.document.ChildControls)
@@ -569,7 +569,7 @@ if (""undefined"" === typeof {0}) {{
 			}
 
 			// render root node of content (null is OK)
-			jw.Write(control);
+			jsWriter.Write(control);
 
 			if (this.isTemplate)
 			{
