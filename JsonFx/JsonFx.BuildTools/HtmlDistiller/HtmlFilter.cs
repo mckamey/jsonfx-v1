@@ -99,6 +99,9 @@ namespace JsonFx.BuildTools.HtmlDistiller.Filters
 		private const string Pattern_Url = @"(ht|f)tp(s?)\://[a-z0-9][a-z0-9\-\.]*(\:[0-9]+)?[a-z0-9/\.\,\;\?\'\+\(\)&%\$#\=~_\-]*";
 		private static readonly Regex Regex_Url = new Regex(Pattern_Url, RegexOptions.Compiled|RegexOptions.IgnoreCase|RegexOptions.ECMAScript);
 
+		private const string Pattern_Email = @"^((?:(?:(?:(\w|~)[~\.\-\+/]?)*)(\w|~))+)\@((?:(?:(?:\w[\.\-\+]?){0,62})\w)+)\.([a-zA-Z]{2,6})$|^";
+		private static readonly Regex Regex_Email = new System.Text.RegularExpressions.Regex(Pattern_Email, RegexOptions.Compiled | RegexOptions.ECMAScript | RegexOptions.IgnoreCase);
+
 		#endregion Constants
 
 		#region Init
@@ -238,10 +241,10 @@ namespace JsonFx.BuildTools.HtmlDistiller.Filters
 		/// <summary>
 		/// Finds the location of URLs within the literal string.
 		/// </summary>
-		/// <param name="value"></param>
-		/// <param name="matches"></param>
-		/// <returns></returns>
-		protected virtual bool DetectUrl(string value, out MatchCollection matches)
+		/// <param name="value">the literal to check</param>
+		/// <param name="matches">the collection of matches</param>
+		/// <returns>true if any found</returns>
+		protected bool DetectUrl(string value, out MatchCollection matches)
 		{
 			if (String.IsNullOrEmpty(value))
 			{
@@ -250,6 +253,25 @@ namespace JsonFx.BuildTools.HtmlDistiller.Filters
 			}
 
 			matches = Regex_Url.Matches(value);
+
+			return matches.Count > 0;
+		}
+
+		/// <summary>
+		/// Finds the location of email addresses within the literal string.
+		/// </summary>
+		/// <param name="value">the literal to check</param>
+		/// <param name="matches">the collection of matches</param>
+		/// <returns>true if any found</returns>
+		protected bool DetectEmail(string value, out MatchCollection matches)
+		{
+			if (String.IsNullOrEmpty(value))
+			{
+				matches = null;
+				return false;
+			}
+
+			matches = Regex_Email.Matches(value);
 
 			return matches.Count > 0;
 		}
