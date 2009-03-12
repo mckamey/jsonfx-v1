@@ -217,13 +217,13 @@ namespace JsonFx.Handlers
 
 			response.Write(ResStart);
 
-			JsonWriter writer = new JsonWriter(response.Output);
+			EcmaScriptWriter writer = new EcmaScriptWriter(response.Output);
 			writer.PrettyPrint = isDebug;
 			writer.Write(res);
 
 			response.Write(",");
 
-			writer = new JsonWriter(response.Output);
+			writer = new EcmaScriptWriter(response.Output);
 			writer.PrettyPrint = isDebug;
 			writer.Write(Thread.CurrentThread.CurrentCulture.Name);
 
