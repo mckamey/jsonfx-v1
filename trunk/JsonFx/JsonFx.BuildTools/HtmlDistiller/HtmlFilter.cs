@@ -29,6 +29,8 @@
 #endregion License
 
 using System;
+using System.Collections.Generic;
+using System.Text.RegularExpressions;
 
 namespace JsonFx.BuildTools.HtmlDistiller.Filters
 {
@@ -92,6 +94,10 @@ namespace JsonFx.BuildTools.HtmlDistiller.Filters
 
 		private const string WordBreak = "<wbr />&shy;";
 		private readonly int MaxWordLength;
+
+		// http://www.ietf.org/rfc/rfc1738.txt
+		private const string Pattern_Url = @"(ht|f)tp(s?)\://[a-z0-9][a-z0-9\-\.]*(\:[0-9]+)?[a-z0-9/\.\,\;\?\'\+\(\)&%\$#\=~_\-]*";
+		private static readonly Regex Regex_Url = new Regex(Pattern_Url, RegexOptions.Compiled|RegexOptions.IgnoreCase|RegexOptions.ECMAScript);
 
 		#endregion Constants
 
@@ -227,6 +233,25 @@ namespace JsonFx.BuildTools.HtmlDistiller.Filters
 					return false;
 				}
 			}
+		}
+
+		/// <summary>
+		/// Finds the location of URLs within the literal string.
+		/// </summary>
+		/// <param name="value"></param>
+		/// <param name="matches"></param>
+		/// <returns></returns>
+		protected virtual bool DetectUrl(string value, out MatchCollection matches)
+		{
+			if (String.IsNullOrEmpty(value))
+			{
+				matches = null;
+				return false;
+			}
+
+			matches = Regex_Url.Matches(value);
+
+			return matches.Count > 0;
 		}
 
 		#endregion Utility Methods
