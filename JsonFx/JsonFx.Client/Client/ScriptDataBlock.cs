@@ -143,11 +143,10 @@ namespace JsonFx.Client
 			{
 				List<string> namespaces = new List<string>();
 
-				JsonWriter jsonWriter = new JsonWriter(writer);
-				jsonWriter.PrettyPrint = this.IsDebug;
-				jsonWriter.NewLine = Environment.NewLine;
-				jsonWriter.Tab = "\t";
-				jsonWriter.DateTimeSerializer = JsonWriter.WriteEcmaScriptDate;
+				EcmaScriptWriter jsWriter = new EcmaScriptWriter(writer);
+				jsWriter.PrettyPrint = this.IsDebug;
+				jsWriter.NewLine = Environment.NewLine;
+				jsWriter.Tab = "\t";
 
 				writer.Write(ScriptOpen);
 
@@ -204,7 +203,7 @@ namespace JsonFx.Client
 					}
 
 					// emit the value as JSON
-					jsonWriter.Write(this.Data[key]);
+					jsWriter.Write(this.Data[key]);
 					writer.Write(VarDeclarationEnd);
 
 					if (this.IsDebug)
