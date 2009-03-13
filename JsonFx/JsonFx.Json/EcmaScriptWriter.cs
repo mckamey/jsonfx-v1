@@ -130,7 +130,7 @@ namespace JsonFx.Json
 
 		/// <summary>
 		/// Outputs a .NET Regex as an ECMAScript RegExp literal.
-		/// Defaults to global matching.
+		/// Defaults to global matching off.
 		/// </summary>
 		/// <param name="writer"></param>
 		/// <param name="regex"></param>
@@ -139,7 +139,7 @@ namespace JsonFx.Json
 		/// </remarks>
 		public static void WriteEcmaScriptRegExp(JsonWriter writer, Regex regex)
 		{
-			EcmaScriptWriter.WriteEcmaScriptRegExp(writer, regex, true);
+			EcmaScriptWriter.WriteEcmaScriptRegExp(writer, regex, false);
 		}
 
 		/// <summary>
