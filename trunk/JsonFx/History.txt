@@ -1,5 +1,9 @@
 Release History
 
+v1.0.0903.1309
+- fixed complex attribute typo in JBST builder script
+- enables creating events with closures during databinding
+
 v1.0.0903.1209
 - added ability to render .NET Regex as ECMAScript RegExp literals in script data blocks
 - created an EcmaScriptWriter which can also serialize native non-JSON ECMAScript data types (e.g. DateTime, RegExp)
