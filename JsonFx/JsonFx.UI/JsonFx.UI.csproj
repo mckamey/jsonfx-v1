@@ -73,6 +73,7 @@
     <Compile Include="Jbst\JbstCodeBlock.cs" />
     <Compile Include="Jbst\JbstCompiler.cs" />
     <Compile Include="Jbst\JbstContainerControl.cs" />
+    <Compile Include="Jbst\JbstControlBuilder.cs" />
     <Compile Include="Jbst\JbstControlCollection.cs" />
     <Compile Include="Jbst\JbstCustomControl.cs" />
     <Compile Include="Jbst\JbstLiteral.cs" />

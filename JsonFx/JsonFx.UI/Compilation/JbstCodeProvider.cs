@@ -78,7 +78,7 @@ namespace JsonFx.Compilation
 				// parse JBST markup
 				parser.Parse(sourceText);
 
-				this.ExtractGlobalizationKeys(parser.Document);
+				JbstCodeProvider.ExtractGlobalizationKeys(parser.Document, this.GlobalizationKeys);
 			}
 			catch (ParseException ex)
 			{
@@ -106,7 +106,7 @@ namespace JsonFx.Compilation
 			}
 		}
 
-		private void ExtractGlobalizationKeys(JbstContainerControl root)
+		internal static void ExtractGlobalizationKeys(JbstContainerControl root, List<string> globalizationKeys)
 		{
 			List<JbstControl> queue = new List<JbstControl>();
 			queue.Add(root);
@@ -141,14 +141,14 @@ namespace JsonFx.Compilation
 				// parse expression blocks
 				if (control is JbstExpressionBlock)
 				{
-					GlobalizedResourceHandler.ExtractGlobalizationKeys(((JbstExpressionBlock)control).Code, this.GlobalizationKeys);
+					GlobalizedResourceHandler.ExtractGlobalizationKeys(((JbstExpressionBlock)control).Code, globalizationKeys);
 					continue;
 				}
 
 				// parse statement blocks
 				if (control is JbstStatementBlock)
 				{
-					GlobalizedResourceHandler.ExtractGlobalizationKeys(((JbstStatementBlock)control).Code, this.GlobalizationKeys);
+					GlobalizedResourceHandler.ExtractGlobalizationKeys(((JbstStatementBlock)control).Code, globalizationKeys);
 					continue;
 				}
 
@@ -166,9 +166,9 @@ namespace JsonFx.Compilation
 				}
 
 				string key = res.GlobalizationKey;
-				if (!this.GlobalizationKeys.Contains(key))
+				if (!globalizationKeys.Contains(key))
 				{
-					this.GlobalizationKeys.Add(key);
+					globalizationKeys.Add(key);
 				}
 			}
 		}
