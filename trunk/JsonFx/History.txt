@@ -1,5 +1,9 @@
 Release History
 
+v1.0.0903.15xx
+- new driving the default for compacted scripts/css/merge off the compilation debug="[bool]" app setting (rather than always compacted)
+  i.e. no flag switches based upon config, "?debug" is always debug, ?[sha1-hash] is always permanently cached, any other value is always compacted
+
 v1.0.0903.1309
 - fixed complex attribute typo in JBST builder script
 - enables creating events with closures during databinding
