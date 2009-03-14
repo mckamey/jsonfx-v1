@@ -183,7 +183,18 @@ namespace JsonFx.BuildTools.HtmlDistiller.Writers
 
 			foreach (string key in tag.Attributes.Keys)
 			{
-				string val = tag.Attributes[key];
+				object valObj = tag.Attributes[key];
+				if (valObj is HtmlTag)
+				{
+					if (filter != null && !filter.FilterTag((HtmlTag)valObj))
+					{
+						valObj = null;
+					}
+				}
+
+				string val = (valObj != null) ?
+					valObj.ToString() :
+					String.Empty;
 
 				if (filter == null || filter.FilterAttribute(tag.TagName, key, ref val))
 				{
