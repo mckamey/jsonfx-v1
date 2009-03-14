@@ -484,7 +484,7 @@ namespace JsonFx.BuildTools.HtmlDistiller
 								if (this.EncodeNonAscii)
 								{
 									// encode LessThan char
-									this.HtmlWriter.WriteLiteral(LessThanEntity, 0, LessThanEntity.Length, this.htmlFilter);
+									this.HtmlWriter.WriteLiteral(LessThanEntity, 0, LessThanEntity.Length);
 
 									// remove from stream
 									this.EmptyBuffer(1);
@@ -518,7 +518,7 @@ namespace JsonFx.BuildTools.HtmlDistiller
 									if (this.Peek(1) != LFChar)
 									{
 										// just CR so replace CR with LF
-										this.HtmlWriter.WriteLiteral(LFChar.ToString(), 0, 1, this.htmlFilter);
+										this.HtmlWriter.WriteLiteral(LFChar.ToString(), 0, 1);
 
 										// count toward total text length
 										this.IncTextCount();
@@ -605,7 +605,7 @@ namespace JsonFx.BuildTools.HtmlDistiller
 
 							// encode the non-ASCII char
 							string entity = HtmlDistiller.EncodeHtmlEntity(ch);
-							this.HtmlWriter.WriteLiteral(entity, 0, entity.Length, this.htmlFilter);
+							this.HtmlWriter.WriteLiteral(entity, 0, entity.Length);
 
 							// remove char from stream
 							this.EmptyBuffer(1);
@@ -628,7 +628,7 @@ namespace JsonFx.BuildTools.HtmlDistiller
 								this.WriteBuffer();
 
 								// output decoded char
-								this.HtmlWriter.WriteLiteral(entityChar.ToString(), 0, 1, this.htmlFilter);
+								this.HtmlWriter.WriteLiteral(entityChar.ToString(), 0, 1);
 
 								// remove char from stream
 								this.EmptyBuffer(entityLength);
@@ -689,7 +689,7 @@ namespace JsonFx.BuildTools.HtmlDistiller
 					string trunc = this.TruncationIndicator;
 					if (!String.IsNullOrEmpty(trunc))
 					{
-						this.HtmlWriter.WriteLiteral(trunc, 0, trunc.Length, this.htmlFilter);
+						this.HtmlWriter.WriteLiteral(trunc, 0, trunc.Length);
 					}
 				}
 
@@ -1100,7 +1100,7 @@ namespace JsonFx.BuildTools.HtmlDistiller
 		{
 			try
 			{
-				if (this.htmlWriter.WriteTag(tag, this.htmlFilter))
+				if (this.htmlWriter.WriteTag(tag))
 				{
 					this.taxonomy |= tag.Taxonomy;
 				}
@@ -1108,7 +1108,7 @@ namespace JsonFx.BuildTools.HtmlDistiller
 			catch (Exception ex)
 			{
 				string error = "Error in HtmlWriter: "+ex.Message;
-				try { this.htmlWriter.WriteLiteral(error, 0, error.Length, this.htmlFilter); }
+				try { this.htmlWriter.WriteLiteral(error, 0, error.Length); }
 				catch { }
 			}
 		}
@@ -1130,13 +1130,13 @@ namespace JsonFx.BuildTools.HtmlDistiller
 		/// <remarks>Does not SyncLock, call inside lock</remarks>
 		private void Init(string html)
 		{
-			if (this.htmlFilter == null)
-			{
-				this.htmlFilter = new SafeHtmlFilter();
-			}
 			if (this.htmlWriter == null)
 			{
 				this.htmlWriter = new HtmlWriter();
+			}
+			if (this.htmlFilter == null)
+			{
+				this.htmlWriter.SetHtmlFilter(this.htmlFilter);
 			}
 
 			// set up the source
@@ -1272,7 +1272,7 @@ namespace JsonFx.BuildTools.HtmlDistiller
 			// do not callback on empty strings
 			if (this.start < this.index)
 			{
-				this.HtmlWriter.WriteLiteral(this.source, this.start, this.index, this.htmlFilter);
+				this.HtmlWriter.WriteLiteral(this.source, this.start, this.index);
 			}
 			this.start = this.index;
 		}

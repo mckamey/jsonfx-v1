@@ -41,9 +41,11 @@ namespace JsonFx.BuildTools.HtmlDistiller.Writers
 	{
 		#region Methods
 
-		void WriteLiteral(string source, int start, int end, IHtmlFilter filter);
+		void SetHtmlFilter(IHtmlFilter filter);
 
-		bool WriteTag(HtmlTag tag, IHtmlFilter filter);
+		void WriteLiteral(string source, int start, int end);
+
+		bool WriteTag(HtmlTag tag);
 
 		#endregion Methods
 	}
@@ -58,6 +60,7 @@ namespace JsonFx.BuildTools.HtmlDistiller.Writers
 		#region Fields
 
 		private TextWriter writer = null;
+		private IHtmlFilter filter = null;
 
 		#endregion Fields
 
@@ -106,25 +109,15 @@ namespace JsonFx.BuildTools.HtmlDistiller.Writers
 
 		#region IHtmlWriter Members
 
-		public void WriteLiteral(char literal, IHtmlFilter filter)
+		void IHtmlWriter.SetHtmlFilter(IHtmlFilter filter)
 		{
-			this.writer.Write(literal);
+			this.filter = filter;
 		}
 
-		public void WriteLiteral(string literal, IHtmlFilter filter)
-		{
-			if (String.IsNullOrEmpty(literal))
-			{
-				return;
-			}
-
-			this.WriteLiteral(literal, 0, literal.Length, filter);
-		}
-
-		public void WriteLiteral(string source, int start, int end, IHtmlFilter filter)
+		public virtual void WriteLiteral(string source, int start, int end)
 		{
 			string replacement;
-			if (filter != null && filter.FilterLiteral(source, start, end, out replacement))
+			if (this.filter != null && this.filter.FilterLiteral(source, start, end, out replacement))
 			{
 				// filter has altered the literal
 				this.writer.Write(replacement);
@@ -142,13 +135,13 @@ namespace JsonFx.BuildTools.HtmlDistiller.Writers
 		/// <param name="tag"></param>
 		/// <param name="filter"></param>
 		/// <returns>true if rendered, false if not</returns>
-		public bool WriteTag(HtmlTag tag, IHtmlFilter filter)
+		public virtual bool WriteTag(HtmlTag tag)
 		{
 			if (tag.TagType == HtmlTagType.Unknown)
 			{
 				return false;
 			}
-			if (filter != null && !filter.FilterTag(tag))
+			if (this.filter != null && !this.filter.FilterTag(tag))
 			{
 				return false;
 			}
@@ -163,11 +156,11 @@ namespace JsonFx.BuildTools.HtmlDistiller.Writers
 
 			if (tag.HasAttributes)
 			{
-				this.WriteAttributes(tag, filter);
+				this.WriteAttributes(tag);
 			}
 			if (tag.HasStyles)
 			{
-				this.WriteStyles(tag, filter);
+				this.WriteStyles(tag);
 			}
 
 			if (tag.TagType == HtmlTagType.Unparsed)
@@ -191,7 +184,7 @@ namespace JsonFx.BuildTools.HtmlDistiller.Writers
 		/// Renders the attributes to the output
 		/// </summary>
 		/// <param name="output"></param>
-		protected void WriteAttributes(HtmlTag tag, IHtmlFilter filter)
+		protected void WriteAttributes(HtmlTag tag)
 		{
 			if (tag.TagType == HtmlTagType.Unparsed)
 			{
@@ -204,7 +197,7 @@ namespace JsonFx.BuildTools.HtmlDistiller.Writers
 				object valObj = tag.Attributes[key];
 				if (valObj is HtmlTag)
 				{
-					if (filter != null && !filter.FilterTag((HtmlTag)valObj))
+					if (this.filter != null && !this.filter.FilterTag((HtmlTag)valObj))
 					{
 						valObj = null;
 					}
@@ -214,7 +207,7 @@ namespace JsonFx.BuildTools.HtmlDistiller.Writers
 					valObj.ToString() :
 					String.Empty;
 
-				if (filter == null || filter.FilterAttribute(tag.TagName, key, ref val))
+				if (this.filter == null || this.filter.FilterAttribute(tag.TagName, key, ref val))
 				{
 					this.writer.Write(' ');
 					if (String.IsNullOrEmpty(key))
@@ -237,7 +230,7 @@ namespace JsonFx.BuildTools.HtmlDistiller.Writers
 		/// Renders the style property to the output
 		/// </summary>
 		/// <param name="output"></param>
-		protected void WriteStyles(HtmlTag tag, IHtmlFilter filter)
+		protected void WriteStyles(HtmlTag tag)
 		{
 			this.writer.Write(" style=\"");
 
@@ -245,7 +238,7 @@ namespace JsonFx.BuildTools.HtmlDistiller.Writers
 			{
 				string val = tag.Styles[key];
 
-				if (filter == null || filter.FilterStyle(tag.TagName, key, ref val))
+				if (this.filter == null || this.filter.FilterStyle(tag.TagName, key, ref val))
 				{
 					if (!String.IsNullOrEmpty(key) && !String.IsNullOrEmpty(val))
 					{

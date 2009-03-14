@@ -460,7 +460,7 @@ namespace JsonFx.BuildTools.HtmlDistiller
 		{
 			using (HtmlWriter writer = new HtmlWriter())
 			{
-				writer.WriteTag(this, null);
+				writer.WriteTag(this);
 				return writer.ToString();
 			}
 		}

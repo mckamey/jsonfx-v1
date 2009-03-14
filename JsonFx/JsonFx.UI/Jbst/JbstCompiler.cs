@@ -47,7 +47,7 @@ namespace JsonFx.UI.Jbst
 	/// <summary>
 	/// JBST Template Compiler
 	/// </summary>
-	public class JbstCompiler : IHtmlWriter, IHtmlFilter
+	public class JbstCompiler : IHtmlWriter
 	{
 		#region Constants
 
@@ -119,7 +119,6 @@ if (""undefined"" === typeof {0}) {{
 			this.parser.EncodeNonAscii = false;
 			this.parser.BalanceTags = false;
 			this.parser.NormalizeWhitespace = false;
-			this.parser.HtmlFilter = this;
 			this.parser.HtmlWriter = this;
 			this.parser.BeginIncrementalParsing();
 		}
@@ -621,12 +620,17 @@ if (""undefined"" === typeof {0}) {{
 
 		#region IHtmlWriter Members
 
-		void IHtmlWriter.WriteLiteral(string source, int start, int end, IHtmlFilter filter)
+		void IHtmlWriter.SetHtmlFilter(IHtmlFilter filter)
+		{
+			// do nothing
+		}
+
+		void IHtmlWriter.WriteLiteral(string source, int start, int end)
 		{
 			this.AppendChild(source.Substring(start, end-start));
 		}
 
-		bool IHtmlWriter.WriteTag(HtmlTag tag, IHtmlFilter filter)
+		bool IHtmlWriter.WriteTag(HtmlTag tag)
 		{
 			switch (tag.TagType)
 			{
@@ -814,30 +818,6 @@ if (""undefined"" === typeof {0}) {{
 		}
 
 		#endregion IHtmlWriter Members
-
-		#region IHtmlFilter Members
-
-		bool IHtmlFilter.FilterTag(HtmlTag tag)
-		{
-			throw new NotImplementedException();
-		}
-
-		bool IHtmlFilter.FilterAttribute(string tag, string attribute, ref string value)
-		{
-			throw new NotImplementedException();
-		}
-
-		bool IHtmlFilter.FilterStyle(string tag, string style, ref string value)
-		{
-			throw new NotImplementedException();
-		}
-
-		bool IHtmlFilter.FilterLiteral(string source, int start, int end, out string replacement)
-		{
-			throw new NotImplementedException();
-		}
-
-		#endregion IHtmlFilter Members
 
 		#region Directive Methods
 
