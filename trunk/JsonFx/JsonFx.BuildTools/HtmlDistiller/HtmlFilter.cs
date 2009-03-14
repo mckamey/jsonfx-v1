@@ -96,19 +96,12 @@ namespace JsonFx.BuildTools.HtmlDistiller.Filters
 		private const string WordBreak = "<wbr />&shy;";
 		private readonly int MaxWordLength;
 
-		private const string Pattern_Url = @"(?:ht|f)tp(?:s?)\://[a-z0-9][a-z0-9\-\.]*(?:\:[0-9]+)?(?:/[\w/\.\,\;\?\'\+\(\)&%\$#\=~\-]*)?";
-		private static readonly Regex Regex_Url = new Regex(Pattern_Url, RegexOptions.Compiled|RegexOptions.IgnoreCase|RegexOptions.ECMAScript);
-
-		private const string AutoLinkStart = "<a href=\"";
-		private const string AutoLinkMiddle = "\">";
-		private const string AutoLinkEnd = "</a>";
-
 		#endregion Constants
 
 		#region Init
 
 		/// <summary>
-		/// Ctor.
+		/// Ctor
 		/// </summary>
 		public WordBreakFilter()
 			: this(0)
@@ -116,7 +109,7 @@ namespace JsonFx.BuildTools.HtmlDistiller.Filters
 		}
 
 		/// <summary>
-		/// Ctor.
+		/// Ctor
 		/// </summary>
 		/// <param name="maxWordLength"></param>
 		public WordBreakFilter(int maxWordLength)
@@ -205,6 +198,178 @@ namespace JsonFx.BuildTools.HtmlDistiller.Filters
 		}
 
 		#endregion IHtmlFilter Members
+	}
+
+	/// <summary>
+	/// Defines a filter which optionally auto-links URLs in literals
+	/// </summary>
+	public abstract class AutoLinkFilter : WordBreakFilter
+	{
+		#region Constants
+
+		private const string Pattern_Url = @"(?:ht|f)tp(?:s?)\://[a-z0-9][a-z0-9\-\.]*(?:\:[0-9]+)?(?:/[\w/\.\,\;\?\'\+\(\)&%\$#\=~\-]*)?";
+		private static readonly Regex Regex_Url = new Regex(Pattern_Url, RegexOptions.Compiled | RegexOptions.IgnoreCase | RegexOptions.ECMAScript);
+
+		private const string AutoLinkStart = "<a href=\"";
+		private const string AutoLinkMiddle = "\">";
+		private const string AutoLinkEnd = "</a>";
+
+		#endregion Constants
+
+		#region Fields
+
+		private bool autoLink;
+
+		#endregion Fields
+
+		#region Init
+
+		/// <summary>
+		/// Ctor
+		/// </summary>
+		public AutoLinkFilter()
+			: base(0)
+		{
+		}
+
+		/// <summary>
+		/// Ctor
+		/// </summary>
+		/// <param name="maxWordLength"></param>
+		public AutoLinkFilter(int maxWordLength)
+			: base(maxWordLength)
+		{
+		}
+
+		/// <summary>
+		/// Ctor
+		/// </summary>
+		/// <param name="autoLink"></param>
+		public AutoLinkFilter(bool autoLink)
+			: this(0, autoLink)
+		{
+		}
+
+		/// <summary>
+		/// Ctor
+		/// </summary>
+		/// <param name="maxWordLength"></param>
+		/// <param name="autoLink"></param>
+		public AutoLinkFilter(int maxWordLength, bool autoLink)
+			: base(maxWordLength)
+		{
+			this.autoLink = autoLink;
+		}
+
+		#endregion Init
+
+		#region Properties
+
+		/// <summary>
+		/// Gets and sets if should auto-wrap URLs in hyperlinks
+		/// </summary>
+		public virtual bool AutoLink
+		{
+			get { return this.autoLink; }
+			set { this.autoLink = value; }
+		}
+
+		#endregion Properties
+
+		#region IHtmlFilter Members
+
+		/// <summary>
+		/// Optionally finds any URLs and wraps them with a hyperlink
+		/// </summary>
+		/// <param name="source">original string</param>
+		/// <param name="start">starting index inclusive</param>
+		/// <param name="end">ending index exclusive</param>
+		/// <param name="replacement">a replacement string</param>
+		/// <returns>true if <paramref name="replace"/> should be used to replace literal</returns>
+		public override bool FilterLiteral(string source, int start, int end, out string replacement)
+		{
+			if (!this.AutoLink)
+			{
+				return base.FilterLiteral(source, start, end, out replacement);
+			}
+
+			StringBuilder builder = null;
+
+			int index,			// the start index of the match
+				length,			// the length of the match
+				last = start;	// the last index written out
+
+			while (this.DetectUrl(source, last, end, out index, out length))
+			{
+				if (builder == null)
+				{
+					// populate initial string builder with leading unmatched substring
+					if (base.FilterLiteral(source, last, index, out replacement))
+					{
+						// use the word broken replacement text
+						builder = new StringBuilder(replacement, 2*end-start);
+					}
+					else
+					{
+						builder = new StringBuilder(source, last, index-last, 2*end-start);
+					}
+				}
+				else
+				{
+					// append next unmatched substring
+					if (base.FilterLiteral(source, last, index, out replacement))
+					{
+						// use the word broken replacement text
+						builder.Append(replacement);
+					}
+					else
+					{
+						builder.Append(source, last, index-last);
+					}
+				}
+
+				// wrap the match in a hyperlink
+				builder.Append(AutoLinkStart);
+				builder.Append(source, index, length);
+				builder.Append(AutoLinkMiddle);
+				if (base.FilterLiteral(source, index, index+length, out replacement))
+				{
+					builder.Append(replacement);
+				}
+				else
+				{
+					builder.Append(source, index, length);
+				}
+				builder.Append(AutoLinkEnd);
+
+				// continue searching from the end of the match
+				last = index + length;
+			}
+
+			if (builder == null)
+			{
+				// no matches were found
+				replacement = null;
+				return false;
+			}
+
+			// append trailing unmatched substring
+			if (base.FilterLiteral(source, index, index+length, out replacement))
+			{
+				// use the word broken replacement text
+				builder.Append(replacement);
+			}
+			else
+			{
+				builder.Append(source, last, end-last);
+			}
+
+			// render composite output
+			replacement = builder.ToString();
+			return true;
+		}
+
+		#endregion IHtmlFilter Members
 
 		#region Utility Methods
 
@@ -222,71 +387,21 @@ namespace JsonFx.BuildTools.HtmlDistiller.Filters
 
 			// TODO: see http://ha.ckers.org/xss.html for other attacks
 			value = value.Trim();
-			string protocol = value.Substring(0, value.IndexOf(':')+1);
+			string protocol = value.Substring(0, value.IndexOf(':') + 1);
 			switch (protocol.ToLowerInvariant())
 			{
 				case "http:":
 				case "https:":
 				case "mailto:":
 				case "":
-				{
-					return true;
-				}
+					{
+						return true;
+					}
 				default:
-				{
-					return false;
-				}
+					{
+						return false;
+					}
 			}
-		}
-
-		/// <summary>
-		/// Finds any URLs and wraps them with a hyperlink
-		/// </summary>
-		/// <param name="source">original string</param>
-		/// <param name="start">starting index inclusive</param>
-		/// <param name="end">ending index exclusive</param>
-		/// <param name="replacement">a replacement string</param>
-		/// <returns>true if <paramref name="replace"/> should be used to replace literal</returns>
-		protected bool AutoLinkLiteralUrls(string source, int start, int end, out string replacement)
-		{
-			StringBuilder builder = null;
-
-			int index,			// the start index of the match
-				length,			// the length of the match
-				last = start;	// the last index written out
-
-			while (this.DetectUrl(source, last, end, out index, out length))
-			{
-				if (builder == null)
-				{
-					// populate initial string builder with first unmatched substring
-					builder = new StringBuilder(source, last, index-last, 2*end-start);
-				}
-				else
-				{
-					builder.Append(source, last, index-last);
-				}
-
-				// wrap the match in a hyperlink
-				builder.Append(AutoLinkStart);
-				builder.Append(source, index, length);
-				builder.Append(AutoLinkMiddle);
-				builder.Append(source, index, length);
-				builder.Append(AutoLinkEnd);
-
-				// continue searching from the end of the match
-				last = index+length;
-			}
-
-			if (builder == null)
-			{
-				replacement = null;
-				return false;
-			}
-
-			builder.Append(source, last, end-last);
-			replacement = builder.ToString();
-			return true;
 		}
 
 		/// <summary>
@@ -298,7 +413,7 @@ namespace JsonFx.BuildTools.HtmlDistiller.Filters
 		/// <param name="index">the index where match starts</param>
 		/// <param name="length">the length of the match</param>
 		/// <returns>true if any found</returns>
-		protected bool DetectUrl(string source, int start, int end, out int index, out int length)
+		private bool DetectUrl(string source, int start, int end, out int index, out int length)
 		{
 			if (String.IsNullOrEmpty(source) || (end <= start))
 			{
@@ -307,7 +422,7 @@ namespace JsonFx.BuildTools.HtmlDistiller.Filters
 				return false;
 			}
 
-			Match match = Regex_Url.Match(source, start, end-start);
+			Match match = Regex_Url.Match(source, start, end - start);
 			index = match.Index;
 			length = match.Length;
 
@@ -318,14 +433,14 @@ namespace JsonFx.BuildTools.HtmlDistiller.Filters
 	}
 
 	/// <summary>
-	/// HtmlFilter which strips all tags
+	/// HtmlFilter which strips all tags from the input
 	/// </summary>
-	public class StripHtmlFilter : WordBreakFilter
+	public class StripHtmlFilter : AutoLinkFilter
 	{
 		#region Init
 
 		/// <summary>
-		/// Ctor.
+		/// Ctor
 		/// </summary>
 		public StripHtmlFilter()
 			: base(0)
@@ -333,11 +448,31 @@ namespace JsonFx.BuildTools.HtmlDistiller.Filters
 		}
 
 		/// <summary>
-		/// Ctor.
+		/// Ctor
 		/// </summary>
 		/// <param name="maxWordLength"></param>
 		public StripHtmlFilter(int maxWordLength)
 			: base(maxWordLength)
+		{
+		}
+
+		/// <summary>
+		/// Ctor
+		/// </summary>
+		/// <param name="maxWordLength"></param>
+		/// <param name="autoLink"></param>
+		public StripHtmlFilter(bool autoLink)
+			: base(autoLink)
+		{
+		}
+
+		/// <summary>
+		/// Ctor
+		/// </summary>
+		/// <param name="maxWordLength"></param>
+		/// <param name="autoLink"></param>
+		public StripHtmlFilter(int maxWordLength, bool autoLink)
+			: base(maxWordLength, autoLink)
 		{
 		}
 
@@ -385,12 +520,12 @@ namespace JsonFx.BuildTools.HtmlDistiller.Filters
 	/// <summary>
 	/// HtmlFilter which allows only simple tags/attributes
 	/// </summary>
-	public class StrictHtmlFilter : WordBreakFilter
+	public class StrictHtmlFilter : AutoLinkFilter
 	{
 		#region Init
 
 		/// <summary>
-		/// Ctor.
+		/// Ctor
 		/// </summary>
 		public StrictHtmlFilter()
 			: base(0)
@@ -398,11 +533,31 @@ namespace JsonFx.BuildTools.HtmlDistiller.Filters
 		}
 
 		/// <summary>
-		/// Ctor.
+		/// Ctor
 		/// </summary>
 		/// <param name="maxWordLength"></param>
 		public StrictHtmlFilter(int maxWordLength)
 			: base(maxWordLength)
+		{
+		}
+
+		/// <summary>
+		/// Ctor
+		/// </summary>
+		/// <param name="maxWordLength"></param>
+		/// <param name="autoLink"></param>
+		public StrictHtmlFilter(bool autoLink)
+			: base(autoLink)
+		{
+		}
+
+		/// <summary>
+		/// Ctor
+		/// </summary>
+		/// <param name="maxWordLength"></param>
+		/// <param name="autoLink"></param>
+		public StrictHtmlFilter(int maxWordLength, bool autoLink)
+			: base(maxWordLength, autoLink)
 		{
 		}
 
@@ -506,12 +661,12 @@ namespace JsonFx.BuildTools.HtmlDistiller.Filters
 	/// <summary>
 	/// HtmlFilter which allows only safe tags/attributes/styles
 	/// </summary>
-	public class SafeHtmlFilter : WordBreakFilter
+	public class SafeHtmlFilter : AutoLinkFilter
 	{
 		#region Init
 
 		/// <summary>
-		/// Ctor.
+		/// Ctor
 		/// </summary>
 		public SafeHtmlFilter()
 			: base(0)
@@ -519,11 +674,31 @@ namespace JsonFx.BuildTools.HtmlDistiller.Filters
 		}
 
 		/// <summary>
-		/// Ctor.
+		/// Ctor
 		/// </summary>
 		/// <param name="maxWordLength"></param>
 		public SafeHtmlFilter(int maxWordLength)
 			: base(maxWordLength)
+		{
+		}
+
+		/// <summary>
+		/// Ctor
+		/// </summary>
+		/// <param name="maxWordLength"></param>
+		/// <param name="autoLink"></param>
+		public SafeHtmlFilter(bool autoLink)
+			: base(autoLink)
+		{
+		}
+
+		/// <summary>
+		/// Ctor
+		/// </summary>
+		/// <param name="maxWordLength"></param>
+		/// <param name="autoLink"></param>
+		public SafeHtmlFilter(int maxWordLength, bool autoLink)
+			: base(maxWordLength, autoLink)
 		{
 		}
 
@@ -894,12 +1069,12 @@ namespace JsonFx.BuildTools.HtmlDistiller.Filters
 	/// <summary>
 	/// HtmlFilter which allows all tags/attributes/styles
 	/// </summary>
-	public class UnsafeHtmlFilter : WordBreakFilter
+	public class UnsafeHtmlFilter : AutoLinkFilter
 	{
 		#region Init
 
 		/// <summary>
-		/// Ctor.
+		/// Ctor
 		/// </summary>
 		public UnsafeHtmlFilter()
 			: base(0)
@@ -907,11 +1082,31 @@ namespace JsonFx.BuildTools.HtmlDistiller.Filters
 		}
 
 		/// <summary>
-		/// Ctor.
+		/// Ctor
 		/// </summary>
 		/// <param name="maxWordLength"></param>
 		public UnsafeHtmlFilter(int maxWordLength)
 			: base(maxWordLength)
+		{
+		}
+
+		/// <summary>
+		/// Ctor
+		/// </summary>
+		/// <param name="maxWordLength"></param>
+		/// <param name="autoLink"></param>
+		public UnsafeHtmlFilter(bool autoLink)
+			: base(autoLink)
+		{
+		}
+
+		/// <summary>
+		/// Ctor
+		/// </summary>
+		/// <param name="maxWordLength"></param>
+		/// <param name="autoLink"></param>
+		public UnsafeHtmlFilter(int maxWordLength, bool autoLink)
+			: base(maxWordLength, autoLink)
 		{
 		}
 
