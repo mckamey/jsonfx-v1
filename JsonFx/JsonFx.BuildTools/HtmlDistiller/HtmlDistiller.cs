@@ -1134,10 +1134,7 @@ namespace JsonFx.BuildTools.HtmlDistiller
 			{
 				this.htmlWriter = new HtmlWriter();
 			}
-			if (this.htmlFilter == null)
-			{
-				this.htmlWriter.SetHtmlFilter(this.htmlFilter);
-			}
+			this.htmlWriter.SetHtmlFilter(this.htmlFilter);
 
 			// set up the source
 			if (this.incrementalParsing && this.syncPoint >= 0)
