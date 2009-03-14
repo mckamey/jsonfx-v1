@@ -252,7 +252,7 @@ namespace JsonFx.BuildTools.HtmlDistiller
 		{
 			get
 			{
-				if (this.truncationIndicator = null)
+				if (this.truncationIndicator == null)
 				{
 					return this.EncodeNonAscii ? EllipsisEntity : Ellipsis;
 				}
