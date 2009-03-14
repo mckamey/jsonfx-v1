@@ -30,6 +30,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Text;
 using System.Text.RegularExpressions;
 
 namespace JsonFx.BuildTools.HtmlDistiller.Filters
@@ -96,11 +97,15 @@ namespace JsonFx.BuildTools.HtmlDistiller.Filters
 		private readonly int MaxWordLength;
 
 		// http://www.ietf.org/rfc/rfc1738.txt
-		private const string Pattern_Url = @"(?:(?:ht|f)tp(?:s?)\://)?[a-z0-9][a-z0-9\-\.]*(?:\:[0-9]+)?(?:/[\w/\.\,\;\?\'\+\(\)&%\$#\=~\-]*)?";
+		private const string Pattern_Url = @"(?:ht|f)tp(?:s?)\://[a-z0-9][a-z0-9\-\.]*(?:\:[0-9]+)?(?:/[\w/\.\,\;\?\'\+\(\)&%\$#\=~\-]*)?";
 		private static readonly Regex Regex_Url = new Regex(Pattern_Url, RegexOptions.Compiled|RegexOptions.IgnoreCase|RegexOptions.ECMAScript);
 
 		private const string Pattern_Email = @"\w[\w~\.\-\+/]*\@[a-z0-9][a-z0-9\-\.]*\.(?:[a-zA-Z]{2,6}|[0-9]{1,3})";
 		private static readonly Regex Regex_Email = new System.Text.RegularExpressions.Regex(Pattern_Email, RegexOptions.Compiled|RegexOptions.ECMAScript|RegexOptions.IgnoreCase);
+
+		private const string AutoLinkStart = "<a href=\"";
+		private const string AutoLinkMiddle = "\">";
+		private const string AutoLinkEnd = "</a>";
 
 		#endregion Constants
 
@@ -140,7 +145,7 @@ namespace JsonFx.BuildTools.HtmlDistiller.Filters
 		/// <param name="start"></param>
 		/// <param name="end"></param>
 		/// <param name="replacement"></param>
-		/// <returns></returns>
+		/// <returns>true if literal was changed</returns>
 		public virtual bool FilterLiteral(string source, int start, int end, out string replacement)
 		{
 			replacement = null;
@@ -239,41 +244,103 @@ namespace JsonFx.BuildTools.HtmlDistiller.Filters
 		}
 
 		/// <summary>
-		/// Finds the location of URLs within the literal string.
+		/// Finds any URLs and wraps them with a hyperlink
 		/// </summary>
-		/// <param name="value">the literal to check</param>
-		/// <param name="matches">the collection of matches</param>
-		/// <returns>true if any found</returns>
-		protected bool DetectUrl(string value, out MatchCollection matches)
+		/// <param name="source">original string</param>
+		/// <param name="start">starting index inclusive</param>
+		/// <param name="end">ending index exclusive</param>
+		/// <param name="replacement">a replacement string</param>
+		/// <returns>true if <paramref name="replace"/> should be used to replace literal</returns>
+		protected bool AutoLinkLiteralUrls(string source, int start, int end, out string replacement)
 		{
-			if (String.IsNullOrEmpty(value))
+			StringBuilder builder = null;
+
+			int index,			// the start index of the match
+				length,			// the length of the match
+				last = start;	// the last index written out
+
+			while (this.DetectUrl(source, last, end, out index, out length))
 			{
-				matches = null;
+				if (builder == null)
+				{
+					// populate initial string builder with first unmatched substring
+					builder = new StringBuilder(source, last, index-last, 2*end-start);
+				}
+				else
+				{
+					builder.Append(source, last, index-last);
+				}
+
+				// wrap the match in a hyperlink
+				builder.Append(AutoLinkStart);
+				builder.Append(source, index, length);
+				builder.Append(AutoLinkMiddle);
+				builder.Append(source, index, length);
+				builder.Append(AutoLinkEnd);
+
+				// continue searching from the end of the match
+				last = index+length;
+			}
+
+			if (builder == null)
+			{
+				replacement = null;
 				return false;
 			}
 
-			matches = Regex_Url.Matches(value);
-
-			return matches.Count > 0;
+			builder.Append(source, last, end-last);
+			replacement = builder.ToString();
+			return true;
 		}
 
 		/// <summary>
-		/// Finds the location of email addresses within the literal string.
+		/// Finds the location of URLs within the literal string.
 		/// </summary>
-		/// <param name="value">the literal to check</param>
-		/// <param name="matches">the collection of matches</param>
+		/// <param name="source">original source string</param>
+		/// <param name="start">starting index to check inclusive</param>
+		/// <param name="end">ending index to check exclusive</param>
+		/// <param name="index">the index where match starts</param>
+		/// <param name="length">the length of the match</param>
 		/// <returns>true if any found</returns>
-		protected bool DetectEmail(string value, out MatchCollection matches)
+		protected bool DetectUrl(string source, int start, int end, out int index, out int length)
 		{
-			if (String.IsNullOrEmpty(value))
+			if (String.IsNullOrEmpty(source) || (end <= start))
 			{
-				matches = null;
+				index = -1;
+				length = 0;
 				return false;
 			}
 
-			matches = Regex_Email.Matches(value);
+			Match match = Regex_Url.Match(source, start, end-start);
+			index = match.Index;
+			length = match.Length;
 
-			return matches.Count > 0;
+			return match.Success;
+		}
+
+		/// <summary>
+		/// Finds the location of the first email address within the literal string.
+		/// </summary>
+		/// <param name="source">original source string</param>
+		/// <param name="start">starting index to check inclusive</param>
+		/// <param name="end">ending index to check exclusive</param>
+		/// <param name="index">the index where match starts</param>
+		/// <param name="length">the length of the match</param>
+		/// <returns>true if any found</returns>
+		protected bool DetectEmail(string source, int start, int end, out int index, out int length)
+		{
+			if (String.IsNullOrEmpty(source) || (end <= start))
+			{
+				index = -1;
+				length = 0;
+				return false;
+			}
+
+			Match match = Regex_Email.Match(source, start, end-start);
+			index = match.Index;
+			length = match.Length;
+
+			return match.Success;
 		}
 
 		#endregion Utility Methods
