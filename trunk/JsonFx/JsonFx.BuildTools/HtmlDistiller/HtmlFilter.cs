@@ -159,7 +159,7 @@ namespace JsonFx.BuildTools.HtmlDistiller.Filters
 				{
 					// append all before break
 					replacement += source.Substring(lastOutput, i-lastOutput);
-					replacement += SafeHtmlFilter.WordBreak;
+					replacement += WordBreakFilter.WordBreak;
 					lastOutput = i;
 					sinceSpace = 0;
 				}
@@ -392,7 +392,7 @@ namespace JsonFx.BuildTools.HtmlDistiller.Filters
 		#region Utility Methods
 
 		/// <summary>
-		/// 
+		/// Allows filtering of which URLs are allowed.
 		/// </summary>
 		/// <param name="source"></param>
 		/// <param name="start"></param>
@@ -1128,7 +1128,8 @@ namespace JsonFx.BuildTools.HtmlDistiller.Filters
 	}
 
 	/// <summary>
-	/// HtmlFilter which allows all tags/attributes/styles
+	/// HtmlFilter which allows all tags/attributes/styles/URLs.
+	/// Useful for cleansing potentially broken markup or just applying auto-linking and work-breaking.
 	/// </summary>
 	public class UnsafeHtmlFilter : HyperlinkFilter
 	{
@@ -1207,6 +1208,20 @@ namespace JsonFx.BuildTools.HtmlDistiller.Filters
 		public override bool FilterStyle(string tag, string style, ref string value)
 		{
 			return true;
+		}
+
+		/// <summary>
+		/// Allows all URLs.
+		/// </summary>
+		/// <param name="source"></param>
+		/// <param name="start"></param>
+		/// <param name="end"></param>
+		/// <param name="replacement">the value to replace with</param>
+		/// <returns>true if a replacement value was specified</returns>
+		protected override bool FilterUrl(string source, int start, int end, out string replacement)
+		{
+			replacement = null;
+			return false;
 		}
 
 		#endregion IHtmlFilter Members

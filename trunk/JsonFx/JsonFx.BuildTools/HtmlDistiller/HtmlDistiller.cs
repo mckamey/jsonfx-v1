@@ -1743,11 +1743,34 @@ namespace JsonFx.BuildTools.HtmlDistiller
 		#region Static Methods
 
 		/// <summary>
+		/// Quick safe parsing.
+		/// </summary>
+		/// <param name="html">the source text</param>
+		/// <returns>the filtered markup</returns>
+		public static string ParseSafe(string html)
+		{
+			return HtmlDistiller.ParseSafe(html, 0, 0, false);
+		}
+
+		/// <summary>
+		/// Quick safe parsing.
+		/// </summary>
+		/// <param name="html">the source text</param>
+		/// <param name="maxLength">the maximum text length</param>
+		/// <param name="maxWordLength">the maximum length of a single word before wrapping</param>
+		/// <param name="autoLink">the maximum text length</param>
+		/// <returns>the filtered markup</returns>
+		public static string ParseSafe(string html, int maxLength, int maxWordLength, bool autoLink)
+		{
+			return HtmlDistiller.Parse(html, new SafeHtmlFilter(maxWordLength, autoLink), maxLength);
+		}
+
+		/// <summary>
 		/// Quick parsing utility for common usage.
 		/// </summary>
 		/// <param name="html">the source text</param>
 		/// <param name="filter">a custom HtmlFilter</param>
-		/// <returns>the filtered text</returns>
+		/// <returns>the filtered markup</returns>
 		public static string Parse(string html, IHtmlFilter filter)
 		{
 			return HtmlDistiller.Parse(html, filter, 0);
@@ -1759,13 +1782,42 @@ namespace JsonFx.BuildTools.HtmlDistiller
 		/// <param name="html">the source text</param>
 		/// <param name="filter">a custom HtmlFilter</param>
 		/// <param name="maxLength">the maximum text length</param>
-		/// <returns>the filtered text</returns>
+		/// <returns>the filtered markup</returns>
 		public static string Parse(string html, IHtmlFilter filter, int maxLength)
 		{
 			StringWriter writer = new StringWriter();
 
 			HtmlDistiller parser = new HtmlDistiller(maxLength, filter);
 			parser.HtmlWriter = new HtmlWriter(writer);
+			parser.Parse(html);
+
+			return writer.ToString();
+		}
+
+		/// <summary>
+		/// Quick conversion to plain text.
+		/// </summary>
+		/// <param name="html">the source text</param>
+		/// <param name="maxLength">the maximum text length</param>
+		/// <returns>plain text</returns>
+		public static string PlainText(string html)
+		{
+			return HtmlDistiller.PlainText(html, 0);
+		}
+
+		/// <summary>
+		/// Quick conversion to plain text.
+		/// </summary>
+		/// <param name="html">the source text</param>
+		/// <param name="maxLength">the maximum text length</param>
+		/// <returns>plain text</returns>
+		public static string PlainText(string html, int maxLength)
+		{
+			StringWriter writer = new StringWriter();
+
+			HtmlDistiller parser = new HtmlDistiller(maxLength, new StripHtmlFilter());
+			parser.HtmlWriter = new HtmlWriter(writer);
+			parser.EncodeNonAscii = false;
 			parser.Parse(html);
 
 			return writer.ToString();
