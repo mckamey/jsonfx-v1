@@ -41,9 +41,7 @@ namespace JsonFx.BuildTools.HtmlDistiller.Writers
 	{
 		#region Methods
 
-		void WriteLiteral(char literal);
-
-		void WriteLiteral(string literal);
+		void WriteLiteral(string source, int start, int end, IHtmlFilter filter);
 
 		bool WriteTag(HtmlTag tag, IHtmlFilter filter);
 
@@ -108,14 +106,34 @@ namespace JsonFx.BuildTools.HtmlDistiller.Writers
 
 		#region IHtmlWriter Members
 
-		public void WriteLiteral(char literal)
+		public void WriteLiteral(char literal, IHtmlFilter filter)
 		{
 			this.writer.Write(literal);
 		}
 
-		public void WriteLiteral(string literal)
+		public void WriteLiteral(string literal, IHtmlFilter filter)
 		{
-			this.writer.Write(literal);
+			if (String.IsNullOrEmpty(literal))
+			{
+				return;
+			}
+
+			this.WriteLiteral(literal, 0, literal.Length, filter);
+		}
+
+		public void WriteLiteral(string source, int start, int end, IHtmlFilter filter)
+		{
+			string replacement;
+			if (filter != null && filter.FilterLiteral(source, start, end, out replacement))
+			{
+				// filter has altered the literal
+				this.writer.Write(replacement);
+			}
+			else
+			{
+				// use the original substring
+				this.writer.Write(source.Substring(start, end-start));
+			}
 		}
 
 		/// <summary>

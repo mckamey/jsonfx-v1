@@ -484,7 +484,7 @@ namespace JsonFx.BuildTools.HtmlDistiller
 								if (this.EncodeNonAscii)
 								{
 									// encode LessThan char
-									this.HtmlWriter.WriteLiteral(LessThanEntity);
+									this.HtmlWriter.WriteLiteral(LessThanEntity, 0, LessThanEntity.Length, this.htmlFilter);
 
 									// remove from stream
 									this.EmptyBuffer(1);
@@ -518,7 +518,7 @@ namespace JsonFx.BuildTools.HtmlDistiller
 									if (this.Peek(1) != LFChar)
 									{
 										// just CR so replace CR with LF
-										this.HtmlWriter.WriteLiteral(LFChar);
+										this.HtmlWriter.WriteLiteral(LFChar.ToString(), 0, 1, this.htmlFilter);
 
 										// count toward total text length
 										this.IncTextCount();
@@ -605,7 +605,7 @@ namespace JsonFx.BuildTools.HtmlDistiller
 
 							// encode the non-ASCII char
 							string entity = HtmlDistiller.EncodeHtmlEntity(ch);
-							this.HtmlWriter.WriteLiteral(entity);
+							this.HtmlWriter.WriteLiteral(entity, 0, entity.Length, this.htmlFilter);
 
 							// remove char from stream
 							this.EmptyBuffer(1);
@@ -628,7 +628,7 @@ namespace JsonFx.BuildTools.HtmlDistiller
 								this.WriteBuffer();
 
 								// output decoded char
-								this.HtmlWriter.WriteLiteral(entityChar);
+								this.HtmlWriter.WriteLiteral(entityChar.ToString(), 0, 1, this.htmlFilter);
 
 								// remove char from stream
 								this.EmptyBuffer(entityLength);
@@ -685,8 +685,12 @@ namespace JsonFx.BuildTools.HtmlDistiller
 
 				if (this.MaxLength > 0 && this.textSize >= this.MaxLength)
 				{
-					// source was cut off so add ellipsis
-					this.HtmlWriter.WriteLiteral(this.TruncationIndicator);
+					// source was cut off so add ellipsis or other indicator
+					string trunc = this.TruncationIndicator;
+					if (!String.IsNullOrEmpty(trunc))
+					{
+						this.HtmlWriter.WriteLiteral(trunc, 0, trunc.Length, this.htmlFilter);
+					}
 				}
 
 				if (!this.incrementalParsing)
@@ -1103,7 +1107,9 @@ namespace JsonFx.BuildTools.HtmlDistiller
 			}
 			catch (Exception ex)
 			{
-				try { this.htmlWriter.WriteLiteral("Error in HtmlWriter: "+ex.Message); } catch { }
+				string error = "Error in HtmlWriter: "+ex.Message;
+				try { this.htmlWriter.WriteLiteral(error, 0, error.Length, this.htmlFilter); }
+				catch { }
 			}
 		}
 
@@ -1266,17 +1272,7 @@ namespace JsonFx.BuildTools.HtmlDistiller
 			// do not callback on empty strings
 			if (this.start < this.index)
 			{
-				string replacement;
-				if (this.htmlFilter.FilterLiteral(this.source, this.start, this.index, out replacement))
-				{
-					// filter has altered the literal
-					this.HtmlWriter.WriteLiteral(replacement);
-				}
-				else
-				{
-					// use the original literal
-					this.HtmlWriter.WriteLiteral(this.source.Substring(this.start, this.index-this.start));
-				}
+				this.HtmlWriter.WriteLiteral(this.source, this.start, this.index, this.htmlFilter);
 			}
 			this.start = this.index;
 		}
