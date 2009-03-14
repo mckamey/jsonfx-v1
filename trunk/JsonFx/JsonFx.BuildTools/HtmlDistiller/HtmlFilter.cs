@@ -96,12 +96,8 @@ namespace JsonFx.BuildTools.HtmlDistiller.Filters
 		private const string WordBreak = "<wbr />&shy;";
 		private readonly int MaxWordLength;
 
-		// http://www.ietf.org/rfc/rfc1738.txt
 		private const string Pattern_Url = @"(?:ht|f)tp(?:s?)\://[a-z0-9][a-z0-9\-\.]*(?:\:[0-9]+)?(?:/[\w/\.\,\;\?\'\+\(\)&%\$#\=~\-]*)?";
 		private static readonly Regex Regex_Url = new Regex(Pattern_Url, RegexOptions.Compiled|RegexOptions.IgnoreCase|RegexOptions.ECMAScript);
-
-		private const string Pattern_Email = @"\w[\w~\.\-\+/]*\@[a-z0-9][a-z0-9\-\.]*\.(?:[a-zA-Z]{2,6}|[0-9]{1,3})";
-		private static readonly Regex Regex_Email = new System.Text.RegularExpressions.Regex(Pattern_Email, RegexOptions.Compiled|RegexOptions.ECMAScript|RegexOptions.IgnoreCase);
 
 		private const string AutoLinkStart = "<a href=\"";
 		private const string AutoLinkMiddle = "\">";
@@ -312,31 +308,6 @@ namespace JsonFx.BuildTools.HtmlDistiller.Filters
 			}
 
 			Match match = Regex_Url.Match(source, start, end-start);
-			index = match.Index;
-			length = match.Length;
-
-			return match.Success;
-		}
-
-		/// <summary>
-		/// Finds the location of the first email address within the literal string.
-		/// </summary>
-		/// <param name="source">original source string</param>
-		/// <param name="start">starting index to check inclusive</param>
-		/// <param name="end">ending index to check exclusive</param>
-		/// <param name="index">the index where match starts</param>
-		/// <param name="length">the length of the match</param>
-		/// <returns>true if any found</returns>
-		protected bool DetectEmail(string source, int start, int end, out int index, out int length)
-		{
-			if (String.IsNullOrEmpty(source) || (end <= start))
-			{
-				index = -1;
-				length = 0;
-				return false;
-			}
-
-			Match match = Regex_Email.Match(source, start, end-start);
 			index = match.Index;
 			length = match.Length;
 
