@@ -205,7 +205,7 @@ namespace JsonFx.BuildTools.HtmlDistiller
 		private HtmlTaxonomy taxonomy = HtmlTaxonomy.None;
 		private readonly string rawName;
 		private string tagName;
-		private Dictionary<string, string> attributes;
+		private Dictionary<string, object> attributes;
 		private Dictionary<string, string> styles;
 
 		#endregion Fields
@@ -304,13 +304,13 @@ namespace JsonFx.BuildTools.HtmlDistiller
 		/// <remarks>
 		/// Note: allocates space for attributes as a side effect
 		/// </remarks>
-		public Dictionary<string, string> Attributes
+		public Dictionary<string, object> Attributes
 		{
 			get
 			{
 				if (this.attributes == null)
 				{
-					this.attributes = new Dictionary<string, string>(HtmlTag.DefaultAttributeCapacity, StringComparer.OrdinalIgnoreCase);
+					this.attributes = new Dictionary<string, object>(HtmlTag.DefaultAttributeCapacity, StringComparer.OrdinalIgnoreCase);
 				}
 				return this.attributes;
 			}
@@ -339,7 +339,7 @@ namespace JsonFx.BuildTools.HtmlDistiller
 			{
 				if (this.styles == null)
 				{
-					this.styles = new Dictionary<string, string>(HtmlTag.DefaultStyleCapacity, StringComparer.OrdinalIgnoreCase);
+					this.styles = new Dictionary<string, string>(HtmlTag.DefaultStyleCapacity, StringComparer.Ordinal);
 				}
 				return this.styles;
 			}
@@ -355,7 +355,9 @@ namespace JsonFx.BuildTools.HtmlDistiller
 		{
 			get
 			{
-				if (this.HasAttributes && this.Attributes.ContainsKey(HtmlTag.StyleAttrib))
+				if (this.HasAttributes &&
+					this.Attributes.ContainsKey(HtmlTag.StyleAttrib) &&
+					this.Attributes[HtmlTag.StyleAttrib] != null)
 				{
 					return true;
 				}
@@ -370,11 +372,13 @@ namespace JsonFx.BuildTools.HtmlDistiller
 		{
 			get
 			{
-				if (!this.HasAttributes || !this.Attributes.ContainsKey(HtmlTag.Key_Content))
+				if (!this.HasAttributes ||
+					!this.Attributes.ContainsKey(HtmlTag.Key_Content) ||
+					this.Attributes[HtmlTag.Key_Content] == null)
 				{
 					return String.Empty;
 				}
-				return this.Attributes[HtmlTag.Key_Content];
+				return this.Attributes[HtmlTag.Key_Content].ToString();
 			}
 			set { this.Attributes[HtmlTag.Key_Content] = value; }
 		}
@@ -386,11 +390,13 @@ namespace JsonFx.BuildTools.HtmlDistiller
 		{
 			get
 			{
-				if (!this.HasAttributes || !this.Attributes.ContainsKey(HtmlTag.Key_EndDelim))
+				if (!this.HasAttributes ||
+					!this.Attributes.ContainsKey(HtmlTag.Key_EndDelim) ||
+					this.Attributes[HtmlTag.Key_EndDelim] == null)
 				{
 					return String.Empty;
 				}
-				return this.Attributes[HtmlTag.Key_EndDelim];
+				return this.Attributes[HtmlTag.Key_EndDelim].ToString();
 			}
 			set { this.Attributes[HtmlTag.Key_EndDelim] = value; }
 		}

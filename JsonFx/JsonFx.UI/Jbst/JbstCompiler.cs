@@ -636,58 +636,78 @@ if (""undefined"" === typeof {0}) {{
 							// normalize JBST command names
 							string key = keyRaw.StartsWith(JbstCustomControl.JbstPrefix, StringComparison.OrdinalIgnoreCase) ?
 								keyRaw.ToLowerInvariant() : keyRaw;
-							string value = tag.Attributes[keyRaw];
+							object value = tag.Attributes[keyRaw];
 
-							// TODO: replace this re-parsing
-							if (value.Length >= 4 &&
-								value.StartsWith("<%") &&
-								value.EndsWith("%>"))
+							if (value is HtmlTag)
 							{
-								switch (value[2])
+								HtmlTag codeVal = (HtmlTag)value;
+								switch (codeVal.TagName)
 								{
-									case '-':
+									case "%@":
 									{
-										// TODO: fix as this might be produce false positives
+										// store directive for specialized parsing
+										this.Directives.Append(codeVal.ToString());
 										break;
 									}
-									case '@':
+									case "%!":
 									{
-										this.Directives.Append(value);
+										// analogous to static code, or JSP declarations
+										// executed only on initialization of template
+										// output from declarations are appended after the template
+										this.Declarations.Append(codeVal.Content);
 										break;
 									}
-									case '!':
+									case "%#": // databinding expression
+									//{
+									//    // unparsed expressions are emitted directly into JBST
+									//    JbstUnparsedBlock code = new JbstUnparsedBlock(codeVal.Content);
+									//    this.AddAttribute(key, code);
+									//    break;
+									//}
+									case "%=": // inline expression
 									{
-										this.Declarations.Append(value.Substring(3, value.Length-5));
-										break;
-									}
-									case '=':
-									case '#':
-									{
-										JbstExpressionBlock code = new JbstExpressionBlock(
-											value.Substring(3, value.Length-5));
+										// expressions are emitted directly into JBST
+										JbstExpressionBlock code = new JbstExpressionBlock(codeVal.Content);
 										this.AddAttribute(key, code);
 										break;
 									}
-									case '$':
+									case "%$":
 									{
-										JbstExtensionBlock code = new JbstExtensionBlock(
-											value.Substring(3, value.Length-5),
-											this.path);
+										// expressions are emitted directly into JBST
+										JbstExtensionBlock code = new JbstExtensionBlock(codeVal.Content, this.path);
+										this.AddAttribute(key, code);
+										break;
+									}
+									case "%":
+									{
+										// statements are emitted directly into JBST
+										JbstStatementBlock code = new JbstStatementBlock(codeVal.Content);
+										this.AddAttribute(key, code);
+										break;
+									}
+									case "%--":
+									{
+										// server-side comments are omitted even for debug
+										break;
+									}
+									case "!--":
+									{
+										// HTML Comments are emitted directly into JBST
+										JbstCommentBlock code = new JbstCommentBlock(tag.Content);
 										this.AddAttribute(key, code);
 										break;
 									}
 									default:
 									{
-										JbstStatementBlock code = new JbstStatementBlock(
-											value.Substring(2, value.Length-4));
-										this.AddAttribute(key, code);
+										JbstLiteral literal = new JbstLiteral(tag.ToString(), false);
+										this.AddAttribute(key, literal);
 										break;
 									}
 								}
 							}
-							else
+							else if (value is string)
 							{
-								this.AddAttribute(key, value);
+								this.AddAttribute(key, (string)value);
 							}
 						}
 					}
@@ -729,13 +749,6 @@ if (""undefined"" === typeof {0}) {{
 							this.Declarations.Append(tag.Content);
 							break;
 						}
-						case "%=": // inline expression
-						{
-							// expressions are emitted directly into JBST
-							JbstExpressionBlock code = new JbstExpressionBlock(tag.Content);
-							this.AppendChild(code);
-							break;
-						}
 						case "%#": // databinding expression
 						{
 							// unparsed expressions are emitted directly into JBST
@@ -743,12 +756,17 @@ if (""undefined"" === typeof {0}) {{
 							this.AppendChild(code);
 							break;
 						}
+						case "%=": // inline expression
+						{
+							// expressions are emitted directly into JBST
+							JbstExpressionBlock code = new JbstExpressionBlock(tag.Content);
+							this.AppendChild(code);
+							break;
+						}
 						case "%$":
 						{
 							// expressions are emitted directly into JBST
-							JbstExtensionBlock code = new JbstExtensionBlock(
-								tag.Content,
-								this.path);
+							JbstExtensionBlock code = new JbstExtensionBlock(tag.Content, this.path);
 							this.AppendChild(code);
 							break;
 						}

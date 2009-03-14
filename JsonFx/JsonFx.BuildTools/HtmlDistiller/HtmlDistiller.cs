@@ -906,7 +906,7 @@ namespace JsonFx.BuildTools.HtmlDistiller
 					}
 					else
 					{
-						tag.Attributes[name] = (value != null) ? value.ToString() : null;
+						tag.Attributes[name] = value;
 					}
 				}
 
@@ -1016,7 +1016,7 @@ namespace JsonFx.BuildTools.HtmlDistiller
 				this.EmptyBuffer(1);
 			}
 
-			if (tag != null && this.htmlFilter.FilterTag(tag))
+			if (tag != null)
 			{
 				return tag;
 			}
