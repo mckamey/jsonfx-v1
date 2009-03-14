@@ -103,12 +103,13 @@ namespace JsonFx.BuildTools.HtmlDistiller
 		private string source = String.Empty;
 		private IHtmlFilter htmlFilter;
 		private IHtmlWriter htmlWriter;
-		private bool isInitialized = false;
-		private int maxLength = 0;
-		private bool normalizeWhitespace = false;
+		private bool isInitialized;
+		private int maxLength;
+		private bool normalizeWhitespace;
 		private bool balanceTags = true;
 		private bool encodeNonAscii = true;
-		private bool incrementalParsing = false;
+		private bool incrementalParsing;
+		private string truncationIndicator;
 
 		private int index;		// current char in source
 		private int start;		// last written char in source
@@ -241,6 +242,23 @@ namespace JsonFx.BuildTools.HtmlDistiller
 					this.encodeNonAscii = value;
 				}
 			}
+		}
+
+		/// <summary>
+		/// Gets and sets the suffix that indicates the input was truncated.
+		/// Note: setting to null defaults to ellipsis. Use String.Empty for no indicator.
+		/// </summary>
+		public string TruncationIndicator
+		{
+			get
+			{
+				if (this.truncationIndicator = null)
+				{
+					return this.EncodeNonAscii ? EllipsisEntity : Ellipsis;
+				}
+				return this.truncationIndicator;
+			}
+			set { this.truncationIndicator = value; }
 		}
 
 		/// <summary>
@@ -668,7 +686,7 @@ namespace JsonFx.BuildTools.HtmlDistiller
 				if (this.MaxLength > 0 && this.textSize >= this.MaxLength)
 				{
 					// source was cut off so add ellipsis
-					this.HtmlWriter.WriteLiteral(this.EncodeNonAscii ? EllipsisEntity : Ellipsis);
+					this.HtmlWriter.WriteLiteral(this.TruncationIndicator);
 				}
 
 				if (!this.incrementalParsing)
