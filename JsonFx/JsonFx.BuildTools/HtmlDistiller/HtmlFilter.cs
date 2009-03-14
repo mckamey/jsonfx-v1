@@ -96,11 +96,11 @@ namespace JsonFx.BuildTools.HtmlDistiller.Filters
 		private readonly int MaxWordLength;
 
 		// http://www.ietf.org/rfc/rfc1738.txt
-		private const string Pattern_Url = @"(ht|f)tp(s?)\://[a-z0-9][a-z0-9\-\.]*(\:[0-9]+)?[a-z0-9/\.\,\;\?\'\+\(\)&%\$#\=~_\-]*";
+		private const string Pattern_Url = @"(?:(?:ht|f)tp(?:s?)\://)?[a-z0-9][a-z0-9\-\.]*(?:\:[0-9]+)?(?:/[\w/\.\,\;\?\'\+\(\)&%\$#\=~\-]*)?";
 		private static readonly Regex Regex_Url = new Regex(Pattern_Url, RegexOptions.Compiled|RegexOptions.IgnoreCase|RegexOptions.ECMAScript);
 
-		private const string Pattern_Email = @"^((?:(?:(?:(\w|~)[~\.\-\+/]?)*)(\w|~))+)\@((?:(?:(?:\w[\.\-\+]?){0,62})\w)+)\.([a-zA-Z]{2,6})$|^";
-		private static readonly Regex Regex_Email = new System.Text.RegularExpressions.Regex(Pattern_Email, RegexOptions.Compiled | RegexOptions.ECMAScript | RegexOptions.IgnoreCase);
+		private const string Pattern_Email = @"\w[\w~\.\-\+/]*\@[a-z0-9][a-z0-9\-\.]*\.(?:[a-zA-Z]{2,6}|[0-9]{1,3})";
+		private static readonly Regex Regex_Email = new System.Text.RegularExpressions.Regex(Pattern_Email, RegexOptions.Compiled|RegexOptions.ECMAScript|RegexOptions.IgnoreCase);
 
 		#endregion Constants
 
