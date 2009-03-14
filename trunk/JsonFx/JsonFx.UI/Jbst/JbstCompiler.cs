@@ -47,7 +47,7 @@ namespace JsonFx.UI.Jbst
 	/// <summary>
 	/// JBST Template Compiler
 	/// </summary>
-	public class JbstCompiler : IHtmlFilter, IHtmlWriter
+	public class JbstCompiler : IHtmlWriter, IHtmlFilter
 	{
 		#region Constants
 
@@ -240,15 +240,15 @@ if (""undefined"" === typeof {0}) {{
 			text = HtmlDistiller.DecodeHtmlEntities(text);
 
 			JbstLiteral literal = this.current.ChildControls.Last as JbstLiteral;
-			if (literal == null)
+			if (literal != null)
 			{
-				literal = new JbstLiteral(text, this.NormalizeLiterals);
-				this.current.ChildControls.Add(literal);
-			}
-			else
-			{
+				// combine contiguous literals into single for reduced space and processing
 				literal.Text += text;
+				return;
 			}
+
+			literal = new JbstLiteral(text, this.NormalizeLiterals);
+			this.current.ChildControls.Add(literal);
 		}
 
 		internal void AppendChild(JbstControl child)
@@ -261,6 +261,17 @@ if (""undefined"" === typeof {0}) {{
 			if (this.current == null)
 			{
 				this.current = this.document;
+			}
+
+			if (child is JbstLiteral)
+			{
+				// combine contiguous literals into single for reduced space and processing
+				JbstLiteral literal = this.current.ChildControls.Last as JbstLiteral;
+				if (literal != null)
+				{
+					literal.Text += ((JbstLiteral)child).Text;
+					return;
+				}
 			}
 
 			this.current.ChildControls.Add(child);
@@ -610,14 +621,9 @@ if (""undefined"" === typeof {0}) {{
 
 		#region IHtmlWriter Members
 
-		void IHtmlWriter.WriteLiteral(string literal)
+		void IHtmlWriter.WriteLiteral(string source, int start, int end, IHtmlFilter filter)
 		{
-			this.AppendChild(literal);
-		}
-
-		void IHtmlWriter.WriteLiteral(char literal)
-		{
-			this.AppendChild(literal.ToString());
+			this.AppendChild(source.Substring(start, end-start));
 		}
 
 		bool IHtmlWriter.WriteTag(HtmlTag tag, IHtmlFilter filter)
@@ -693,14 +699,14 @@ if (""undefined"" === typeof {0}) {{
 									case "!--":
 									{
 										// HTML Comments are emitted directly into JBST
-										JbstCommentBlock code = new JbstCommentBlock(tag.Content);
+										JbstCommentBlock code = new JbstCommentBlock(codeVal.Content);
 										this.AddAttribute(key, code);
 										break;
 									}
 									default:
 									{
-										JbstLiteral literal = new JbstLiteral(tag.ToString(), false);
-										this.AddAttribute(key, literal);
+										// unrecognized sequences get emitted as encoded text
+										this.AddAttribute(key, codeVal.ToString());
 										break;
 									}
 								}
@@ -791,8 +797,8 @@ if (""undefined"" === typeof {0}) {{
 						}
 						default:
 						{
-							JbstLiteral literal = new JbstLiteral(tag.ToString(), false);
-							this.AppendChild(literal);
+							// unrecognized sequences get emitted as encoded text
+							this.AppendChild(tag.ToString());
 							break;
 						}
 					}
@@ -813,24 +819,22 @@ if (""undefined"" === typeof {0}) {{
 
 		bool IHtmlFilter.FilterTag(HtmlTag tag)
 		{
-			return true;
+			throw new NotImplementedException();
 		}
 
 		bool IHtmlFilter.FilterAttribute(string tag, string attribute, ref string value)
 		{
-			return true;
+			throw new NotImplementedException();
 		}
 
 		bool IHtmlFilter.FilterStyle(string tag, string style, ref string value)
 		{
-			return true;
+			throw new NotImplementedException();
 		}
 
 		bool IHtmlFilter.FilterLiteral(string source, int start, int end, out string replacement)
 		{
-			replacement = null;
-
-			return false;
+			throw new NotImplementedException();
 		}
 
 		#endregion IHtmlFilter Members
