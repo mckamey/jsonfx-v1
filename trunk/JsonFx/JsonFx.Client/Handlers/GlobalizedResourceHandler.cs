@@ -162,7 +162,9 @@ namespace JsonFx.Handlers
 		void IHttpHandler.ProcessRequest(HttpContext context)
 		{
 			string setting = context.Request.QueryString[null];
-			bool isDebug = ResourceHandler.DebugFlag.Equals(setting, StringComparison.OrdinalIgnoreCase);
+			bool isDebug = (String.IsNullOrEmpty(setting) && context.IsDebuggingEnabled) ||
+				StringComparer.OrdinalIgnoreCase.Equals(ResourceHandler.DebugFlag, setting);
+
 			if (!isDebug)
 			{
 				// TODO: provide a mechanism for disabling compression?

@@ -71,7 +71,8 @@ namespace JsonFx.Handlers
 		void IHttpHandler.ProcessRequest(HttpContext context)
 		{
 			string cacheKey = context.Request.QueryString[null];
-			bool isDebug = ResourceHandler.DebugFlag.Equals(cacheKey, StringComparison.OrdinalIgnoreCase);
+			bool isDebug = (String.IsNullOrEmpty(cacheKey) && context.IsDebuggingEnabled) ||
+				StringComparer.OrdinalIgnoreCase.Equals(ResourceHandler.DebugFlag, cacheKey);
 
 			context.Response.ClearHeaders();
 			context.Response.BufferOutput = true;
@@ -263,7 +264,9 @@ namespace JsonFx.Handlers
 		private static BuildResultType GetOutputEncoding(HttpContext context)
 		{
 			string setting = context.Request.QueryString[null];
-			bool isDebug = ResourceHandler.DebugFlag.Equals(setting, StringComparison.OrdinalIgnoreCase);
+			bool isDebug = (String.IsNullOrEmpty(setting) && context.IsDebuggingEnabled) ||
+				StringComparer.OrdinalIgnoreCase.Equals(ResourceHandler.DebugFlag, setting);
+
 			if (isDebug)
 			{
 				return BuildResultType.PrettyPrint;
