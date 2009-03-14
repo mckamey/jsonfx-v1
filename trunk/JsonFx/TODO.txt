@@ -1,6 +1,8 @@
-2009-03-12 @ 08:43
+2009-03-14 @ 11:51
 
-- add autoparsing of URLs into <a href="url">url</a>
+- input type="radio" cannot be clicked when generated
+	<input type="radio" id="foo-radio" name="FooChoice" checked="checked" value="FooChoiceA" /><label for="foo-radio">Foo Choice A</label>
+- BUG: JsonML builder "enctype" attribute is "encoding" property in IE6/7
 - add anonymous templates inside server jbst:control
 	- just parse on the fly?
 	- default inner property for default content?
