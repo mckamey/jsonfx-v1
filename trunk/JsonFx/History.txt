@@ -1,8 +1,9 @@
 Release History
 
 v1.0.0903.15xx
-- added auto-link parsing into HtmlDistiller (URLs in literals can be optionally converted to hyperlinks)
-- auto-link capability leverages further customization through FilterUrl method
+- HtmlDistiller: added auto-link parsing (URLs in literals can be optionally converted to hyperlinks)
+- HtmlDistiller: auto-link capability leverages further customization through FilterUrl method
+- HtmlDistiller: added ability to change the truncation indicator (defaults to ellipsis)
 - now driving the default for compacted scripts/css/merge off the compilation debug="[bool]" app setting (rather than always compacted)
   i.e. no flag switches based upon config, "?debug" is always debug, ?[sha1-hash] is always permanently cached, any other value is always compacted
 
