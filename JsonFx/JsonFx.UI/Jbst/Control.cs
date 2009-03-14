@@ -193,10 +193,14 @@ namespace JsonFx.UI.Jbst
 				writer.Write(this.ClientID);
 				writer.Write("\">");
 
-				if (this.inlineJbst != null)
+				if (this.inlineJbst == null)
 				{
 					// render out any children as loading/error markup
 					base.RenderChildren(writer);
+				}
+				else if (this.dataBlock != null)
+				{
+					this.dataBlock.RenderControl(writer);
 				}
 
 				// build the binding script
