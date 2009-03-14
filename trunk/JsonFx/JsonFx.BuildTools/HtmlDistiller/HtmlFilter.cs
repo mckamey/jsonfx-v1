@@ -74,7 +74,7 @@ namespace JsonFx.BuildTools.HtmlDistiller.Filters
 		/// <param name="start">starting index inclusive</param>
 		/// <param name="end">ending index exclusive</param>
 		/// <param name="replacement">a replacement string</param>
-		/// <returns>true if <paramref name="replace"/> should be used to replace literal</returns>
+		/// <returns>true if <paramref name="replacement"/> should be used to replace literal</returns>
 		/// <remarks>
 		/// This uses the original source string, start and end rather than passing a substring
 		/// in order to not generate a strings for every literal.  The internals of HtmlDistiller
@@ -203,11 +203,11 @@ namespace JsonFx.BuildTools.HtmlDistiller.Filters
 	/// <summary>
 	/// Defines a filter which optionally auto-links URLs in literals
 	/// </summary>
-	public abstract class AutoLinkFilter : WordBreakFilter
+	public abstract class HyperlinkFilter : WordBreakFilter
 	{
 		#region Constants
 
-		private const string Pattern_Url = @"(?:ht|f)tp(?:s?)\://[a-z0-9][a-z0-9\-\.]*(?:\:[0-9]+)?(?:/[\w/\.\,\;\?\'\+\(\)&%\$#\=~\-]*)?";
+		private const string Pattern_Url = @"\b[a-z]+\://[a-z0-9][a-z0-9\-\.]*(?:\:[0-9]+)?(?:/[\w/\.\,\;\?\'\+\(\)&%\$#\=~\-]*)?";
 		private static readonly Regex Regex_Url = new Regex(Pattern_Url, RegexOptions.Compiled | RegexOptions.IgnoreCase | RegexOptions.ECMAScript);
 
 		private const string AutoLinkStart = "<a href=\"";
@@ -227,7 +227,7 @@ namespace JsonFx.BuildTools.HtmlDistiller.Filters
 		/// <summary>
 		/// Ctor
 		/// </summary>
-		public AutoLinkFilter()
+		public HyperlinkFilter()
 			: base(0)
 		{
 		}
@@ -236,7 +236,7 @@ namespace JsonFx.BuildTools.HtmlDistiller.Filters
 		/// Ctor
 		/// </summary>
 		/// <param name="maxWordLength"></param>
-		public AutoLinkFilter(int maxWordLength)
+		public HyperlinkFilter(int maxWordLength)
 			: base(maxWordLength)
 		{
 		}
@@ -245,7 +245,7 @@ namespace JsonFx.BuildTools.HtmlDistiller.Filters
 		/// Ctor
 		/// </summary>
 		/// <param name="autoLink"></param>
-		public AutoLinkFilter(bool autoLink)
+		public HyperlinkFilter(bool autoLink)
 			: this(0, autoLink)
 		{
 		}
@@ -255,7 +255,7 @@ namespace JsonFx.BuildTools.HtmlDistiller.Filters
 		/// </summary>
 		/// <param name="maxWordLength"></param>
 		/// <param name="autoLink"></param>
-		public AutoLinkFilter(int maxWordLength, bool autoLink)
+		public HyperlinkFilter(int maxWordLength, bool autoLink)
 			: base(maxWordLength)
 		{
 			this.autoLink = autoLink;
@@ -285,7 +285,7 @@ namespace JsonFx.BuildTools.HtmlDistiller.Filters
 		/// <param name="start">starting index inclusive</param>
 		/// <param name="end">ending index exclusive</param>
 		/// <param name="replacement">a replacement string</param>
-		/// <returns>true if <paramref name="replace"/> should be used to replace literal</returns>
+		/// <returns>true if <paramref name="replacement"/> should be used to replace literal</returns>
 		public override bool FilterLiteral(string source, int start, int end, out string replacement)
 		{
 			if (!this.AutoLink)
@@ -330,7 +330,15 @@ namespace JsonFx.BuildTools.HtmlDistiller.Filters
 
 				// wrap the match in a hyperlink
 				builder.Append(AutoLinkStart);
-				builder.Append(source, index, length);
+				if (this.FilterUrl(source, index, index+length, out replacement))
+				{
+					// allow additional filtering on the safety of the URL
+					builder.Append(replacement);
+				}
+				else
+				{
+					builder.Append(source, index, length);
+				}
 				builder.Append(AutoLinkMiddle);
 				if (base.FilterLiteral(source, index, index+length, out replacement))
 				{
@@ -374,33 +382,40 @@ namespace JsonFx.BuildTools.HtmlDistiller.Filters
 		#region Utility Methods
 
 		/// <summary>
-		/// Filters URLs based upon protocol
+		/// 
 		/// </summary>
-		/// <param name="value"></param>
-		/// <returns></returns>
-		protected virtual bool FilterUrl(ref string value)
+		/// <param name="source"></param>
+		/// <param name="start"></param>
+		/// <param name="end"></param>
+		/// <param name="replacement">the value to replace with</param>
+		/// <returns>true if a replacement value was specified</returns>
+		protected virtual bool FilterUrl(string source, int start, int end, out string replacement)
 		{
-			if (String.IsNullOrEmpty(value))
+			if (String.IsNullOrEmpty(source) || (end <= start))
 			{
+				replacement = null;
 				return false;
 			}
 
 			// TODO: see http://ha.ckers.org/xss.html for other attacks
-			value = value.Trim();
-			string protocol = value.Substring(0, value.IndexOf(':') + 1);
-			switch (protocol.ToLowerInvariant())
+			string protocol = source.Substring(start, source.IndexOf(':', start, end-start)-start+1);
+			switch (protocol.TrimStart().ToLowerInvariant())
 			{
 				case "http:":
 				case "https:":
 				case "mailto:":
 				case "":
-					{
-						return true;
-					}
+				{
+					// replace with empty string
+					replacement = null;
+					return false;
+				}
 				default:
-					{
-						return false;
-					}
+				{
+					// do not need to replace
+					replacement = String.Empty;
+					return true;
+				}
 			}
 		}
 
@@ -435,7 +450,7 @@ namespace JsonFx.BuildTools.HtmlDistiller.Filters
 	/// <summary>
 	/// HtmlFilter which strips all tags from the input
 	/// </summary>
-	public class StripHtmlFilter : AutoLinkFilter
+	public class StripHtmlFilter : HyperlinkFilter
 	{
 		#region Init
 
@@ -520,7 +535,7 @@ namespace JsonFx.BuildTools.HtmlDistiller.Filters
 	/// <summary>
 	/// HtmlFilter which allows only simple tags/attributes
 	/// </summary>
-	public class StrictHtmlFilter : AutoLinkFilter
+	public class StrictHtmlFilter : HyperlinkFilter
 	{
 		#region Init
 
@@ -614,7 +629,13 @@ namespace JsonFx.BuildTools.HtmlDistiller.Filters
 					{
 						case "href":
 						{
-							return this.FilterUrl(ref value);
+							string replacement;
+							if (value != null &&
+								this.FilterUrl(value, 0, value.Length, out replacement))
+							{
+								value = replacement;
+							}
+							return !String.IsNullOrEmpty(value);
 						}
 						case "target":
 						{
@@ -634,7 +655,13 @@ namespace JsonFx.BuildTools.HtmlDistiller.Filters
 						}
 						case "src":
 						{
-							return this.FilterUrl(ref value);
+							string replacement;
+							if (value != null &&
+								this.FilterUrl(value, 0, value.Length, out replacement))
+							{
+								value = replacement;
+							}
+							return !String.IsNullOrEmpty(value);
 						}
 					}
 					return false;
@@ -661,7 +688,7 @@ namespace JsonFx.BuildTools.HtmlDistiller.Filters
 	/// <summary>
 	/// HtmlFilter which allows only safe tags/attributes/styles
 	/// </summary>
-	public class SafeHtmlFilter : AutoLinkFilter
+	public class SafeHtmlFilter : HyperlinkFilter
 	{
 		#region Init
 
@@ -835,7 +862,13 @@ namespace JsonFx.BuildTools.HtmlDistiller.Filters
 					{
 						case "href":
 						{
-							return this.FilterUrl(ref value);
+							string replacement;
+							if (value != null &&
+								this.FilterUrl(value, 0, value.Length, out replacement))
+							{
+								value = replacement;
+							}
+							return !String.IsNullOrEmpty(value);
 						}
 						case "target":
 						{
@@ -857,7 +890,13 @@ namespace JsonFx.BuildTools.HtmlDistiller.Filters
 						}
 						case "src":
 						{
-							return this.FilterUrl(ref value);
+							string replacement;
+							if (value != null &&
+								this.FilterUrl(value, 0, value.Length, out replacement))
+							{
+								value = replacement;
+							}
+							return !String.IsNullOrEmpty(value);
 						}
 					}
 					return false;
@@ -920,7 +959,13 @@ namespace JsonFx.BuildTools.HtmlDistiller.Filters
 						}
 						case "src":
 						{
-							return this.FilterUrl(ref value);
+							string replacement;
+							if (value != null &&
+								this.FilterUrl(value, 0, value.Length, out replacement))
+							{
+								value = replacement;
+							}
+							return !String.IsNullOrEmpty(value);
 						}
 					}
 					return false;
@@ -941,7 +986,13 @@ namespace JsonFx.BuildTools.HtmlDistiller.Filters
 						case "dynsrc":
 						case "src":
 						{
-							return this.FilterUrl(ref value);
+							string replacement;
+							if (value != null &&
+								this.FilterUrl(value, 0, value.Length, out replacement))
+							{
+								value = replacement;
+							}
+							return !String.IsNullOrEmpty(value);
 						}
 					}
 					return false;
@@ -1069,7 +1120,7 @@ namespace JsonFx.BuildTools.HtmlDistiller.Filters
 	/// <summary>
 	/// HtmlFilter which allows all tags/attributes/styles
 	/// </summary>
-	public class UnsafeHtmlFilter : AutoLinkFilter
+	public class UnsafeHtmlFilter : HyperlinkFilter
 	{
 		#region Init
 
