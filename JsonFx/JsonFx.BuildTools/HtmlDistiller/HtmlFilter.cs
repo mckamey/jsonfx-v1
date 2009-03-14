@@ -328,27 +328,37 @@ namespace JsonFx.BuildTools.HtmlDistiller.Filters
 					}
 				}
 
-				// wrap the match in a hyperlink
-				builder.Append(AutoLinkStart);
-				if (this.FilterUrl(source, index, index+length, out replacement))
+				bool replace = this.FilterUrl(source, index, index+length, out replacement);
+
+				if (replace && String.IsNullOrEmpty(replacement))
 				{
-					// allow additional filtering on the safety of the URL
-					builder.Append(replacement);
+					// filter URL isn't allowing this to be linked as a URL
+					builder.Append(source, index, length);
 				}
 				else
 				{
-					builder.Append(source, index, length);
+					// wrap the match in a hyperlink
+					builder.Append(AutoLinkStart);
+					if (replace)
+					{
+						// allow additional filtering on the safety of the URL
+						builder.Append(replacement);
+					}
+					else
+					{
+						builder.Append(source, index, length);
+					}
+					builder.Append(AutoLinkMiddle);
+					if (base.FilterLiteral(source, index, index+length, out replacement))
+					{
+						builder.Append(replacement);
+					}
+					else
+					{
+						builder.Append(source, index, length);
+					}
+					builder.Append(AutoLinkEnd);
 				}
-				builder.Append(AutoLinkMiddle);
-				if (base.FilterLiteral(source, index, index+length, out replacement))
-				{
-					builder.Append(replacement);
-				}
-				else
-				{
-					builder.Append(source, index, length);
-				}
-				builder.Append(AutoLinkEnd);
 
 				// continue searching from the end of the match
 				last = index + length;
@@ -406,14 +416,14 @@ namespace JsonFx.BuildTools.HtmlDistiller.Filters
 				case "mailto:":
 				case "":
 				{
-					// replace with empty string
+					// do not need to replace
 					replacement = null;
 					return false;
 				}
 				default:
 				{
-					// do not need to replace
-					replacement = String.Empty;
+					// completely remove value
+					replacement = null;
 					return true;
 				}
 			}
