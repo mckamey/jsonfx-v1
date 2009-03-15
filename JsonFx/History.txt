@@ -1,6 +1,6 @@
 Release History
 
-v1.0.0903.15xx
+v1.0.0903.1508
 - HtmlDistiller: added auto-link parsing (URLs in literals can be optionally converted to hyperlinks)
 - HtmlDistiller: auto-link capability leverages further customization through FilterUrl method
 - HtmlDistiller: added ability to change the truncation indicator (defaults to ellipsis)
