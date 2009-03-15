@@ -67,7 +67,7 @@ namespace JsonFx.BuildTools.HtmlDistiller.Writers
 		#region Init
 
 		/// <summary>
-		/// Ctor.
+		/// Ctor
 		/// </summary>
 		public HtmlWriter()
 			: this((TextWriter)null)
@@ -75,7 +75,7 @@ namespace JsonFx.BuildTools.HtmlDistiller.Writers
 		}
 
 		/// <summary>
-		/// Ctor.
+		/// Ctor
 		/// </summary>
 		/// <param name="writer">the underlying Stream</param>
 		public HtmlWriter(Stream stream)
@@ -84,7 +84,7 @@ namespace JsonFx.BuildTools.HtmlDistiller.Writers
 		}
 
 		/// <summary>
-		/// Ctor.
+		/// Ctor
 		/// </summary>
 		/// <param name="writer">the underlying TextWriter</param>
 		public HtmlWriter(TextWriter writer)
