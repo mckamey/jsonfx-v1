@@ -484,7 +484,7 @@ namespace JsonFx.BuildTools.HtmlDistiller
 								if (this.EncodeNonAscii)
 								{
 									// encode LessThan char
-									this.HtmlWriter.WriteLiteral(LessThanEntity, 0, LessThanEntity.Length);
+									this.HtmlWriter.WriteLiteral(LessThanEntity);
 
 									// remove from stream
 									this.EmptyBuffer(1);
@@ -518,7 +518,7 @@ namespace JsonFx.BuildTools.HtmlDistiller
 									if (this.Peek(1) != LFChar)
 									{
 										// just CR so replace CR with LF
-										this.HtmlWriter.WriteLiteral(LFChar.ToString(), 0, 1);
+										this.HtmlWriter.WriteLiteral(LFChar.ToString());
 
 										// count toward total text length
 										this.IncTextCount();
@@ -605,7 +605,7 @@ namespace JsonFx.BuildTools.HtmlDistiller
 
 							// encode the non-ASCII char
 							string entity = HtmlDistiller.EncodeHtmlEntity(ch);
-							this.HtmlWriter.WriteLiteral(entity, 0, entity.Length);
+							this.HtmlWriter.WriteLiteral(entity);
 
 							// remove char from stream
 							this.EmptyBuffer(1);
@@ -628,7 +628,7 @@ namespace JsonFx.BuildTools.HtmlDistiller
 								this.WriteBuffer();
 
 								// output decoded char
-								this.HtmlWriter.WriteLiteral(entityChar.ToString(), 0, 1);
+								this.HtmlWriter.WriteLiteral(entityChar.ToString());
 
 								// remove char from stream
 								this.EmptyBuffer(entityLength);
@@ -686,11 +686,7 @@ namespace JsonFx.BuildTools.HtmlDistiller
 				if (this.MaxLength > 0 && this.textSize >= this.MaxLength)
 				{
 					// source was cut off so add ellipsis or other indicator
-					string trunc = this.TruncationIndicator;
-					if (!String.IsNullOrEmpty(trunc))
-					{
-						this.HtmlWriter.WriteLiteral(trunc, 0, trunc.Length);
-					}
+					this.HtmlWriter.WriteLiteral(this.TruncationIndicator);
 				}
 
 				if (!this.incrementalParsing)
@@ -1107,8 +1103,7 @@ namespace JsonFx.BuildTools.HtmlDistiller
 			}
 			catch (Exception ex)
 			{
-				string error = "Error in HtmlWriter: "+ex.Message;
-				try { this.htmlWriter.WriteLiteral(error, 0, error.Length); }
+				try { this.htmlWriter.WriteLiteral("Error writing HtmlTag: "+ex.Message); }
 				catch { }
 			}
 		}

@@ -43,6 +43,8 @@ namespace JsonFx.BuildTools.HtmlDistiller.Writers
 
 		void SetHtmlFilter(IHtmlFilter filter);
 
+		void WriteLiteral(string value);
+
 		void WriteLiteral(string source, int start, int end);
 
 		bool WriteTag(HtmlTag tag);
@@ -112,6 +114,14 @@ namespace JsonFx.BuildTools.HtmlDistiller.Writers
 		void IHtmlWriter.SetHtmlFilter(IHtmlFilter filter)
 		{
 			this.filter = filter;
+		}
+
+		public void WriteLiteral(string value)
+		{
+			if (!String.IsNullOrEmpty(value))
+			{
+				this.WriteLiteral(value, 0, value.Length);
+			}
 		}
 
 		public virtual void WriteLiteral(string source, int start, int end)

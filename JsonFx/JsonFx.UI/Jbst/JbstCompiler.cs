@@ -625,6 +625,11 @@ if (""undefined"" === typeof {0}) {{
 			// do nothing
 		}
 
+		void IHtmlWriter.WriteLiteral(string value)
+		{
+			this.AppendChild(value);
+		}
+
 		void IHtmlWriter.WriteLiteral(string source, int start, int end)
 		{
 			this.AppendChild(source.Substring(start, end-start));
