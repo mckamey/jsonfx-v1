@@ -182,7 +182,7 @@ namespace JsonFx.UI.Jbst
 			{
 				if (String.IsNullOrEmpty(this.Name) && this.inlineJbst == null)
 				{
-					this.ParseJbstContents();
+					//this.ParseJbstContents();
 				}
 
 				// generate an ID for controls which do not have explicit
