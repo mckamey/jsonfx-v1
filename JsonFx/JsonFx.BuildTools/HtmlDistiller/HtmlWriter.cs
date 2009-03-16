@@ -156,6 +156,11 @@ namespace JsonFx.BuildTools.HtmlDistiller.Writers
 				return false;
 			}
 
+			if (tag.TagType == HtmlTagType.Unparsed)
+			{
+				return this.WriteUnparsedTag(tag);
+			}
+
 			this.writer.Write('<');
 			if (tag.TagType == HtmlTagType.EndTag)
 			{
@@ -173,11 +178,7 @@ namespace JsonFx.BuildTools.HtmlDistiller.Writers
 				this.WriteStyles(tag);
 			}
 
-			if (tag.TagType == HtmlTagType.Unparsed)
-			{
-				this.writer.Write(tag.EndDelim);
-			}
-			else if (tag.TagType == HtmlTagType.FullTag)
+			if (tag.TagType == HtmlTagType.FullTag)
 			{
 				this.writer.Write(" /");
 			}
@@ -190,18 +191,22 @@ namespace JsonFx.BuildTools.HtmlDistiller.Writers
 
 		#region Methods
 
+		private bool WriteUnparsedTag(HtmlTag tag)
+		{
+			this.writer.Write('<');
+			this.writer.Write(tag.RawName);
+			this.writer.Write(tag.Content);
+			this.writer.Write(tag.EndDelim);
+			this.writer.Write('>');
+			return true;
+		}
+
 		/// <summary>
 		/// Renders the attributes to the output
 		/// </summary>
 		/// <param name="output"></param>
-		protected void WriteAttributes(HtmlTag tag)
+		private void WriteAttributes(HtmlTag tag)
 		{
-			if (tag.TagType == HtmlTagType.Unparsed)
-			{
-				this.writer.Write(tag.Content);
-				return;
-			}
-
 			foreach (string key in tag.Attributes.Keys)
 			{
 				object valObj = tag.Attributes[key];
@@ -220,17 +225,20 @@ namespace JsonFx.BuildTools.HtmlDistiller.Writers
 				if (this.filter == null || this.filter.FilterAttribute(tag.TagName, key, ref val))
 				{
 					this.writer.Write(' ');
-					if (String.IsNullOrEmpty(key))
-					{
-						this.writer.Write(HtmlAttributeEncode(val));
-					}
-					else if (String.IsNullOrEmpty(val))
+					if (String.IsNullOrEmpty(val))
 					{
 						this.writer.Write(HtmlAttributeEncode(key));
 					}
+					else if (String.IsNullOrEmpty(key))
+					{
+						this.writer.Write(HtmlAttributeEncode(val));
+					}
 					else
 					{
-						this.writer.Write(" {0}=\"{1}\"", HtmlAttributeEncode(key), HtmlAttributeEncode(val));
+						this.writer.Write(HtmlAttributeEncode(key));
+						this.writer.Write("=\"");
+						this.writer.Write(HtmlAttributeEncode(val));
+						this.writer.Write("\"");
 					}
 				}
 			}
@@ -240,7 +248,7 @@ namespace JsonFx.BuildTools.HtmlDistiller.Writers
 		/// Renders the style property to the output
 		/// </summary>
 		/// <param name="output"></param>
-		protected void WriteStyles(HtmlTag tag)
+		private void WriteStyles(HtmlTag tag)
 		{
 			this.writer.Write(" style=\"");
 
@@ -252,7 +260,10 @@ namespace JsonFx.BuildTools.HtmlDistiller.Writers
 				{
 					if (!String.IsNullOrEmpty(key) && !String.IsNullOrEmpty(val))
 					{
-						this.writer.Write("{0}:{1};", HtmlAttributeEncode(key), HtmlAttributeEncode(val));
+						this.writer.Write(HtmlAttributeEncode(key));
+						this.writer.Write(':');
+						this.writer.Write(HtmlAttributeEncode(val));
+						this.writer.Write(';');
 					}
 				}
 			}
