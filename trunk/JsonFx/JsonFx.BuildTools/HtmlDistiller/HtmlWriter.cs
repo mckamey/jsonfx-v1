@@ -47,7 +47,7 @@ namespace JsonFx.BuildTools.HtmlDistiller.Writers
 
 		void WriteLiteral(string source, int start, int end);
 
-		bool WriteTag(HtmlTag tag);
+		void WriteTag(HtmlTag tag);
 
 		#endregion Methods
 	}
@@ -145,60 +145,58 @@ namespace JsonFx.BuildTools.HtmlDistiller.Writers
 		/// <param name="tag"></param>
 		/// <param name="filter"></param>
 		/// <returns>true if rendered, false if not</returns>
-		public virtual bool WriteTag(HtmlTag tag)
+		public virtual void WriteTag(HtmlTag tag)
 		{
-			if (tag.TagType == HtmlTagType.Unknown)
+			switch (tag.TagType)
 			{
-				return false;
-			}
-			if (this.filter != null && !this.filter.FilterTag(tag))
-			{
-				return false;
-			}
+				case HtmlTagType.Unparsed:
+				{
+					this.WriteUnparsedTag(tag);
+					break;
+				}
+				case HtmlTagType.FullTag:
+				case HtmlTagType.BeginTag:
+				{
+					this.writer.Write('<');
+					this.writer.Write(tag.RawName);
 
-			if (tag.TagType == HtmlTagType.Unparsed)
-			{
-				return this.WriteUnparsedTag(tag);
-			}
+					if (tag.HasAttributes)
+					{
+						this.WriteAttributes(tag);
+					}
+					if (tag.HasStyles)
+					{
+						this.WriteStyles(tag);
+					}
 
-			this.writer.Write('<');
-			if (tag.TagType == HtmlTagType.EndTag)
-			{
-				this.writer.Write('/');
+					if (tag.TagType == HtmlTagType.FullTag)
+					{
+						this.writer.Write(" /");
+					}
+					this.writer.Write('>');
+					break;
+				}
+				case HtmlTagType.EndTag:
+				{
+					this.writer.Write("</");
+					this.writer.Write(tag.RawName);
+					this.writer.Write('>');
+					break;
+				}
 			}
-
-			this.writer.Write(tag.RawName);
-
-			if (tag.HasAttributes)
-			{
-				this.WriteAttributes(tag);
-			}
-			if (tag.HasStyles)
-			{
-				this.WriteStyles(tag);
-			}
-
-			if (tag.TagType == HtmlTagType.FullTag)
-			{
-				this.writer.Write(" /");
-			}
-			this.writer.Write('>');
-
-			return true;
 		}
 
 		#endregion IHtmlWriter Members
 
 		#region Methods
 
-		private bool WriteUnparsedTag(HtmlTag tag)
+		private void WriteUnparsedTag(HtmlTag tag)
 		{
 			this.writer.Write('<');
 			this.writer.Write(tag.RawName);
 			this.writer.Write(tag.Content);
 			this.writer.Write(tag.EndDelim);
 			this.writer.Write('>');
-			return true;
 		}
 
 		/// <summary>

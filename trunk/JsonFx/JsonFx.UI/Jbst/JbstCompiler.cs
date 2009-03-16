@@ -635,10 +635,15 @@ if (""undefined"" === typeof {0}) {{
 			this.AppendChild(source.Substring(start, end-start));
 		}
 
-		bool IHtmlWriter.WriteTag(HtmlTag tag)
+		void IHtmlWriter.WriteTag(HtmlTag tag)
 		{
 			switch (tag.TagType)
 			{
+				case HtmlTagType.Unparsed:
+				{
+					this.WriteUnparsedTag(tag);
+					break;
+				}
 				case HtmlTagType.FullTag:
 				case HtmlTagType.BeginTag:
 				{
@@ -658,25 +663,17 @@ if (""undefined"" === typeof {0}) {{
 					{
 						this.PopTag(tag.RawName);
 					}
-					return true;
+					break;
 				}
 				case HtmlTagType.EndTag:
 				{
 					this.PopTag(tag.RawName);
-					return true;
-				}
-				case HtmlTagType.Unparsed:
-				{
-					return this.WriteUnparsedTag(tag);
-				}
-				default:
-				{
-					return false;
+					break;
 				}
 			}
 		}
 
-		private bool WriteUnparsedTag(HtmlTag tag)
+		private void WriteUnparsedTag(HtmlTag tag)
 		{
 			switch (tag.TagName)
 			{
@@ -684,7 +681,7 @@ if (""undefined"" === typeof {0}) {{
 				{
 					// store directive for specialized parsing
 					this.Directives.Append(tag.ToString());
-					return true;
+					break;
 				}
 				case "%!":
 				{
@@ -692,53 +689,53 @@ if (""undefined"" === typeof {0}) {{
 					// executed only on initialization of template
 					// output from declarations are appended after the template
 					this.Declarations.Append(tag.Content);
-					return true;
+					break;
 				}
 				case "%#": // databinding expression
 				{
 					// unparsed expressions are emitted directly into JBST
 					JbstUnparsedBlock code = new JbstUnparsedBlock(tag.Content);
 					this.AppendChild(code);
-					return true;
+					break;
 				}
 				case "%=": // inline expression
 				{
 					// expressions are emitted directly into JBST
 					JbstExpressionBlock code = new JbstExpressionBlock(tag.Content);
 					this.AppendChild(code);
-					return true;
+					break;
 				}
 				case "%$":
 				{
 					// expressions are emitted directly into JBST
 					JbstExtensionBlock code = new JbstExtensionBlock(tag.Content, this.path);
 					this.AppendChild(code);
-					return true;
+					break;
 				}
 				case "%":
 				{
 					// statements are emitted directly into JBST
 					JbstStatementBlock code = new JbstStatementBlock(tag.Content);
 					this.AppendChild(code);
-					return true;
+					break;
 				}
 				case "%--":
 				{
 					// server-side comments are omitted even for debug
-					return true;
+					break;
 				}
 				case "!--":
 				{
 					// HTML Comments are emitted directly into JBST
 					JbstCommentBlock code = new JbstCommentBlock(tag.Content);
 					this.AppendChild(code);
-					return true;
+					break;
 				}
 				default:
 				{
 					// unrecognized sequences get emitted as encoded text
 					this.AppendChild(tag.ToString());
-					return true;
+					break;
 				}
 			}
 		}
