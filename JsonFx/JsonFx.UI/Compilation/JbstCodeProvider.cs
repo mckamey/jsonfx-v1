@@ -75,7 +75,7 @@ namespace JsonFx.Compilation
 			List<ParseException> errors)
 		{
 			// parse JBST markup
-			JbstCompiler compiler = new JbstCompiler(virtualPath);
+			JbstWriter writer = new JbstWriter(virtualPath);
 
 			try
 			{
@@ -83,12 +83,12 @@ namespace JsonFx.Compilation
 				parser.EncodeNonAscii = false;
 				parser.BalanceTags = false;
 				parser.NormalizeWhitespace = false;
-				parser.HtmlWriter = compiler;
+				parser.HtmlWriter = writer;
 				parser.HtmlFilter = new NullHtmlFilter();
 				parser.Parse(sourceText);
 
 				// determine which globalization keys were used
-				JbstCodeProvider.ExtractGlobalizationKeys(compiler.Document, this.GlobalizationKeys);
+				JbstCodeProvider.ExtractGlobalizationKeys(writer.JbstParseTree, this.GlobalizationKeys);
 			}
 			catch (ParseException ex)
 			{
@@ -102,7 +102,7 @@ namespace JsonFx.Compilation
 			using (StringWriter sw = new StringWriter())
 			{
 				// render the pretty-printed version
-				compiler.Render(sw, true, true);
+				writer.Render(sw, true, true);
 				sw.Flush();
 				resource = sw.ToString();
 			}
@@ -110,7 +110,7 @@ namespace JsonFx.Compilation
 			using (StringWriter sw = new StringWriter())
 			{
 				// render the compacted version
-				compiler.Render(sw, false, true);
+				writer.Render(sw, false, true);
 				sw.Flush();
 				compacted = sw.ToString();
 			}

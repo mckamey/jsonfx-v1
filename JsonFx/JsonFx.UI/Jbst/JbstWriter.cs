@@ -34,7 +34,6 @@ using System.IO;
 using System.Web;
 using System.Text;
 
-using JsonFx.BuildTools;
 using JsonFx.BuildTools.HtmlDistiller;
 using JsonFx.BuildTools.HtmlDistiller.Writers;
 using JsonFx.BuildTools.ScriptCompactor;
@@ -44,9 +43,9 @@ using JsonFx.Compilation;
 namespace JsonFx.UI.Jbst
 {
 	/// <summary>
-	/// JBST Template Compiler
+	/// JBST Writer
 	/// </summary>
-	public class JbstCompiler : IHtmlWriter
+	public class JbstWriter : IHtmlWriter
 	{
 		#region Constants
 
@@ -92,7 +91,7 @@ if (""undefined"" === typeof {0}) {{
 		/// <summary>
 		/// Ctor
 		/// </summary>
-		public JbstCompiler()
+		public JbstWriter()
 			: this(String.Empty)
 		{
 		}
@@ -101,7 +100,7 @@ if (""undefined"" === typeof {0}) {{
 		/// Ctor
 		/// </summary>
 		/// <param name="virtualPath"></param>
-		public JbstCompiler(string virtualPath)
+		public JbstWriter(string virtualPath)
 		{
 			this.path = virtualPath;
 		}
@@ -124,9 +123,9 @@ if (""undefined"" === typeof {0}) {{
 		}
 
 		/// <summary>
-		/// Gets the document root
+		/// Gets the internal parse tree representation
 		/// </summary>
-		public object Document
+		public object JbstParseTree
 		{
 			get
 			{
@@ -143,7 +142,7 @@ if (""undefined"" === typeof {0}) {{
 					if (control != null)
 					{
 						// found 2 or more in root
-						// render with document wrapper
+						// render with full document wrapper
 						control = this.document;
 						break;
 					}
@@ -214,7 +213,7 @@ if (""undefined"" === typeof {0}) {{
 		private void PushTag(string rawName)
 		{
 			string tagName;
-			string prefix = JbstCompiler.SplitPrefix(rawName, out tagName);
+			string prefix = JbstWriter.SplitPrefix(rawName, out tagName);
 
 			JbstContainerControl control;
 			if (JbstCustomControl.JbstPrefix.Equals(prefix, StringComparison.OrdinalIgnoreCase))
@@ -259,7 +258,7 @@ if (""undefined"" === typeof {0}) {{
 				throw new InvalidOperationException("Push/Pop mismatch? (Current.Parent is null)");
 			}
 
-			if (JbstCompiler.ScriptTagName.Equals(this.current.RawName, StringComparison.OrdinalIgnoreCase))
+			if (JbstWriter.ScriptTagName.Equals(this.current.RawName, StringComparison.OrdinalIgnoreCase))
 			{
 				// script tags get converted once fully parsed
 				this.ConvertControlToDeclaration(this.current);
@@ -432,7 +431,7 @@ if (""undefined"" === typeof {0}) {{
 			jsWriter.PrettyPrint = prettyPrint;
 
 			// render root node of content (null is OK)
-			jsWriter.Write(this.Document);
+			jsWriter.Write(this.JbstParseTree);
 
 			if (isTemplate)
 			{
@@ -449,7 +448,7 @@ if (""undefined"" === typeof {0}) {{
 				if (this.Declarations.Length > 0)
 				{
 					string declarations = String.Format(
-						JbstCompiler.DeclarationFormat,
+						JbstWriter.DeclarationFormat,
 						this.Name,
 						this.Declarations);
 

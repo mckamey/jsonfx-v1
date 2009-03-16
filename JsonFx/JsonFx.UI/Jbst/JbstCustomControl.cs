@@ -42,7 +42,7 @@ namespace JsonFx.UI.Jbst
 	{
 		#region Constants
 
-		public const string JbstPrefix = "jbst"+JbstCompiler.PrefixDelim;
+		public const string JbstPrefix = "jbst"+JbstWriter.PrefixDelim;
 		private const string PlaceholderCommand = "placeholder";
 
 		private const string PlaceholderStatement =
