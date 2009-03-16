@@ -94,6 +94,46 @@ namespace JsonFx.BuildTools.HtmlDistiller.Filters
 		#endregion Methods
 	}
 
+	public class NullHtmlFilter : IHtmlFilter
+	{
+		#region Fields
+
+		private IHtmlWriter htmlWriter;
+
+		#endregion Fields
+
+		#region IHtmlFilter Members
+
+		IHtmlWriter IHtmlFilter.HtmlWriter
+		{
+			get { return this.htmlWriter; }
+			set { this.htmlWriter = null; }
+		}
+
+		bool IHtmlFilter.FilterTag(HtmlTag tag)
+		{
+			return true;
+		}
+
+		bool IHtmlFilter.FilterAttribute(string tag, string attribute, ref string value)
+		{
+			return true;
+		}
+
+		bool IHtmlFilter.FilterStyle(string tag, string style, ref string value)
+		{
+			return true;
+		}
+
+		bool IHtmlFilter.FilterLiteral(string source, int start, int end, out string replacement)
+		{
+			replacement = null;
+			return false;
+		}
+
+		#endregion IHtmlFilter Members
+	}
+
 	/// <summary>
 	/// Defines a literal filter which optionally breaks words at a certain length
 	/// </summary>
