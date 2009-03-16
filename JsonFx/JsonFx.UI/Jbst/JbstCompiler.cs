@@ -732,28 +732,27 @@ if (""undefined"" === typeof {0}) {{
 
 		private void WriteStyles(HtmlTag tag)
 		{
-			foreach (string key in tag.Styles.Keys)
+			foreach (KeyValuePair<string, string> style in tag.FilteredStyles)
 			{
-				this.AddStyle(key, tag.Styles[key]);
+				this.AddStyle(style.Key, style.Value);
 			}
 		}
 
 		private void WriteAttributes(HtmlTag tag)
 		{
-			foreach (string keyRaw in tag.Attributes.Keys)
+			foreach (KeyValuePair<string, object> attrib in tag.FilteredAttributes)
 			{
 				// normalize JBST command names
-				string key = keyRaw.StartsWith(JbstCustomControl.JbstPrefix, StringComparison.OrdinalIgnoreCase) ?
-					keyRaw.ToLowerInvariant() : keyRaw;
-				object value = tag.Attributes[keyRaw];
+				string key = attrib.Key.StartsWith(JbstCustomControl.JbstPrefix, StringComparison.OrdinalIgnoreCase) ?
+					attrib.Key.ToLowerInvariant() : attrib.Key;
 
-				if (value is string)
+				if (attrib.Value is string)
 				{
-					this.AddAttribute(key, (string)value);
+					this.AddAttribute(attrib.Key, (string)attrib.Value);
 				}
-				else if (value is HtmlTag)
+				else if (attrib.Value is HtmlTag)
 				{
-					HtmlTag codeVal = (HtmlTag)value;
+					HtmlTag codeVal = (HtmlTag)attrib.Value;
 					switch (codeVal.TagName)
 					{
 						case "%@":

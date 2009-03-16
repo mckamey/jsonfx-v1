@@ -55,7 +55,7 @@ namespace JsonFx.BuildTools.HtmlDistiller.Writers
 	{
 		#region Fields
 
-		private TextWriter writer = null;
+		private readonly TextWriter writer;
 
 		#endregion Fields
 
@@ -175,22 +175,29 @@ namespace JsonFx.BuildTools.HtmlDistiller.Writers
 		/// <param name="tag"></param>
 		private void WriteAttributes(HtmlTag tag)
 		{
-			foreach (KeyValuePair<string, string> attribute in tag.FilteredAttributes)
+			foreach (KeyValuePair<string, object> attribute in tag.FilteredAttributes)
 			{
+				if (attribute.Value is HtmlTag)
+				{
+					// HTML doesn't allow tags in attributes unlike code markup
+					continue;
+				}
+				string value = attribute.Value as string;
+
 				this.writer.Write(' ');
-				if (String.IsNullOrEmpty(attribute.Value))
+				if (String.IsNullOrEmpty(value))
 				{
 					this.writer.Write(HtmlAttributeEncode(attribute.Key));
 				}
 				else if (String.IsNullOrEmpty(attribute.Key))
 				{
-					this.writer.Write(HtmlAttributeEncode(attribute.Value));
+					this.writer.Write(HtmlAttributeEncode(value));
 				}
 				else
 				{
 					this.writer.Write(HtmlAttributeEncode(attribute.Key));
 					this.writer.Write("=\"");
-					this.writer.Write(HtmlAttributeEncode(attribute.Value));
+					this.writer.Write(HtmlAttributeEncode(value));
 					this.writer.Write("\"");
 				}
 			}
