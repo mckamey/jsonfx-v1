@@ -162,9 +162,32 @@ if (""undefined"" === typeof {0}) {{
 		/// <summary>
 		/// Gets the document root
 		/// </summary>
-		internal JbstContainerControl Document
+		public object Document
 		{
-			get { return this.document; }
+			get
+			{
+				JbstControl control = null;
+				foreach (JbstControl child in this.document.ChildControls)
+				{
+					// tally non-whitespace controls
+					JbstLiteral lit = child as JbstLiteral;
+					if (lit != null && lit.IsWhitespace)
+					{
+						continue;
+					}
+
+					if (control != null)
+					{
+						// found 2 or more in root
+						// render with document wrapper
+						control = this.document;
+						break;
+					}
+
+					control = child;
+				}
+				return control;
+			}
 		}
 
 		#endregion Properties
@@ -555,31 +578,8 @@ if (""undefined"" === typeof {0}) {{
 			JsonFx.Json.EcmaScriptWriter jsWriter = new JsonFx.Json.EcmaScriptWriter(writer);
 			jsWriter.PrettyPrint = prettyPrint;
 
-			JbstControl control = null;
-			foreach (JbstControl child in this.document.ChildControls)
-			{
-				// tally non-whitespace controls
-				JbstLiteral lit = child as JbstLiteral;
-				if (lit != null && lit.IsWhitespace)
-				{
-					continue;
-				}
-
-				if (control != null)
-				{
-					// TODO: research the effect of stripping whitespace literals regardless
-
-					// found 2 or more in root
-					// render with document wrapper
-					control = this.document;
-					break;
-				}
-
-				control = child;
-			}
-
 			// render root node of content (null is OK)
-			jsWriter.Write(control);
+			jsWriter.Write(this.Document);
 
 			if (this.isTemplate)
 			{
