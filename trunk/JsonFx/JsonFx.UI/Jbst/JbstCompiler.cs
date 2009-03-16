@@ -630,11 +630,6 @@ if (""undefined"" === typeof {0}) {{
 			this.AppendChild(value);
 		}
 
-		void IHtmlWriter.WriteLiteral(string source, int start, int end)
-		{
-			this.AppendChild(source.Substring(start, end-start));
-		}
-
 		void IHtmlWriter.WriteTag(HtmlTag tag)
 		{
 			switch (tag.TagType)

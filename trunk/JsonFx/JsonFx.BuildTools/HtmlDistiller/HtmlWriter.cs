@@ -45,8 +45,6 @@ namespace JsonFx.BuildTools.HtmlDistiller.Writers
 
 		void WriteLiteral(string value);
 
-		void WriteLiteral(string source, int start, int end);
-
 		void WriteTag(HtmlTag tag);
 
 		#endregion Methods
@@ -116,27 +114,9 @@ namespace JsonFx.BuildTools.HtmlDistiller.Writers
 			this.filter = filter;
 		}
 
-		public void WriteLiteral(string value)
+		public virtual void WriteLiteral(string value)
 		{
-			if (!String.IsNullOrEmpty(value))
-			{
-				this.WriteLiteral(value, 0, value.Length);
-			}
-		}
-
-		public virtual void WriteLiteral(string source, int start, int end)
-		{
-			string replacement;
-			if (this.filter != null && this.filter.FilterLiteral(source, start, end, out replacement))
-			{
-				// filter has altered the literal
-				this.writer.Write(replacement);
-			}
-			else
-			{
-				// use the original substring
-				this.writer.Write(source.Substring(start, end-start));
-			}
+			this.writer.Write(value);
 		}
 
 		/// <summary>
