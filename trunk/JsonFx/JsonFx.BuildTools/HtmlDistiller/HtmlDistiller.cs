@@ -45,7 +45,7 @@ namespace JsonFx.BuildTools.HtmlDistiller
 	/// <remarks>
 	/// Note: this class is thread-safe (all external changes are locked first)
 	/// </remarks>
-	public class HtmlDistiller
+	public sealed class HtmlDistiller
 	{
 		#region ParseState
 
@@ -123,7 +123,7 @@ namespace JsonFx.BuildTools.HtmlDistiller
 		#region Init
 
 		/// <summary>
-		/// Ctor.
+		/// Ctor
 		/// </summary>
 		public HtmlDistiller()
 			: this(0, null)
@@ -131,7 +131,7 @@ namespace JsonFx.BuildTools.HtmlDistiller
 		}
 
 		/// <summary>
-		/// Ctor.
+		/// Ctor
 		/// </summary>
 		/// <param name="text">the text to parse</param>
 		public HtmlDistiller(int maxLength)
@@ -140,7 +140,7 @@ namespace JsonFx.BuildTools.HtmlDistiller
 		}
 
 		/// <summary>
-		/// Ctor.
+		/// Ctor
 		/// </summary>
 		/// <param name="text">the text to parse</param>
 		/// <param name="filter"></param>
@@ -697,7 +697,7 @@ namespace JsonFx.BuildTools.HtmlDistiller
 		}
 
 		/// <summary>
-		/// 
+		/// Attempts to parse the next sequence as a tag
 		/// </summary>
 		/// <returns>null if no tag was found (e.g. just LessThan char)</returns>
 		private HtmlTag ParseTag()
@@ -739,7 +739,7 @@ namespace JsonFx.BuildTools.HtmlDistiller
 			// remove tag open char
 			this.EmptyBuffer(1);
 
-			tag = new HtmlTag(this.FlushBuffer(i-1));
+			tag = new HtmlTag(this.FlushBuffer(i-1), this.htmlFilter);
 
 			this.ParseSyncPoint();
 
@@ -857,14 +857,14 @@ namespace JsonFx.BuildTools.HtmlDistiller
 				this.EmptyBuffer(endDelim.Length);
 			}
 
-			HtmlTag comment = new HtmlTag(blockName);
+			HtmlTag unparsed = new HtmlTag(blockName, this.htmlFilter);
 			if (!String.IsNullOrEmpty(content))
 			{
-				comment.Content = content;
+				unparsed.Content = content;
 			}
-			comment.EndDelim = endDelim.Substring(0, endDelim.Length-1);
+			unparsed.EndDelim = endDelim.Substring(0, endDelim.Length-1);
 
-			return comment;
+			return unparsed;
 		}
 
 		private void ParseAttributes(HtmlTag tag)
@@ -1159,7 +1159,10 @@ namespace JsonFx.BuildTools.HtmlDistiller
 			{
 				this.htmlWriter = new HtmlWriter();
 			}
-			this.htmlWriter.SetHtmlFilter(this.htmlFilter);
+			if (this.htmlFilter != null)
+			{
+				//this.htmlFilter.SetHtmlWriter(this.htmlWriter);
+			}
 
 			// set up the source
 			if (this.incrementalParsing && this.syncPoint >= 0)
@@ -1196,7 +1199,7 @@ namespace JsonFx.BuildTools.HtmlDistiller
 
 		#endregion Parse Methods
 
-		#region Methods
+		#region Utility Methods
 
 		/// <summary>
 		/// 
@@ -1771,7 +1774,7 @@ namespace JsonFx.BuildTools.HtmlDistiller
 			}
 		}
 
-		#endregion Methods
+		#endregion Utility Methods
 
 		#region Static Methods
 
