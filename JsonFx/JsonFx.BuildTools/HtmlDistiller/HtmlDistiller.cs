@@ -484,7 +484,7 @@ namespace JsonFx.BuildTools.HtmlDistiller
 								if (this.EncodeNonAscii)
 								{
 									// encode LessThan char
-									this.HtmlWriter.WriteLiteral(LessThanEntity);
+									this.WriteLiteral(LessThanEntity);
 
 									// remove from stream
 									this.EmptyBuffer(1);
@@ -518,7 +518,7 @@ namespace JsonFx.BuildTools.HtmlDistiller
 									if (this.Peek(1) != LFChar)
 									{
 										// just CR so replace CR with LF
-										this.HtmlWriter.WriteLiteral(LFChar.ToString());
+										this.WriteLiteral(LFChar.ToString());
 
 										// count toward total text length
 										this.IncTextCount();
@@ -605,7 +605,7 @@ namespace JsonFx.BuildTools.HtmlDistiller
 
 							// encode the non-ASCII char
 							string entity = HtmlDistiller.EncodeHtmlEntity(ch);
-							this.HtmlWriter.WriteLiteral(entity);
+							this.WriteLiteral(entity);
 
 							// remove char from stream
 							this.EmptyBuffer(1);
@@ -628,7 +628,7 @@ namespace JsonFx.BuildTools.HtmlDistiller
 								this.WriteBuffer();
 
 								// output decoded char
-								this.HtmlWriter.WriteLiteral(entityChar.ToString());
+								this.WriteLiteral(entityChar.ToString());
 
 								// remove char from stream
 								this.EmptyBuffer(entityLength);
@@ -686,7 +686,7 @@ namespace JsonFx.BuildTools.HtmlDistiller
 				if (this.MaxLength > 0 && this.textSize >= this.MaxLength)
 				{
 					// source was cut off so add ellipsis or other indicator
-					this.HtmlWriter.WriteLiteral(this.TruncationIndicator);
+					this.WriteLiteral(this.TruncationIndicator);
 				}
 
 				if (!this.incrementalParsing)
@@ -1104,7 +1104,7 @@ namespace JsonFx.BuildTools.HtmlDistiller
 			}
 			catch (Exception ex)
 			{
-				try { this.htmlWriter.WriteLiteral("Error writing HtmlTag: "+ex.Message); }
+				try { this.WriteLiteral("Error writing HtmlTag: "+ex.Message); }
 				catch { }
 			}
 		}
@@ -1116,6 +1116,35 @@ namespace JsonFx.BuildTools.HtmlDistiller
 			if (tag != null)
 			{
 				this.RenderTag(tag);
+			}
+		}
+
+		private void WriteLiteral(string value)
+		{
+			if (value == null)
+			{
+				return;
+			}
+			this.WriteLiteral(value, 0, value.Length);
+		}
+
+		private void WriteLiteral(string source, int start, int end)
+		{
+			if (start >= end)
+			{
+				return;
+			}
+
+			string replacement;
+			if (this.htmlFilter != null && this.htmlFilter.FilterLiteral(source, start, end, out replacement))
+			{
+				// filter has altered the literal
+				this.htmlWriter.WriteLiteral(replacement);
+			}
+			else
+			{
+				// use the original substring
+				this.htmlWriter.WriteLiteral(source.Substring(start, end-start));
 			}
 		}
 
@@ -1246,7 +1275,7 @@ namespace JsonFx.BuildTools.HtmlDistiller
 			}
 
 			// check the previous output if possible
-			IReversePeek revPeek = this.HtmlWriter as IReversePeek;
+			IReversePeek revPeek = this.htmlWriter as IReversePeek;
 			return (revPeek == null) ? NullChar : revPeek.PrevChar(peek);
 		}
 
@@ -1263,10 +1292,7 @@ namespace JsonFx.BuildTools.HtmlDistiller
 		private void WriteBuffer()
 		{
 			// do not callback on empty strings
-			if (this.start < this.index)
-			{
-				this.HtmlWriter.WriteLiteral(this.source, this.start, this.index);
-			}
+			this.WriteLiteral(this.source, this.start, this.index);
 			this.start = this.index;
 		}
 
