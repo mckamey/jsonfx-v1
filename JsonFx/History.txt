@@ -1,13 +1,16 @@
 Release History
 
-v1.0.0903.1508
-- HtmlDistiller: added auto-link parsing (URLs in literals can be optionally converted to hyperlinks)
-- HtmlDistiller: auto-link capability leverages further customization through FilterUrl method
-- HtmlDistiller: added ability to change the truncation indicator (defaults to ellipsis)
-- HtmlDistiller: improved interface for customizing
+v1.0.0903.15xx
 - cleaned up parsing of server-code in attributes
 - now driving the default for compacted scripts/css/merge off the compilation debug="[bool]" app setting (rather than always compacted)
   i.e. no flag switches based upon config, "?debug" is always debug, ?[sha1-hash] is always permanently cached, any other value is always compacted
+- HtmlDistiller
+	- added auto-link parsing (URLs in literals can be optionally converted to hyperlinks)
+	- auto-link capability leverages further customization through FilterUrl method
+	- added ability to change the truncation indicator (defaults to ellipsis)
+	- improved interface for customizing
+	- completely removed filtering responsibility from IHtmlWriter
+	- added ability for HtmlFilter to directly call HtmlWriter
 
 v1.0.0903.1309
 - fixed complex attribute typo in JBST builder script
