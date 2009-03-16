@@ -1096,8 +1096,9 @@ namespace JsonFx.BuildTools.HtmlDistiller
 		{
 			try
 			{
-				if (this.htmlWriter.WriteTag(tag))
+				if (this.htmlFilter == null || this.htmlFilter.FilterTag(tag))
 				{
+					this.htmlWriter.WriteTag(tag);
 					this.taxonomy |= tag.Taxonomy;
 				}
 			}
