@@ -99,7 +99,7 @@ if (""undefined"" === typeof {0}) {{
 		/// <summary>
 		/// Ctor
 		/// </summary>
-		/// <param name="virtualPath"></param>
+		/// <param name="virtualPath">path used for resolving App_LocalResources</param>
 		public JbstWriter(string virtualPath)
 		{
 			this.path = virtualPath;
