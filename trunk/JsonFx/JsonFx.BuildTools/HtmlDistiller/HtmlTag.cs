@@ -398,7 +398,7 @@ namespace JsonFx.BuildTools.HtmlDistiller
 		/// <summary>
 		/// Gets a sequence of attributes which have been filtered by the IHtmlFilter
 		/// </summary>
-		public IEnumerable<KeyValuePair<string, string>> FilteredAttributes
+		public IEnumerable<KeyValuePair<string, object>> FilteredAttributes
 		{
 			get
 			{
@@ -409,18 +409,25 @@ namespace JsonFx.BuildTools.HtmlDistiller
 
 				foreach (string key in this.Attributes.Keys)
 				{
-					object objVal = this.Attributes[key];
-					if (objVal is HtmlTag)
+					object value = this.Attributes[key];
+					if (value is HtmlTag)
 					{
-						// HTML doesn't allow tags in attributes unlike code markup
-						continue;
+						if (this.filter != null && !this.filter.FilterTag((HtmlTag)value))
+						{
+							continue;
+						}
+					}
+					else
+					{
+						string strVal = value as string;
+						if (this.filter != null && !this.filter.FilterAttribute(this.TagName, key, ref strVal))
+						{
+							continue;
+						}
+						value = strVal;
 					}
 
-					string value = objVal as string;
-					if (this.filter == null || this.filter.FilterAttribute(this.TagName, key, ref value))
-					{
-						yield return new KeyValuePair<string, string>(key, value);
-					}
+					yield return new KeyValuePair<string, object>(key, value);
 				}
 			}
 		}
