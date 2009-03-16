@@ -646,93 +646,12 @@ if (""undefined"" === typeof {0}) {{
 
 					if (tag.HasAttributes)
 					{
-						foreach (string keyRaw in tag.Attributes.Keys)
-						{
-							// normalize JBST command names
-							string key = keyRaw.StartsWith(JbstCustomControl.JbstPrefix, StringComparison.OrdinalIgnoreCase) ?
-								keyRaw.ToLowerInvariant() : keyRaw;
-							object value = tag.Attributes[keyRaw];
-
-							if (value is HtmlTag)
-							{
-								HtmlTag codeVal = (HtmlTag)value;
-								switch (codeVal.TagName)
-								{
-									case "%@":
-									{
-										// store directive for specialized parsing
-										this.Directives.Append(codeVal.ToString());
-										break;
-									}
-									case "%!":
-									{
-										// analogous to static code, or JSP declarations
-										// executed only on initialization of template
-										// output from declarations are appended after the template
-										this.Declarations.Append(codeVal.Content);
-										break;
-									}
-									case "%#": // databinding expression
-									//{
-									//    // unparsed expressions are emitted directly into JBST
-									//    JbstUnparsedBlock code = new JbstUnparsedBlock(codeVal.Content);
-									//    this.AddAttribute(key, code);
-									//    break;
-									//}
-									case "%=": // inline expression
-									{
-										// expressions are emitted directly into JBST
-										JbstExpressionBlock code = new JbstExpressionBlock(codeVal.Content);
-										this.AddAttribute(key, code);
-										break;
-									}
-									case "%$":
-									{
-										// expressions are emitted directly into JBST
-										JbstExtensionBlock code = new JbstExtensionBlock(codeVal.Content, this.path);
-										this.AddAttribute(key, code);
-										break;
-									}
-									case "%":
-									{
-										// statements are emitted directly into JBST
-										JbstStatementBlock code = new JbstStatementBlock(codeVal.Content);
-										this.AddAttribute(key, code);
-										break;
-									}
-									case "%--":
-									{
-										// server-side comments are omitted even for debug
-										break;
-									}
-									case "!--":
-									{
-										// HTML Comments are emitted directly into JBST
-										JbstCommentBlock code = new JbstCommentBlock(codeVal.Content);
-										this.AddAttribute(key, code);
-										break;
-									}
-									default:
-									{
-										// unrecognized sequences get emitted as encoded text
-										this.AddAttribute(key, codeVal.ToString());
-										break;
-									}
-								}
-							}
-							else if (value is string)
-							{
-								this.AddAttribute(key, (string)value);
-							}
-						}
+						this.WriteAttributes(tag);
 					}
 
 					if (tag.HasStyles)
 					{
-						foreach (string key in tag.Styles.Keys)
-						{
-							this.AddStyle(key, tag.Styles[key]);
-						}
+						this.WriteStyles(tag);
 					}
 
 					if (tag.TagType == HtmlTagType.FullTag)
@@ -820,6 +739,97 @@ if (""undefined"" === typeof {0}) {{
 			}
 
 			return true;
+		}
+
+		private void WriteStyles(HtmlTag tag)
+		{
+			foreach (string key in tag.Styles.Keys)
+			{
+				this.AddStyle(key, tag.Styles[key]);
+			}
+		}
+
+		private void WriteAttributes(HtmlTag tag)
+		{
+			foreach (string keyRaw in tag.Attributes.Keys)
+			{
+				// normalize JBST command names
+				string key = keyRaw.StartsWith(JbstCustomControl.JbstPrefix, StringComparison.OrdinalIgnoreCase) ?
+								keyRaw.ToLowerInvariant() : keyRaw;
+				object value = tag.Attributes[keyRaw];
+
+				if (value is HtmlTag)
+				{
+					HtmlTag codeVal = (HtmlTag)value;
+					switch (codeVal.TagName)
+					{
+						case "%@":
+						{
+							// store directive for specialized parsing
+							this.Directives.Append(codeVal.ToString());
+							break;
+						}
+						case "%!":
+						{
+							// analogous to static code, or JSP declarations
+							// executed only on initialization of template
+							// output from declarations are appended after the template
+							this.Declarations.Append(codeVal.Content);
+							break;
+						}
+						case "%#": // databinding expression
+						//{
+						//    // unparsed expressions are emitted directly into JBST
+						//    JbstUnparsedBlock code = new JbstUnparsedBlock(codeVal.Content);
+						//    this.AddAttribute(key, code);
+						//    break;
+						//}
+						case "%=": // inline expression
+						{
+							// expressions are emitted directly into JBST
+							JbstExpressionBlock code = new JbstExpressionBlock(codeVal.Content);
+							this.AddAttribute(key, code);
+							break;
+						}
+						case "%$":
+						{
+							// expressions are emitted directly into JBST
+							JbstExtensionBlock code = new JbstExtensionBlock(codeVal.Content, this.path);
+							this.AddAttribute(key, code);
+							break;
+						}
+						case "%":
+						{
+							// statements are emitted directly into JBST
+							JbstStatementBlock code = new JbstStatementBlock(codeVal.Content);
+							this.AddAttribute(key, code);
+							break;
+						}
+						case "%--":
+						{
+							// server-side comments are omitted even for debug
+							break;
+						}
+						case "!--":
+						{
+							// HTML Comments are emitted directly into JBST
+							JbstCommentBlock code = new JbstCommentBlock(codeVal.Content);
+							this.AddAttribute(key, code);
+							break;
+						}
+						default:
+						{
+							// unrecognized sequences get emitted as encoded text
+							this.AddAttribute(key, codeVal.ToString());
+							break;
+						}
+					}
+				}
+				else if (value is string)
+				{
+					this.AddAttribute(key, (string)value);
+				}
+			}
 		}
 
 		#endregion IHtmlWriter Members
