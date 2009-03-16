@@ -575,6 +575,7 @@ namespace JsonFx.BuildTools.HtmlDistiller
 				case "link":
 				case "meta":
 				case "param":
+				case "wbr":
 				{
 					return true;
 				}
