@@ -25,11 +25,11 @@ namespace JsonFx.UI.Jbst
 		private string name;
 		private string data;
 		private object inlineData;
-		private object inlineJbst;
+		//private object inlineJbst;
 		private int? index;
 		private int? count;
 		private ScriptDataBlock dataBlock;
-		private List<string> g11nKeys;
+		//private List<string> g11nKeys;
 
 		#endregion Fields
 
@@ -180,10 +180,10 @@ namespace JsonFx.UI.Jbst
 			writer.BeginRender();
 			try
 			{
-				if (String.IsNullOrEmpty(this.Name) && this.inlineJbst == null)
-				{
-					//this.ParseJbstContents();
-				}
+				//if (String.IsNullOrEmpty(this.Name) && this.inlineJbst == null)
+				//{
+				//    this.ParseJbstContents();
+				//}
 
 				// generate an ID for controls which do not have explicit
 				this.EnsureID();
@@ -193,15 +193,15 @@ namespace JsonFx.UI.Jbst
 				writer.Write(this.ClientID);
 				writer.Write("\">");
 
-				if (this.inlineJbst == null)
+				//if (this.inlineJbst == null)
 				{
 					// render out any children as loading/error markup
 					base.RenderChildren(writer);
 				}
-				else if (this.dataBlock != null)
-				{
-					this.dataBlock.RenderControl(writer);
-				}
+				//else if (this.dataBlock != null)
+				//{
+				//    this.dataBlock.RenderControl(writer);
+				//}
 
 				// build the binding script
 				StringBuilder builder = new StringBuilder();
@@ -209,7 +209,7 @@ namespace JsonFx.UI.Jbst
 				builder.Append("JsonFx.Bindings.replace(\"#");
 				builder.Append(this.ClientID);
 				builder.Append("\",");
-				if (this.inlineJbst != null)
+				/*if (this.inlineJbst != null)
 				{
 					// serialize InlineJbst as a JavaScript literal
 					EcmaScriptWriter jsWriter = new EcmaScriptWriter(builder);
@@ -218,7 +218,7 @@ namespace JsonFx.UI.Jbst
 					jsWriter.Tab = "\t";
 					jsWriter.Write(this.inlineJbst);
 				}
-				else if (!String.IsNullOrEmpty(this.Name))
+				else*/ if (!String.IsNullOrEmpty(this.Name))
 				{
 					builder.Append(this.Name);
 				}
@@ -294,22 +294,23 @@ namespace JsonFx.UI.Jbst
 			}
 		}
 
-		private void ParseJbstContents()
-		{
-			StringWriter writer = new StringWriter();
+		//private void ParseJbstContents()
+		//{
+		//    StringWriter writer = new StringWriter();
 
-			// render out any children as loading/error markup
-			base.RenderChildren(new XhtmlTextWriter(writer, this.IsDebug ? "\t" : ""));
+		//    // render out any children as loading/error markup
+		//    base.RenderChildren(new XhtmlTextWriter(writer, this.IsDebug ? "\t" : ""));
 
-			JbstCompiler parser = new JbstCompiler(this.GetType().FullName, true);
-			// parse JBST markup
-			parser.Parse(writer.GetStringBuilder().ToString());
+		//    JbstCompiler parser = new JbstCompiler(this.GetType().FullName);
 
-			this.inlineJbst = parser.Document;
+		//    // parse JBST markup
+		//    parser.Parse(writer.GetStringBuilder().ToString());
 
-			this.g11nKeys = new List<string>();
-			JbstCodeProvider.ExtractGlobalizationKeys(parser.Document, this.g11nKeys);
-		}
+		//    this.inlineJbst = parser.Document;
+
+		//    this.g11nKeys = new List<string>();
+		//    JbstCodeProvider.ExtractGlobalizationKeys(parser.Document, this.g11nKeys);
+		//}
 
 		#endregion Page Event Handlers
 	}
