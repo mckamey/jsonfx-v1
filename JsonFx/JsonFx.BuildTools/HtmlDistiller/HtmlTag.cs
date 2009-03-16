@@ -453,7 +453,7 @@ namespace JsonFx.BuildTools.HtmlDistiller
 		#region Object Overrides
 
 		/// <summary>
-		/// Renders the tag.  Used mainly for Debugging.
+		/// Renders the tag without filtering.
 		/// </summary>
 		/// <returns></returns>
 		public override string ToString()
