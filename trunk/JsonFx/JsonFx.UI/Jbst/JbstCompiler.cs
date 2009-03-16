@@ -36,7 +36,6 @@ using System.Text;
 
 using JsonFx.BuildTools;
 using JsonFx.BuildTools.HtmlDistiller;
-using JsonFx.BuildTools.HtmlDistiller.Filters;
 using JsonFx.BuildTools.HtmlDistiller.Writers;
 using JsonFx.BuildTools.ScriptCompactor;
 using JsonFx.Json;
@@ -77,20 +76,13 @@ if (""undefined"" === typeof {0}) {{
 
 		#region Fields
 
-		private List<ParseException> errors = new List<ParseException>();
-		private JbstContainerControl document = new JbstContainerControl();
-		private JbstContainerControl current = null;
-		private JbstContainerControl next = null;
-
-		private bool isTemplate = false;
-		private bool isParsing = false;
-		private bool normalizeLiterals = true;
 		private readonly string path;
-		private readonly HtmlDistiller parser = new HtmlDistiller();
 		private readonly StringBuilder Directives = new StringBuilder();
 		private readonly StringBuilder Declarations = new StringBuilder();
 		private readonly List<string> Imports = new List<string>();
+		private readonly JbstContainerControl document = new JbstContainerControl();
 
+		private JbstContainerControl current = null;
 		private string name = null;
 
 		#endregion Fields
@@ -100,9 +92,8 @@ if (""undefined"" === typeof {0}) {{
 		/// <summary>
 		/// Ctor
 		/// </summary>
-		/// <param name="virtualPath"></param>
-		public JbstCompiler(string virtualPath)
-			: this(virtualPath, true)
+		public JbstCompiler()
+			: this(String.Empty)
 		{
 		}
 
@@ -110,32 +101,14 @@ if (""undefined"" === typeof {0}) {{
 		/// Ctor
 		/// </summary>
 		/// <param name="virtualPath"></param>
-		/// <param name="isTemplate">JBST</param>
-		internal JbstCompiler(string virtualPath, bool isTemplate)
+		public JbstCompiler(string virtualPath)
 		{
 			this.path = virtualPath;
-			this.isTemplate = isTemplate;
-
-			this.parser.EncodeNonAscii = false;
-			this.parser.BalanceTags = false;
-			this.parser.NormalizeWhitespace = false;
-			this.parser.HtmlWriter = this;
-			this.parser.BeginIncrementalParsing();
 		}
 
 		#endregion Init
 
 		#region Properties
-
-		/// <summary>
-		/// Gets a list of any errors that were encountered during parsing
-		/// </summary>
-		public List<ParseException> Errors
-		{
-			get { return this.errors; }
-		}
-
-		internal event EventHandler DocumentReady;
 
 		public string Name
 		{
@@ -148,15 +121,6 @@ if (""undefined"" === typeof {0}) {{
 				return this.name;
 			}
 			set { this.name = value; }
-		}
-
-		/// <summary>
-		/// Gets and sets if literal output should have whitespace normalized
-		/// </summary>
-		public bool NormalizeLiterals
-		{
-			get { return this.normalizeLiterals; }
-			set { this.normalizeLiterals = value; }
 		}
 
 		/// <summary>
@@ -194,59 +158,7 @@ if (""undefined"" === typeof {0}) {{
 
 		#region Parse Methods
 
-		/// <summary>
-		/// Parses markup.
-		/// </summary>
-		/// <param name="literal"></param>
-		public void Parse(string source)
-		{
-			try
-			{
-				this.isParsing = true;
-
-				this.parser.Parse(source);
-			}
-			catch (ParseException ex)
-			{
-				errors.Add(ex);
-			}
-			catch (Exception ex)
-			{
-				this.errors.Add(new ParseError(ex.Message, null, 1, 1, ex));
-			}
-			finally
-			{
-				this.isParsing = false;
-			}
-		}
-
-		/// <summary>
-		/// Writes any buffered text
-		/// </summary>
-		internal void Flush()
-		{
-			if (this.isParsing)
-			{
-				return;
-			}
-
-			try
-			{
-				this.isParsing = true;
-
-				// flush remaining
-				this.parser.EndIncrementalParsing();
-
-				// reset for additional
-				this.parser.BeginIncrementalParsing();
-			}
-			finally
-			{
-				this.isParsing = false;
-			}
-		}
-
-		internal void AppendChild(string text)
+		private void AppendChild(string text)
 		{
 			if (String.IsNullOrEmpty(text))
 			{
@@ -269,11 +181,11 @@ if (""undefined"" === typeof {0}) {{
 				return;
 			}
 
-			literal = new JbstLiteral(text, this.NormalizeLiterals);
+			literal = new JbstLiteral(text, true);
 			this.current.ChildControls.Add(literal);
 		}
 
-		internal void AppendChild(JbstControl child)
+		private void AppendChild(JbstControl child)
 		{
 			if (child == null)
 			{
@@ -299,11 +211,8 @@ if (""undefined"" === typeof {0}) {{
 			this.current.ChildControls.Add(child);
 		}
 
-		internal void PushTag(string rawName)
+		private void PushTag(string rawName)
 		{
-			// flush any accumulated literals
-			this.Flush();
-
 			string tagName;
 			string prefix = JbstCompiler.SplitPrefix(rawName, out tagName);
 
@@ -317,14 +226,6 @@ if (""undefined"" === typeof {0}) {{
 				control = new JbstContainerControl(prefix, tagName);
 			}
 
-			if (this.next != null)
-			{
-				// copy over preloaded children
-				control.Attributes = this.next.Attributes;
-				control.ChildControls = this.next.ChildControls;
-				this.next = null;
-			}
-
 			if (this.current == null)
 			{
 				this.current = this.document;
@@ -334,20 +235,11 @@ if (""undefined"" === typeof {0}) {{
 			this.current = control;
 		}
 
-		internal void PopTag(string tagName)
+		private void PopTag(string tagName)
 		{
 			if (tagName == null)
 			{
 				tagName = String.Empty;
-			}
-
-			// flush any accumulated literals
-			this.Flush();
-
-			if (this.next != null)
-			{
-				//throw new InvalidOperationException("Push/Pop mismatch? (Next is not null)");
-				this.next = null;
 			}
 
 			if (this.current == null)
@@ -374,12 +266,6 @@ if (""undefined"" === typeof {0}) {{
 			}
 
 			this.current = this.current.Parent;
-
-			if (this.current == this.document &&
-				this.DocumentReady != null)
-			{
-				this.DocumentReady(this, EventArgs.Empty);
-			}
 		}
 
 		/// <summary>
@@ -410,17 +296,7 @@ if (""undefined"" === typeof {0}) {{
 			control.Parent.ChildControls.Remove(control);
 		}
 
-		internal void StoreAttribute(string name, string value)
-		{
-			if (this.next == null)
-			{
-				this.next = new JbstContainerControl();
-			}
-
-			this.SetAttribute(this.next, name, value);
-		}
-
-		internal void AddAttribute(string name, string value)
+		private void AddAttribute(string name, string value)
 		{
 			if (this.current == null)
 			{
@@ -430,7 +306,7 @@ if (""undefined"" === typeof {0}) {{
 			this.SetAttribute(this.current, name, value);
 		}
 
-		internal void AddAttribute(string name, JbstControl value)
+		private void AddAttribute(string name, JbstControl value)
 		{
 			if (this.current == null)
 			{
@@ -440,11 +316,8 @@ if (""undefined"" === typeof {0}) {{
 			this.current.Attributes[name] = value;
 		}
 
-		internal void SetAttribute(JbstContainerControl target, string name, string value)
+		private void SetAttribute(JbstContainerControl target, string name, string value)
 		{
-			// flush any accumulated literals
-			this.Flush();
-
 			value = HtmlDistiller.DecodeHtmlEntities(value);
 			if ("style".Equals(name, StringComparison.OrdinalIgnoreCase))
 			{
@@ -456,17 +329,7 @@ if (""undefined"" === typeof {0}) {{
 			}
 		}
 
-		internal void StoreStyle(string name, string value)
-		{
-			if (this.next == null)
-			{
-				this.next = new JbstContainerControl();
-			}
-
-			this.SetStyle(this.next, name, value);
-		}
-
-		internal void AddStyle(string name, string value)
+		private void AddStyle(string name, string value)
 		{
 			if (this.current == null)
 			{
@@ -476,11 +339,8 @@ if (""undefined"" === typeof {0}) {{
 			this.SetStyle(this.current, name, value);
 		}
 
-		internal void SetStyle(JbstContainerControl target, string name, string value)
+		private void SetStyle(JbstContainerControl target, string name, string value)
 		{
-			// flush any accumulated literals
-			this.Flush();
-
 			if (String.IsNullOrEmpty(name) && String.IsNullOrEmpty(value))
 			{
 				return;
@@ -522,18 +382,11 @@ if (""undefined"" === typeof {0}) {{
 
 		#region Render Methods
 
-		public void Render(TextWriter writer)
+		public void Render(TextWriter writer, bool prettyPrint, bool isTemplate)
 		{
-			this.Render(writer, false);
-		}
-
-		public void Render(TextWriter writer, bool prettyPrint)
-		{
-			this.Flush();
-
 			this.ProcessDirectives();
 
-			if (this.isTemplate)
+			if (isTemplate)
 			{
 				// add JSLINT directives
 				if (prettyPrint)
@@ -575,13 +428,13 @@ if (""undefined"" === typeof {0}) {{
 				}
 			}
 
-			JsonFx.Json.EcmaScriptWriter jsWriter = new JsonFx.Json.EcmaScriptWriter(writer);
+			EcmaScriptWriter jsWriter = new EcmaScriptWriter(writer);
 			jsWriter.PrettyPrint = prettyPrint;
 
 			// render root node of content (null is OK)
 			jsWriter.Write(this.Document);
 
-			if (this.isTemplate)
+			if (isTemplate)
 			{
 				if (prettyPrint)
 				{
@@ -866,8 +719,6 @@ if (""undefined"" === typeof {0}) {{
 					}
 					break;
 				}
-				case "include":
-				case "taglib":
 				default:
 				{
 					// not implemented
