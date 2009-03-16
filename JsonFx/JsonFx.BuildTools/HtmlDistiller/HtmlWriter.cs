@@ -41,8 +41,6 @@ namespace JsonFx.BuildTools.HtmlDistiller.Writers
 	{
 		#region Methods
 
-		void SetHtmlFilter(IHtmlFilter filter);
-
 		void WriteLiteral(string value);
 
 		void WriteTag(HtmlTag tag);
@@ -60,7 +58,6 @@ namespace JsonFx.BuildTools.HtmlDistiller.Writers
 		#region Fields
 
 		private TextWriter writer = null;
-		private IHtmlFilter filter = null;
 
 		#endregion Fields
 
@@ -108,11 +105,6 @@ namespace JsonFx.BuildTools.HtmlDistiller.Writers
 		#endregion Properties
 
 		#region IHtmlWriter Members
-
-		void IHtmlWriter.SetHtmlFilter(IHtmlFilter filter)
-		{
-			this.filter = filter;
-		}
 
 		public virtual void WriteLiteral(string value)
 		{
@@ -180,70 +172,46 @@ namespace JsonFx.BuildTools.HtmlDistiller.Writers
 		}
 
 		/// <summary>
-		/// Renders the attributes to the output
+		/// Renders the style property
 		/// </summary>
-		/// <param name="output"></param>
+		/// <param name="tag"></param>
 		private void WriteAttributes(HtmlTag tag)
 		{
-			foreach (string key in tag.Attributes.Keys)
+			foreach (KeyValuePair<string, string> attribute in tag.FilteredAttributes)
 			{
-				object valObj = tag.Attributes[key];
-				if (valObj is HtmlTag)
+				this.writer.Write(' ');
+				if (String.IsNullOrEmpty(attribute.Value))
 				{
-					if (this.filter != null && !this.filter.FilterTag((HtmlTag)valObj))
-					{
-						valObj = null;
-					}
+					this.writer.Write(HtmlAttributeEncode(attribute.Key));
 				}
-
-				string val = (valObj != null) ?
-					valObj.ToString() :
-					String.Empty;
-
-				if (this.filter == null || this.filter.FilterAttribute(tag.TagName, key, ref val))
+				else if (String.IsNullOrEmpty(attribute.Key))
 				{
-					this.writer.Write(' ');
-					if (String.IsNullOrEmpty(val))
-					{
-						this.writer.Write(HtmlAttributeEncode(key));
-					}
-					else if (String.IsNullOrEmpty(key))
-					{
-						this.writer.Write(HtmlAttributeEncode(val));
-					}
-					else
-					{
-						this.writer.Write(HtmlAttributeEncode(key));
-						this.writer.Write("=\"");
-						this.writer.Write(HtmlAttributeEncode(val));
-						this.writer.Write("\"");
-					}
+					this.writer.Write(HtmlAttributeEncode(attribute.Value));
+				}
+				else
+				{
+					this.writer.Write(HtmlAttributeEncode(attribute.Key));
+					this.writer.Write("=\"");
+					this.writer.Write(HtmlAttributeEncode(attribute.Value));
+					this.writer.Write("\"");
 				}
 			}
 		}
 
 		/// <summary>
-		/// Renders the style property to the output
+		/// Renders the style property
 		/// </summary>
 		/// <param name="output"></param>
 		private void WriteStyles(HtmlTag tag)
 		{
 			this.writer.Write(" style=\"");
 
-			foreach (string key in tag.Styles.Keys)
+			foreach (KeyValuePair<string, string> style in tag.FilteredStyles)
 			{
-				string val = tag.Styles[key];
-
-				if (this.filter == null || this.filter.FilterStyle(tag.TagName, key, ref val))
-				{
-					if (!String.IsNullOrEmpty(key) && !String.IsNullOrEmpty(val))
-					{
-						this.writer.Write(HtmlAttributeEncode(key));
-						this.writer.Write(':');
-						this.writer.Write(HtmlAttributeEncode(val));
-						this.writer.Write(';');
-					}
-				}
+				this.writer.Write(HtmlAttributeEncode(style.Key));
+				this.writer.Write(':');
+				this.writer.Write(HtmlAttributeEncode(style.Value));
+				this.writer.Write(';');
 			}
 
 			this.writer.Write('\"');

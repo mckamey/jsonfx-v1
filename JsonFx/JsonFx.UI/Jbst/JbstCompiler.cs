@@ -620,11 +620,6 @@ if (""undefined"" === typeof {0}) {{
 
 		#region IHtmlWriter Members
 
-		void IHtmlWriter.SetHtmlFilter(IHtmlFilter filter)
-		{
-			// do nothing
-		}
-
 		void IHtmlWriter.WriteLiteral(string value)
 		{
 			this.AppendChild(value);
