@@ -346,7 +346,14 @@ namespace JsonFx.BuildTools.HtmlDistiller.Filters
 				if (replace && String.IsNullOrEmpty(replacement))
 				{
 					// filter URL isn't allowing this to be linked as a URL
-					this.HtmlWriter.WriteLiteral(source.Substring(index, length));
+					if (base.FilterLiteral(source, index, index+length, out replacement))
+					{
+						this.HtmlWriter.WriteLiteral(replacement);
+					}
+					else
+					{
+						this.HtmlWriter.WriteLiteral(source.Substring(index, length));
+					}
 				}
 				else
 				{
@@ -386,7 +393,7 @@ namespace JsonFx.BuildTools.HtmlDistiller.Filters
 			}
 
 			// return trailing unmatched substring
-			if (!base.FilterLiteral(source, last, end-last, out replacement))
+			if (!base.FilterLiteral(source, last, end, out replacement))
 			{
 				replacement = source.Substring(last, end-last);
 			}
