@@ -1,6 +1,5 @@
 2009-03-16 @ 00:44
 
-- enable HtmlDistiller to emit filtered JsonML/JBST
 - input type="radio" cannot be clicked when generated
 	<input type="radio" id="foo-radio" name="FooChoice" checked="checked" value="FooChoiceA" /><label for="foo-radio">Foo Choice A</label>
 - add anonymous templates inside server jbst:control
