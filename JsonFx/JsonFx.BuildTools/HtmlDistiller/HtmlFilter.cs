@@ -101,7 +101,8 @@ namespace JsonFx.BuildTools.HtmlDistiller.Filters
 	{
 		#region Constants
 
-		private const string WordBreak = "<wbr />&shy;";
+		private const string WordBreakTag = "wbr";
+		private const string SoftHyphenEntity = "&shy;";
 		private readonly int MaxWordLength;
 
 		#endregion Constants
@@ -165,13 +166,13 @@ namespace JsonFx.BuildTools.HtmlDistiller.Filters
 		public virtual bool FilterLiteral(string source, int start, int end, out string replacement)
 		{
 			replacement = null;
-
 			if (this.MaxWordLength <= 0)
 			{
 				return false;
 			}
 
-			int lastOutput = start,
+			bool addedBreak = false;
+			int last = start,
 				sinceSpace = 0;
 
 			for (int i=start; i<end; i++)
@@ -184,10 +185,12 @@ namespace JsonFx.BuildTools.HtmlDistiller.Filters
 
 				if (sinceSpace >= this.MaxWordLength)
 				{
+					addedBreak = true;
 					// append all before break
-					replacement += source.Substring(lastOutput, i-lastOutput);
-					replacement += WordBreakFilter.WordBreak;
-					lastOutput = i;
+					this.HtmlWriter.WriteLiteral(source.Substring(last, i-last));
+					this.HtmlWriter.WriteTag(new HtmlTag(WordBreakTag, this));
+					this.HtmlWriter.WriteLiteral(SoftHyphenEntity);
+					last = i;
 					sinceSpace = 0;
 				}
 				else
@@ -208,20 +211,20 @@ namespace JsonFx.BuildTools.HtmlDistiller.Filters
 				}
 			}
 
-			if (replacement != null)
+			if (!addedBreak)
 			{
-				if (lastOutput < end)
-				{
-					// append remaining string
-					replacement += source.Substring(lastOutput, end-lastOutput);
-				}
-
-				// a replacement was generated
-				return true;
+				// don't replace since didn't need to insert break
+				return false;
 			}
 
-			// don't replace since didn't need to
-			return false;
+			if (last < end)
+			{
+				// replace with remaining string
+				replacement = source.Substring(last, end-last);
+			}
+
+			// a word break was inserted
+			return true;
 		}
 
 		#endregion IHtmlFilter Members
@@ -237,9 +240,8 @@ namespace JsonFx.BuildTools.HtmlDistiller.Filters
 		private const string Pattern_Url = @"\b[a-z]+\://[a-z0-9][a-z0-9\-\.]*(?:\:[0-9]+)?(?:/[\w/\.\,\;\?\'\+\(\)&%\$#\=~\-]*)?";
 		private static readonly Regex Regex_Url = new Regex(Pattern_Url, RegexOptions.Compiled | RegexOptions.IgnoreCase | RegexOptions.ECMAScript);
 
-		private const string AutoLinkStart = "<a href=\"";
-		private const string AutoLinkMiddle = "\">";
-		private const string AutoLinkEnd = "</a>";
+		private const string LinkTagName = "a";
+		private const string LinkAttrib = "href";
 
 		#endregion Constants
 
@@ -320,97 +322,74 @@ namespace JsonFx.BuildTools.HtmlDistiller.Filters
 				return base.FilterLiteral(source, start, end, out replacement);
 			}
 
-			StringBuilder builder = null;
-
 			int index,			// the start index of the match
 				length,			// the length of the match
 				last = start;	// the last index written out
 
+			bool foundUrl = false;
 			while (this.DetectUrl(source, last, end, out index, out length))
 			{
-				if (builder == null)
+				foundUrl = true;
+
+				// append next unmatched substring
+				if (base.FilterLiteral(source, last, index, out replacement))
 				{
-					// populate initial string builder with leading unmatched substring
-					if (base.FilterLiteral(source, last, index, out replacement))
-					{
-						// use the word broken replacement text
-						builder = new StringBuilder(replacement, 2*end-start);
-					}
-					else
-					{
-						builder = new StringBuilder(source, last, index-last, 2*end-start);
-					}
+					// use the word broken replacement text
+					this.HtmlWriter.WriteLiteral(replacement);
 				}
 				else
 				{
-					// append next unmatched substring
-					if (base.FilterLiteral(source, last, index, out replacement))
-					{
-						// use the word broken replacement text
-						builder.Append(replacement);
-					}
-					else
-					{
-						builder.Append(source, last, index-last);
-					}
+					this.HtmlWriter.WriteLiteral(source.Substring(last, index-last));
 				}
 
 				bool replace = this.FilterUrl(source, index, index+length, out replacement);
-
 				if (replace && String.IsNullOrEmpty(replacement))
 				{
 					// filter URL isn't allowing this to be linked as a URL
-					builder.Append(source, index, length);
+					this.HtmlWriter.WriteLiteral(source.Substring(index, length));
 				}
 				else
 				{
 					// wrap the match in a hyperlink
-					builder.Append(AutoLinkStart);
+					HtmlTag link = new HtmlTag(LinkTagName, this);
 					if (replace)
 					{
 						// allow additional filtering on the safety of the URL
-						builder.Append(replacement);
+						link.Attributes[LinkAttrib] = replacement;
 					}
 					else
 					{
-						builder.Append(source, index, length);
+						link.Attributes[LinkAttrib] = source.Substring(index, length);
 					}
-					builder.Append(AutoLinkMiddle);
+					this.HtmlWriter.WriteTag(link);
+
 					if (base.FilterLiteral(source, index, index+length, out replacement))
 					{
-						builder.Append(replacement);
+						this.HtmlWriter.WriteLiteral(replacement);
 					}
 					else
 					{
-						builder.Append(source, index, length);
+						this.HtmlWriter.WriteLiteral(source.Substring(index, length));
 					}
-					builder.Append(AutoLinkEnd);
+					this.HtmlWriter.WriteTag(link.CreateCloseTag());
 				}
 
 				// continue searching from the end of the match
-				last = index + length;
+				last = index+length;
 			}
 
-			if (builder == null)
+			if (!foundUrl)
 			{
 				// no matches were found
 				replacement = null;
 				return false;
 			}
 
-			// append trailing unmatched substring
-			if (base.FilterLiteral(source, index, index+length, out replacement))
+			// return trailing unmatched substring
+			if (!base.FilterLiteral(source, last, end-last, out replacement))
 			{
-				// use the word broken replacement text
-				builder.Append(replacement);
+				replacement = source.Substring(last, end-last);
 			}
-			else
-			{
-				builder.Append(source, last, end-last);
-			}
-
-			// render composite output
-			replacement = builder.ToString();
 			return true;
 		}
 
