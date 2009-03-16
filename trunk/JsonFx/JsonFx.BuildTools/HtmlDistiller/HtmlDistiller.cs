@@ -1161,7 +1161,7 @@ namespace JsonFx.BuildTools.HtmlDistiller
 			}
 			if (this.htmlFilter != null)
 			{
-				//this.htmlFilter.SetHtmlWriter(this.htmlWriter);
+				this.htmlFilter.HtmlWriter = this.htmlWriter;
 			}
 
 			// set up the source
