@@ -33,8 +33,6 @@ using System.IO;
 using System.Collections.Generic;
 using System.Text;
 
-using JsonFx.BuildTools.HtmlDistiller.Filters;
-
 namespace JsonFx.BuildTools.HtmlDistiller.Writers
 {
 	public interface IHtmlWriter

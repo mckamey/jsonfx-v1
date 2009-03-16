@@ -33,6 +33,8 @@ using System.Collections.Generic;
 using System.Text;
 using System.Text.RegularExpressions;
 
+using JsonFx.BuildTools.HtmlDistiller.Writers;
+
 namespace JsonFx.BuildTools.HtmlDistiller.Filters
 {
 	/// <summary>
@@ -40,6 +42,12 @@ namespace JsonFx.BuildTools.HtmlDistiller.Filters
 	/// </summary>
 	public interface IHtmlFilter
 	{
+		#region Properties
+
+		IHtmlWriter HtmlWriter { get; set; }
+
+		#endregion Properties
+
 		#region Methods
 
 		/// <summary>
@@ -98,6 +106,12 @@ namespace JsonFx.BuildTools.HtmlDistiller.Filters
 
 		#endregion Constants
 
+		#region Fields
+
+		private IHtmlWriter htmlWriter;
+
+		#endregion Fields
+
 		#region Init
 
 		/// <summary>
@@ -118,6 +132,19 @@ namespace JsonFx.BuildTools.HtmlDistiller.Filters
 		}
 
 		#endregion Init
+
+		#region Properties
+
+		/// <summary>
+		/// Gets and sets the HtmlWriter associated with this instance.
+		/// </summary>
+		public IHtmlWriter HtmlWriter
+		{
+			get { return this.htmlWriter;}
+			set { this.htmlWriter = value;}
+		}
+
+		#endregion Properties
 
 		#region IHtmlFilter Members
 
