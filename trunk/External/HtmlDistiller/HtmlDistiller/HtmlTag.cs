@@ -183,30 +183,27 @@ namespace JsonFx.BuildTools.HtmlDistiller
 	/// http://www.w3.org/TR/html401/
 	/// http://www.w3.org/TR/xhtml1/
 	/// </remarks>
-	public class HtmlTag
+	public sealed class HtmlTag
 	{
 		#region Constants
 
 		private const int DefaultAttributeCapacity = 3;
 		private const int DefaultStyleCapacity = 3;
-
-		// these key names are relatively arbitrary
-		// just need to be unique for storing values in attributes table
-		private const string Key_Content = "";
-		private const string Key_EndDelim = ">";
-
 		internal const string StyleAttrib = "style";
 
 		#endregion Constants
 
 		#region Fields
 
+		private readonly IHtmlFilter filter;
 		private HtmlTagType tagType = HtmlTagType.Unknown;
 		private HtmlTaxonomy taxonomy = HtmlTaxonomy.None;
 		private readonly string rawName;
 		private string tagName;
-		private Dictionary<string, string> attributes;
+		private Dictionary<string, object> attributes;
 		private Dictionary<string, string> styles;
+		private string unparsedContent;
+		private string endDelim;
 
 		#endregion Fields
 
@@ -216,8 +213,9 @@ namespace JsonFx.BuildTools.HtmlDistiller
 		/// Ctor.
 		/// </summary>
 		/// <param name="name"></param>
-		public HtmlTag(string name)
+		public HtmlTag(string name, IHtmlFilter filter)
 		{
+			this.filter = filter;
 			if (name == null)
 			{
 				name = String.Empty;
@@ -304,13 +302,13 @@ namespace JsonFx.BuildTools.HtmlDistiller
 		/// <remarks>
 		/// Note: allocates space for attributes as a side effect
 		/// </remarks>
-		public Dictionary<string, string> Attributes
+		public Dictionary<string, object> Attributes
 		{
 			get
 			{
 				if (this.attributes == null)
 				{
-					this.attributes = new Dictionary<string, string>(HtmlTag.DefaultAttributeCapacity, StringComparer.OrdinalIgnoreCase);
+					this.attributes = new Dictionary<string, object>(HtmlTag.DefaultAttributeCapacity, StringComparer.OrdinalIgnoreCase);
 				}
 				return this.attributes;
 			}
@@ -339,7 +337,7 @@ namespace JsonFx.BuildTools.HtmlDistiller
 			{
 				if (this.styles == null)
 				{
-					this.styles = new Dictionary<string, string>(HtmlTag.DefaultStyleCapacity, StringComparer.OrdinalIgnoreCase);
+					this.styles = new Dictionary<string, string>(HtmlTag.DefaultStyleCapacity, StringComparer.Ordinal);
 				}
 				return this.styles;
 			}
@@ -355,7 +353,9 @@ namespace JsonFx.BuildTools.HtmlDistiller
 		{
 			get
 			{
-				if (this.HasAttributes && this.Attributes.ContainsKey(HtmlTag.StyleAttrib))
+				if (this.HasAttributes &&
+					this.Attributes.ContainsKey(HtmlTag.StyleAttrib) &&
+					this.Attributes[HtmlTag.StyleAttrib] != null)
 				{
 					return true;
 				}
@@ -370,13 +370,13 @@ namespace JsonFx.BuildTools.HtmlDistiller
 		{
 			get
 			{
-				if (!this.HasAttributes || !this.Attributes.ContainsKey(HtmlTag.Key_Content))
+				if (this.unparsedContent == null)
 				{
 					return String.Empty;
 				}
-				return this.Attributes[HtmlTag.Key_Content];
+				return this.unparsedContent;
 			}
-			set { this.Attributes[HtmlTag.Key_Content] = value; }
+			set { this.unparsedContent = value; }
 		}
 
 		/// <summary>
@@ -386,13 +386,78 @@ namespace JsonFx.BuildTools.HtmlDistiller
 		{
 			get
 			{
-				if (!this.HasAttributes || !this.Attributes.ContainsKey(HtmlTag.Key_EndDelim))
+				if (this.endDelim == null)
 				{
 					return String.Empty;
 				}
-				return this.Attributes[HtmlTag.Key_EndDelim];
+				return this.endDelim;
 			}
-			set { this.Attributes[HtmlTag.Key_EndDelim] = value; }
+			set { this.endDelim = value; }
+		}
+
+		/// <summary>
+		/// Gets a sequence of attributes which have been filtered by the IHtmlFilter
+		/// </summary>
+		public IEnumerable<KeyValuePair<string, object>> FilteredAttributes
+		{
+			get
+			{
+				if (!this.HasAttributes)
+				{
+					yield break;
+				}
+
+				foreach (string key in this.Attributes.Keys)
+				{
+					object value = this.Attributes[key];
+					if (value is HtmlTag)
+					{
+						if (this.filter != null && !this.filter.FilterTag((HtmlTag)value))
+						{
+							continue;
+						}
+					}
+					else
+					{
+						string strVal = value as string;
+						if (this.filter != null && !this.filter.FilterAttribute(this.TagName, key, ref strVal))
+						{
+							continue;
+						}
+						value = strVal;
+					}
+
+					yield return new KeyValuePair<string, object>(key, value);
+				}
+			}
+		}
+
+		/// <summary>
+		/// Gets a sequence of attributes which have been filtered by the IHtmlFilter
+		/// </summary>
+		public IEnumerable<KeyValuePair<string, string>> FilteredStyles
+		{
+			get
+			{
+				if (!this.HasStyles)
+				{
+					yield break;
+				}
+
+				foreach (string key in this.Styles.Keys)
+				{
+					string value = this.Styles[key];
+					if (this.filter == null || this.filter.FilterStyle(this.TagName, key, ref value))
+					{
+						if (String.IsNullOrEmpty(key) || String.IsNullOrEmpty(value))
+						{
+							continue;
+						}
+
+						yield return new KeyValuePair<string, string>(key, value);
+					}
+				}
+			}
 		}
 
 		#endregion Properties
@@ -402,7 +467,7 @@ namespace JsonFx.BuildTools.HtmlDistiller
 		/// <summary>
 		/// Changes a BeginTag to a FullTag
 		/// </summary>
-		protected internal void SetFullTag()
+		internal void SetFullTag()
 		{
 			if (this.TagType != HtmlTagType.BeginTag)
 			{
@@ -424,7 +489,7 @@ namespace JsonFx.BuildTools.HtmlDistiller
 				return null;
 			}
 
-			return new HtmlTag('/'+this.rawName);
+			return new HtmlTag('/'+this.rawName, this.filter);
 		}
 
 		/// <summary>
@@ -439,7 +504,7 @@ namespace JsonFx.BuildTools.HtmlDistiller
 				return null;
 			}
 
-			return new HtmlTag(this.rawName);
+			return new HtmlTag(this.rawName, this.filter);
 		}
 
 		#endregion Methods
@@ -447,14 +512,14 @@ namespace JsonFx.BuildTools.HtmlDistiller
 		#region Object Overrides
 
 		/// <summary>
-		/// Renders the tag.  Used mainly for Debugging.
+		/// Renders the tag without filtering.
 		/// </summary>
 		/// <returns></returns>
 		public override string ToString()
 		{
 			using (HtmlWriter writer = new HtmlWriter())
 			{
-				writer.WriteTag(this, null);
+				writer.WriteTag(this);
 				return writer.ToString();
 			}
 		}
@@ -500,7 +565,7 @@ namespace JsonFx.BuildTools.HtmlDistiller
 		/// http://www.w3.org/TR/xhtml-modularization/abstract_modules.html#sec_5.2.
 		/// http://www.w3.org/TR/WD-html40-970917/index/elements.html
 		/// </remarks>
-		protected static bool FullTagRequired(string tag)
+		private static bool FullTagRequired(string tag)
 		{
 			switch (tag)
 			{
@@ -517,6 +582,7 @@ namespace JsonFx.BuildTools.HtmlDistiller
 				case "link":
 				case "meta":
 				case "param":
+				case "wbr":
 				{
 					return true;
 				}
@@ -533,7 +599,7 @@ namespace JsonFx.BuildTools.HtmlDistiller
 		/// http://www.w3.org/TR/html401/index/elements.html
 		/// http://www.w3.org/TR/WD-html40-970917/index/elements.html
 		/// </remarks>
-		protected static bool CloseTagRequired(string tag)
+		private static bool CloseTagRequired(string tag)
 		{
 			switch (tag)
 			{
@@ -570,7 +636,7 @@ namespace JsonFx.BuildTools.HtmlDistiller
 		/// </summary>
 		/// <param name="tag">lowercase tag name</param>
 		/// <returns>the box type for a particular element</returns>
-		protected static HtmlTaxonomy GetTaxonomy(string tag)
+		private static HtmlTaxonomy GetTaxonomy(string tag)
 		{
 			// http://www.w3.org/TR/html401/
 			// http://www.w3.org/TR/xhtml-modularization/abstract_modules.html

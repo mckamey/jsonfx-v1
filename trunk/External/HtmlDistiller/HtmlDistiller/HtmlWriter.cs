@@ -33,19 +33,15 @@ using System.IO;
 using System.Collections.Generic;
 using System.Text;
 
-using JsonFx.BuildTools.HtmlDistiller.Filters;
-
 namespace JsonFx.BuildTools.HtmlDistiller.Writers
 {
 	public interface IHtmlWriter
 	{
 		#region Methods
 
-		void WriteLiteral(char literal);
+		void WriteLiteral(string value);
 
-		void WriteLiteral(string literal);
-
-		bool WriteTag(HtmlTag tag, IHtmlFilter filter);
+		void WriteTag(HtmlTag tag);
 
 		#endregion Methods
 	}
@@ -59,14 +55,14 @@ namespace JsonFx.BuildTools.HtmlDistiller.Writers
 	{
 		#region Fields
 
-		private TextWriter writer = null;
+		private readonly TextWriter writer;
 
 		#endregion Fields
 
 		#region Init
 
 		/// <summary>
-		/// Ctor.
+		/// Ctor
 		/// </summary>
 		public HtmlWriter()
 			: this((TextWriter)null)
@@ -74,7 +70,7 @@ namespace JsonFx.BuildTools.HtmlDistiller.Writers
 		}
 
 		/// <summary>
-		/// Ctor.
+		/// Ctor
 		/// </summary>
 		/// <param name="writer">the underlying Stream</param>
 		public HtmlWriter(Stream stream)
@@ -83,7 +79,7 @@ namespace JsonFx.BuildTools.HtmlDistiller.Writers
 		}
 
 		/// <summary>
-		/// Ctor.
+		/// Ctor
 		/// </summary>
 		/// <param name="writer">the underlying TextWriter</param>
 		public HtmlWriter(TextWriter writer)
@@ -108,14 +104,9 @@ namespace JsonFx.BuildTools.HtmlDistiller.Writers
 
 		#region IHtmlWriter Members
 
-		public void WriteLiteral(char literal)
+		public virtual void WriteLiteral(string value)
 		{
-			this.writer.Write(literal);
-		}
-
-		public void WriteLiteral(string literal)
-		{
-			this.writer.Write(literal);
+			this.writer.Write(value);
 		}
 
 		/// <summary>
@@ -124,105 +115,108 @@ namespace JsonFx.BuildTools.HtmlDistiller.Writers
 		/// <param name="tag"></param>
 		/// <param name="filter"></param>
 		/// <returns>true if rendered, false if not</returns>
-		public bool WriteTag(HtmlTag tag, IHtmlFilter filter)
+		public virtual void WriteTag(HtmlTag tag)
 		{
-			if (tag.TagType == HtmlTagType.Unknown)
+			switch (tag.TagType)
 			{
-				return false;
-			}
-			if (filter != null && !filter.FilterTag(tag))
-			{
-				return false;
-			}
+				case HtmlTagType.Unparsed:
+				{
+					this.WriteUnparsedTag(tag);
+					break;
+				}
+				case HtmlTagType.FullTag:
+				case HtmlTagType.BeginTag:
+				{
+					this.writer.Write('<');
+					this.writer.Write(tag.RawName);
 
-			this.writer.Write('<');
-			if (tag.TagType == HtmlTagType.EndTag)
-			{
-				this.writer.Write('/');
-			}
+					if (tag.HasAttributes)
+					{
+						this.WriteAttributes(tag);
+					}
+					if (tag.HasStyles)
+					{
+						this.WriteStyles(tag);
+					}
 
-			this.writer.Write(tag.RawName);
-
-			if (tag.HasAttributes)
-			{
-				this.WriteAttributes(tag, filter);
+					if (tag.TagType == HtmlTagType.FullTag)
+					{
+						this.writer.Write(" /");
+					}
+					this.writer.Write('>');
+					break;
+				}
+				case HtmlTagType.EndTag:
+				{
+					this.writer.Write("</");
+					this.writer.Write(tag.RawName);
+					this.writer.Write('>');
+					break;
+				}
 			}
-			if (tag.HasStyles)
-			{
-				this.WriteStyles(tag, filter);
-			}
-
-			if (tag.TagType == HtmlTagType.Unparsed)
-			{
-				this.writer.Write(tag.EndDelim);
-			}
-			else if (tag.TagType == HtmlTagType.FullTag)
-			{
-				this.writer.Write(" /");
-			}
-			this.writer.Write('>');
-
-			return true;
 		}
 
 		#endregion IHtmlWriter Members
 
 		#region Methods
 
-		/// <summary>
-		/// Renders the attributes to the output
-		/// </summary>
-		/// <param name="output"></param>
-		protected void WriteAttributes(HtmlTag tag, IHtmlFilter filter)
+		private void WriteUnparsedTag(HtmlTag tag)
 		{
-			if (tag.TagType == HtmlTagType.Unparsed)
-			{
-				this.writer.Write(tag.Content);
-				return;
-			}
+			this.writer.Write('<');
+			this.writer.Write(tag.RawName);
+			this.writer.Write(tag.Content);
+			this.writer.Write(tag.EndDelim);
+			this.writer.Write('>');
+		}
 
-			foreach (string key in tag.Attributes.Keys)
+		/// <summary>
+		/// Renders the style property
+		/// </summary>
+		/// <param name="tag"></param>
+		private void WriteAttributes(HtmlTag tag)
+		{
+			foreach (KeyValuePair<string, object> attribute in tag.FilteredAttributes)
 			{
-				string val = tag.Attributes[key];
-
-				if (filter == null || filter.FilterAttribute(tag.TagName, key, ref val))
+				if (attribute.Value is HtmlTag)
 				{
-					this.writer.Write(' ');
-					if (String.IsNullOrEmpty(key))
-					{
-						this.writer.Write(HtmlAttributeEncode(val));
-					}
-					else if (String.IsNullOrEmpty(val))
-					{
-						this.writer.Write(HtmlAttributeEncode(key));
-					}
-					else
-					{
-						this.writer.Write(" {0}=\"{1}\"", HtmlAttributeEncode(key), HtmlAttributeEncode(val));
-					}
+					// HTML doesn't allow tags in attributes unlike code markup
+					continue;
+				}
+				string value = attribute.Value as string;
+
+				this.writer.Write(' ');
+				if (String.IsNullOrEmpty(value))
+				{
+					this.writer.Write(HtmlAttributeEncode(attribute.Key));
+				}
+				else if (String.IsNullOrEmpty(attribute.Key))
+				{
+					this.writer.Write(HtmlAttributeEncode(value));
+				}
+				else
+				{
+					this.writer.Write(HtmlAttributeEncode(attribute.Key));
+					this.writer.Write("=\"");
+					this.writer.Write(HtmlAttributeEncode(value));
+					this.writer.Write("\"");
 				}
 			}
 		}
 
 		/// <summary>
-		/// Renders the style property to the output
+		/// Renders the style property
 		/// </summary>
 		/// <param name="output"></param>
-		protected void WriteStyles(HtmlTag tag, IHtmlFilter filter)
+		private void WriteStyles(HtmlTag tag)
 		{
 			this.writer.Write(" style=\"");
 
-			foreach (string key in tag.Styles.Keys)
+			foreach (KeyValuePair<string, string> style in tag.FilteredStyles)
 			{
-				string val = tag.Styles[key];
-
-				if (filter == null || filter.FilterStyle(tag.TagName, key, ref val))
-				{
-					if (!String.IsNullOrEmpty(key) && !String.IsNullOrEmpty(val))
-					{
-						this.writer.Write("{0}:{1};", HtmlAttributeEncode(key), HtmlAttributeEncode(val));
-					}
-				}
+				this.writer.Write(HtmlAttributeEncode(style.Key));
+				this.writer.Write(':');
+				this.writer.Write(HtmlAttributeEncode(style.Value));
+				this.writer.Write(';');
 			}
 
 			this.writer.Write('\"');
