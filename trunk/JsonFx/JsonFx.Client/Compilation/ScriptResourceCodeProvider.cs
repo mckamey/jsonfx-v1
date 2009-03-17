@@ -46,6 +46,10 @@ namespace JsonFx.Compilation
 
 		public const string MimeType = "text/javascript";
 		public const string FileExt = "js";
+		private const string TryStart = "try{";
+		private const string CatchStart = "}catch(ex){if(confirm(\"Error in ";
+		private const string CatchEnd = ":\\n\"+(ex&&ex.message))){debugger}}";
+		private const string CatchCompact = "}catch(ex){}";
 
 		#endregion Constants
 
@@ -109,10 +113,32 @@ namespace JsonFx.Compilation
 
 				writer.Flush();
 
-				resource = sourceText;
-				compacted = writer.ToString();
+				resource = ScriptResourceCodeProvider.FirewallScript(virtualPath, sourceText, false);
+				compacted = ScriptResourceCodeProvider.FirewallScript(virtualPath, writer.ToString(), true);
 
 				this.ExtractGlobalizationKeys(compacted);
+			}
+		}
+
+		public static string FirewallScript(string virtualPath, string source, bool compacted)
+		{
+			if (compacted)
+			{
+				return String.Concat(
+					ScriptResourceCodeProvider.TryStart,
+					source,
+					ScriptResourceCodeProvider.CatchCompact);
+			}
+			else
+			{
+				return String.Concat(
+					ScriptResourceCodeProvider.TryStart,
+					Environment.NewLine,
+					source,
+					Environment.NewLine,
+					ScriptResourceCodeProvider.CatchStart,
+					virtualPath,
+					ScriptResourceCodeProvider.CatchEnd);
 			}
 		}
 

@@ -104,7 +104,7 @@ namespace JsonFx.Compilation
 				// render the pretty-printed version
 				writer.Render(sw, true, true);
 				sw.Flush();
-				resource = sw.ToString();
+				resource = ScriptResourceCodeProvider.FirewallScript(virtualPath, sw.ToString(), false);
 			}
 
 			using (StringWriter sw = new StringWriter())
@@ -112,7 +112,7 @@ namespace JsonFx.Compilation
 				// render the compacted version
 				writer.Render(sw, false, true);
 				sw.Flush();
-				compacted = sw.ToString();
+				compacted = ScriptResourceCodeProvider.FirewallScript(virtualPath, sw.ToString(), true);
 			}
 		}
 
