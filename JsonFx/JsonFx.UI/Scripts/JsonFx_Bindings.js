@@ -120,17 +120,18 @@ JsonFx.Bindings = function() {
 	/*DOM*/ var performOne = jQ ?
 		// jQuery performOne implementation
 		function(/*DOM*/ elem, /*actionKey*/ a) {
+			function go(/*string*/ selector, /*function*/ action) {
+				return function() {
+					try {
+						elem = action(this) || this;
+					} catch (ex) {
+						window.alert("Error binding "+selector+":\n\n\""+(ex&&ex.message)+"\"");
+					}
+				};
+			}
 			for (var i=0; i<bindings.length; i++) {
 				if (bindings[i][a]) {
-					var action = bindings[i][a];
-					jQuery(elem).filter(bindings[i].selector).each(
-						function() {
-							try {
-								elem = action(this) || this;
-							} catch (ex) {
-								window.alert("Error binding "+bindings[i].selector+":\n\n\""+ex.message+"\"");
-							}
-						});
+					jQuery(elem).filter(bindings[i].selector).each(go(bindings[i].selector, bindings[i][a]));
 				}
 			}
 			return elem;
@@ -190,20 +191,21 @@ JsonFx.Bindings = function() {
 	/*void*/ var perform = jQ ?
 		// jQuery perform implementation
 		function(/*DOM*/ root, /*actionKey*/ a) {
+			function go(/*string*/ selector, /*function*/ action) {
+				return function() {
+					try {
+						var elem = action(this) || this;
+						if (elem !== this) {
+							this.parentNode.replaceChild(elem, this);
+						}
+					} catch (ex) {
+						window.alert("Error binding "+selector+":\n\n\""+(ex&&ex.message)+"\"");
+					}
+				};
+			}
 			for (var i=0; i<bindings.length; i++) {
 				if (bindings[i][a]) {
-					var action = bindings[i][a];
-					jQuery(bindings[i].selector, root).each(
-						function() {
-							try {
-								var elem = action(this) || this;
-								if (elem !== this) {
-									this.parentNode.replaceChild(elem, this);
-								}
-							} catch (ex) {
-								window.alert("Error binding "+bindings[i].selector+":\n\n\""+ex.message+"\"");
-							}
-						});
+					jQuery(bindings[i].selector, root).each(go(bindings[i].selector, bindings[i][a]));
 				}
 			}
 		} :
@@ -289,7 +291,7 @@ JsonFx.Bindings = function() {
 
 	// use bindOne as the default JBST filter
 	if ("undefined" !== typeof JsonML && JsonML.BST) {
-		/*DOM*/ function bindOne(/*DOM*/ elem) {
+		var bindOne = /*DOM*/ function(/*DOM*/ elem) {
 			if (performOneID && bindings["#"]) {
 				elem = performOneID(elem, BIND);
 			}
