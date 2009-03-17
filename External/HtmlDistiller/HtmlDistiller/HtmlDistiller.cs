@@ -45,7 +45,7 @@ namespace JsonFx.BuildTools.HtmlDistiller
 	/// <remarks>
 	/// Note: this class is thread-safe (all external changes are locked first)
 	/// </remarks>
-	public class HtmlDistiller
+	public sealed class HtmlDistiller
 	{
 		#region ParseState
 
@@ -103,12 +103,13 @@ namespace JsonFx.BuildTools.HtmlDistiller
 		private string source = String.Empty;
 		private IHtmlFilter htmlFilter;
 		private IHtmlWriter htmlWriter;
-		private bool isInitialized = false;
-		private int maxLength = 0;
-		private bool normalizeWhitespace = false;
+		private bool isInitialized;
+		private int maxLength;
+		private bool normalizeWhitespace;
 		private bool balanceTags = true;
 		private bool encodeNonAscii = true;
-		private bool incrementalParsing = false;
+		private bool incrementalParsing;
+		private string truncationIndicator;
 
 		private int index;		// current char in source
 		private int start;		// last written char in source
@@ -122,7 +123,7 @@ namespace JsonFx.BuildTools.HtmlDistiller
 		#region Init
 
 		/// <summary>
-		/// Ctor.
+		/// Ctor
 		/// </summary>
 		public HtmlDistiller()
 			: this(0, null)
@@ -130,7 +131,7 @@ namespace JsonFx.BuildTools.HtmlDistiller
 		}
 
 		/// <summary>
-		/// Ctor.
+		/// Ctor
 		/// </summary>
 		/// <param name="text">the text to parse</param>
 		public HtmlDistiller(int maxLength)
@@ -139,7 +140,7 @@ namespace JsonFx.BuildTools.HtmlDistiller
 		}
 
 		/// <summary>
-		/// Ctor.
+		/// Ctor
 		/// </summary>
 		/// <param name="text">the text to parse</param>
 		/// <param name="filter"></param>
@@ -241,6 +242,23 @@ namespace JsonFx.BuildTools.HtmlDistiller
 					this.encodeNonAscii = value;
 				}
 			}
+		}
+
+		/// <summary>
+		/// Gets and sets the suffix that indicates the input was truncated.
+		/// Note: setting to null defaults to ellipsis. Use String.Empty for no indicator.
+		/// </summary>
+		public string TruncationIndicator
+		{
+			get
+			{
+				if (this.truncationIndicator == null)
+				{
+					return this.EncodeNonAscii ? EllipsisEntity : Ellipsis;
+				}
+				return this.truncationIndicator;
+			}
+			set { this.truncationIndicator = value; }
 		}
 
 		/// <summary>
@@ -466,7 +484,7 @@ namespace JsonFx.BuildTools.HtmlDistiller
 								if (this.EncodeNonAscii)
 								{
 									// encode LessThan char
-									this.HtmlWriter.WriteLiteral(LessThanEntity);
+									this.WriteLiteral(LessThanEntity);
 
 									// remove from stream
 									this.EmptyBuffer(1);
@@ -500,7 +518,7 @@ namespace JsonFx.BuildTools.HtmlDistiller
 									if (this.Peek(1) != LFChar)
 									{
 										// just CR so replace CR with LF
-										this.HtmlWriter.WriteLiteral(LFChar);
+										this.WriteLiteral(LFChar.ToString());
 
 										// count toward total text length
 										this.IncTextCount();
@@ -587,7 +605,7 @@ namespace JsonFx.BuildTools.HtmlDistiller
 
 							// encode the non-ASCII char
 							string entity = HtmlDistiller.EncodeHtmlEntity(ch);
-							this.HtmlWriter.WriteLiteral(entity);
+							this.WriteLiteral(entity);
 
 							// remove char from stream
 							this.EmptyBuffer(1);
@@ -610,7 +628,7 @@ namespace JsonFx.BuildTools.HtmlDistiller
 								this.WriteBuffer();
 
 								// output decoded char
-								this.HtmlWriter.WriteLiteral(entityChar);
+								this.WriteLiteral(entityChar.ToString());
 
 								// remove char from stream
 								this.EmptyBuffer(entityLength);
@@ -667,8 +685,8 @@ namespace JsonFx.BuildTools.HtmlDistiller
 
 				if (this.MaxLength > 0 && this.textSize >= this.MaxLength)
 				{
-					// source was cut off so add ellipsis
-					this.HtmlWriter.WriteLiteral(this.EncodeNonAscii ? EllipsisEntity : Ellipsis);
+					// source was cut off so add ellipsis or other indicator
+					this.WriteLiteral(this.TruncationIndicator);
 				}
 
 				if (!this.incrementalParsing)
@@ -679,7 +697,7 @@ namespace JsonFx.BuildTools.HtmlDistiller
 		}
 
 		/// <summary>
-		/// 
+		/// Attempts to parse the next sequence as a tag
 		/// </summary>
 		/// <returns>null if no tag was found (e.g. just LessThan char)</returns>
 		private HtmlTag ParseTag()
@@ -721,7 +739,7 @@ namespace JsonFx.BuildTools.HtmlDistiller
 			// remove tag open char
 			this.EmptyBuffer(1);
 
-			tag = new HtmlTag(this.FlushBuffer(i-1));
+			tag = new HtmlTag(this.FlushBuffer(i-1), this.htmlFilter);
 
 			this.ParseSyncPoint();
 
@@ -839,14 +857,14 @@ namespace JsonFx.BuildTools.HtmlDistiller
 				this.EmptyBuffer(endDelim.Length);
 			}
 
-			HtmlTag comment = new HtmlTag(blockName);
+			HtmlTag unparsed = new HtmlTag(blockName, this.htmlFilter);
 			if (!String.IsNullOrEmpty(content))
 			{
-				comment.Content = content;
+				unparsed.Content = content;
 			}
-			comment.EndDelim = endDelim.Substring(0, endDelim.Length-1);
+			unparsed.EndDelim = endDelim.Substring(0, endDelim.Length-1);
 
-			return comment;
+			return unparsed;
 		}
 
 		private void ParseAttributes(HtmlTag tag)
@@ -888,7 +906,7 @@ namespace JsonFx.BuildTools.HtmlDistiller
 					}
 					else
 					{
-						tag.Attributes[name] = (value != null) ? value.ToString() : null;
+						tag.Attributes[name] = value;
 					}
 				}
 
@@ -998,7 +1016,7 @@ namespace JsonFx.BuildTools.HtmlDistiller
 				this.EmptyBuffer(1);
 			}
 
-			if (tag != null && this.htmlFilter.FilterTag(tag))
+			if (tag != null)
 			{
 				return tag;
 			}
@@ -1078,14 +1096,16 @@ namespace JsonFx.BuildTools.HtmlDistiller
 		{
 			try
 			{
-				if (this.htmlWriter.WriteTag(tag, this.htmlFilter))
+				if (this.htmlFilter == null || this.htmlFilter.FilterTag(tag))
 				{
+					this.htmlWriter.WriteTag(tag);
 					this.taxonomy |= tag.Taxonomy;
 				}
 			}
 			catch (Exception ex)
 			{
-				try { this.htmlWriter.WriteLiteral("Error in HtmlWriter: "+ex.Message); } catch { }
+				try { this.WriteLiteral("Error writing HtmlTag: "+ex.Message); }
+				catch { }
 			}
 		}
 
@@ -1099,6 +1119,35 @@ namespace JsonFx.BuildTools.HtmlDistiller
 			}
 		}
 
+		private void WriteLiteral(string value)
+		{
+			if (value == null)
+			{
+				return;
+			}
+			this.WriteLiteral(value, 0, value.Length);
+		}
+
+		private void WriteLiteral(string source, int start, int end)
+		{
+			if (start >= end)
+			{
+				return;
+			}
+
+			string replacement;
+			if (this.htmlFilter != null && this.htmlFilter.FilterLiteral(source, start, end, out replacement))
+			{
+				// filter has altered the literal
+				this.htmlWriter.WriteLiteral(replacement);
+			}
+			else
+			{
+				// use the original substring
+				this.htmlWriter.WriteLiteral(source.Substring(start, end-start));
+			}
+		}
+
 		/// <summary>
 		/// Reset state used for parsing
 		/// </summary>
@@ -1106,13 +1155,13 @@ namespace JsonFx.BuildTools.HtmlDistiller
 		/// <remarks>Does not SyncLock, call inside lock</remarks>
 		private void Init(string html)
 		{
-			if (this.htmlFilter == null)
-			{
-				this.htmlFilter = new SafeHtmlFilter();
-			}
 			if (this.htmlWriter == null)
 			{
 				this.htmlWriter = new HtmlWriter();
+			}
+			if (this.htmlFilter != null)
+			{
+				this.htmlFilter.HtmlWriter = this.htmlWriter;
 			}
 
 			// set up the source
@@ -1150,7 +1199,7 @@ namespace JsonFx.BuildTools.HtmlDistiller
 
 		#endregion Parse Methods
 
-		#region Methods
+		#region Utility Methods
 
 		/// <summary>
 		/// 
@@ -1229,7 +1278,7 @@ namespace JsonFx.BuildTools.HtmlDistiller
 			}
 
 			// check the previous output if possible
-			IReversePeek revPeek = this.HtmlWriter as IReversePeek;
+			IReversePeek revPeek = this.htmlWriter as IReversePeek;
 			return (revPeek == null) ? NullChar : revPeek.PrevChar(peek);
 		}
 
@@ -1246,20 +1295,7 @@ namespace JsonFx.BuildTools.HtmlDistiller
 		private void WriteBuffer()
 		{
 			// do not callback on empty strings
-			if (this.start < this.index)
-			{
-				string replacement;
-				if (this.htmlFilter.FilterLiteral(this.source, this.start, this.index, out replacement))
-				{
-					// filter has altered the literal
-					this.HtmlWriter.WriteLiteral(replacement);
-				}
-				else
-				{
-					// use the original literal
-					this.HtmlWriter.WriteLiteral(this.source.Substring(this.start, this.index-this.start));
-				}
-			}
+			this.WriteLiteral(this.source, this.start, this.index);
 			this.start = this.index;
 		}
 
@@ -1738,16 +1774,39 @@ namespace JsonFx.BuildTools.HtmlDistiller
 			}
 		}
 
-		#endregion Methods
+		#endregion Utility Methods
 
 		#region Static Methods
+
+		/// <summary>
+		/// Quick safe parsing.
+		/// </summary>
+		/// <param name="html">the source text</param>
+		/// <returns>the filtered markup</returns>
+		public static string ParseSafe(string html)
+		{
+			return HtmlDistiller.ParseSafe(html, 0, 0, false);
+		}
+
+		/// <summary>
+		/// Quick safe parsing.
+		/// </summary>
+		/// <param name="html">the source text</param>
+		/// <param name="maxLength">the maximum text length</param>
+		/// <param name="maxWordLength">the maximum length of a single word before wrapping</param>
+		/// <param name="autoLink">the maximum text length</param>
+		/// <returns>the filtered markup</returns>
+		public static string ParseSafe(string html, int maxLength, int maxWordLength, bool autoLink)
+		{
+			return HtmlDistiller.Parse(html, new SafeHtmlFilter(maxWordLength, autoLink), maxLength);
+		}
 
 		/// <summary>
 		/// Quick parsing utility for common usage.
 		/// </summary>
 		/// <param name="html">the source text</param>
 		/// <param name="filter">a custom HtmlFilter</param>
-		/// <returns>the filtered text</returns>
+		/// <returns>the filtered markup</returns>
 		public static string Parse(string html, IHtmlFilter filter)
 		{
 			return HtmlDistiller.Parse(html, filter, 0);
@@ -1759,13 +1818,42 @@ namespace JsonFx.BuildTools.HtmlDistiller
 		/// <param name="html">the source text</param>
 		/// <param name="filter">a custom HtmlFilter</param>
 		/// <param name="maxLength">the maximum text length</param>
-		/// <returns>the filtered text</returns>
+		/// <returns>the filtered markup</returns>
 		public static string Parse(string html, IHtmlFilter filter, int maxLength)
 		{
 			StringWriter writer = new StringWriter();
 
 			HtmlDistiller parser = new HtmlDistiller(maxLength, filter);
 			parser.HtmlWriter = new HtmlWriter(writer);
+			parser.Parse(html);
+
+			return writer.ToString();
+		}
+
+		/// <summary>
+		/// Quick conversion to plain text.
+		/// </summary>
+		/// <param name="html">the source text</param>
+		/// <param name="maxLength">the maximum text length</param>
+		/// <returns>plain text</returns>
+		public static string PlainText(string html)
+		{
+			return HtmlDistiller.PlainText(html, 0);
+		}
+
+		/// <summary>
+		/// Quick conversion to plain text.
+		/// </summary>
+		/// <param name="html">the source text</param>
+		/// <param name="maxLength">the maximum text length</param>
+		/// <returns>plain text</returns>
+		public static string PlainText(string html, int maxLength)
+		{
+			StringWriter writer = new StringWriter();
+
+			HtmlDistiller parser = new HtmlDistiller(maxLength, new StripHtmlFilter());
+			parser.HtmlWriter = new HtmlWriter(writer);
+			parser.EncodeNonAscii = false;
 			parser.Parse(html);
 
 			return writer.ToString();

@@ -29,6 +29,7 @@
 #endregion License
 
 using System;
+using JsonFx.BuildTools.HtmlDistiller.Writers;
 
 namespace JsonFx.BuildTools.HtmlDistiller.Filters
 {
@@ -45,6 +46,7 @@ namespace JsonFx.BuildTools.HtmlDistiller.Filters
 
 		private readonly int MaxImageSize;
 		private readonly IHtmlFilter HtmlFilter;
+		private IHtmlWriter htmlWriter;
 
 		#endregion Fields
 
@@ -78,10 +80,22 @@ namespace JsonFx.BuildTools.HtmlDistiller.Filters
 		#region IHtmlFilter Members
 
 		/// <summary>
-		/// 
+		/// Gets and sets the current HtmlWriter
+		/// </summary>
+		/// <remarks>
+		/// Allows the HtmlFilter access to the HtmlWriter
+		/// </remarks>
+		IHtmlWriter IHtmlFilter.HtmlWriter
+		{
+			get { return this.htmlWriter; }
+			set { this.htmlWriter = value; }
+		}
+
+		/// <summary>
+		/// Filters at the tag level.
 		/// </summary>
 		/// <param name="tag"></param>
-		/// <returns></returns>
+		/// <returns>true if allowed, false if filtered</returns>
 		public virtual bool FilterTag(HtmlTag tag)
 		{
 			// use this point to modify the tag output
@@ -98,37 +112,37 @@ namespace JsonFx.BuildTools.HtmlDistiller.Filters
 		}
 
 		/// <summary>
-		/// 
+		/// Filters at the attribute level.
 		/// </summary>
 		/// <param name="tag"></param>
 		/// <param name="attribute"></param>
 		/// <param name="value"></param>
-		/// <returns></returns>
+		/// <returns>true if allowed, false if filtered</returns>
 		public virtual bool FilterAttribute(string tag, string attribute, ref string value)
 		{
 			return this.HtmlFilter.FilterAttribute(tag, attribute, ref value);
 		}
 
 		/// <summary>
-		/// 
+		/// Filters style attributes specifically.
 		/// </summary>
 		/// <param name="tag"></param>
 		/// <param name="style"></param>
 		/// <param name="value"></param>
-		/// <returns></returns>
+		/// <returns>true if allowed, false if filtered</returns>
 		public virtual bool FilterStyle(string tag, string style, ref string value)
 		{
 			return this.HtmlFilter.FilterStyle(tag, style, ref value);
 		}
 
 		/// <summary>
-		/// 
+		/// Provides access to modify literal text.
 		/// </summary>
 		/// <param name="source"></param>
 		/// <param name="start"></param>
 		/// <param name="end"></param>
 		/// <param name="replacement"></param>
-		/// <returns></returns>
+		/// <returns>true if replacement text was provided, false if unaltered</returns>
 		public virtual bool FilterLiteral(string source, int start, int end, out string replacement)
 		{
 			replacement = null;
@@ -159,12 +173,12 @@ namespace JsonFx.BuildTools.HtmlDistiller.Filters
 			{
 				if (tag.Attributes.ContainsKey("height"))
 				{
-					strHeight = tag.Attributes["height"];
+					strHeight = tag.Attributes["height"] as string;
 					tag.Attributes.Remove("height");
 				}
 				if (tag.Attributes.ContainsKey("width"))
 				{
-					strWidth = tag.Attributes["width"];
+					strWidth = tag.Attributes["width"] as string;
 					tag.Attributes.Remove("width");
 				}
 			}
