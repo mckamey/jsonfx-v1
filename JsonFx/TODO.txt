@@ -1,15 +1,14 @@
-2009-03-16 @ 00:44
+2009-03-16 @ 20:56
 
-- input type="radio" cannot be clicked when generated
-	<input type="radio" id="foo-radio" name="FooChoice" checked="checked" value="FooChoiceA" /><label for="foo-radio">Foo Choice A</label>
+- add try{...}catch(ex){} around scripts in merge debug output (for segmenting protection)
+
 - add anonymous templates inside server jbst:control
 	- just parse on the fly?
 	- default inner property for default content?
 - rebuild JsonFx Ajax History to use doc frag
-- figure out a way to custom serialize objects which are closed source
+- figure out a way to custom serialize objects which are closed source (e.g. BCL)
 - add use of custom type descriptors to define properties (e.g. convert a Dictionary to object)
 - BUG: dictionaries without keys round-trip-able as strings should be rendered as key-value lists
-- figure out pattern for creating closures in DOM events without storing data as special HTML attributes
 
 - explain difference between JsonFx.UI.Binding vs. jQuery.ready
 - explain how to switch templates in list JBSTs

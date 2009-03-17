@@ -1,5 +1,8 @@
 Release History
 
+v1.0.0903.17xx
+- fixed bug with IE not being able to properly set name attribute
+
 v1.0.0903.1609
 - HtmlDistiller
 	- added auto-link parsing (URLs in literals can be optionally converted to hyperlinks)
