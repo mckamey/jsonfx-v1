@@ -1,7 +1,5 @@
 2009-03-16 @ 20:56
 
-- add try{...}catch(ex){} around scripts in merge debug output (for segmenting protection)
-
 - add anonymous templates inside server jbst:control
 	- just parse on the fly?
 	- default inner property for default content?

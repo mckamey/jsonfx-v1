@@ -1,6 +1,7 @@
 Release History
 
 v1.0.0903.17xx
+- added script firewall to merge files which prevents one script from causing entire merge to fail
 - fixed bug with IE not being able to properly set name attribute
 
 v1.0.0903.1609
