@@ -206,7 +206,7 @@ namespace JsonFx.BuildTools.HtmlDistiller.Filters
 		public virtual bool FilterLiteral(string source, int start, int end, out string replacement)
 		{
 			replacement = null;
-			if (this.MaxWordLength <= 0)
+			if (this.MaxWordLength <= 0 || source == null)
 			{
 				return false;
 			}
@@ -225,6 +225,11 @@ namespace JsonFx.BuildTools.HtmlDistiller.Filters
 
 				if (sinceSpace >= this.MaxWordLength)
 				{
+					if (this.HtmlWriter == null)
+					{
+						throw new NullReferenceException("HtmlWriter was never set on the HtmlFilter.");
+					}
+
 					addedBreak = true;
 					// append all before break
 					this.HtmlWriter.WriteLiteral(source.Substring(last, i-last));
@@ -357,7 +362,7 @@ namespace JsonFx.BuildTools.HtmlDistiller.Filters
 		/// <returns>true if <paramref name="replacement"/> should be used to replace literal</returns>
 		public override bool FilterLiteral(string source, int start, int end, out string replacement)
 		{
-			if (!this.AutoLink)
+			if (!this.AutoLink || source == null)
 			{
 				return base.FilterLiteral(source, start, end, out replacement);
 			}
@@ -369,6 +374,11 @@ namespace JsonFx.BuildTools.HtmlDistiller.Filters
 			bool foundUrl = false;
 			while (this.DetectUrl(source, last, end, out index, out length))
 			{
+				if (this.HtmlWriter == null)
+				{
+					throw new NullReferenceException("HtmlWriter was never set on the HtmlFilter.");
+				}
+
 				foundUrl = true;
 
 				// append next unmatched substring
@@ -427,9 +437,8 @@ namespace JsonFx.BuildTools.HtmlDistiller.Filters
 
 			if (!foundUrl)
 			{
-				// no matches were found
-				replacement = null;
-				return false;
+				// no matches were found, defer to base implementation
+				return base.FilterLiteral(source, last, end, out replacement);
 			}
 
 			// return trailing unmatched substring
