@@ -1,4 +1,9 @@
-2009-03-16 @ 20:56
+2009-03-18 @ 07:45
+
+- explain difference between JsonFx.UI.Binding vs. jQuery.ready
+- explain how to switch templates in list JBSTs
+- explain using Linq in JSON-RPC
+- explain inserting markup data into JBST
 
 - add anonymous templates inside server jbst:control
 	- just parse on the fly?
@@ -7,11 +12,6 @@
 - figure out a way to custom serialize objects which are closed source (e.g. BCL)
 - add use of custom type descriptors to define properties (e.g. convert a Dictionary to object)
 - BUG: dictionaries without keys round-trip-able as strings should be rendered as key-value lists
-
-- explain difference between JsonFx.UI.Binding vs. jQuery.ready
-- explain how to switch templates in list JBSTs
-- explain using Linq in JSON-RPC
-- explain inserting markup data into JBST
 
 - create build provider for generating a list of localization values
 - client-side localization: add support for <%= Resources.Foo.Bar %>
