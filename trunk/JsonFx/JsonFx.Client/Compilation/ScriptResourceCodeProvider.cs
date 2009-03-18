@@ -46,9 +46,10 @@ namespace JsonFx.Compilation
 
 		public const string MimeType = "text/javascript";
 		public const string FileExt = "js";
+
 		private const string TryStart = "try{";
 		private const string CatchStart = "}catch(ex){if(confirm(\"Error in ";
-		private const string CatchEnd = ":\\n\"+(ex&&ex.message))){debugger}}";
+		private const string CatchEnd = ":\\n\"+(ex&&ex.message))){/*jslint debug:true */debugger;}}";
 		private const string CatchCompact = "}catch(ex){}";
 
 		#endregion Constants
@@ -137,7 +138,7 @@ namespace JsonFx.Compilation
 					source,
 					Environment.NewLine,
 					ScriptResourceCodeProvider.CatchStart,
-					virtualPath,
+					(virtualPath != null) ? virtualPath.Replace("\"", "\\\"") : "script",
 					ScriptResourceCodeProvider.CatchEnd);
 			}
 		}
