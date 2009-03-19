@@ -313,40 +313,35 @@ JsonFx.Bindings = function() {
 	}
 
 	// shorthand for auto-replacing an element with JBST bind
-	/*void*/ b.replace = function(/*string*/ selector, /*JBST*/ jbst, /*object*/ data, /*int*/ index) {
+	/*void*/ b.replace = function(/*string*/ selector, /*JBST*/ jbst, /*object*/ data, /*int*/ index, /*int*/ count) {
 		JsonFx.Bindings.add(
 			selector,
 			function(elem) {
-				return JsonML.BST(jbst).bind(data, index) || elem;
+				return JsonML.BST(jbst).bind(data, index, count) || elem;
 			});
 	};
 
-	// register bind events
-	if (typeof jQuery !== "undefined") {
-		jQuery(b.bind);
-		jQuery(window).bind("unload", b.unbind);
-	} else if (window.addEventListener) {
-		//DOM Level 2 model for binding events
-		window.addEventListener("load", b.bind, false);
-		window.addEventListener("unload", b.unbind, false);
-	} else if (window.attachEvent) {
-		//IE model for binding events
-		window.attachEvent("onload", b.bind);
-		window.attachEvent("onunload", b.unbind);
-	} else {
-		//DOM Level 0 model for binding events
-		var onload = window.onload;
-		window.onload =
-			("function" === typeof onload) ?
-			function(/*Event*/ evt) { b.bind(evt); return onload(evt); } :
-			b.bind;
-
-		var onunload = window.onunload;
-		window.onunload =
-			("function" === typeof onunload) ?
-			function(/*Event*/ evt) { b.unbind(evt); return onunload(evt); } :
-			b.unbind;
+	/*void*/ function addHandler(/*DOM*/ target, /*string*/ name, /*function*/ handler) {
+		if (typeof jQuery !== "undefined") {
+			jQuery(target).bind(name, handler);
+		} else if (target.addEventListener) {
+			// DOM Level 2 model for binding events
+			target.addEventListener(name, handler, false);
+		} else if (target.attachEvent) {
+			// IE model for binding events
+			target.attachEvent("on"+name, handler);
+		} else {
+			// DOM Level 0 model for binding events
+			var old = target["on"+name];
+			target["on"+name] = ("function" === typeof old) ?
+				function(/*Event*/ evt) { handler(evt); return old(evt); } :
+				handler;
+		}
 	}
+
+	// register bind events
+	addHandler(window, "load", b.bind);
+	addHandler(window, "unload", b.unbind);
 };
 
 // doing instead of anonymous fn for JSLint compatibility
