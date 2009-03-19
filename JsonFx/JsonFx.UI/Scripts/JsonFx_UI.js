@@ -33,6 +33,42 @@ if ("undefined" === typeof JsonFx.Bindings) {
 
 /* DOM utilities ------------------------------------------------*/
 
+/*bool*/ JsonFx.UI.cancelEvent = function(/*Event*/ evt) {
+	evt = evt || window.event;
+	if (evt) {
+		if (evt.stopPropagation) {
+			evt.stopPropagation();
+			evt.preventDefault();
+		} else {
+			try {
+				evt.cancelBubble = true;
+				evt.returnValue = false;
+			} catch (ex) {
+				// IE6
+			}
+		}
+	}
+	return false;
+};
+
+/*void*/ JsonFx.UI.addHandler = function(/*DOM*/ target, /*string*/ name, /*function*/ handler) {
+	if (typeof jQuery !== "undefined") {
+		jQuery(target).bind(name, handler);
+	} if (target.addEventListener) {
+		// DOM Level 2 model for binding events
+		target.addEventListener(name, handler, false);
+	} else if (target.attachEvent) {
+		// IE model for binding events
+		target.attachEvent("on"+name, handler);
+	} else {
+		// DOM Level 0 model for binding events
+		var old = target["on"+name];
+		target["on"+name] = ("function" === typeof old) ?
+			function(/*Event*/ evt) { handler(evt); return old(evt); } :
+			handler;
+	}
+};
+
 /*bool*/ JsonFx.UI.clear = function(/*DOM*/ elem) {
 	if (!elem) {
 		return;
