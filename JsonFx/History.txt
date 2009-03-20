@@ -1,5 +1,8 @@
 Release History
 
+v1.0.0903.22xx
+- extended AutoLink to include URLs with common TLDs (com, net, org, edu, gov) but without the URI scheme (assumed "http://")
+
 v1.0.0903.1808
 - tweaked IE script hacks
 
