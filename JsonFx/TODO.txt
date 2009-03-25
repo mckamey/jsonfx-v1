@@ -1,9 +1,10 @@
 2009-03-18 @ 07:45
 
-- have debug script firewall call default window.onerror?
-- pull cancelEvent/addHandler from InterNetris once back in JsonFx
+- replace regex in rpc proxies with actual name check methods
+- decide if scripts using alert/confirm should call default window.onerror?
 
 - post InterNetris as example app
+- explain JSON-RPC callback examples
 - explain difference between JsonFx.UI.Binding vs. jQuery.ready
 - explain how to switch templates in list JBSTs
 - explain using Linq in JSON-RPC
