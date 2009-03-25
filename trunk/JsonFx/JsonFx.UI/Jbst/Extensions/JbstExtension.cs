@@ -30,6 +30,8 @@
 
 using System;
 
+using JsonFx.Handlers;
+
 namespace JsonFx.UI.Jbst.Extensions
 {
 	/// <summary>
@@ -40,10 +42,7 @@ namespace JsonFx.UI.Jbst.Extensions
 		#region Constants
 
 		private const string PrefixNotFoundError =
-			@"if (window.confirm(""Error unknown JbstExtension prefix: \""{0}\"". Debug?"")) {{
-				/*jslint evil:true */
-				debugger;
-			}}";
+			@"window.alert(""Error in {0}:\nUnknown extension \""{1}\"""")";
 
 		#endregion Constants
 
@@ -94,7 +93,8 @@ namespace JsonFx.UI.Jbst.Extensions
 		protected internal virtual string Eval()
 		{
 			// output error
-			return String.Format(JbstExtension.PrefixNotFoundError, this.Value);
+			string path = ResourceHandler.EnsureAppRelative(this.Path);
+			return String.Format(JbstExtension.PrefixNotFoundError, path, this.Value);
 		}
 
 		#endregion JbstExtension Members

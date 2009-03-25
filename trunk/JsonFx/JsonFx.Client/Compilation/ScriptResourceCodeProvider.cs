@@ -48,8 +48,15 @@ namespace JsonFx.Compilation
 		public const string FileExt = "js";
 
 		private const string TryStart = "try{";
-		private const string CatchStart = "}catch(ex){if(confirm(\"Error in ";
-		private const string CatchEnd = ":\\n\"+(ex&&ex.message))){/*jslint debug:true */debugger;}}";
+		private const string CatchStart =
+@"} catch (ex) {
+	alert(""Error in ";
+		private const string CatchEnd =
+@":\n""+(ex&&ex.message));
+	/*jslint debug:true */
+	debugger;
+	/*jslint debug:false */
+}";
 		private const string CatchCompact = "}catch(ex){}";
 
 		#endregion Constants
@@ -132,13 +139,15 @@ namespace JsonFx.Compilation
 			}
 			else
 			{
+				string path = ResourceHandler.EnsureAppRelative(virtualPath);
 				return String.Concat(
+					Environment.NewLine,
 					ScriptResourceCodeProvider.TryStart,
 					Environment.NewLine,
 					source,
 					Environment.NewLine,
 					ScriptResourceCodeProvider.CatchStart,
-					(virtualPath != null) ? virtualPath.Replace("\"", "\\\"") : "script",
+					(path != null) ? path.Replace("\"", "\\\"") : "script",
 					ScriptResourceCodeProvider.CatchEnd);
 			}
 		}

@@ -125,7 +125,10 @@ JsonFx.Bindings = function() {
 					try {
 						elem = action(this) || this;
 					} catch (ex) {
-						window.alert("Error binding "+selector+":\n\n\""+(ex&&ex.message)+"\"");
+						window.alert("Error binding "+selector+":\n\""+(ex&&ex.message)+"\"");
+						/*jslint evil:true */
+						debugger;
+						/*jslint evil:false */
 					}
 				};
 			}
@@ -146,7 +149,14 @@ JsonFx.Bindings = function() {
 						// allow binding to replace element
 						elem = binds[css][a](elem) || elem;
 					} catch (ex) {
-						window.alert("Error binding "+elem.tagName+"."+css+":\n\n\""+ex.message+"\"");
+						var selector = elem.tagName+"."+css;
+						if (elem.id) {
+							selector += "#"+elem.id;
+						}
+						window.alert("Error binding "+selector+":\n\""+(ex&&ex.message)+"\"");
+						/*jslint evil:true */
+						debugger;
+						/*jslint evil:false */
 					}
 				}
 			}
@@ -199,7 +209,10 @@ JsonFx.Bindings = function() {
 							this.parentNode.replaceChild(elem, this);
 						}
 					} catch (ex) {
-						window.alert("Error binding "+selector+":\n\n\""+(ex&&ex.message)+"\"");
+						window.alert("Error binding "+selector+":\n\""+(ex&&ex.message)+"\"");
+						/*jslint evil:true */
+						debugger;
+						/*jslint evil:false */
 					}
 				};
 			}
