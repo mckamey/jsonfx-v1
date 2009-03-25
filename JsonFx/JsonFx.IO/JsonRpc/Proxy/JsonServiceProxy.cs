@@ -30,6 +30,8 @@
 
 using System;
 using System.IO;
+using System.Text;
+using System.Globalization;
 using System.Text.RegularExpressions;
 
 using JsonFx.JsonRpc.Discovery;
@@ -92,14 +94,14 @@ namespace JsonFx.JsonRpc.Proxy
 
 		public string OutputProxy(bool prettyPrint)
 		{
-			System.Text.StringBuilder builder = new System.Text.StringBuilder();
+			StringBuilder builder = new StringBuilder();
 			this.OutputProxy(builder, prettyPrint);
 			return builder.ToString();
 		}
 
-		public void OutputProxy(System.Text.StringBuilder builder, bool prettyPrint)
+		public void OutputProxy(StringBuilder builder, bool prettyPrint)
 		{
-			using (TextWriter writer = new StringWriter(builder, System.Globalization.CultureInfo.InvariantCulture))
+			using (TextWriter writer = new StringWriter(builder, CultureInfo.InvariantCulture))
 			{
 				this.OutputProxy(writer, prettyPrint);
 			}
@@ -107,7 +109,7 @@ namespace JsonFx.JsonRpc.Proxy
 
 		public void OutputProxy(Stream output, bool prettyPrint)
 		{
-			using (TextWriter writer = new StreamWriter(output, System.Text.Encoding.UTF8))
+			using (TextWriter writer = new StreamWriter(output, Encoding.UTF8))
 			{
 				this.OutputProxy(writer, prettyPrint);
 			}
