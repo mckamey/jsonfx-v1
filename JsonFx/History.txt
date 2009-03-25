@@ -1,5 +1,8 @@
 Release History
 
+v1.0.0903.2510
+- standardized alert/debugger pattern for errors
+
 v1.0.0903.2408
 - extended AutoLink to include URLs with common TLDs (com, net, org, edu, gov) but without the URI scheme (assumed "http://")
 - tweaked IE script hacks to work around iframe issue
