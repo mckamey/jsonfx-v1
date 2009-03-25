@@ -145,7 +145,10 @@ namespace JsonFx.Compilation
 			JsonServiceProxyGenerator proxy = new JsonServiceProxyGenerator(desc);
 
 			string proxyOutput = proxy.OutputProxy(false);
+			proxyOutput = ScriptResourceCodeProvider.FirewallScript(proxyPath, proxyOutput, true);
+
 			string debugProxyOutput = proxy.OutputProxy(true);
+			debugProxyOutput = ScriptResourceCodeProvider.FirewallScript(proxyPath, debugProxyOutput, false);
 
 			byte[] gzippedBytes, deflatedBytes;
 			ResourceBuildProvider.Compress(proxyOutput, out gzippedBytes, out deflatedBytes);
