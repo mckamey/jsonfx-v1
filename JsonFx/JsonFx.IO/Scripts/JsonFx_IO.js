@@ -100,17 +100,18 @@ JsonFx.IO = {
 	/*bool*/ hasAjax: !!new XMLHttpRequest(),
 
 	/*RequestOptions*/ onFailure : function(/*XMLHttpRequest|JSON*/ obj, /*object*/ cx, /*error*/ ex) {
-		var name, msg, code;
 		if (ex) {
-			name = ex.name ? ex.name : "Error";
-			msg = ex.message ? ex.message : "";
-			code = isFinite(ex.code) ? Number(ex.code) : Number(ex.number);
+			var name = ex.name || "Error",
+				msg = ex.message || String(ex),
+				code = isFinite(ex.code) ? Number(ex.code) : Number(ex.number);
 
 			if (isFinite(code)) {
 				name += " ("+code+")";
 			}
 
-			window.alert("Request Failed - "+name+":\r\n\""+msg+"\"\r\n"+obj);
+			(window.onerror||window.alert)("Request "+name+":\n\""+msg+"\"",
+				obj,
+				ex.lineNumber||ex.line||1);
 		}
 	},
 
