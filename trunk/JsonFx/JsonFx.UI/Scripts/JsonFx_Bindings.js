@@ -125,7 +125,7 @@ JsonFx.Bindings = function() {
 					try {
 						elem = action(this) || this;
 					} catch (ex) {
-						window.alert("Error binding "+selector+":\n\""+(ex&&ex.message)+"\"");
+						window.alert("Error binding "+selector+" (ex.lineNumber||ex.line||1):\n\""+(ex&&ex.message||String(ex))+"\"");
 						/*jslint evil:true */
 						debugger;
 						/*jslint evil:false */
@@ -153,7 +153,7 @@ JsonFx.Bindings = function() {
 						if (elem.id) {
 							selector += "#"+elem.id;
 						}
-						window.alert("Error binding "+selector+":\n\""+(ex&&ex.message)+"\"");
+						window.alert("Error binding "+selector+" (ex.lineNumber||ex.line||1):\n\""+(ex&&ex.message||String(ex))+"\"");
 						/*jslint evil:true */
 						debugger;
 						/*jslint evil:false */
@@ -209,7 +209,7 @@ JsonFx.Bindings = function() {
 							this.parentNode.replaceChild(elem, this);
 						}
 					} catch (ex) {
-						window.alert("Error binding "+selector+":\n\""+(ex&&ex.message)+"\"");
+						window.alert("Error binding "+selector+" (ex.lineNumber||ex.line||1):\n\""+(ex&&ex.message||String(ex))+"\"");
 						/*jslint evil:true */
 						debugger;
 						/*jslint evil:false */

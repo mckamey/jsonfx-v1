@@ -52,7 +52,7 @@ namespace JsonFx.Compilation
 @"} catch (ex) {
 	alert(""Error in ";
 		private const string CatchEnd =
-@":\n""+(ex&&ex.message));
+@" (ex.lineNumber||ex.line||1):\n""+(ex&&ex.message||String(ex)));
 	/*jslint debug:true */
 	debugger;
 	/*jslint debug:false */
