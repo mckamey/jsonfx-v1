@@ -1,7 +1,8 @@
-2009-03-18 @ 07:45
+2009-03-28 @ 10:58
 
+- replace alert/confirm with window.onerror calls in release mode
 - replace regex in rpc proxies with actual name check methods
-- decide if scripts using alert/confirm should call default window.onerror?
+- rework bindings to fire after insert?
 
 - post InterNetris as example app
 - explain JSON-RPC callback examples

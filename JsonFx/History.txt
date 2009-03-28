@@ -1,5 +1,9 @@
 Release History
 
+v1.0.0903.29xx
+- added jbst:oninit callback which executes one time for an element after fully hydrated
+- added jbst:onload callback which executes one time for an element after is inserted into parentNode
+
 v1.0.0903.2510
 - standardized alert/debugger pattern for errors
 
