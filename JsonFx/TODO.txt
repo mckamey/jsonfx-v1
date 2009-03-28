@@ -1,5 +1,6 @@
 2009-03-28 @ 10:58
 
+- verify that &nbsp; is not being normalized
 - replace alert/confirm with window.onerror calls in release mode
 - replace regex in rpc proxies with actual name check methods
 - rework bindings to fire after insert?
