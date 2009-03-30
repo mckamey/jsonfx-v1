@@ -4,6 +4,7 @@
 - replace alert/confirm with window.onerror calls in release mode
 - replace regex in rpc proxies with actual name check methods
 - rework bindings to fire after insert?
+- add JsonFx.Bindings.one which removes once fired (leverage for server jbst:control)
 
 - post InterNetris as example app
 - explain JSON-RPC callback examples
