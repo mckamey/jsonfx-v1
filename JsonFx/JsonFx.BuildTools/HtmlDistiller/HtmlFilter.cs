@@ -282,7 +282,7 @@ namespace JsonFx.BuildTools.HtmlDistiller.Filters
 	{
 		#region Constants
 
-		private const string Pattern_Url = @"\b(?:(?:[a-z]+\://[a-z0-9\-]+(?:\.[a-z0-9\-]+)+)|(?:)(?:[a-z0-9\-]+\.)+(com|net|org|edu|gov))(?:\:[0-9]{1,5})?(?:/[\.\w\,\;\?\'\+\(\)&%\$#\=~\-]+)*/?";
+		private const string Pattern_Url = @"\b(?:(?:[a-z]+\://[a-z0-9\-]+(?:\.[a-z0-9\-]+)+)|(?:)(?:[a-z0-9\-]+\.)+(com|net|org|edu|gov)\b)(?:\:[0-9]{1,5})?(?:/[\.\w\,\;\?\'\+\(\)&%\$#\=~\-]+)*/?";
 		private static readonly Regex Regex_Url = new Regex(Pattern_Url, RegexOptions.Compiled | RegexOptions.IgnoreCase | RegexOptions.ECMAScript);
 
 		private const string LinkTagName = "a";
