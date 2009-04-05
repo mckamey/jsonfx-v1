@@ -1,5 +1,9 @@
 Release History
 
+v1.0.0904.xxxx
+- standardizing JsonFx.IO events
+- fix in auto-link TLD regex
+
 v1.0.0903.2921
 - fixed typo in error messages
 
