@@ -1,5 +1,7 @@
-2009-03-28 @ 10:58
+2009-04-07 @ 08:58
 
+- <%# .... %> fails inside textareas?
+- Async pages / controls
 - verify that &nbsp; is not being normalized
 - fix jbst:control bindings so data & name literals are emitted as code expressions
 	e.g. data="this.data.items" is equivalent to data="<%= this.data.items %>"
