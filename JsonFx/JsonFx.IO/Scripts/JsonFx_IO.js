@@ -99,6 +99,14 @@ if ("undefined" === typeof JsonFx.jsonReviver) {
 JsonFx.IO = {
 	/*bool*/ hasAjax: !!new XMLHttpRequest(),
 
+	/* default RequestOptions */
+	timeout: 60000,
+	onCreate: null,
+	onBeginRequest: null,
+	onEndRequest: null,
+	onSuccess: null,
+	onTimeout: null,
+	onComplete: null,
 	/*RequestOptions*/ onFailure : function(/*XMLHttpRequest|JSON*/ obj, /*object*/ cx, /*error*/ ex) {
 		if (ex) {
 			var name = ex.name || "Error",
@@ -147,25 +155,25 @@ JsonFx.IO = {
 		options.headers.Pragma = "no-cache";
 
 		if ("number" !== typeof options.timeout) {
-			options.timeout = 60000;// 1 minute
+			options.timeout = JsonFx.IO.timeout;// 1 minute
 		}
 		if ("function" !== typeof options.onCreate) {
-			options.onCreate = null;
+			options.onCreate = JsonFx.IO.onCreate;
 		}
 		if ("function" !== typeof options.onSuccess) {
-			options.onSuccess = null;
+			options.onSuccess = JsonFx.IO.onSuccess;
 		}
 		if ("function" !== typeof options.onFailure) {
 			options.onFailure = JsonFx.IO.onFailure;
 		}
 		if ("function" !== typeof options.onTimeout) {
-			options.onTimeout = null;
+			options.onTimeout = JsonFx.IO.onTimeout;
 		}
 		if ("function" !== typeof options.onComplete) {
-			options.onComplete = null;
+			options.onComplete = JsonFx.IO.onComplete;
 		}
 		if ("undefined" === typeof options.context) {
-			options.context = null;
+			options.context = JsonFx.IO.context;
 		}
 		return options;
 	},
@@ -181,17 +189,17 @@ JsonFx.IO = {
 
 		if (options.onCreate) {
 			// create
-			options.onCreate(xhr, options.context);
+			options.onCreate.call(this, xhr, options.context);
 		}
 
 		if (!xhr) {
 			if (options.onFailure) {
 				// immediate failure: xhr wasn't created
-				options.onFailure(xhr, options.context, new Error("XMLHttpRequest not supported"));
+				options.onFailure.call(this, xhr, options.context, new Error("XMLHttpRequest not supported"));
 			}
 			if (options.onComplete) {
 				// complete
-				options.onComplete(xhr, options.context);
+				options.onComplete.call(this, xhr, options.context);
 			}
 			return;
 		}
@@ -208,14 +216,14 @@ JsonFx.IO = {
 					}
 					if (options.onTimeout) {
 						// timeout-specific handler
-						options.onTimeout(xhr, options.context, new Error("Request Timeout"));
+						options.onTimeout.call(this, xhr, options.context, new Error("Request Timeout"));
 					} else if (options.onFailure) {
 						// general-failure handler
-						options.onFailure(xhr, options.context, new Error("Request Timeout"));
+						options.onFailure.call(this, xhr, options.context, new Error("Request Timeout"));
 					}
 					if (options.onComplete) {
 						// complete
-						options.onComplete(xhr, options.context);
+						options.onComplete.call(this, xhr, options.context);
 					}
 				}, options.timeout);
 		}
@@ -258,19 +266,19 @@ JsonFx.IO = {
 				} else if (Math.floor(status/100) === 2) {// 200-299
 					// success
 					if (options.onSuccess) {
-						options.onSuccess(xhr, options.context);
+						options.onSuccess.call(this, xhr, options.context);
 					}
 
 				} else if (options.onFailure) { // status not 200-299
 					// failure
 					ex = new Error(xhr.statusText);
 					ex.code = status;
-					options.onFailure(xhr, options.context, ex);
+					options.onFailure.call(this, xhr, options.context, ex);
 				}
 
 				if (options.onComplete) { // all
 					// complete
-					options.onComplete(xhr, options.context);
+					options.onComplete.call(this, xhr, options.context);
 				}
 				xhr = null;
 			}
@@ -298,7 +306,7 @@ JsonFx.IO = {
 		} catch (ex2) {
 			// immediate failure: exception thrown
 			if (options.onFailure) {
-				options.onFailure(xhr, options.context, ex2);
+				options.onFailure.call(this, xhr, options.context, ex2);
 			}
 
 		} finally {
@@ -329,11 +337,11 @@ JsonFx.IO = {
 					null;
 
 				if ("function" === typeof onSuccess) {
-					onSuccess(json, context);
+					onSuccess.call(this, json, context);
 				}
 			} catch (ex) {
 				if (options.onFailure) {
-					options.onFailure(xhr, context, ex);
+					options.onFailure.call(this, xhr, context, ex);
 				}
 			} finally {
 				// free closure references
@@ -346,14 +354,14 @@ JsonFx.IO = {
 			onFailure = options.onFailure;
 			options.onFailure = function (/*XMLHttpRequest*/ xhr, /*object*/ context, /*Error*/ ex) {
 
-				onFailure((xhr&&xhr.responseText), context, ex);
+				onFailure.call(this, (xhr&&xhr.responseText), context, ex);
 
 				// free closure references
 				onFailure = null;
 			};
 		}
 
-		JsonFx.IO.sendRequest(restUrl, options);
+		JsonFx.IO.sendRequest.call(this, restUrl, options);
 	},
 
 	/* JSON-RPC ----------------------------------------------------*/
@@ -413,17 +421,17 @@ JsonFx.IO = {
 
 				if (json.error) {
 					if (onFailure) {
-						onFailure(json, cx, json.error);
+						onFailure.call(this, json, cx, json.error);
 					}
 				} else {
 					if (onSuccess) {
-						onSuccess(json.result, cx);
+						onSuccess.call(this, json.result, cx);
 					}
 				}
 
 			} catch (ex) {
 				if (onFailure) {
-					onFailure(json, cx, ex);
+					onFailure.call(this, json, cx, ex);
 				}
 			}
 
@@ -441,11 +449,11 @@ JsonFx.IO = {
 					null;
 
 				if (onFailure) {
-					onFailure(json, cx, ex);
+					onFailure.call(this, json, cx, ex);
 				}
 			} catch (ex2) {
 				if (onFailure) {
-					onFailure(json, cx, ex?ex:ex2);
+					onFailure.call(this, json, cx, ex?ex:ex2);
 				}
 			}
 
@@ -477,7 +485,7 @@ JsonFx.IO = {
 			} catch (ex) {
 				// if violates JSON, then fail
 				if (onFailure) {
-					onFailure(rpcRequest, options.context, ex);
+					onFailure.call(this, rpcRequest, options.context, ex);
 				}
 				return;
 			}
