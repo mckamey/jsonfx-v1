@@ -1,7 +1,8 @@
 Release History
 
-v1.0.0904.xxxx
-- standardizing JsonFx.IO events
+v1.0.0904.1609
+- fix for <object> tags
+- allowing defaults for all JsonFx.IO events
 - fix in auto-link TLD regex
 
 v1.0.0903.2921
