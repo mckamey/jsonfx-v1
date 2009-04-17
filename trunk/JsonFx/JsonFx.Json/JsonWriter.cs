@@ -548,7 +548,7 @@ namespace JsonFx.Json
 				default:
 				{
 					// DateTime in ISO-8601
-					this.Write(String.Format("s", value));
+					this.Write(String.Format("{0:s}", value));
 					break;
 				}
 			}
