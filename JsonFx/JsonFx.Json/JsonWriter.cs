@@ -532,9 +532,26 @@ namespace JsonFx.Json
 				return;
 			}
 
-			// UTC DateTime in ISO-8601
-			value = value.ToUniversalTime();
-			this.Write(String.Format("{0:s}Z", value));
+			switch (value.Kind)
+			{
+				case DateTimeKind.Local:
+				{
+					value = value.ToUniversalTime();
+					goto case DateTimeKind.Utc;
+				}
+				case DateTimeKind.Utc:
+				{
+					// UTC DateTime in ISO-8601
+					this.Write(String.Format("{0:s}Z", value));
+					break;
+				}
+				default:
+				{
+					// DateTime in ISO-8601
+					this.Write(String.Format("s", value));
+					break;
+				}
+			}
 		}
 
 		public virtual void Write(Guid value)

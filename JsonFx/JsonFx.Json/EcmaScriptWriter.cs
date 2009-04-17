@@ -43,7 +43,8 @@ namespace JsonFx.Json
 		#region Constants
 
 		private static readonly DateTime EcmaScriptEpoch = new DateTime(1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc);
-		private const string EcmaScriptDateCtor = "new Date({0})";
+		private const string EcmaScriptDateCtor1 = "new Date({0})";
+		private const string EcmaScriptDateCtor7 = "new Date({0:0000},{1},{2},{3},{4},{5},{6})";
 		private const string EmptyRegExpLiteral = "(?:)";
 		private const char RegExpLiteralDelim = '/';
 		private const char OperatorCharEscape = '\\';
@@ -118,14 +119,35 @@ namespace JsonFx.Json
 
 		public static void WriteEcmaScriptDate(JsonWriter writer, DateTime value)
 		{
+			if (value.Kind == DateTimeKind.Unspecified)
+			{
+				// unknown timezones serialize directly to become browser-local
+				writer.TextWriter.Write(
+					EcmaScriptDateCtor7,
+					value.Year,			// yyyy
+					value.Month-1,		// 0-11
+					value.Day,			// 1-31
+					value.Hour,			// 0-23
+					value.Minute,		// 0-60
+					value.Second,		// 0-60
+					value.Millisecond);	// 0-999
+				return;
+			}
+
+			if (value.Kind == DateTimeKind.Local)
+			{
+				// convert server-local to UTC
+				value = value.ToUniversalTime();
+			}
+
 			// find the time since Jan 1, 1970
-			TimeSpan duration = value.ToUniversalTime().Subtract(EcmaScriptEpoch);
+			TimeSpan duration = value.Subtract(EcmaScriptEpoch);
 
 			// get the total milliseconds
 			long ticks = (long)duration.TotalMilliseconds;
 
 			// write out as a Date constructor
-			writer.TextWriter.Write(EcmaScriptDateCtor, ticks);
+			writer.TextWriter.Write(EcmaScriptDateCtor1, ticks);
 		}
 
 		/// <summary>
