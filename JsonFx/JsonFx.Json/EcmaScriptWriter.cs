@@ -91,6 +91,27 @@ namespace JsonFx.Json
 
 		#endregion Init
 
+		#region Static Methods
+
+		/// <summary>
+		/// A fast method for serializing an object to EcmaScript
+		/// </summary>
+		/// <param name="value"></param>
+		/// <returns></returns>
+		public static new string Serialize(object value)
+		{
+			StringBuilder output = new StringBuilder();
+
+			using (EcmaScriptWriter writer = new EcmaScriptWriter(output))
+			{
+				writer.Write(value);
+			}
+
+			return output.ToString();
+		}
+
+		#endregion Static Methods
+
 		#region Writer Methods
 
 		/// <summary>
