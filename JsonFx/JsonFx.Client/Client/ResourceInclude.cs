@@ -225,7 +225,7 @@ namespace JsonFx.Client
 					Thread.CurrentThread.CurrentCulture.Name :
 					String.Empty;
 
-				url = ResourceHandler.GetLocalizationUrl(this.SourceUrl, this.isDebug, culture);
+				url = ResourceHandler.GetLocalizationUrl(url, culture);
 				url = this.ResolveUrl(url);
 				writer.Write(ResourceInclude.ScriptInclude, ScriptResourceCodeProvider.MimeType, url, String.Empty);
 			}

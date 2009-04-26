@@ -138,20 +138,19 @@ namespace JsonFx.Handlers
 
 		#region ResourceHandler Members
 
-		protected internal static string GetLocalizationUrl(string path, bool isDebug, string culture)
+		protected internal static string GetLocalizationUrl(string path, string culture)
 		{
-			int index = path.IndexOf('?');
-			if (index >= 0)
-			{
-				path = path.Substring(0, index);
-			}
+			string query = ResourceHandler.GlobalizationQuery+'='+culture;
 
-			string query = '?'+ResourceHandler.GlobalizationQuery+'='+culture;
-			if (isDebug)
+			int index = path.IndexOf('?');
+			if (index < 0)
 			{
-				query += '&'+ResourceHandler.DebugFlag;
+				return path+'?'+query;
 			}
-			return path+query;
+			else
+			{
+				return path+'&'+query;
+			}
 		}
 
 		protected internal static string GetResourceUrl(IBuildResult info, string path, bool isDebug)
