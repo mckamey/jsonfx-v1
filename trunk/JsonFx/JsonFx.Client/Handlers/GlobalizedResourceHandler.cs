@@ -165,8 +165,15 @@ namespace JsonFx.Handlers
 			bool isDebug = (String.IsNullOrEmpty(setting) && context.IsDebuggingEnabled) ||
 				StringComparer.OrdinalIgnoreCase.Equals(ResourceHandler.DebugFlag, setting);
 
-			if (!isDebug)
+			if (isDebug)
 			{
+				context.Response.Cache.SetCacheability(HttpCacheability.ServerAndNoCache);
+			}
+			else
+			{
+				// TODO: make this configurable (default to min-value YSlow! considers useful)
+				context.Response.ExpiresAbsolute = DateTime.UtcNow.AddDays(3);
+
 				// TODO: provide a mechanism for disabling compression?
 				ResourceHandler.EnableStreamCompression(context);
 			}
@@ -185,8 +192,6 @@ namespace JsonFx.Handlers
 				}
 				catch { }
 			}
-
-			context.Response.Cache.SetCacheability(HttpCacheability.ServerAndNoCache);
 
 			// get the target
 			string targetPath = context.Request.AppRelativeCurrentExecutionFilePath;

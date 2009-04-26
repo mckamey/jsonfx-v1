@@ -17,6 +17,8 @@
 - explain using Linq in JSON-RPC
 - explain inserting markup data into JBST
 
+- configurable expires for globalization handler?
+
 - add anonymous templates inside server jbst:control
 	- just parse on the fly?
 	- default inner property for default content?
