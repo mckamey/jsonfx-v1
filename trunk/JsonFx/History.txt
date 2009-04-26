@@ -1,5 +1,9 @@
 Release History
 
+v1.0.0904.26xx
+- adding expires header to globalization strings requests
+- added parent-script hash to help with expiration
+
 v1.0.0904.1707
 - fixed the situation where DateTimeKind.Unspecified DateTimes were being treated as server-local time
 - now DateTimeKind.Unspecified DateTimes are treated as browser-local time
