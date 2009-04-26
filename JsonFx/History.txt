@@ -1,6 +1,6 @@
 Release History
 
-v1.0.0904.26xx
+v1.0.0904.2609
 - adding expires header to globalization strings requests
 - added parent-script hash to help with expiration
 
