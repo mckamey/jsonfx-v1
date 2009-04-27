@@ -53,15 +53,15 @@ namespace JsonFx.Handlers
 			bool isDebug = (String.IsNullOrEmpty(setting) && context.IsDebuggingEnabled) ||
 				StringComparer.OrdinalIgnoreCase.Equals(ResourceHandler.DebugFlag, setting);
 
+			// handle service requests
+			string appUrl = context.Request.AppRelativeCurrentExecutionFilePath;
+			IJsonServiceInfo serviceInfo = ResourceHandler.Create<IJsonServiceInfo>(appUrl);
+
 			if (!isDebug)
 			{
 				// TODO: provide a mechanism for disabling compression?
 				ResourceHandler.EnableStreamCompression(context);
 			}
-
-			// handle service requests
-			string appUrl = context.Request.AppRelativeCurrentExecutionFilePath;
-			IJsonServiceInfo serviceInfo = ResourceHandler.Create<IJsonServiceInfo>(appUrl);
 
 			return new JsonServiceHandler(serviceInfo, url);
 		}

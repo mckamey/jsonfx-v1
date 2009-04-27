@@ -241,6 +241,41 @@ namespace JsonFx.Handlers
 		}
 
 		/// <summary>
+		/// If supported, removes a runtime compression filter from the response output.
+		/// </summary>
+		/// <param name="context"></param>
+		public static void DisableStreamCompression(HttpContext context)
+		{
+			switch (ResourceHandler.GetOutputEncoding(context))
+			{
+				case BuildResultType.Gzip:
+				{
+					if (ResourceHandler.GzipContentEncoding.Equals(context.Response.Headers[ResourceHandler.HeaderContentEncoding], StringComparison.OrdinalIgnoreCase))
+					{
+						context.Response.Headers.Remove(ResourceHandler.HeaderContentEncoding);
+					}
+					if (context.Response.Filter is GZipStream)
+					{
+						context.Response.Filter = null;
+					}
+					break;
+				}
+				case BuildResultType.Deflate:
+				{
+					if (ResourceHandler.DeflateContentEncoding.Equals(context.Response.Headers[ResourceHandler.HeaderContentEncoding], StringComparison.OrdinalIgnoreCase))
+					{
+						context.Response.Headers.Remove(ResourceHandler.HeaderContentEncoding);
+					}
+					if (context.Response.Filter is DeflateStream)
+					{
+						context.Response.Filter = null;
+					}
+					break;
+				}
+			}
+		}
+
+		/// <summary>
 		/// Strongly typed build result factory method
 		/// </summary>
 		/// <param name="virtualPath">app-relative virtual path</param>
