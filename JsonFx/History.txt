@@ -5,7 +5,7 @@ v1.0.0904.2623
 - moved stream compression later in page cycle
 
 v1.0.0904.2609
-- adding expires header to globalization strings requests
+- added expires header to globalization strings requests
 - added parent-script hash to help with expiration
 
 v1.0.0904.1707
