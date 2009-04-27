@@ -173,9 +173,6 @@ namespace JsonFx.Handlers
 			{
 				// TODO: make this configurable (default to min-value YSlow! considers useful)
 				context.Response.ExpiresAbsolute = DateTime.UtcNow.AddDays(3);
-
-				// TODO: provide a mechanism for disabling compression?
-				ResourceHandler.EnableStreamCompression(context);
 			}
 
 			string userCulture = context.Request.QueryString[ResourceHandler.GlobalizationQuery];
@@ -203,6 +200,12 @@ namespace JsonFx.Handlers
 			}
 
 			IDictionary<string, object> res = this.GetResourceStrings(target.GlobalizationKeys, targetPath);
+
+			if (!isDebug)
+			{
+				// TODO: provide a mechanism for disabling compression?
+				ResourceHandler.EnableStreamCompression(context);
+			}
 
 			HttpResponse response = context.Response;
 			response.ContentType = ScriptResourceCodeProvider.MimeType;

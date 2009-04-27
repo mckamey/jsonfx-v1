@@ -9,12 +9,22 @@ namespace JsonFx.WapTemplate
 			this.PageData["Example.myData.renderTime"] = DateTime.Now;
 			this.PageData["Example.myData.serverName"] = this.Server.MachineName;
 			this.PageData["Example.myData.JsonFxVersion"] = JsonFx.About.Fx.Version;
+		}
 
-			if (!this.Context.IsDebuggingEnabled)
-			{
-				// improve the Yslow rating
-				JsonFx.Handlers.ResourceHandler.EnableStreamCompression(this.Context);
-			}
+		protected override void OnPreRenderComplete(EventArgs e)
+		{
+			base.OnPreRenderComplete(e);
+
+			// improve the Yslow rating
+			JsonFx.Handlers.ResourceHandler.EnableStreamCompression(this.Context);
+		}
+
+		protected override void OnError(EventArgs e)
+		{
+			// remove compression
+			JsonFx.Handlers.ResourceHandler.DisableStreamCompression(this.Context);
+
+			base.OnError(e);
 		}
 	}
 }
