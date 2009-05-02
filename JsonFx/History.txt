@@ -1,9 +1,12 @@
 Release History
 
-v1.0.0905.03xx
-- centralizing JBST minification as single pass
-- now compacts inline code better
-- compilation is more efficient
+v1.0.0905.02xx
+- enabled merge format to explicitly specify debug / compact script paths
+	- enables providing extra debug logic or alternate compaction (e.g. obfuscation)
+	- good for libraries (like jQuery) which don't compact well with JSMin
+- centralized JBST minification as single pass
+	- now compacts inline code better
+	- compilation is more efficient
 - fixed JSLint options in binding script
 
 v1.0.0904.2623
