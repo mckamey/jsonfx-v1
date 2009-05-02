@@ -119,7 +119,7 @@ namespace JsonFx.JsonRpc.Proxy
 		{
 			lock (this.SyncLock)
 			{
-				// locking because channging Formatter based upon debug switch
+				// locking because changing Formatter based upon debug switch
 
 				if (prettyPrint)
 				{
