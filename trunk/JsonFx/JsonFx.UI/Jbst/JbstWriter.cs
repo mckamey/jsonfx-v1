@@ -36,7 +36,6 @@ using System.Text;
 
 using JsonFx.BuildTools.HtmlDistiller;
 using JsonFx.BuildTools.HtmlDistiller.Writers;
-using JsonFx.BuildTools.ScriptCompactor;
 using JsonFx.Json;
 using JsonFx.Compilation;
 
@@ -58,18 +57,16 @@ namespace JsonFx.UI.Jbst
 		private const string AnonymousPrefix = "anonymous_";
 
 		private const string DeclarationFormat =
-			@"// execute template in the context of ""this""
-			(function(){{
-				{1}
-			}}).call({0});";
+@"// initialize template in the context of ""this""
+(function() {{
+	{1}
+}}).call({0});";
 
-		private const string NamespaceFormatPrettyPrint = 
+		private const string NamespaceFormat = 
 @"/* namespace {0} */
 if (""undefined"" === typeof {0}) {{
 	{0} = {{}};
 }}";
-
-		private const string NamespaceFormat = @"if(""undefined""===typeof {0}){{{0}={{}};}}";
 
 		#endregion Constants
 
@@ -381,90 +378,47 @@ if (""undefined"" === typeof {0}) {{
 
 		#region Render Methods
 
-		public void Render(TextWriter writer, bool prettyPrint, bool isTemplate)
+		public void Render(TextWriter writer)
 		{
 			this.ProcessDirectives();
 
-			if (isTemplate)
+			// add JSLINT directives
+			string globals = this.GetGlobals();
+			if (!String.IsNullOrEmpty(globals))
 			{
-				// add JSLINT directives
-				if (prettyPrint)
-				{
-					string globals = this.GetGlobals();
-					if (!String.IsNullOrEmpty(globals))
-					{
-						writer.WriteLine("/*global {0} */", globals);
-					}
-				}
-
-				string[] namespaces = this.Name.Split(new char[] { '.' }, StringSplitOptions.RemoveEmptyEntries);
-				for (int i=0; i<namespaces.Length-1; i++)
-				{
-					string ident = (i == 0) ?
-						"window."+namespaces[i] :
-						String.Join(".", namespaces, 0, i+1);
-					if (prettyPrint)
-					{
-						writer.WriteLine();
-						writer.WriteLine(NamespaceFormatPrettyPrint, ident);
-						writer.WriteLine();
-					}
-					else
-					{
-						writer.Write(NamespaceFormat, ident);
-					}
-				}
-
-				// wrap with ctor and assign
-				writer.Write(this.Name);
-				if (prettyPrint)
-				{
-					writer.WriteLine(" = JsonML.BST(");
-				}
-				else
-				{
-					writer.Write("=JsonML.BST(");
-				}
+				writer.WriteLine("/*global {0} */", globals);
 			}
 
-			EcmaScriptWriter jsWriter = new EcmaScriptWriter(writer);
-			jsWriter.PrettyPrint = prettyPrint;
+			string[] namespaces = this.Name.Split(new char[] { '.' }, StringSplitOptions.RemoveEmptyEntries);
+			for (int i=0; i<namespaces.Length-1; i++)
+			{
+				string ident = (i == 0) ?
+					"window."+namespaces[i] :
+					String.Join(".", namespaces, 0, i+1);
+
+				writer.WriteLine();
+				writer.WriteLine(NamespaceFormat, ident);
+				writer.WriteLine();
+			}
+
+			// wrap with ctor and assign
+			writer.Write(this.Name);
+			writer.WriteLine(" = JsonML.BST(");
 
 			// render root node of content (null is OK)
+			EcmaScriptWriter jsWriter = new EcmaScriptWriter(writer);
+			jsWriter.PrettyPrint = true;
 			jsWriter.Write(this.JbstParseTree);
 
-			if (isTemplate)
+			writer.WriteLine(");");
+
+			// render any declarations
+			if (this.Declarations.Length > 0)
 			{
-				if (prettyPrint)
-				{
-					writer.WriteLine(");");
-				}
-				else
-				{
-					writer.Write(");");
-				}
-
-				// render any declarations
-				if (this.Declarations.Length > 0)
-				{
-					string declarations = String.Format(
-						JbstWriter.DeclarationFormat,
-						this.Name,
-						this.Declarations);
-
-					if (prettyPrint)
-					{
-						writer.WriteLine(declarations);
-					}
-					else
-					{
-						// min the output for better compaction
-						// signal to JSMin that isn't linted so
-						// doesn't break users code if they leave
-						// off semicolons, etc.
-						new JSMin().Run(declarations, writer, false, true);
-					}
-				}
+				writer.WriteLine(
+					JbstWriter.DeclarationFormat,
+					this.Name,
+					this.Declarations);
 			}
 		}
 
@@ -657,6 +611,7 @@ if (""undefined"" === typeof {0}) {{
 						case "!--":
 						{
 							// HTML Comments are emitted directly into JBST
+							// but get removed when minified
 							JbstCommentBlock code = new JbstCommentBlock(codeVal.Content);
 							this.AddAttribute(key, code);
 							break;

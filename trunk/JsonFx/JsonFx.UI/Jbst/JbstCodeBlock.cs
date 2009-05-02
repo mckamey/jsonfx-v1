@@ -31,29 +31,11 @@
 using System;
 using System.Collections.Generic;
 
-using JsonFx.BuildTools.ScriptCompactor;
 using JsonFx.Json;
 using JsonFx.UI.Jbst.Extensions;
 
 namespace JsonFx.UI.Jbst
 {
-	#region JbstCodeBlockType
-
-	/*
-	internal enum JbstCodeBlockType
-	{
-		None,
-		Comment,
-		Directive,
-		Declaration,
-		Expression,
-		Statement,
-		Extension
-	}
-	*/
-
-	#endregion JbstCodeBlockType
-
 	/// <summary>
 	/// Internal representation of a JBST code block.
 	/// </summary>
@@ -87,7 +69,14 @@ namespace JsonFx.UI.Jbst
 		/// </summary>
 		public string Code
 		{
-			get { return this.code; }
+			get
+			{
+				if (this.code == null)
+				{
+					return String.Empty;
+				}
+				return this.code;
+			}
 		}
 
 		#endregion Properties
@@ -109,23 +98,12 @@ namespace JsonFx.UI.Jbst
 				return;
 			}
 
-			if (writer.PrettyPrint)
-			{
-				writer.TextWriter.Write(codeBlock);
-			}
-			else
-			{
-				// min the output for better compaction
-				// signal to JSMin that isn't linted so
-				// doesn't break users code if they leave
-				// off semicolons, etc.
-				new JSMin().Run(codeBlock, writer.TextWriter, false, true);
-			}
+			writer.TextWriter.Write(codeBlock);
 		}
 
 		void JsonFx.Json.IJsonSerializable.ReadJson(JsonFx.Json.JsonReader reader)
 		{
-			throw new NotImplementedException("JbstCodeBlock deserialization is not yet implemented.");
+			throw new NotImplementedException("JbstCodeBlock deserialization is not implemented.");
 		}
 
 		#endregion IJsonSerializable Members
@@ -157,8 +135,13 @@ namespace JsonFx.UI.Jbst
 
 		protected override string GetCodeBlock()
 		{
-			// comments are only emitted for pretty-print
-			return String.Format(CommentFormat, this.Code.Replace("*/", "* /"));
+			string code = this.Code.Trim();
+			if (String.IsNullOrEmpty(code))
+			{
+				return String.Empty;
+			}
+
+			return String.Format(CommentFormat, code.Replace("*/", "* /"));
 		}
 
 		#endregion JbstCodeBlock Members
@@ -192,8 +175,14 @@ namespace JsonFx.UI.Jbst
 
 		protected override string GetCodeBlock()
 		{
+			string code = this.Code.Trim();
+			if (String.IsNullOrEmpty(code))
+			{
+				return String.Empty;
+			}
+
 			// output expressions are the core of the syntax
-			return String.Format(ExpressionFormat, this.Code);
+			return String.Format(ExpressionFormat, code);
 		}
 
 		#endregion JbstCodeBlock Members
@@ -214,11 +203,26 @@ namespace JsonFx.UI.Jbst
 		/// </summary>
 		/// <param name="code"></param>
 		public JbstUnparsedBlock(string code)
-			: base(String.Format(UnparsedFormat, code))
+			: base(code)
 		{
 		}
 
 		#endregion Init
+
+		#region JbstCodeBlock Members
+
+		protected override string GetCodeBlock()
+		{
+			string code = this.Code;
+			if (String.IsNullOrEmpty(code))
+			{
+				return String.Empty;
+			}
+
+			return String.Format(UnparsedFormat, code);
+		}
+
+		#endregion JbstCodeBlock Members
 	}
 
 	internal class JbstStatementBlock : JbstCodeBlock
@@ -250,9 +254,15 @@ namespace JsonFx.UI.Jbst
 
 		protected override string GetCodeBlock()
 		{
+			string code = this.Code.Trim();
+			if (String.IsNullOrEmpty(code))
+			{
+				return String.Empty;
+			}
+
 			// analogous to instance code, or JSP scriptlets
 			// executed each time template is bound
-			return String.Format(StatementFormat, this.Code);
+			return String.Format(StatementFormat, code);
 		}
 
 		#endregion JbstCodeBlock Members

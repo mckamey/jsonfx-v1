@@ -46,7 +46,11 @@ namespace JsonFx.UI.Jbst
 		private const string PlaceholderCommand = "placeholder";
 
 		private const string PlaceholderStatement =
-			@"return this.$jbst?JsonML.BST(this.$jbst).dataBind({0},{1},{2}):"""";";
+			@"function(t) {{
+				if (t) {{
+					return JsonML.BST(t).dataBind({0}, {1}, {2});
+				}}
+			}}";
 
 		private const string ControlCommand = "control";
 		private const string ControlNameKey = "name";
@@ -58,41 +62,26 @@ namespace JsonFx.UI.Jbst
 		private const string ControlCountKey = "count";
 		private const string ControlCountKeyAlt = JbstCustomControl.JbstPrefix+JbstCustomControl.ControlIndexKey;
 
-		private const string ControlSimple =
-			@"function(){{return JsonML.BST({0}).dataBind({1},{2},{3});}}";
-
-		private const string ControlSimpleDebug =
+		private const string ControlSimpleFormat =
 			@"function() {{
 				return JsonML.BST({0}).dataBind({1}, {2}, {3});
 			}}";
 
 		private const string ControlStart =
-			@"function(){var t=JsonML.BST(";
-
-		private const string ControlStartDebug =
 			@"function() {
 				var t = JsonML.BST(";
 
 		private const string ControlEndFormat =
-			@");t.prototype=this;return JsonML.BST({0}).dataBind({1},{2},{3},t);}}";
-
-		private const string ControlEndFormatDebug =
 			@");
 				t.prototype = this;
 				return JsonML.BST({0}).dataBind({1}, {2}, {3}, t);
 			}}";
 
 		private const string ControlInlineStart =
-			@"function(){return JsonML.BST(";
-
-		private const string ControlInlineStartDebug =
 			@"function() {
 				return JsonML.BST(";
 
 		private const string ControlInlineEndFormat =
-			@").dataBind({0},{1},{2});}}";
-
-		private const string ControlInlineEndFormatDebug =
 			@").dataBind({0}, {1}, {2});
 			}}";
 
@@ -200,12 +189,12 @@ namespace JsonFx.UI.Jbst
 				// convert to anonymous function expression
 				this.dataExpr = String.Format(
 					FunctionEvalExpression,
-					JsonWriter.Serialize(dataParam));
+					EcmaScriptWriter.Serialize(dataParam));
 			}
 			else
 			{
 				// convert to literal expression
-				this.dataExpr = JsonWriter.Serialize(dataParam);
+				this.dataExpr = EcmaScriptWriter.Serialize(dataParam);
 			}
 			this.dataExpr = this.dataExpr.Trim();
 
@@ -238,12 +227,12 @@ namespace JsonFx.UI.Jbst
 				// convert to anonymous function expression
 				this.indexExpr = String.Format(
 					FunctionEvalExpression,
-					JsonWriter.Serialize(indexParam));
+					EcmaScriptWriter.Serialize(indexParam));
 			}
 			else
 			{
 				// convert to literal expression
-				this.indexExpr = JsonWriter.Serialize(indexParam);
+				this.indexExpr = EcmaScriptWriter.Serialize(indexParam);
 			}
 			this.indexExpr = this.indexExpr.Trim();
 
@@ -276,12 +265,12 @@ namespace JsonFx.UI.Jbst
 				// convert to anonymous function expression
 				this.countExpr = String.Format(
 					FunctionEvalExpression,
-					JsonWriter.Serialize(countParam));
+					EcmaScriptWriter.Serialize(countParam));
 			}
 			else
 			{
 				// convert to literal expression
-				this.countExpr = JsonWriter.Serialize(countParam);
+				this.countExpr = EcmaScriptWriter.Serialize(countParam);
 			}
 			this.countExpr = this.countExpr.Trim();
 
@@ -307,7 +296,7 @@ namespace JsonFx.UI.Jbst
 			}
 			else
 			{
-				RenderNestedCustomControl(writer);
+				this.RenderNestedCustomControl(writer);
 			}
 		}
 
@@ -317,24 +306,11 @@ namespace JsonFx.UI.Jbst
 		/// <param name="writer"></param>
 		private void RenderSimpleCustomControl(JsonWriter writer)
 		{
-			if (writer.PrettyPrint)
-			{
-				writer.TextWriter.Write(
-					ControlSimpleDebug,
-					this.controlName,
-					this.dataExpr,
-					this.indexExpr,
-					this.countExpr);
-			}
-			else
-			{
-				writer.TextWriter.Write(
-					ControlSimple,
-					this.controlName,
-					this.dataExpr,
-					this.indexExpr,
-					this.countExpr);
-			}
+			writer.TextWriter.Write(ControlSimpleFormat,
+				this.controlName,
+				this.dataExpr,
+				this.indexExpr,
+				this.countExpr);
 		}
 
 		/// <summary>
@@ -343,33 +319,15 @@ namespace JsonFx.UI.Jbst
 		/// <param name="writer"></param>
 		private void RenderInlineCustomControl(JsonWriter writer)
 		{
-			if (writer.PrettyPrint)
-			{
-				writer.TextWriter.Write(ControlInlineStartDebug);
-			}
-			else
-			{
-				writer.TextWriter.Write(ControlInlineStart);
-			}
+			writer.TextWriter.Write(ControlInlineStart);
 
 			writer.Write(new EnumerableAdapter(this));
 
-			if (writer.PrettyPrint)
-			{
-				writer.TextWriter.Write(
-					ControlInlineEndFormatDebug,
-					this.dataExpr,
-					this.indexExpr,
-					this.countExpr);
-			}
-			else
-			{
-				writer.TextWriter.Write(
-					ControlInlineEndFormat,
-					this.dataExpr,
-					this.indexExpr,
-					this.countExpr);
-			}
+			writer.TextWriter.Write(
+				ControlInlineEndFormat,
+				this.dataExpr,
+				this.indexExpr,
+				this.countExpr);
 		}
 
 		/// <summary>
@@ -378,46 +336,25 @@ namespace JsonFx.UI.Jbst
 		/// <param name="writer"></param>
 		private void RenderNestedCustomControl(JsonWriter writer)
 		{
-			if (writer.PrettyPrint)
-			{
-				writer.TextWriter.Write(ControlStartDebug);
-			}
-			else
-			{
-				writer.TextWriter.Write(ControlStart);
-			}
+			writer.TextWriter.Write(ControlStart);
 
 			writer.Write(new EnumerableAdapter(this));
 
-			if (writer.PrettyPrint)
-			{
-				writer.TextWriter.Write(
-					ControlEndFormatDebug,
-					this.controlName,
-					this.dataExpr,
-					this.indexExpr,
-					this.countExpr);
-			}
-			else
-			{
-				writer.TextWriter.Write(
-					ControlEndFormat,
-					this.controlName,
-					this.dataExpr,
-					this.indexExpr,
-					this.countExpr);
-			}
+			writer.TextWriter.Write(
+				ControlEndFormat,
+				this.controlName,
+				this.dataExpr,
+				this.indexExpr,
+				this.countExpr);
 		}
 
 		private void RenderPlaceholder(JsonWriter writer)
 		{
-			string placeholder = String.Format(
-					JbstCustomControl.PlaceholderStatement,
-					this.dataExpr,
-					this.indexExpr,
-					this.countExpr);
-
-			writer.Write(new JbstStatementBlock(placeholder));
+			writer.TextWriter.Write(
+				JbstCustomControl.PlaceholderStatement,
+				this.dataExpr,
+				this.indexExpr,
+				this.countExpr);
 		}
 
 		#endregion Render Methods
@@ -449,7 +386,7 @@ namespace JsonFx.UI.Jbst
 
 		void IJsonSerializable.ReadJson(JsonReader reader)
 		{
-			throw new NotImplementedException("JbstCustomControl deserialization is not yet implemented.");
+			throw new NotImplementedException("JbstCustomControl deserialization is not implemented.");
 		}
 
 		#endregion IJsonSerializable Members

@@ -37,6 +37,7 @@ using System.CodeDom;
 using JsonFx.BuildTools;
 using JsonFx.BuildTools.HtmlDistiller;
 using JsonFx.BuildTools.HtmlDistiller.Filters;
+using JsonFx.BuildTools.ScriptCompactor;
 using JsonFx.Handlers;
 using JsonFx.UI.Jbst;
 using JsonFx.UI.Jbst.Extensions;
@@ -99,20 +100,26 @@ namespace JsonFx.Compilation
 				errors.Add(new ParseError(ex.Message, virtualPath, 0, 0, ex));
 			}
 
+			string renderedTemplate;
 			using (StringWriter sw = new StringWriter())
 			{
 				// render the pretty-printed version
-				writer.Render(sw, true, true);
+				writer.Render(sw);
 				sw.Flush();
-				resource = ScriptResourceCodeProvider.FirewallScript(virtualPath, sw.ToString(), false);
+				renderedTemplate = sw.ToString();
+
+				resource = ScriptResourceCodeProvider.FirewallScript(virtualPath, renderedTemplate, false);
 			}
 
 			using (StringWriter sw = new StringWriter())
 			{
-				// render the compacted version
-				writer.Render(sw, false, true);
+				// min the output for better compaction
+				// signal to jsmin that isn't delinted so
+				// doesn't break user's code if they leave
+				// off semicolons, etc.
+				new JSMin().Run(renderedTemplate, sw, false, true);
 				sw.Flush();
-				compacted = ScriptResourceCodeProvider.FirewallScript(virtualPath, sw.ToString(), true);
+			    compacted = ScriptResourceCodeProvider.FirewallScript(virtualPath, sw.ToString(), true);
 			}
 		}
 
