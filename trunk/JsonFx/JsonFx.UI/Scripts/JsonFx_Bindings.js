@@ -126,9 +126,9 @@ JsonFx.Bindings = function() {
 						elem = action(this) || this;
 					} catch (ex) {
 						window.alert("Error binding "+selector+" (line "+(ex.lineNumber||ex.line||1)+"):\n\""+(ex&&ex.message||String(ex))+"\"");
-						/*jslint evil:true */
+						/*jslint debug:true */
 						debugger;
-						/*jslint evil:false */
+						/*jslint debug:false */
 					}
 				};
 			}
@@ -154,9 +154,9 @@ JsonFx.Bindings = function() {
 							selector += "#"+elem.id;
 						}
 						window.alert("Error binding "+selector+" (line "+(ex.lineNumber||ex.line||1)+"):\n\""+(ex&&ex.message||String(ex))+"\"");
-						/*jslint evil:true */
+						/*jslint debug:true */
 						debugger;
-						/*jslint evil:false */
+						/*jslint debug:false */
 					}
 				}
 			}
@@ -210,9 +210,9 @@ JsonFx.Bindings = function() {
 						}
 					} catch (ex) {
 						window.alert("Error binding "+selector+" (line "+(ex.lineNumber||ex.line||1)+"):\n\""+(ex&&ex.message||String(ex))+"\"");
-						/*jslint evil:true */
+						/*jslint debug:true */
 						debugger;
-						/*jslint evil:false */
+						/*jslint debug:false */
 					}
 				};
 			}
