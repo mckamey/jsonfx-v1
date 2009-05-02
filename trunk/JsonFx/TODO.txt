@@ -1,7 +1,10 @@
-2009-04-07 @ 08:58
+2009-04-29 @ 08:58
+
+- Async pages / controls
+- BUG: cannot deserialize standard Arrays
+- research use of doc frag (unique URLs) with JsonFx Ajax History 
 
 - <%# .... %> fails inside textareas?
-- Async pages / controls
 - verify that &nbsp; is not being normalized
 - fix jbst:control bindings so data & name literals are emitted as code expressions
 	e.g. data="this.data.items" is equivalent to data="<%= this.data.items %>"
@@ -22,7 +25,6 @@
 - add anonymous templates inside server jbst:control
 	- just parse on the fly?
 	- default inner property for default content?
-- rebuild JsonFx Ajax History to use doc frag
 - figure out a way to custom serialize objects which are closed source (e.g. BCL)
 - add use of custom type descriptors to define properties (e.g. convert a Dictionary to object)
 - BUG: dictionaries without keys round-trip-able as strings should be rendered as key-value lists

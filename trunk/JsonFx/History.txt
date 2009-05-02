@@ -1,5 +1,10 @@
 Release History
 
+v1.0.0905.03xx
+- centralizing JBST minification as single pass
+- now compacts inline code better
+- compilation is more efficient
+
 v1.0.0904.2623
 - added mechanism for removing stream compression
 - moved stream compression later in page cycle
