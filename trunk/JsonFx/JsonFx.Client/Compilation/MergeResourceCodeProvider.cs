@@ -48,6 +48,7 @@ namespace JsonFx.Compilation
 		#region Constants
 
 		private static readonly char[] LineDelims = { '\r', '\n' };
+		private static readonly char[] AltDelims = { '|' };
 		private static readonly char[] TypeDelims = { ',' };
 
 		#endregion Constants
@@ -106,12 +107,27 @@ namespace JsonFx.Compilation
 			{
 				try
 				{
+					string file = files[i],
+							compactAlt = null;
+
+					if (file != null)
+					{
+						file = file.Trim();
+					}
+
 					// skip blank and comment lines
-					if (String.IsNullOrEmpty(files[i]) ||
-						files[i].StartsWith("//") ||
-						files[i].StartsWith("#"))
+					if (String.IsNullOrEmpty(file) ||
+						file.StartsWith("//") ||
+						file.StartsWith("#"))
 					{
 						continue;
+					}
+
+					string[] alts = file.Split(AltDelims, 2, StringSplitOptions.RemoveEmptyEntries);
+					if (alts.Length > 1)
+					{
+						file = alts[0].Trim();
+						compactAlt = alts[1].Trim();
 					}
 
 					// process embedded resource
@@ -119,76 +135,70 @@ namespace JsonFx.Compilation
 					{
 						string preProcessed, compact;
 
-						this.ProcessEmbeddedResource(helper, files[i], out preProcessed, out compact, errors);
+						this.ProcessEmbeddedResource(helper, file, out preProcessed, out compact, errors);
+
+						if (!String.IsNullOrEmpty(compactAlt))
+						{
+							this.ProcessEmbeddedResource(helper, compactAlt, out compactAlt, out compact, errors);
+						}
 
 						compacts.Append(compact);
 						resources.Append(preProcessed);
 						continue;
 					}
 
-					files[i] = ResourceHandler.EnsureAppRelative(files[i]);
+					file = ResourceHandler.EnsureAppRelative(file);
+					if (!String.IsNullOrEmpty(compactAlt))
+					{
+						compactAlt = ResourceHandler.EnsureAppRelative(compactAlt);
+					}
 
-					// try to get as a CompiledBuildResult
-					IOptimizedResult result = ResourceHandler.Create<IOptimizedResult>(files[i]);
+					// try to get as a IOptimizedResult
+					IOptimizedResult result = this.ProcessPrecompiled(helper, file);
 					if (result != null)
 					{
-						if (!this.isMimeSet &&
-							!String.IsNullOrEmpty(result.ContentType) &&
-							!String.IsNullOrEmpty(result.FileExtension))
-						{
-							this.contentType = result.ContentType;
-							this.fileExtension = result.FileExtension;
-							this.isMimeSet = true;
-						}
-
-						if (result is IGlobalizedBuildResult)
-						{
-							this.GlobalizationKeys.AddRange(((IGlobalizedBuildResult)result).GlobalizationKeys);
-						}
-
-						helper.AddVirtualPathDependency(files[i]);
-
-						ICollection dependencies = BuildManager.GetVirtualPathDependencies(files[i]);
-						if (dependencies != null)
-						{
-							foreach (string dependency in dependencies)
-							{
-								helper.AddVirtualPathDependency(dependency);
-							}
-						}
-
-						if (result is IDependentResult)
-						{
-							foreach (string dependency in ((IDependentResult)result).VirtualPathDependencies)
-							{
-								helper.AddVirtualPathDependency(dependency);
-							}
-						}
-
 						resources.Append(result.PrettyPrinted);
-						compacts.Append(result.Compacted);
+
+						if (String.IsNullOrEmpty(compactAlt))
+						{
+							compacts.Append(result.Compacted);
+						}
+						else
+						{
+							IOptimizedResult result2 = this.ProcessPrecompiled(helper, compactAlt);
+							if (result2 != null)
+							{
+								compacts.Append(result2.Compacted);
+							}
+						}
 						continue;
 					}
 
 					// ask BuildManager if compiles down to a string
-					string text = BuildManager.GetCompiledCustomString(files[i]);
-					if (!String.IsNullOrEmpty(text))
+					string text = BuildManager.GetCompiledCustomString(file);
+					if (String.IsNullOrEmpty(text))
 					{
-						helper.AddVirtualPathDependency(files[i]);
-
-						resources.Append(text);
-						compacts.Append(text);
-						continue;
+						// use the raw contents of the virtual path
+						text = helper.OpenReader(file).ReadToEnd();
 					}
 
-					// use the contents of the virtual path
-					text = helper.OpenReader(files[i]).ReadToEnd();
 					if (!String.IsNullOrEmpty(text))
 					{
-						helper.AddVirtualPathDependency(files[i]);
+						helper.AddVirtualPathDependency(file);
 
 						resources.Append(text);
-						compacts.Append(text);
+
+						if (String.IsNullOrEmpty(compactAlt))
+						{
+							compacts.Append(text);
+						}
+						else
+						{
+							helper.AddVirtualPathDependency(compactAlt);
+
+							string text2 = BuildManager.GetCompiledCustomString(compactAlt);
+							compacts.Append(text2);
+						}
 						continue;
 					}
 				}
@@ -207,6 +217,48 @@ namespace JsonFx.Compilation
 
 			resource = resources.ToString();
 			compacted = compacts.ToString();
+		}
+
+		private IOptimizedResult ProcessPrecompiled(IResourceBuildHelper helper, string file)
+		{
+			IOptimizedResult result = ResourceHandler.Create<IOptimizedResult>(file);
+			if (result != null)
+			{
+				if (!this.isMimeSet &&
+				!String.IsNullOrEmpty(result.ContentType) &&
+				!String.IsNullOrEmpty(result.FileExtension))
+				{
+					this.contentType = result.ContentType;
+					this.fileExtension = result.FileExtension;
+					this.isMimeSet = true;
+				}
+
+				if (result is IGlobalizedBuildResult)
+				{
+					this.GlobalizationKeys.AddRange(((IGlobalizedBuildResult)result).GlobalizationKeys);
+				}
+
+				helper.AddVirtualPathDependency(file);
+
+				ICollection dependencies = BuildManager.GetVirtualPathDependencies(file);
+				if (dependencies != null)
+				{
+					foreach (string dependency in dependencies)
+					{
+						helper.AddVirtualPathDependency(dependency);
+					}
+				}
+
+				if (result is IDependentResult)
+				{
+					foreach (string dependency in ((IDependentResult)result).VirtualPathDependencies)
+					{
+						helper.AddVirtualPathDependency(dependency);
+					}
+				}
+			}
+
+			return result;
 		}
 
 		private void ProcessEmbeddedResource(
