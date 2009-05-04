@@ -1,6 +1,9 @@
 Release History
 
-v1.0.0905.02xx
+v1.0.0905.0323
+- fixed bug where empty code blocks could emit an invalid structure
+
+v1.0.0905.0212
 - enabled merge format to explicitly specify debug / compact script paths
 	- enables providing extra debug logic or alternate compaction (e.g. obfuscation)
 	- good for libraries (like jQuery) which don't compact well with JSMin
