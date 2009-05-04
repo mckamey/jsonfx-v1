@@ -41,6 +41,12 @@ namespace JsonFx.UI.Jbst
 	/// </summary>
 	internal abstract class JbstCodeBlock : JbstControl, IJsonSerializable
 	{
+		#region Constants
+
+		protected const string Noop = "null";
+
+		#endregion Constants
+
 		#region Fields
 
 		private readonly string code;
@@ -69,14 +75,7 @@ namespace JsonFx.UI.Jbst
 		/// </summary>
 		public string Code
 		{
-			get
-			{
-				if (this.code == null)
-				{
-					return String.Empty;
-				}
-				return this.code;
-			}
+			get { return this.code; }
 		}
 
 		#endregion Properties
@@ -95,7 +94,7 @@ namespace JsonFx.UI.Jbst
 
 			if (String.IsNullOrEmpty(codeBlock))
 			{
-				return;
+				codeBlock = JbstCodeBlock.Noop; 
 			}
 
 			writer.TextWriter.Write(codeBlock);
@@ -138,7 +137,7 @@ namespace JsonFx.UI.Jbst
 			string code = this.Code.Trim();
 			if (String.IsNullOrEmpty(code))
 			{
-				return String.Empty;
+				return JbstCodeBlock.Noop;
 			}
 
 			return String.Format(CommentFormat, code.Replace("*/", "* /"));
@@ -178,7 +177,7 @@ namespace JsonFx.UI.Jbst
 			string code = this.Code.Trim();
 			if (String.IsNullOrEmpty(code))
 			{
-				return String.Empty;
+				return JbstCodeBlock.Noop;
 			}
 
 			// output expressions are the core of the syntax
@@ -216,7 +215,7 @@ namespace JsonFx.UI.Jbst
 			string code = this.Code;
 			if (String.IsNullOrEmpty(code))
 			{
-				return String.Empty;
+				return JbstCodeBlock.Noop;
 			}
 
 			return String.Format(UnparsedFormat, code);
@@ -257,7 +256,7 @@ namespace JsonFx.UI.Jbst
 			string code = this.Code.Trim();
 			if (String.IsNullOrEmpty(code))
 			{
-				return String.Empty;
+				return JbstCodeBlock.Noop;
 			}
 
 			// analogous to instance code, or JSP scriptlets
