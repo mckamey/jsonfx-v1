@@ -151,9 +151,9 @@ namespace JsonFx.UI.Jbst
 		#region Constants
 
 		private const string ExpressionFormat =
-			@"function() {{
-				return {0};
-			}}";
+@"function() {{
+	return {0};
+}}";
 
 		#endregion Constants
 
@@ -187,11 +187,14 @@ namespace JsonFx.UI.Jbst
 		#endregion JbstCodeBlock Members
 	}
 
-	internal class JbstUnparsedBlock : JbstExpressionBlock
+	internal class JbstUnparsedBlock : JbstCodeBlock
 	{
 		#region Constants
 
-		private const string UnparsedFormat = "JsonML.raw({0})";
+		private const string UnparsedFormat =
+@"function() {{
+	return JsonML.raw({0});
+}}";
 
 		#endregion Constants
 
