@@ -2,7 +2,7 @@ Release History
 
 v1.0.0905.0422
 - fixed bug where unparsed blocks were emitting incorrectly
-- fixed exception during exception handling in Cassini Web Server
+- fixed possible exceptions during exception handling in Cassini Web Server
 
 v1.0.0905.0323
 - fixed bug where empty code blocks could emit an invalid structure
