@@ -1,5 +1,8 @@
 Release History
 
+v1.0.0905.04xx
+- fixed bug where unparsed blocks were emitting incorrectly
+
 v1.0.0905.0323
 - fixed bug where empty code blocks could emit an invalid structure
 
