@@ -250,10 +250,15 @@ namespace JsonFx.Handlers
 			{
 				case BuildResultType.Gzip:
 				{
-					if (ResourceHandler.GzipContentEncoding.Equals(context.Response.Headers[ResourceHandler.HeaderContentEncoding], StringComparison.OrdinalIgnoreCase))
+					try
 					{
-						context.Response.Headers.Remove(ResourceHandler.HeaderContentEncoding);
+						if (ResourceHandler.GzipContentEncoding.Equals(context.Response.Headers[ResourceHandler.HeaderContentEncoding], StringComparison.OrdinalIgnoreCase))
+						{
+							context.Response.Headers.Remove(ResourceHandler.HeaderContentEncoding);
+						}
 					}
+					catch (PlatformNotSupportedException) { }
+
 					if (context.Response.Filter is GZipStream)
 					{
 						context.Response.Filter = null;
@@ -262,10 +267,15 @@ namespace JsonFx.Handlers
 				}
 				case BuildResultType.Deflate:
 				{
-					if (ResourceHandler.DeflateContentEncoding.Equals(context.Response.Headers[ResourceHandler.HeaderContentEncoding], StringComparison.OrdinalIgnoreCase))
+					try
 					{
-						context.Response.Headers.Remove(ResourceHandler.HeaderContentEncoding);
+						if (ResourceHandler.DeflateContentEncoding.Equals(context.Response.Headers[ResourceHandler.HeaderContentEncoding], StringComparison.OrdinalIgnoreCase))
+						{
+							context.Response.Headers.Remove(ResourceHandler.HeaderContentEncoding);
+						}
 					}
+					catch (PlatformNotSupportedException) { }
+
 					if (context.Response.Filter is DeflateStream)
 					{
 						context.Response.Filter = null;
