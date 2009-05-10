@@ -269,7 +269,7 @@ namespace JsonFx.UI.Jbst
 				}
 				builder.Append(");");
 
-				if (this.Page.Form != null)
+				if (this.Page != null && this.Page.Form != null)
 				{
 					// register the binding script
 					this.Page.ClientScript.RegisterStartupScript(
