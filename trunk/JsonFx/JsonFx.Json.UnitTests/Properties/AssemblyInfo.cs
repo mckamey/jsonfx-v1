@@ -44,5 +44,4 @@ using System.Runtime.InteropServices;
 #endif
 [assembly: ComVisible(false)]
 [assembly: Guid("D98A5EF8-4709-4FF8-B162-8EA04B281400")]
-[assembly: AssemblyFileVersion("1.0.0.0")]
 [assembly: ObfuscateAssembly(false, StripAfterObfuscation=false)]
