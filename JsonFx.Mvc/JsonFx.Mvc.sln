@@ -1,0 +1,23 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 10.00
+# Visual Studio 2008
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JsonFx.Mvc", "JsonFx.Mvc\JsonFx.Mvc.csproj", "{9C516483-C934-47A3-BD33-FB945B6ED4A2}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+		Signed|Any CPU = Signed|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{9C516483-C934-47A3-BD33-FB945B6ED4A2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9C516483-C934-47A3-BD33-FB945B6ED4A2}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9C516483-C934-47A3-BD33-FB945B6ED4A2}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9C516483-C934-47A3-BD33-FB945B6ED4A2}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9C516483-C934-47A3-BD33-FB945B6ED4A2}.Signed|Any CPU.ActiveCfg = Signed|Any CPU
+		{9C516483-C934-47A3-BD33-FB945B6ED4A2}.Signed|Any CPU.Build.0 = Signed|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal
