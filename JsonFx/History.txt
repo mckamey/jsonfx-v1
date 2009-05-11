@@ -1,5 +1,8 @@
 Release History
 
+v1.0.0905.1020
+- Added static Helper class for simplifying integration with ASP.NET MVC
+
 v1.0.0905.0422
 - fixed bug where unparsed blocks were emitting incorrectly
 - fixed possible exceptions during exception handling in Cassini Web Server
