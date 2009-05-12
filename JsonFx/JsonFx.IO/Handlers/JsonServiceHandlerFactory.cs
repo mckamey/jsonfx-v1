@@ -49,17 +49,16 @@ namespace JsonFx.Handlers
 				return new ResourceHandler();
 			}
 
-			string setting = context.Request.QueryString[null];
-			bool isDebug = (String.IsNullOrEmpty(setting) && context.IsDebuggingEnabled) ||
-				StringComparer.OrdinalIgnoreCase.Equals(ResourceHandler.DebugFlag, setting);
+			string mode = context.Request.QueryString[null];
+			bool isDebug = (String.IsNullOrEmpty(mode) && context.IsDebuggingEnabled) ||
+				StringComparer.OrdinalIgnoreCase.Equals(ResourceHandler.DebugFlag, mode);
 
 			// handle service requests
 			string appUrl = context.Request.AppRelativeCurrentExecutionFilePath;
 			IJsonServiceInfo serviceInfo = ResourceHandler.Create<IJsonServiceInfo>(appUrl);
 
-			if (!isDebug)
+			if (!isDebug && !Settings.DisableStreamCompression)
 			{
-				// TODO: provide a mechanism for disabling compression?
 				ResourceHandler.EnableStreamCompression(context);
 			}
 
