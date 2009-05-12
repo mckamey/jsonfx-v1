@@ -1,5 +1,8 @@
 Release History
 
+v1.0.0905.1210
+- Added JsonFx.JsonRpc.Settings for better JSON-RPC configuration and error handling.
+
 v1.0.0905.1020
 - Added static Helper class for simplifying integration with ASP.NET MVC
 
