@@ -39,12 +39,12 @@ namespace JsonFx.JsonRpc
 	/// </summary>
 	public class JsonResponse : JsonMessage
 	{
-		#region Constants
+		#region Fields
 
 		private object result = null;
 		private JsonError error = null;
 
-		#endregion Constants
+		#endregion Fields
 
 		#region Properties
 

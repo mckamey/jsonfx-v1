@@ -129,6 +129,7 @@
     <Compile Include="JsonRpc\Proxy\JsonServiceProxy.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="JsonRpc\Settings.cs" />
     <Compile Include="Properties\AssemblyInfo.cs">
       <SubType>Code</SubType>
     </Compile>

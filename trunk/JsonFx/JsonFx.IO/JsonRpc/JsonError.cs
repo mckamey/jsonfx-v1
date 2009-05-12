@@ -82,13 +82,13 @@ namespace JsonFx.JsonRpc
 
 	public class JsonError
 	{
-		#region Constants
+		#region Fields
 
 		private int code = 0x0;
 		private string message = null;
 		private object data = null;
 
-		#endregion Constants
+		#endregion Fields
 
 		#region Init
 

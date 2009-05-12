@@ -240,12 +240,20 @@ namespace JsonFx.Handlers
 			try
 			{
 				if (this.error != null)
+				{
 					throw this.error;
+				}
+
+				Settings.OnInit(this, context);
 
 				JsonRequest request = null;
 
 				if ("GET".Equals(context.Request.HttpMethod, StringComparison.OrdinalIgnoreCase))
 				{
+					if (!Settings.AllowGetMethod)
+					{
+						throw new InvalidRequestException("GET HTTP method not allowed.");
+					}
 					request = this.BuildRequestFromGet(context);
 				}
 				else
@@ -258,7 +266,11 @@ namespace JsonFx.Handlers
 					throw new InvalidRequestException("The JSON-RPC Request was empty.");
 				}
 
+				Settings.OnPreExecute(this, context, request, response);
+
 				this.HandleRequest(context, request, ref response);
+
+				Settings.OnPostExecute(this, context, request, response);
 			}
 			catch (InvalidRequestException ex)
 			{
@@ -305,22 +317,18 @@ namespace JsonFx.Handlers
 						writer.Write(response);
 					}
 				}
-				catch (TargetInvocationException ex)
-				{
-					context.Response.ClearContent();
-					response.Result = null;
-					response.Error = new JsonError(ex.InnerException);
-
-					using (JsonWriter writer = new JsonWriter(context.Response.Output))
-					{
-						writer.Write(response);
-					}
-				}
 				catch (Exception ex)
 				{
+					if (ex is TargetInvocationException &&
+						ex.InnerException != null)
+					{
+						ex = ex.InnerException;
+					}
+
 					context.Response.ClearContent();
+
 					response.Result = null;
-					response.Error = new JsonError(ex);
+					response.Error = new JsonError(ex, JsonRpcErrors.InternalError);
 
 					using (JsonWriter writer = new JsonWriter(context.Response.Output))
 					{
@@ -328,6 +336,8 @@ namespace JsonFx.Handlers
 					}
 				}
 			}
+
+			Settings.OnUnload(this, context);
 		}
 
 		bool IHttpHandler.IsReusable
