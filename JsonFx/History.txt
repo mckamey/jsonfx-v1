@@ -1,6 +1,7 @@
 Release History
 
 v1.0.0905.1309
+- Better callbacks from JsonFx.JsonRpc.Settings
 - Added JsonFx.IO.loadScript for assisting with cross-domain jsonp calls.
 
 v1.0.0905.1210
