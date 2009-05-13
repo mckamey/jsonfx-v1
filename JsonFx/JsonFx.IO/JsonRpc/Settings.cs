@@ -30,6 +30,8 @@
 
 using System;
 using System.Web;
+using System.IO;
+using JsonFx.Json;
 
 namespace JsonFx.JsonRpc
 {
@@ -155,6 +157,10 @@ namespace JsonFx.JsonRpc
 		#endregion Properties
 	}
 
+	public delegate void SerializeJsonRpcDelegate(TextWriter output, JsonResponse response);
+
+	public delegate JsonRequest DeserializeJsonRpcDelegate(Stream input);
+
 	public static class Settings
 	{
 		#region Fields
@@ -190,6 +196,9 @@ namespace JsonFx.JsonRpc
 			set { Settings.disableStreamCompression = value; }
 		}
 
+		public static SerializeJsonRpcDelegate Serialize = SerializeJsonRpc;
+		public static DeserializeJsonRpcDelegate Deserialize = DeserializeJsonRpc;
+
 		public static event EventHandler<RequestEventArgs> Init;
 		public static event EventHandler<JrpcEventArgs> PreExecute;
 		public static event EventHandler<JrpcEventArgs> PostExecute;
@@ -198,7 +207,7 @@ namespace JsonFx.JsonRpc
 
 		#endregion Properties
 
-		#region Methods
+		#region Event Methods
 
 		internal static void OnInit(object sender, HttpContext context)
 		{
@@ -242,11 +251,38 @@ namespace JsonFx.JsonRpc
 				}
 				catch
 				{
-					// don't allow error handler to generate additional errors or can all break down
+					// don't allow error handler to generate additional errors or messages break down
 				}
 			}
 		}
 
-		#endregion Methods
+		#endregion Event Methods
+
+		#region Serialization Methods
+
+		/// <summary>
+		/// Parses an incoming JSON-RPC request object
+		/// </summary>
+		/// <param name="input"></param>
+		/// <returns></returns>
+		public static JsonRequest DeserializeJsonRpc(Stream input)
+		{
+			return new JsonReader(input).Deserialize<JsonRequest>();
+		}
+
+		/// <summary>
+		/// Serializes an outgoing JSON-RPC response object
+		/// </summary>
+		/// <param name="output"></param>
+		/// <param name="response"></param>
+		public static void SerializeJsonRpc(TextWriter output, JsonResponse response)
+		{
+			using (JsonWriter writer = new JsonWriter(output))
+			{
+				writer.Write(response);
+			}
+		}
+
+		#endregion Serialization Methods
 	}
 }

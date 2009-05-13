@@ -133,8 +133,7 @@ namespace JsonFx.Handlers
 
 		private JsonRequest BuildRequestFromPost(HttpContext context)
 		{
-			JsonReader reader = new JsonReader(context.Request.InputStream);
-			return (JsonRequest)reader.Deserialize(typeof(JsonRequest));
+			return Settings.Deserialize(context.Request.InputStream);
 		}
 
 		private void HandleRequest(HttpContext context, JsonRequest request, ref JsonResponse response)
@@ -146,10 +145,9 @@ namespace JsonFx.Handlers
 			// Opera 8 requires "text/plain" or "text/html"
 			// otherwise the content encoding is mangled
 			bool isOpera8 = browser.IsBrowser("opera") && (browser.MajorVersion <= 8);
-			context.Response.ContentType =
-					(isOpera8) ?
+			context.Response.ContentType = (isOpera8) ?
 					MediaTypeNames.Text.Plain :
-					JsonFx.Json.JsonWriter.JsonMimeType;
+					JsonWriter.JsonMimeType;
 
 			context.Response.ContentEncoding = System.Text.Encoding.UTF8;
 			context.Response.AddHeader("Content-Disposition", "inline;filename=JsonResponse"+JsonServiceHandler.JsonFileExtension);
@@ -317,10 +315,7 @@ namespace JsonFx.Handlers
 			{
 				try
 				{
-					using (JsonWriter writer = new JsonWriter(context.Response.Output))
-					{
-						writer.Write(response);
-					}
+					Settings.Serialize(context.Response.Output, response);
 				}
 				catch (Exception ex)
 				{
@@ -336,10 +331,7 @@ namespace JsonFx.Handlers
 					response.Error = new JsonError(ex, JsonRpcErrors.InternalError);
 					Settings.OnError(this.Service, context, request, response, ex);
 
-					using (JsonWriter writer = new JsonWriter(context.Response.Output))
-					{
-						writer.Write(response);
-					}
+					Settings.Serialize(context.Response.Output, response);
 				}
 			}
 
