@@ -499,6 +499,37 @@ JsonFx.IO = {
 			options.headers["Content-Length"] = rpcRequest.length;
 		}
 		JsonFx.IO.sendRequest(rpcUrl, options);
+	},
+
+	/*void*/ loadScript : function(/*string*/ url, /*bool*/ dedup) {
+		if (!url) {
+			return;
+		}
+
+		// check if script already exists
+		if (dedup) {
+			/*elem[]*/ var scripts = document.getElementsByTagName("script");
+			for (var i=0; i<scripts.length; i++) {
+				// TODO: verify with normalization of URLs
+				if (scripts[i].src === url) {
+					return;
+				}
+			}
+		}
+
+		if (!document.body) {
+			/*jslint evil:true */
+			document.write('<' + 'script src="' + url + '" type="text/javascript"><' + '/script>');
+			/*jslint evil:false */
+		} else {
+			// create a new script request
+			var elem = document.createElement("script");
+			elem.setAttribute("type","text/javascript");
+			elem.setAttribute("src", url);
+
+			// append to body
+			document.body.appendChild(elem);
+		}
 	}
 };
 
