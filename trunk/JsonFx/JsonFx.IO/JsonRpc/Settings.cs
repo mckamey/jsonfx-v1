@@ -236,7 +236,14 @@ namespace JsonFx.JsonRpc
 		{
 			if (Settings.Error != null)
 			{
-				Settings.Error(sender, new JrpcErrorEventArgs(context, request, response, exception));
+				try
+				{
+					Settings.Error(sender, new JrpcErrorEventArgs(context, request, response, exception));
+				}
+				catch
+				{
+					// don't allow error handler to generate additional errors or can all break down
+				}
 			}
 		}
 

@@ -236,6 +236,7 @@ namespace JsonFx.Handlers
 		{
 			context.Response.Cache.SetCacheability(HttpCacheability.Private);
 
+			JsonRequest request = null;
 			JsonResponse response = new JsonResponse();
 			try
 			{
@@ -244,9 +245,7 @@ namespace JsonFx.Handlers
 					throw this.error;
 				}
 
-				Settings.OnInit(this, context);
-
-				JsonRequest request = null;
+				Settings.OnInit(this.Service, context);
 
 				if ("GET".Equals(context.Request.HttpMethod, StringComparison.OrdinalIgnoreCase))
 				{
@@ -266,47 +265,53 @@ namespace JsonFx.Handlers
 					throw new InvalidRequestException("The JSON-RPC Request was empty.");
 				}
 
-				Settings.OnPreExecute(this, context, request, response);
+				Settings.OnPreExecute(this.Service, context, request, response);
 
 				this.HandleRequest(context, request, ref response);
 
-				Settings.OnPostExecute(this, context, request, response);
+				Settings.OnPostExecute(this.Service, context, request, response);
 			}
 			catch (InvalidRequestException ex)
 			{
 				context.Response.ClearContent();
 				response.Result = null;
 				response.Error = new JsonError(ex, JsonRpcErrors.InvalidRequest);
+				Settings.OnError(this.Service, context, request, response, ex);
 			}
 			catch (InvalidMethodException ex)
 			{
 				context.Response.ClearContent();
 				response.Result = null;
 				response.Error = new JsonError(ex, JsonRpcErrors.MethodNotFound);
+				Settings.OnError(this.Service, context, request, response, ex);
 			}
 			catch (InvalidParamsException ex)
 			{
 				context.Response.ClearContent();
 				response.Result = null;
 				response.Error = new JsonError(ex, JsonRpcErrors.InvalidParams);
+				Settings.OnError(this.Service, context, request, response, ex);
 			}
 			catch (JsonServiceException ex)
 			{
 				context.Response.ClearContent();
 				response.Result = null;
 				response.Error = new JsonError(ex, JsonRpcErrors.InvalidRequest);
+				Settings.OnError(this.Service, context, request, response, ex);
 			}
 			catch (JsonDeserializationException ex)
 			{
 				context.Response.ClearContent();
 				response.Result = null;
 				response.Error = new JsonError(ex, JsonRpcErrors.ParseError);
+				Settings.OnError(this.Service, context, request, response, ex);
 			}
 			catch (Exception ex)
 			{
 				context.Response.ClearContent();
 				response.Result = null;
 				response.Error = new JsonError(ex, JsonRpcErrors.InternalError);
+				Settings.OnError(this.Service, context, request, response, ex);
 			}
 			finally
 			{
@@ -329,6 +334,7 @@ namespace JsonFx.Handlers
 
 					response.Result = null;
 					response.Error = new JsonError(ex, JsonRpcErrors.InternalError);
+					Settings.OnError(this.Service, context, request, response, ex);
 
 					using (JsonWriter writer = new JsonWriter(context.Response.Output))
 					{
@@ -337,7 +343,7 @@ namespace JsonFx.Handlers
 				}
 			}
 
-			Settings.OnUnload(this, context);
+			Settings.OnUnload(this.Service, context);
 		}
 
 		bool IHttpHandler.IsReusable
