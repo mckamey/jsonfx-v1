@@ -1,5 +1,8 @@
 Release History
 
+v1.0.0905.1909
+- added Jbst.Bind override for MVC helper
+
 v1.0.0905.1309
 - Better callbacks from JsonFx.JsonRpc.Settings
 - Allowing replacement of JSON-RPC serialization
