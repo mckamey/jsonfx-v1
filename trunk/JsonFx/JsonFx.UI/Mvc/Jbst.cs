@@ -44,6 +44,34 @@ namespace JsonFx.Mvc
 		/// </summary>
 		/// <param name="helper"></param>
 		/// <param name="jbst"></param>
+		/// <param name="data">named data to bind</param>
+		/// <param name="dataItems">collection of data to emit</param>
+		/// <returns></returns>
+		public static string Bind(string jbst, string data, IDictionary<string, object> dataItems)
+		{
+			// build the control
+			JsonFx.UI.Jbst.Control control = new JsonFx.UI.Jbst.Control();
+			control.ID = Guid.NewGuid().ToString("n");
+			control.Name = jbst;
+			control.Data = data;
+
+			if (dataItems != null)
+			{
+				foreach (string key in dataItems.Keys)
+				{
+					control.DataItems[key] = dataItems[key];
+				}
+			}
+
+			// render the control
+			return Render(control);
+		}
+
+		/// <summary>
+		/// Bind the JBST to the provided data.
+		/// </summary>
+		/// <param name="helper"></param>
+		/// <param name="jbst"></param>
 		/// <param name="data"></param>
 		/// <returns></returns>
 		public static string Bind(string jbst, object data)
