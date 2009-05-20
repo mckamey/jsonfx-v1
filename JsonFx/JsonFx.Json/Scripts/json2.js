@@ -1,6 +1,6 @@
 /*
     http://www.JSON.org/json2.js
-    2008-11-19
+    2009-04-16
 
     Public Domain.
 
@@ -194,6 +194,7 @@ if (!this.JSON) {
             '\\': '\\\\'
         },
         rep;
+
 
     function quote(string) {
 
@@ -467,4 +468,4 @@ replace(/(?:^|:|,)(?:\s*\[)+/g, ''))) {
             throw new SyntaxError('JSON.parse');
         };
     }
-})();
+}());
