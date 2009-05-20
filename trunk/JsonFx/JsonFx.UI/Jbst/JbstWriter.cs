@@ -690,6 +690,7 @@ if (""undefined"" === typeof {0}) {{
 			StringBuilder globals = new StringBuilder();
 
 			this.Imports.Insert(0, "JsonML.BST");
+			this.Imports.Insert(0, "window");
 			this.Imports.Add(this.Name);
 
 			foreach (string import in this.Imports)
