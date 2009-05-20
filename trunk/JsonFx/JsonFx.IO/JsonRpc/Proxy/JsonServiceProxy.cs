@@ -346,7 +346,7 @@ namespace JsonFx.JsonRpc.Proxy
 
 		internal override string ExternFormat
 		{
-			get { return "/*global JsonFx, {0}*/\r\n\r\n"; }
+			get { return "/*global window, JsonFx, {0}*/\r\n\r\n"; }
 		}
 
 		internal override string NamespaceFormat
