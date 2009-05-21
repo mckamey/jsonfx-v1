@@ -416,7 +416,7 @@ namespace JsonFx.Json
 				{
 					if (objectType == null &&
 						!String.IsNullOrEmpty(this.TypeHintName) &&
-						this.TypeHintName.Equals(memberName, StringComparison.InvariantCulture))
+						this.TypeHintName.Equals(memberName, StringComparison.Ordinal))
 					{
 						result = this.Coercion.ProcessTypeHint((IDictionary)result, value as string, out objectType, out memberMap);
 					}

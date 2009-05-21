@@ -1,5 +1,8 @@
 Release History
 
+v1.0.0905.2108
+- fixed JSON-RPC errors not properly unwraping exceptions
+
 v1.0.0905.2007
 - fixed issue with inserting documentFragments into tables
 - added "window" to list of globals as latest JSLint removed support for it
