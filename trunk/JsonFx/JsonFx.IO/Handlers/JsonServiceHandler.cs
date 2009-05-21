@@ -156,7 +156,7 @@ namespace JsonFx.Handlers
 
 			System.Reflection.MethodInfo method = this.ServiceInfo.ResolveMethodName(request.Method);
 
-			if (JsonServiceHandler.DescriptionMethodName.Equals(request.Method, StringComparison.InvariantCulture))
+			if (JsonServiceHandler.DescriptionMethodName.Equals(request.Method, StringComparison.Ordinal))
 			{
 				response.Result = new JsonServiceDescription(this.ServiceInfo.ServiceType, this.serviceUrl);
 			}
@@ -209,11 +209,7 @@ namespace JsonFx.Handlers
 				}
 				catch (TargetInvocationException ex)
 				{
-					if (ex.InnerException != null)
-					{
-						throw new JsonServiceException(ex.InnerException.Message, ex.InnerException);
-					}
-					throw new JsonServiceException(ex.Message, ex);
+					throw new JsonServiceException((ex.InnerException??ex).Message, ex.InnerException??ex);
 				}
 				catch (Exception ex)
 				{
@@ -290,11 +286,11 @@ namespace JsonFx.Handlers
 				response.Error = new JsonError(ex, JsonRpcErrors.InvalidParams);
 				Settings.OnError(this.Service, context, request, response, ex);
 			}
-			catch (JsonServiceException ex)
+			catch (JsonTypeCoersionException ex)
 			{
 				context.Response.ClearContent();
 				response.Result = null;
-				response.Error = new JsonError(ex, JsonRpcErrors.InvalidRequest);
+				response.Error = new JsonError(ex, JsonRpcErrors.InvalidParams);
 				Settings.OnError(this.Service, context, request, response, ex);
 			}
 			catch (JsonDeserializationException ex)
@@ -302,6 +298,13 @@ namespace JsonFx.Handlers
 				context.Response.ClearContent();
 				response.Result = null;
 				response.Error = new JsonError(ex, JsonRpcErrors.ParseError);
+				Settings.OnError(this.Service, context, request, response, ex);
+			}
+			catch (JsonServiceException ex)
+			{
+				context.Response.ClearContent();
+				response.Result = null;
+				response.Error = new JsonError(ex.InnerException??ex, JsonRpcErrors.InternalError);
 				Settings.OnError(this.Service, context, request, response, ex);
 			}
 			catch (Exception ex)
