@@ -1,5 +1,8 @@
 Release History
 
+v1.0.0905.2307
+- modified JsonFx.Bindings.replace to leverage jQuery document.ready when jQuery loaded after JsonFx
+
 v1.0.0905.2108
 - fixed JSON-RPC errors not properly unwraping exceptions
 
