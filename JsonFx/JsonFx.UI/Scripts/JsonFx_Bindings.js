@@ -327,7 +327,7 @@ JsonFx.Bindings = function() {
 
 	// shorthand for auto-replacing an element with JBST bind
 	/*void*/ b.replace = function(/*string*/ selector, /*JBST*/ jbst, /*object*/ data, /*int*/ index, /*int*/ count) {
-		if ("undefined" !== typeof jQuery) {
+		if (!jQ && "undefined" !== typeof jQuery) {
 			jQuery(function() {
 				var elem = jQuery(selector);
 				if (elem.length) {
