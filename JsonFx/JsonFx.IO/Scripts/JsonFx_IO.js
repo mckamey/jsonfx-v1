@@ -4,7 +4,7 @@
 	Ajax & JSON-RPC support
 
 	Created: 2006-11-09-0120
-	Modified: 2009-01-31-1623
+	Modified: 2009-06-02-0906
 
 	Copyright (c)2006-2009 Stephen M. McKamey
 	Released under an open-source license: http://jsonfx.net/license
