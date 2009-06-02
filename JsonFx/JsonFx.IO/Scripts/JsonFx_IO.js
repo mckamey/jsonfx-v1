@@ -485,7 +485,10 @@ JsonFx.IO = {
 
 			try {
 				// JSON encode request object
-				rpcRequest = JSON.stringify(rpcRequest);
+				// replacer function patches known bug in IE8's native JSON
+				rpcRequest = JSON.stringify(
+					rpcRequest,
+					function(k, v) { return v === "" ? "" : v; });
 			} catch (ex) {
 				// if violates JSON, then fail
 				if (onFailure) {

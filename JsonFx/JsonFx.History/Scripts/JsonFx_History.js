@@ -163,7 +163,11 @@ JsonFx.History = {
 			return true;
 		}
 
-		info = JSON.stringify(info);
+		// replacer function patches known bug in IE8's native JSON
+		info = JSON.stringify(
+			info,
+			function(k, v) { return v === "" ? "" : v; });
+
 		if (h.url) {
 			// encode the serialized object into the query string
 			doc.location.href = h.url+'?'+encodeURIComponent(info);
