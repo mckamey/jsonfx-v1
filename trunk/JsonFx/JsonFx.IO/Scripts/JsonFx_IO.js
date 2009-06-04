@@ -13,7 +13,7 @@
 /* dependency checks --------------------------------------------*/
 
 if ("undefined" === typeof window.JSON) {
-	throw new Error("JsonFx_IO.js requires json2.js");
+	throw new Error("JsonFx.IO requires JSON");
 }
 
 /* ----------------------------------------------------*/

@@ -18,7 +18,7 @@ if ("undefined" === typeof window.JsonFx) {
 /* dependency checks --------------------------------------------*/
 
 if ("undefined" === typeof window.JSON) {
-	throw new Error("JsonFx_History.js requires json2.js");
+	throw new Error("JsonFx.History requires JSON");
 }
 
 /* Utilities ----------------------------------------------------*/
