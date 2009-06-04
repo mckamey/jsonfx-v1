@@ -22,13 +22,13 @@ if ("undefined" === typeof JsonFx.UI) {
 /* dependency checks --------------------------------------------*/
 
 if ("undefined" === typeof window.JSON) {
-	throw new Error("JsonFx_UI.js requires json2.js");
+	throw new Error("JsonFx.UI requires JSON");
 }
 if ("undefined" === typeof window.JsonML) {
-	throw new Error("JsonFx_UI.js requires JsonML2.js");
+	throw new Error("JsonFx.UI requires JsonML");
 }
 if ("undefined" === typeof JsonFx.Bindings) {
-	throw new Error("JsonFx_UI.js requires JsonFx_Bindings.js");
+	throw new Error("JsonFx.UI requires JsonFx.Bindings");
 }
 
 /* DOM utilities ------------------------------------------------*/
