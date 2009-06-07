@@ -50,11 +50,13 @@ namespace JsonFx.Handlers
 		Deflate
 	}
 
+	/// <summary>
+	/// general HTTP handler for external page resources
+	/// </summary>
 	public class ResourceHandler : IHttpHandler
 	{
 		#region Constants
 
-		public const string DebugFlag = "debug";
 		internal const string GlobalizationQuery = "lang";
 
 		private const string GzipContentEncoding = "gzip";
@@ -66,26 +68,53 @@ namespace JsonFx.Handlers
 
 		#endregion Constants
 
+		#region Fields
+
+		private readonly bool IsDebug;
+		private readonly string CacheKey;
+
+		#endregion Fields
+
+		#region Init
+
+		/// <summary>
+		/// Ctor
+		/// </summary>
+		/// <param name="context"></param>
+		public ResourceHandler(HttpContext context)
+			: this(context.IsDebuggingEnabled, context.Request.QueryString[null])
+		{
+		}
+
+		/// <summary>
+		/// Ctor
+		/// </summary>
+		/// <param name="isDebug"></param>
+		/// <param name="cacheKey"></param>
+		public ResourceHandler(bool isDebug, string cacheKey)
+		{
+			this.IsDebug = isDebug;
+			this.CacheKey = cacheKey;
+		}
+
+		#endregion Init
+
 		#region IHttpHandler Members
 
 		void IHttpHandler.ProcessRequest(HttpContext context)
 		{
-			string cacheKey = context.Request.QueryString[null];
-			bool isDebug = (String.IsNullOrEmpty(cacheKey) && context.IsDebuggingEnabled) ||
-				StringComparer.OrdinalIgnoreCase.Equals(ResourceHandler.DebugFlag, cacheKey);
-
 			context.Response.ClearHeaders();
 			context.Response.BufferOutput = true;
 
 			// specifying "DEBUG" in the query string gets the non-compacted form
-			IOptimizedResult info = this.GetResourceInfo(context, isDebug);
+			IOptimizedResult info = this.GetResourceInfo(context, this.IsDebug);
 			if (info == null)
 			{
 				// either eTag 304 was sent or no resource found
 				return;
 			}
 
-			bool isCached = StringComparer.OrdinalIgnoreCase.Equals(info.Hash, cacheKey);
+			bool isCached = StringComparer.OrdinalIgnoreCase.Equals(info.Hash, this.CacheKey);
 			if (isCached)
 			{
 				// if the content changes then so will the hash
@@ -99,7 +128,7 @@ namespace JsonFx.Handlers
 				ResourceHandler.HeaderContentDisposition,
 				"inline;filename="+Path.GetFileNameWithoutExtension(context.Request.FilePath)+'.'+info.FileExtension);
 
-			switch (ResourceHandler.GetOutputEncoding(info, context, isDebug))
+			switch (ResourceHandler.GetOutputEncoding(info, context, this.IsDebug))
 			{
 				case BuildResultType.PrettyPrint:
 				{
@@ -167,7 +196,7 @@ namespace JsonFx.Handlers
 			string cache;
 			if (isDebug)
 			{
-				cache = '?'+ResourceHandler.DebugFlag;
+				cache = '?'+DebugResourceHandlerFactory.DebugFlag;
 			}
 			else if (!String.IsNullOrEmpty(info.Hash))
 			{
@@ -307,11 +336,7 @@ namespace JsonFx.Handlers
 		/// <returns></returns>
 		private static BuildResultType GetOutputEncoding(HttpContext context)
 		{
-			string setting = context.Request.QueryString[null];
-			bool isDebug = (String.IsNullOrEmpty(setting) && context.IsDebuggingEnabled) ||
-				StringComparer.OrdinalIgnoreCase.Equals(ResourceHandler.DebugFlag, setting);
-
-			if (isDebug)
+			if (context.IsDebuggingEnabled)
 			{
 				return BuildResultType.PrettyPrint;
 			}

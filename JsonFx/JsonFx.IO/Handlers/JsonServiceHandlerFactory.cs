@@ -46,18 +46,14 @@ namespace JsonFx.Handlers
 				String.IsNullOrEmpty(context.Request.PathInfo))
 			{
 				// output service javascript proxy
-				return new ResourceHandler();
+				return new ResourceHandler(context);
 			}
-
-			string mode = context.Request.QueryString[null];
-			bool isDebug = (String.IsNullOrEmpty(mode) && context.IsDebuggingEnabled) ||
-				StringComparer.OrdinalIgnoreCase.Equals(ResourceHandler.DebugFlag, mode);
 
 			// handle service requests
 			string appUrl = context.Request.AppRelativeCurrentExecutionFilePath;
 			IJsonServiceInfo serviceInfo = ResourceHandler.Create<IJsonServiceInfo>(appUrl);
 
-			if (!isDebug && !Settings.DisableStreamCompression)
+			if (!context.IsDebuggingEnabled && !Settings.DisableStreamCompression)
 			{
 				ResourceHandler.EnableStreamCompression(context);
 			}
