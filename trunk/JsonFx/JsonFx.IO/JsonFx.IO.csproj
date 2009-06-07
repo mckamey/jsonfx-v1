@@ -117,6 +117,7 @@
     <Compile Include="JsonRpc\JsonResponse.cs">
       <SubType>Code</SubType>
     </Compile>
+    <Compile Include="JsonRpc\JsonRpcUtility.cs" />
     <Compile Include="JsonRpc\JsonServiceAttribute.cs">
       <SubType>Code</SubType>
     </Compile>
