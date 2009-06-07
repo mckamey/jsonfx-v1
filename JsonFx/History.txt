@@ -1,5 +1,10 @@
 Release History
 
+v1.0.0906.0623
+- modified ResourceHandlerFactory to prevent pretty-print when web.config has debug="false"
+- added DebugResourceHandlerFactory which allows pretty-print even when web.config has debug="false"
+- added work-around for CodeGen / C# compiler conflict with large strings
+
 v1.0.0906.0408
 - added replacer function which patches known bug in IE8's native JSON
 - changed error strings in scripts as some pre-fetch algorithms were trying to download the messages as URLs
