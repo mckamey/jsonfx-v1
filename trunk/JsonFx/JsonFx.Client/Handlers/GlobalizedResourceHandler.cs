@@ -53,6 +53,28 @@ namespace JsonFx.Handlers
 
 		#endregion Constants
 
+		#region Fields
+
+		private readonly bool IsDebug;
+		private readonly string CacheKey;
+
+		#endregion Fields
+
+		#region Init
+
+		/// <summary>
+		/// Ctor
+		/// </summary>
+		/// <param name="isDebug"></param>
+		/// <param name="cacheKey"></param>
+		public GlobalizedResourceHandler(bool isDebug, string cacheKey)
+		{
+			this.IsDebug = isDebug;
+			this.CacheKey = cacheKey;
+		}
+
+		#endregion Init
+
 		#region Methods
 
 		public static void ExtractGlobalizationKeys(string script, IList<string> globalizationKeys)
@@ -161,17 +183,14 @@ namespace JsonFx.Handlers
 
 		void IHttpHandler.ProcessRequest(HttpContext context)
 		{
-			string setting = context.Request.QueryString[null];
-			bool isDebug = (String.IsNullOrEmpty(setting) && context.IsDebuggingEnabled) ||
-				StringComparer.OrdinalIgnoreCase.Equals(ResourceHandler.DebugFlag, setting);
-
-			if (isDebug)
+			if (this.IsDebug)
 			{
 				context.Response.Cache.SetCacheability(HttpCacheability.ServerAndNoCache);
 			}
 			else
 			{
 				// TODO: make this configurable (default to min-value YSlow! considers useful)
+				// Note: Google Page Speed wants 1 month
 				context.Response.ExpiresAbsolute = DateTime.UtcNow.AddDays(3);
 			}
 
@@ -201,7 +220,7 @@ namespace JsonFx.Handlers
 
 			IDictionary<string, object> res = this.GetResourceStrings(target.GlobalizationKeys, targetPath);
 
-			if (!isDebug)
+			if (!this.IsDebug)
 			{
 				// TODO: provide a mechanism for disabling compression?
 				ResourceHandler.EnableStreamCompression(context);
@@ -214,7 +233,7 @@ namespace JsonFx.Handlers
 				"Content-Disposition",
 				"inline;filename="+Path.GetFileNameWithoutExtension(targetPath)+".js");
 
-			if (isDebug)
+			if (this.IsDebug)
 			{
 				response.Write(JslintDirective);
 			}
@@ -228,13 +247,13 @@ namespace JsonFx.Handlers
 			response.Write(ResStart);
 
 			EcmaScriptWriter writer = new EcmaScriptWriter(response.Output);
-			writer.PrettyPrint = isDebug;
+			writer.PrettyPrint = this.IsDebug;
 			writer.Write(res);
 
 			response.Write(",");
 
 			writer = new EcmaScriptWriter(response.Output);
-			writer.PrettyPrint = isDebug;
+			writer.PrettyPrint = this.IsDebug;
 			writer.Write(Thread.CurrentThread.CurrentCulture.Name);
 
 			response.Write(ResEnd);

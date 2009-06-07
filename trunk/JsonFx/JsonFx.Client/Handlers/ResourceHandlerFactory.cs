@@ -35,20 +35,52 @@ using System.Web.Compilation;
 
 namespace JsonFx.Handlers
 {
+	/// <summary>
+	/// Allows forcing the resource to pretty-print with "?debug"
+	/// </summary>
+	public class DebugResourceHandlerFactory : ResourceHandlerFactory
+	{
+		#region Constants
+
+		internal const string DebugFlag = "debug";
+
+		#endregion Constants
+
+		#region Methods
+
+		protected override bool IsDebuggingEnabled(HttpContext context, string cacheKey)
+		{
+			if (String.IsNullOrEmpty(cacheKey))
+			{
+				return context.IsDebuggingEnabled;
+			}
+
+			return StringComparer.OrdinalIgnoreCase.Equals(DebugResourceHandlerFactory.DebugFlag, cacheKey);
+		}
+
+		#endregion Methods
+	}
+
+	/// <summary>
+	/// ResourceHandler Factory
+	/// </summary>
 	public class ResourceHandlerFactory : IHttpHandlerFactory
 	{
 		#region IHttpHandlerFactory Methods
 
 		public virtual IHttpHandler GetHandler(HttpContext context, string verb, string url, string path)
 		{
+			string cacheKey = context.Request.QueryString[null];
+			bool isDebug = this.IsDebuggingEnabled(context, cacheKey);
+
 			if (context.Request.QueryString[ResourceHandler.GlobalizationQuery] != null)
 			{
 				// output resource strings used by the handler
-				return new GlobalizedResourceHandler();
+				return new GlobalizedResourceHandler(isDebug, cacheKey);
 			}
 
 			// output resource content
-			return new ResourceHandler();
+			return new ResourceHandler(isDebug, cacheKey);
 		}
 
 		public virtual void ReleaseHandler(IHttpHandler handler)
@@ -56,5 +88,14 @@ namespace JsonFx.Handlers
 		}
 
 		#endregion IHttpHandlerFactory Methods
+
+		#region Methods
+
+		protected virtual bool IsDebuggingEnabled(HttpContext context, string cacheKey)
+		{
+			return context.IsDebuggingEnabled;
+		}
+
+		#endregion Methods
 	}
 }
