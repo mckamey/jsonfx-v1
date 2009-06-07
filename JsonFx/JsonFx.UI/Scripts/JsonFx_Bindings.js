@@ -334,9 +334,7 @@ JsonFx.Bindings = function() {
 					elem.replaceWith(JsonML.BST(jbst).bind(data, index, count));
 				}
 			});
-		}
-		else
-		{
+		} else {
 			// TODO: modify so this isn't stored and rerun
 			JsonFx.Bindings.add(
 				selector,
