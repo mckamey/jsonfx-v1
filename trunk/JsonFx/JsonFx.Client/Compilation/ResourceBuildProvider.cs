@@ -256,7 +256,15 @@ namespace JsonFx.Compilation
 			property.PrivateImplementationType = new CodeTypeReference(typeof(IOptimizedResult));
 			property.HasGet = true;
 			// get { return resource; }
-			property.GetStatements.Add(new CodeMethodReturnStatement(new CodePrimitiveExpression(prettyPrintResource)));
+			if (prettyPrintResource == null || prettyPrintResource.Length <= 0x5DC)
+			{
+				property.GetStatements.Add(new CodeMethodReturnStatement(new CodePrimitiveExpression(prettyPrintResource)));
+			}
+			else
+			{
+				string escaped = ResourceBuildProvider.QuoteSnippetStringCStyle(prettyPrintResource);
+				property.GetStatements.Add(new CodeMethodReturnStatement(new CodeSnippetExpression(escaped)));
+			}
 			resourceType.Members.Add(property);
 
 			#endregion string IOptimizedResult.PrettyPrinted { get; }
@@ -270,7 +278,15 @@ namespace JsonFx.Compilation
 			property.PrivateImplementationType = new CodeTypeReference(typeof(IOptimizedResult));
 			property.HasGet = true;
 			// get { return compactedResource; }
-			property.GetStatements.Add(new CodeMethodReturnStatement(new CodePrimitiveExpression(compactedResource)));
+			if (compactedResource == null || compactedResource.Length <= 0x5DC)
+			{
+				property.GetStatements.Add(new CodeMethodReturnStatement(new CodePrimitiveExpression(compactedResource)));
+			}
+			else
+			{
+				string escaped = ResourceBuildProvider.QuoteSnippetStringCStyle(compactedResource);
+				property.GetStatements.Add(new CodeMethodReturnStatement(new CodeSnippetExpression(escaped)));
+			}
 			resourceType.Members.Add(property);
 
 			#endregion string IOptimizedResult.Compacted { get; }
@@ -684,6 +700,95 @@ namespace JsonFx.Compilation
 
 			// the hexadecimal string
 			return builder.ToString();
+		}
+
+		/// <summary>
+		/// Escapes a C# string using C-style escape sequences.
+		/// </summary>
+		/// <param name="value"></param>
+		/// <returns></returns>
+		/// <remarks>
+		/// Adapted from Microsoft.CSharp.CSharpCodeGenerator.QuoteSnippetStringCStyle
+		/// Primary difference is does not wrap at 80 chars as can cause C# compiler to fail.
+		/// </remarks>
+		private static string QuoteSnippetStringCStyle(string value)
+		{
+			// CS1647: An expression is too long or complex to compile near '...'
+			// happens if line wraps too many times (335440 chars is max for x64, 926240 chars is max for x86)
+
+			// CS1034: Compiler limit exceeded: Line cannot exceed 16777214 characters
+			// theoretically every character could be escaped unicode (6 chars), plus quotes, etc.
+
+			const int LineWrapWidth = (16777214/6)-4;
+			StringBuilder b = new StringBuilder(value.Length+5);
+
+			b.Append("\r\n\"");
+			for (int i=0; i<value.Length; i++)
+			{
+				switch (value[i])
+				{
+					case '\u2028':
+					case '\u2029':
+					{
+						int ch = (int)value[i];
+						b.Append(@"\u");
+						b.Append(ch.ToString("X4", System.Globalization.CultureInfo.InvariantCulture));
+						break;
+					}
+					case '\\':
+					{
+						b.Append(@"\\");
+						break;
+					}
+					case '\'':
+					{
+						b.Append(@"\'");
+						break;
+					}
+					case '\t':
+					{
+						b.Append(@"\t");
+						break;
+					}
+					case '\n':
+					{
+						b.Append(@"\n");
+						break;
+					}
+					case '\r':
+					{
+						b.Append(@"\r");
+						break;
+					}
+					case '"':
+					{
+						b.Append("\\\"");
+						break;
+					}
+					case '\0':
+					{
+						b.Append(@"\0");
+						break;
+					}
+					default:
+					{
+						b.Append(value[i]);
+						break;
+					}
+				}
+
+				if ((i > 0) && ((i % LineWrapWidth) == 0))
+				{
+					if ((Char.IsHighSurrogate(value[i]) && (i < (value.Length - 1))) && Char.IsLowSurrogate(value[i + 1]))
+					{
+						b.Append(value[++i]);
+					}
+					b.Append("\"+\r\n");
+					b.Append('"');
+				}
+			}
+			b.Append("\"");
+			return b.ToString();
 		}
 
 		#endregion Utility Methods
