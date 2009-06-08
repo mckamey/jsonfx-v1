@@ -1,5 +1,8 @@
 Release History
 
+v1.0.0906.0712
+- added JSON-RPC utility for calling services from C#
+
 v1.0.0906.0623
 - modified ResourceHandlerFactory to prevent pretty-print when web.config has debug="false"
 - added DebugResourceHandlerFactory which allows pretty-print even when web.config has debug="false"
