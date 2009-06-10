@@ -1,4 +1,8 @@
-2009-05-02 @ 11:21
+2009-06-10 @ 09:23
+
+- Ensure JSON-RPC Notifications suppress response (& client side doesn't care)
+- Batch JSON-RPC request/responses
+- Async JSON-RPC request processing
 
 - Async pages / controls
 - BUG: cannot deserialize standard Arrays
