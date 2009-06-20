@@ -4,11 +4,13 @@
 	dynamic behavior binding support
 
 	Created: 2006-11-11-1759
-	Modified: 2009-03-01-1621
+	Modified: 2009-06-20-1131
 
 	Copyright (c)2006-2009 Stephen M. McKamey
 	Distributed under an open-source license: http://jsonfx.net/license
 */
+
+/* dependency checks --------------------------------------------*/
 
 /* namespace JsonFx */
 if ("undefined" === typeof window.JsonFx) {
@@ -19,45 +21,18 @@ if ("undefined" === typeof JsonFx.UI) {
 	JsonFx.UI = {};
 }
 
-/* dependency checks --------------------------------------------*/
-
-/* singleton JsonFx.Bindings */
+/* singleton JsonFx.Bindings --------------------------------------------*/
 JsonFx.Bindings = function() {
 
 	/*object*/ var b = this;
-	/*bool*/ var jQ = ("undefined" !== typeof jQuery);
 	/*const string*/ var BIND = 1, UNBIND = 2;
 
-	/*
-		the structure of bindings and the implementation of add, bind, and unbind fork on presence of jQuery.
-		if jQuery is present before JsonFx.Bindings, then the selector implementation is delegated to jQuery.
-		otherwise a simple selector lookup structure is built to very specifically allow lookups without
-		a lot of iterations.
-	*/
-	/*Dictionary<string,object>*/ var bindings = jQ ? [] : {};
+	/* build a simple selector lookup structure to very specifically allow lookups without a lot of iterations. */
+	/*Dictionary<string,object>*/ var bindings = {};
 
 	/*RegExp*/ var re = /^\s*([\w\-]*|[*])(?:#([\w\-]+)|\.([\w\-]+))?(?:#([\w\-]+)|\.([\w\-]+))?\s*$/;
 
-	/*void*/ b.add = jQ ?
-		// jQuery JsonFx.Bindings.add implementation
-		function(/*string*/ selector, /*function(elem)*/ bind, /*function(elem)*/ unbind) {
-			if (typeof bind !== "function") {
-				bind = null;
-			}
-			if (typeof unbind !== "function") {
-				unbind = null;
-			}
-			if (!selector || (!bind && !unbind)) {
-				return;
-			}
-
-			var binding = { selector: selector };
-			binding[BIND] = bind;
-			binding[UNBIND] = unbind;
-			bindings.push(binding);
-		} :
-		// simple JsonFx.Bindings.add implementation
-		function(/*string*/ selector, /*function(elem)*/ bind, /*function(elem)*/ unbind) {
+	/*void*/ b.add = function(/*string*/ selector, /*function(elem)*/ bind, /*function(elem)*/ unbind) {
 			if (typeof bind !== "function") {
 				bind = null;
 			}
@@ -117,30 +92,7 @@ JsonFx.Bindings = function() {
 		b.add(tag+'.'+css, bind, unbind);
 	};
 
-	/*DOM*/ var performOne = jQ ?
-		// jQuery performOne implementation
-		function(/*DOM*/ elem, /*actionKey*/ a) {
-			function go(/*string*/ selector, /*function*/ action) {
-				return function() {
-					try {
-						elem = action(this) || this;
-					} catch (ex) {
-						window.alert("Error binding "+selector+" (line "+(ex.lineNumber||ex.line||1)+"):\n\""+(ex&&ex.message||String(ex))+"\"");
-						/*jslint debug:true */
-						debugger;
-						/*jslint debug:false */
-					}
-				};
-			}
-			for (var i=0; i<bindings.length; i++) {
-				if (bindings[i][a]) {
-					jQuery(elem).filter(bindings[i].selector).each(go(bindings[i].selector, bindings[i][a]));
-				}
-			}
-			return elem;
-		} :
-		// simple performOne implementation
-		function(/*DOM*/ elem, /*actionKey*/ a) {
+	/*DOM*/ var performOne = function(/*DOM*/ elem, /*actionKey*/ a) {
 
 			function bindSet(/*object*/ binds, /*string*/ css) {
 				if (binds && binds[css] && binds[css][a]) {
@@ -187,43 +139,14 @@ JsonFx.Bindings = function() {
 			return elem;
 		};
 
-	var performOneID = jQ ?
-		// no jQuery performOneID implementation
-		null :
-		// simple performOneID implementation
-		function (/*DOM*/ elem, /*actionKey*/ a) {
+	var performOneID = function (/*DOM*/ elem, /*actionKey*/ a) {
 			var action = bindings["#"][elem.id];
 			action = action && action[a];
 			return (action && action(elem)) || elem;
 		};
 
 	// perform a binding action on all child elements
-	/*void*/ var perform = jQ ?
-		// jQuery perform implementation
-		function(/*DOM*/ root, /*actionKey*/ a) {
-			function go(/*string*/ selector, /*function*/ action) {
-				return function() {
-					try {
-						var elem = action(this) || this;
-						if (elem !== this) {
-							this.parentNode.replaceChild(elem, this);
-						}
-					} catch (ex) {
-						window.alert("Error binding "+selector+" (line "+(ex.lineNumber||ex.line||1)+"):\n\""+(ex&&ex.message||String(ex))+"\"");
-						/*jslint debug:true */
-						debugger;
-						/*jslint debug:false */
-					}
-				};
-			}
-			for (var i=0; i<bindings.length; i++) {
-				if (bindings[i][a]) {
-					jQuery(bindings[i].selector, root).each(go(bindings[i].selector, bindings[i][a]));
-				}
-			}
-		} :
-		// simple perform implementation
-		function(/*DOM*/ root, /*actionKey*/ a) {
+	/*void*/ var perform = function(/*DOM*/ root, /*actionKey*/ a) {
 
 	// TODO: add ability to bind on ID, className, tagName or any combination
 	// determine how to most efficiently select the smallest set of eligible elements
@@ -327,21 +250,11 @@ JsonFx.Bindings = function() {
 
 	// shorthand for auto-replacing an element with JBST bind
 	/*void*/ b.replace = function(/*string*/ selector, /*JBST*/ jbst, /*object*/ data, /*int*/ index, /*int*/ count) {
-		if (!jQ && "undefined" !== typeof jQuery) {
-			jQuery(function() {
-				var elem = jQuery(selector);
-				if (elem.length) {
-					elem.replaceWith(JsonML.BST(jbst).bind(data, index, count));
-				}
+		JsonFx.Bindings.add(
+			selector,
+			function(elem) {
+				return JsonML.BST(jbst).bind(data, index, count) || elem;
 			});
-		} else {
-			// TODO: modify so this isn't stored and rerun
-			JsonFx.Bindings.add(
-				selector,
-				function(elem) {
-					return JsonML.BST(jbst).bind(data, index, count) || elem;
-				});
-		}
 	};
 
 	/*void*/ function addHandler(/*DOM*/ target, /*string*/ name, /*function*/ handler) {
@@ -363,7 +276,11 @@ JsonFx.Bindings = function() {
 	}
 
 	// register bind events
-	addHandler(window, "load", b.bind);
+	if ("undefined" !== typeof jQuery) {
+		jQuery.ready(b.bind);
+	} else {
+		addHandler(window, "load", b.bind);
+	}
 	addHandler(window, "unload", b.unbind);
 };
 
