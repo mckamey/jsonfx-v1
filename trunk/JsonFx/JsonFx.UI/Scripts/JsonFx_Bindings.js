@@ -4,7 +4,7 @@
 	dynamic behavior binding support
 
 	Created: 2006-11-11-1759
-	Modified: 2009-06-20-1131
+	Modified: 2009-06-20-1342
 
 	Copyright (c)2006-2009 Stephen M. McKamey
 	Distributed under an open-source license: http://jsonfx.net/license
@@ -33,6 +33,7 @@ JsonFx.Bindings = function() {
 	/*RegExp*/ var re = /^\s*([\w\-]*|[*])(?:#([\w\-]+)|\.([\w\-]+))?(?:#([\w\-]+)|\.([\w\-]+))?\s*$/;
 
 	/*void*/ b.add = function(/*string*/ selector, /*function(elem)*/ bind, /*function(elem)*/ unbind) {
+
 			if (typeof bind !== "function") {
 				bind = null;
 			}
@@ -43,30 +44,26 @@ JsonFx.Bindings = function() {
 				return;
 			}
 
+			// TODO: cover the case where complex selector contains an inner ','
 			var s = selector instanceof Array ?
 				selector :
 				String(selector).split(',');
+
 			while (s.length > 1) {
 				b.add(s.shift(), bind, unbind);
 			}
 			selector = s.shift();
 
 			s = re.exec(selector);
-			if (!s) {
-				// http://www.w3.org/TR/css3-selectors/#simple-selectors
-				throw new Error("JsonFx.Bindings only supports simple tag, class, and id selectors. Selector: \""+selector+"\"");
+			if (s) {
+				s = {
+					tag: (s[1]||"*").toLowerCase(),
+					css: (s[3]||s[5]||"*"),
+					id: (s[2]||s[4]||"")
+				};
 			}
 
-			s = {
-				tag: (s[1]||"*").toLowerCase(),
-				css: (s[3]||s[5]||"*"),
-				id: (s[2]||s[4]||"")
-			};
-
-			if (s.id) {
-				if (s.tag !== "*" || s.css !== "*") {
-					throw new Error("JsonFx.Bindings only supports simple ID selectors. Add jQuery to enable full selector support. Selector: \""+selector+"\"");
-				}
+			if (s && s.id && s.tag === "*" && s.css === "*") {
 				if ("undefined" === typeof bindings["#"]) {
 					/*object*/ bindings["#"] = {};
 				}
@@ -74,7 +71,8 @@ JsonFx.Bindings = function() {
 				/*object*/ bindings["#"][s.id] = {};
 				bindings["#"][s.id][BIND] = bind;
 				bindings["#"][s.id][UNBIND] = unbind;
-			} else {
+
+			} else if (s && !s.id) {
 				if ("undefined" === typeof bindings[s.tag]) {
 					/*object*/ bindings[s.tag] = {};
 				} else if (bindings[s.tag][s.css]) {
@@ -84,6 +82,21 @@ JsonFx.Bindings = function() {
 				/*object*/ bindings[s.tag][s.css] = {};
 				bindings[s.tag][s.css][BIND] = bind;
 				bindings[s.tag][s.css][UNBIND] = unbind;
+
+			} else {
+				if ("undefined" === typeof jQuery) {
+					// http://www.w3.org/TR/css3-selectors/#simple-selectors
+					throw new Error("JsonFx.Bindings requires jQuery to support more than simple tag, class, and id selectors.\nSelector: \""+selector+"\"");
+				}
+
+				// delegate complex selectors to jQuery
+				if ("undefined" === typeof bindings.$) {
+					/*object*/ bindings.$ = {};
+				}
+
+				/*object*/ bindings.$[selector] = {};
+				bindings.$[selector][BIND] = bind;
+				bindings.$[selector][UNBIND] = unbind;
 			}
 		};
 
@@ -176,6 +189,24 @@ JsonFx.Bindings = function() {
 				}
 			}
 
+			root = root || document.body;
+
+			if (bindings.$ && "undefined" !== typeof jQuery) {
+				for (var sel in bindings.$) {
+					if (bindings.$.hasOwnProperty(sel)) {
+						jQuery(sel, root).each(function(foo2) {
+							var action = bindings.$[sel];
+							action = action && action[a];
+							var replace = (action && action(this)) || this;
+							if (replace !== this) {
+								// queue up replacement at the end so as not to disrupt the list
+								queueReplacer(replace, this);
+							}
+						});
+					}
+				}
+			}
+
 			if (bindings["#"]) {
 				for (var id in bindings["#"]) {
 					if (bindings["#"].hasOwnProperty(id)) {
@@ -191,7 +222,7 @@ JsonFx.Bindings = function() {
 					}
 				}
 			}
-			root = root || document.body;
+
 			if (root.getElementsByTagName) {
 				if (bindings["*"]) {
 					// if star rule, then must apply to all
@@ -228,9 +259,23 @@ JsonFx.Bindings = function() {
 	// use bindOne as the default JBST filter
 	if ("undefined" !== typeof JsonML && JsonML.BST) {
 		var bindOne = /*DOM*/ function(/*DOM*/ elem) {
+			// apply jQuery bindings
+			if (bindings.$ && "undefined" !== typeof jQuery) {
+				for (var selector in bindings.$) {
+					if (bindings.$.hasOwnProperty(selector) &&
+						jQuery(elem).is(selector)) {
+							var action = bindings.$[selector];
+							action = action && action[BIND];
+							elem = (action && action(elem)) || elem;
+					}
+				}
+			}
+
+			// apply ID bindings
 			if (performOneID && bindings["#"]) {
 				elem = performOneID(elem, BIND);
 			}
+			// apply tag/css bindings
 			elem = performOne(elem, BIND);
 			return elem;
 		};
@@ -277,7 +322,7 @@ JsonFx.Bindings = function() {
 
 	// register bind events
 	if ("undefined" !== typeof jQuery) {
-		jQuery.ready(b.bind);
+		jQuery(b.bind);
 	} else {
 		addHandler(window, "load", b.bind);
 	}
