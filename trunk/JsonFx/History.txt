@@ -1,5 +1,9 @@
 Release History
 
+v1.0.0906.2122
+- improved jQuery selector support with more efficient implementation
+- fixed potential double binding issue
+
 v1.0.0906.0712
 - added JSON-RPC utility for calling services from C#
 
