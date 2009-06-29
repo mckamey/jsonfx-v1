@@ -1,7 +1,7 @@
 Release History
 
 v1.0.0906.2823
-- allowed JBST returned by code blocks to be further databound (simplifies "switcher" template syntax)
+- allowed JBSTs returned by code blocks to be further databound (simplifies "switcher" template syntax)
 - fixed JBST parser inconsistencies in possible values for jbst:control arguments
 - lifted restriction on name parameter in jbst:control, can be any valid expression
 - subtle change in calling of functions when used as expressions: passing along "this" context
