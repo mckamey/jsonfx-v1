@@ -97,7 +97,7 @@ namespace JsonFx.UI.Jbst
 
 		private bool isProcessed;
 		private readonly string commandType;
-		private string controlName;
+		private string nameExpr;
 		private string dataExpr;
 		private string indexExpr;
 		private string countExpr;
@@ -138,146 +138,73 @@ namespace JsonFx.UI.Jbst
 				return;
 			}
 
-			#region Control Name
-
 			// placeholder does not need a named JBST
 			if (JbstCustomControl.ControlCommand.Equals(this.commandType, StringComparison.OrdinalIgnoreCase))
 			{
-				if (this.Attributes.ContainsKey(ControlNameKey))
-				{
-					this.controlName = this.Attributes[ControlNameKey] as string;
-				}
-				else if (this.Attributes.ContainsKey(ControlNameKeyAlt))
-				{
-					// backwards compatibility with "jbst:name"
-					this.controlName = this.Attributes[ControlNameKeyAlt] as string;
-				}
-				this.controlName = JsonWriter.EnsureValidIdentifier(this.controlName, true, false);
+				this.nameExpr = this.ProcessArgument(String.Empty, ControlNameKey, ControlNameKeyAlt);
+				this.nameExpr = JsonWriter.EnsureValidIdentifier(this.nameExpr, true, false);
 
-				if (String.IsNullOrEmpty(this.controlName) && !this.ChildControlsSpecified)
+				if (String.IsNullOrEmpty(this.nameExpr) && !this.ChildControlsSpecified)
 				{
 					throw new InvalidOperationException("JBST Control requires either a named template or an anonymous inline template.");
 				}
 			}
 
-			#endregion Control Name
-
-			#region Control Data
-
-			object dataParam = null;
-			if (this.Attributes.ContainsKey(ControlDataKey))
-			{
-				dataParam = this.Attributes[ControlDataKey];
-			}
-			else if (this.Attributes.ContainsKey(ControlDataKeyAlt))
-			{
-				// backwards compatibility with "jbst:data"
-				dataParam = this.Attributes[ControlDataKeyAlt];
-			}
-
-			if (dataParam == null)
-			{
-				this.dataExpr = DefaultDataExpression;
-			}
-			else if (dataParam is JbstExpressionBlock)
-			{
-				// convert to inline expression
-				this.dataExpr = ((JbstExpressionBlock)dataParam).Code;
-			}
-			else if (dataParam is JbstCodeBlock)
-			{
-				// convert to anonymous function expression
-				this.dataExpr = String.Format(
-					FunctionEvalExpression,
-					EcmaScriptWriter.Serialize(dataParam));
-			}
-			else
-			{
-				// convert to literal expression
-				this.dataExpr = EcmaScriptWriter.Serialize(dataParam);
-			}
-			this.dataExpr = this.dataExpr.Trim();
-
-			#endregion Control Data
-
-			#region Control Index
-
-			object indexParam = null;
-			if (this.Attributes.ContainsKey(ControlIndexKey))
-			{
-				indexParam = this.Attributes[ControlIndexKey];
-			}
-			else if (this.Attributes.ContainsKey(ControlIndexKeyAlt))
-			{
-				// backwards compatibility with "jbst:index"
-				indexParam = this.Attributes[ControlIndexKeyAlt];
-			}
-
-			if (indexParam == null)
-			{
-				this.indexExpr = DefaultIndexExpression;
-			}
-			else if (indexParam is JbstExpressionBlock)
-			{
-				// convert to inline expression
-				this.indexExpr = ((JbstExpressionBlock)indexParam).Code;
-			}
-			else if (indexParam is JbstCodeBlock)
-			{
-				// convert to anonymous function expression
-				this.indexExpr = String.Format(
-					FunctionEvalExpression,
-					EcmaScriptWriter.Serialize(indexParam));
-			}
-			else
-			{
-				// convert to literal expression
-				this.indexExpr = EcmaScriptWriter.Serialize(indexParam);
-			}
-			this.indexExpr = this.indexExpr.Trim();
-
-			#endregion Control Index
-
-			#region Control Count
-
-			object countParam = null;
-			if (this.Attributes.ContainsKey(ControlCountKey))
-			{
-				countParam = this.Attributes[ControlCountKey];
-			}
-			else if (this.Attributes.ContainsKey(ControlCountKeyAlt))
-			{
-				// backwards compatibility with "jbst:count"
-				countParam = this.Attributes[ControlCountKeyAlt];
-			}
-
-			if (countParam == null)
-			{
-				this.countExpr = DefaultCountExpression;
-			}
-			else if (countParam is JbstExpressionBlock)
-			{
-				// convert to inline expression
-				this.countExpr = ((JbstExpressionBlock)countParam).Code;
-			}
-			else if (countParam is JbstCodeBlock)
-			{
-				// convert to anonymous function expression
-				this.countExpr = String.Format(
-					FunctionEvalExpression,
-					EcmaScriptWriter.Serialize(countParam));
-			}
-			else
-			{
-				// convert to literal expression
-				this.countExpr = EcmaScriptWriter.Serialize(countParam);
-			}
-			this.countExpr = this.countExpr.Trim();
-
-			#endregion Control Count
+			this.dataExpr = this.ProcessArgument(DefaultDataExpression, ControlDataKey, ControlDataKeyAlt);
+			this.indexExpr = this.ProcessArgument(DefaultIndexExpression, ControlIndexKey, ControlIndexKeyAlt);
+			this.countExpr = this.ProcessArgument(DefaultCountExpression, ControlCountKey, ControlCountKeyAlt);
 
 			this.Attributes.Clear();
 			this.isProcessed = true;
+		}
+
+		/// <summary>
+		/// Processes each argument allowing string literals to code expressions to function calls.
+		/// </summary>
+		/// <param name="defaultValue">the default value if none was supplied</param>
+		/// <param name="keys">an ordered list of keys to check</param>
+		/// <returns>the resulting expression</returns>
+		private string ProcessArgument(string defaultValue, params string[] keys)
+		{
+			object argument = null;
+			foreach (string key in keys)
+			{
+				if (this.Attributes.ContainsKey(key))
+				{
+					argument = this.Attributes[key];
+					break;
+				}
+			}
+
+			string value;
+			if (argument == null)
+			{
+				value = defaultValue;
+			}
+			else if (argument is string)
+			{
+				// directly use as inline expression
+				value = (string)argument;
+			}
+			else if (argument is JbstExpressionBlock)
+			{
+				// convert to inline expression
+				value = ((JbstExpressionBlock)argument).Code;
+			}
+			else if (argument is JbstCodeBlock)
+			{
+				// convert to anonymous function expression
+				value = String.Format(
+					FunctionEvalExpression,
+					EcmaScriptWriter.Serialize(argument));
+			}
+			else
+			{
+				// convert to literal expression
+				value = EcmaScriptWriter.Serialize(argument);
+			}
+
+			return (value ?? String.Empty).Trim();
 		}
 
 		/// <summary>
@@ -290,7 +217,7 @@ namespace JsonFx.UI.Jbst
 			{
 				this.RenderSimpleCustomControl(writer);
 			}
-			else if (String.IsNullOrEmpty(this.controlName))
+			else if (String.IsNullOrEmpty(this.nameExpr))
 			{
 				this.RenderInlineCustomControl(writer);
 			}
@@ -307,7 +234,7 @@ namespace JsonFx.UI.Jbst
 		private void RenderSimpleCustomControl(JsonWriter writer)
 		{
 			writer.TextWriter.Write(ControlSimpleFormat,
-				this.controlName,
+				this.nameExpr,
 				this.dataExpr,
 				this.indexExpr,
 				this.countExpr);
@@ -342,7 +269,7 @@ namespace JsonFx.UI.Jbst
 
 			writer.TextWriter.Write(
 				ControlEndFormat,
-				this.controlName,
+				this.nameExpr,
 				this.dataExpr,
 				this.indexExpr,
 				this.countExpr);
