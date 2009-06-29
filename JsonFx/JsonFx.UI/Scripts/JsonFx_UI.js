@@ -1,4 +1,4 @@
-/*global JSON, JsonML, JsonFx, jQuery */
+/*global JSON, JsonML, JsonFx, jQuery, $ */
 /*
 	JsonFx_UI.js
 	DOM utilities
