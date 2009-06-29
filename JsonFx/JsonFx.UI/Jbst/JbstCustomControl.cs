@@ -85,7 +85,7 @@ namespace JsonFx.UI.Jbst
 			@").dataBind({0}, {1}, {2});
 			}}";
 
-		private const string FunctionEvalExpression = "({0})()";
+		private const string FunctionEvalExpression = "({0}).call(this)";
 
 		private const string DefaultDataExpression = "this.data";
 		private const string DefaultIndexExpression = "this.index";
