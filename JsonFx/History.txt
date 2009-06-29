@@ -1,5 +1,16 @@
 Release History
 
+v1.0.0906.2823
+- allowed JBST returned by code blocks to be further databound (simplifies "switcher" template syntax)
+- fixed JBST parser inconsistencies in possible values for jbst:control arguments
+- lifted restriction on name parameter in jbst:control, can be any valid expression
+- subtle change in calling of functions when used as expressions: passing along "this" context
+- fixed issue when no JsonML filter is defined
+- fixed jbst:visible not recognizing some false-y values
+- better condensing of nested document fragments
+- now pre-aggregating adjacent text nodes before hydration
+- now pre-culling empty doc-fragments before hydration
+
 v1.0.0906.2122
 - improved jQuery selector support with more efficient implementation
 - fixed potential double binding issue
