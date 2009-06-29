@@ -142,7 +142,7 @@ namespace JsonFx.UI.Jbst
 			if (JbstCustomControl.ControlCommand.Equals(this.commandType, StringComparison.OrdinalIgnoreCase))
 			{
 				this.nameExpr = this.ProcessArgument(String.Empty, ControlNameKey, ControlNameKeyAlt);
-				this.nameExpr = JsonWriter.EnsureValidIdentifier(this.nameExpr, true, false);
+				//this.nameExpr = JsonWriter.EnsureValidIdentifier(this.nameExpr, true, false);
 
 				if (String.IsNullOrEmpty(this.nameExpr) && !this.ChildControlsSpecified)
 				{
