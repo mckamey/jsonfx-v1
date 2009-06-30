@@ -279,6 +279,8 @@ namespace JsonFx.Handlers
 			{
 				case BuildResultType.Gzip:
 				{
+#if !__MonoCS__
+// remove for Mono Framework
 					try
 					{
 						if (ResourceHandler.GzipContentEncoding.Equals(context.Response.Headers[ResourceHandler.HeaderContentEncoding], StringComparison.OrdinalIgnoreCase))
@@ -287,6 +289,7 @@ namespace JsonFx.Handlers
 						}
 					}
 					catch (PlatformNotSupportedException) { }
+#endif
 
 					if (context.Response.Filter is GZipStream)
 					{
@@ -296,6 +299,8 @@ namespace JsonFx.Handlers
 				}
 				case BuildResultType.Deflate:
 				{
+#if !__MonoCS__
+// remove for Mono Framework
 					try
 					{
 						if (ResourceHandler.DeflateContentEncoding.Equals(context.Response.Headers[ResourceHandler.HeaderContentEncoding], StringComparison.OrdinalIgnoreCase))
@@ -304,6 +309,7 @@ namespace JsonFx.Handlers
 						}
 					}
 					catch (PlatformNotSupportedException) { }
+#endif
 
 					if (context.Response.Filter is DeflateStream)
 					{
