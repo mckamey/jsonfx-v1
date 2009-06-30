@@ -46,13 +46,13 @@ namespace JsonFx.UI.Jbst
 			base.CloseControl();
 		}
 
+#if !__MonoCS__
+// remove for Mono Framework
 		public override Type DeclareType
 		{
-			get
-			{
-				return base.DeclareType;
-			}
+			get { return base.DeclareType; }
 		}
+#endif
 
 		public override Type GetChildControlType(string tagName, System.Collections.IDictionary attribs)
 		{

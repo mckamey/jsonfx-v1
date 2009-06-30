@@ -104,7 +104,7 @@ namespace JsonFx.BuildTools.ScriptCompactor
 #else
 			errors = new List<ParseException>();
 #endif
-			bool isLinted = (jslint.Errors.Count == 0);
+			bool isLinted = (errors.Count == 0);
 
 			// compact and write out results
 			try
