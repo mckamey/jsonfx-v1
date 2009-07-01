@@ -60,6 +60,11 @@ namespace JsonFx.Handlers
 		#region Properties
 
 		/// <summary>
+		/// Gets the original resource source
+		/// </summary>
+		string Source { get; }
+
+		/// <summary>
 		/// Gets the pretty-printed resource data
 		/// </summary>
 		string PrettyPrinted { get; }
