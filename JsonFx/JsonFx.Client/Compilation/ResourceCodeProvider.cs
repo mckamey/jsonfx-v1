@@ -115,7 +115,8 @@ namespace JsonFx.Compilation
 		/// <param name="virtualPath"></param>
 		/// <param name="preProcessed"></param>
 		/// <param name="compacted"></param>
-		protected internal void CompileResource(
+		/// <returns>original source</returns>
+		protected internal string CompileResource(
 			IResourceBuildHelper helper,
 			string virtualPath,
 			out string preProcessed,
@@ -125,20 +126,24 @@ namespace JsonFx.Compilation
 			this.g11nKeys.Clear();
 			this.ResetCodeProvider();
 
+			string source;
+
 			// read the resource contents
 			using (TextReader reader = helper.OpenReader(virtualPath))
 			{
-				preProcessed = reader.ReadToEnd();
+				source = reader.ReadToEnd();
 			}
 
 			// preprocess the resource
 			this.ProcessResource(
 				helper,
 				virtualPath,
-				preProcessed,
+				source,
 				out preProcessed,
 				out compacted,
 				this.errors);
+
+			return source;
 		}
 
 		/// <summary>

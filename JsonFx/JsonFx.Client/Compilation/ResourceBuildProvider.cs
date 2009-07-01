@@ -160,12 +160,12 @@ namespace JsonFx.Compilation
 		public override void GenerateCode(AssemblyBuilder assemblyBuilder)
 		{
 			string contentType, fileExtension;
-			string prettyPrintResource, compactedResource;
+			string originalSource, prettyPrintResource, compactedResource;
 
 			ResourceCodeProvider provider = assemblyBuilder.CodeDomProvider as ResourceCodeProvider;
 			if (provider != null)
 			{
-				provider.CompileResource(
+				originalSource = provider.CompileResource(
 					this,
 					base.VirtualPath,
 					out prettyPrintResource,
@@ -179,7 +179,7 @@ namespace JsonFx.Compilation
 				// read the resource contents
 				using (TextReader reader = this.OpenReader())
 				{
-					compactedResource = prettyPrintResource = reader.ReadToEnd();
+					originalSource = compactedResource = prettyPrintResource = reader.ReadToEnd();
 				}
 
 				contentType = "text/plain";
@@ -247,23 +247,56 @@ namespace JsonFx.Compilation
 
 			#endregion private static readonly byte[] DeflatedBytes;
 
+			#region string IOptimizedResult.Source { get; }
+
+			// add a readonly property with the original resource source
+			CodeMemberProperty property = new CodeMemberProperty();
+			property.Name = "Source";
+			property.Type = new CodeTypeReference(typeof(String));
+			property.PrivateImplementationType = new CodeTypeReference(typeof(IOptimizedResult));
+			property.HasGet = true;
+			// get { return originalSource; }
+			if (originalSource == null || originalSource.Length <= 0x5DC)
+			{
+				property.GetStatements.Add(new CodeMethodReturnStatement(new CodePrimitiveExpression(originalSource)));
+			}
+			else
+			{
+				string escaped = ResourceBuildProvider.QuoteSnippetStringCStyle(originalSource);
+				property.GetStatements.Add(new CodeMethodReturnStatement(new CodeSnippetExpression(escaped)));
+			}
+			resourceType.Members.Add(property);
+
+			#endregion string IOptimizedResult.Source { get; }
+
 			#region string IOptimizedResult.PrettyPrinted { get; }
 
 			// add a readonly property with the resource data
-			CodeMemberProperty property = new CodeMemberProperty();
+			property = new CodeMemberProperty();
 			property.Name = "PrettyPrinted";
 			property.Type = new CodeTypeReference(typeof(String));
 			property.PrivateImplementationType = new CodeTypeReference(typeof(IOptimizedResult));
 			property.HasGet = true;
-			// get { return resource; }
-			if (prettyPrintResource == null || prettyPrintResource.Length <= 0x5DC)
+
+			if (String.Equals(originalSource, prettyPrintResource))
 			{
-				property.GetStatements.Add(new CodeMethodReturnStatement(new CodePrimitiveExpression(prettyPrintResource)));
+				// get { return ((IOptimizedResult)this).Source; }
+				CodeExpression thisRef = new CodeCastExpression(typeof(IOptimizedResult), new CodeThisReferenceExpression());
+				CodePropertyReferenceExpression sourceProperty = new CodePropertyReferenceExpression(thisRef, "Source");
+				property.GetStatements.Add(new CodeMethodReturnStatement(sourceProperty));
 			}
 			else
 			{
-				string escaped = ResourceBuildProvider.QuoteSnippetStringCStyle(prettyPrintResource);
-				property.GetStatements.Add(new CodeMethodReturnStatement(new CodeSnippetExpression(escaped)));
+				// get { return prettyPrintResource; }
+				if (prettyPrintResource == null || prettyPrintResource.Length <= 0x5DC)
+				{
+					property.GetStatements.Add(new CodeMethodReturnStatement(new CodePrimitiveExpression(prettyPrintResource)));
+				}
+				else
+				{
+					string escaped = ResourceBuildProvider.QuoteSnippetStringCStyle(prettyPrintResource);
+					property.GetStatements.Add(new CodeMethodReturnStatement(new CodeSnippetExpression(escaped)));
+				}
 			}
 			resourceType.Members.Add(property);
 

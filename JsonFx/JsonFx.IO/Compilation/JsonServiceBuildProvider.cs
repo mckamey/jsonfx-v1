@@ -212,16 +212,34 @@ namespace JsonFx.Compilation
 
 			#endregion private static readonly byte[] DeflatedBytes
 
+			#region string IOptimizedResult.Source { get; }
+
+			// add a readonly property with the original resource source
+			CodeMemberProperty property = new CodeMemberProperty();
+			property.Name = "Source";
+			property.Type = new CodeTypeReference(typeof(String));
+			property.PrivateImplementationType = new CodeTypeReference(typeof(IOptimizedResult));
+			property.HasGet = true;
+
+			// get { return debugProxyOutput; }
+			property.GetStatements.Add(new CodeMethodReturnStatement(new CodePrimitiveExpression(debugProxyOutput)));
+			resourceType.Members.Add(property);
+
+			#endregion string IOptimizedResult.Source { get; }
+
 			#region string IOptimizedResult.PrettyPrinted { get; }
 
 			// add a readonly property with the debug proxy code string
-			CodeMemberProperty property = new CodeMemberProperty();
+			property = new CodeMemberProperty();
 			property.Name = "PrettyPrinted";
 			property.Type = new CodeTypeReference(typeof(String));
 			property.PrivateImplementationType = new CodeTypeReference(typeof(IOptimizedResult));
 			property.HasGet = true;
-			// get { return debugProxyOutput; }
-			property.GetStatements.Add(new CodeMethodReturnStatement(new CodePrimitiveExpression(debugProxyOutput)));
+
+			// get { return ((IOptimizedResult)this).Source; }
+			CodeExpression thisRef = new CodeCastExpression(typeof(IOptimizedResult), new CodeThisReferenceExpression());
+			CodePropertyReferenceExpression sourceProperty = new CodePropertyReferenceExpression(thisRef, "Source");
+			property.GetStatements.Add(new CodeMethodReturnStatement(sourceProperty));
 			resourceType.Members.Add(property);
 
 			#endregion string IOptimizedResult.PrettyPrinted { get; }
