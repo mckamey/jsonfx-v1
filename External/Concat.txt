@@ -1,9 +1,0 @@
-JSLint.Options.js
-Compacted\json2.js
-Compacted\JsonML2.js
-Compacted\JsonML_BST.js
-JsonFx.UA.js
-JsonFx.History.js
-JsonFx.IO.js
-JsonFx.Bindings.js
-JsonFx.JsonML.js
