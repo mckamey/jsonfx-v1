@@ -1,0 +1,416 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>JsonFx.UI</name>
+    </assembly>
+    <members>
+        <member name="T:JsonFx.UI.Jbst.JbstCodeBlock">
+            <summary>
+            Internal representation of a JBST code block.
+            </summary>
+        </member>
+        <member name="T:JsonFx.UI.Jbst.JbstControl">
+            <summary>
+            Common base for all JBST nodes.
+            </summary>
+        </member>
+        <member name="M:JsonFx.UI.Jbst.JbstCodeBlock.#ctor(System.String)">
+            <summary>
+            Ctor
+            </summary>
+            <param name="type"></param>
+            <param name="code"></param>
+            <param name="path"></param>
+        </member>
+        <member name="P:JsonFx.UI.Jbst.JbstCodeBlock.Code">
+            <summary>
+            Gets the code block content
+            </summary>
+        </member>
+        <member name="M:JsonFx.UI.Jbst.JbstCommentBlock.#ctor(System.String)">
+            <summary>
+            Ctor
+            </summary>
+            <param name="code"></param>
+            <param name="path"></param>
+        </member>
+        <member name="M:JsonFx.UI.Jbst.JbstExpressionBlock.#ctor(System.String)">
+            <summary>
+            Ctor
+            </summary>
+            <param name="code"></param>
+        </member>
+        <member name="M:JsonFx.UI.Jbst.JbstUnparsedBlock.#ctor(System.String)">
+            <summary>
+            Ctor
+            </summary>
+            <param name="code"></param>
+        </member>
+        <member name="M:JsonFx.UI.Jbst.JbstStatementBlock.#ctor(System.String)">
+            <summary>
+            Ctor
+            </summary>
+            <param name="code"></param>
+            <param name="path"></param>
+        </member>
+        <member name="M:JsonFx.UI.Jbst.JbstExtensionBlock.#ctor(System.String,System.String)">
+            <summary>
+            Ctor
+            </summary>
+            <param name="code"></param>
+            <param name="path"></param>
+        </member>
+        <member name="P:JsonFx.UI.Jbst.JbstExtensionBlock.Extension">
+            <summary>
+            Gets the extension represented by this block
+            </summary>
+        </member>
+        <member name="T:JsonFx.UI.Jbst.Extensions.JbstExtension">
+            <summary>
+            Base class for extending JBST with custom declarations
+            </summary>
+        </member>
+        <member name="M:JsonFx.UI.Jbst.Extensions.JbstExtension.#ctor(System.String,System.String)">
+            <summary>
+            Ctor
+            </summary>
+            <param name="value"></param>
+            <param name="virtualPath"></param>
+        </member>
+        <member name="P:JsonFx.UI.Jbst.Extensions.JbstExtension.Value">
+            <summary>
+            Gets the extension content
+            </summary>
+        </member>
+        <member name="P:JsonFx.UI.Jbst.Extensions.JbstExtension.Path">
+            <summary>
+            Gets the virtual path
+            </summary>
+        </member>
+        <member name="M:JsonFx.UI.Jbst.Extensions.AppSettingsJbstExtension.#ctor(System.String,System.String)">
+            <summary>
+            Ctor
+            </summary>
+            <param name="value"></param>
+            <param name="path"></param>
+        </member>
+        <member name="T:JsonFx.UI.Jbst.JbstLiteral">
+            <summary>
+            Represents literal text in a JBST document
+            </summary>
+        </member>
+        <member name="M:JsonFx.UI.Jbst.JbstLiteral.#ctor(System.String,System.Boolean)">
+            <summary>
+            Ctor
+            </summary>
+            <param name="text"></param>
+            <param name="normalize">if should normalize whitespace on output</param>
+        </member>
+        <member name="P:JsonFx.UI.Jbst.JbstLiteral.Text">
+            <summary>
+            Gets and sets the text of this literal
+            </summary>
+        </member>
+        <member name="P:JsonFx.UI.Jbst.JbstLiteral.NormalizedText">
+            <summary>
+            Gets the original text for this literal
+            </summary>
+        </member>
+        <member name="P:JsonFx.UI.Jbst.JbstLiteral.NormalizeWhitespace">
+            <summary>
+            Gets and sets if literal output should have whitespace normalized
+            </summary>
+        </member>
+        <member name="T:JsonFx.UI.Jbst.Control">
+            <summary>
+            Convenience control for combining JBST controls and JSON data on an ASP.NET page.
+            </summary>
+        </member>
+        <member name="M:JsonFx.UI.Jbst.Control.#ctor">
+            <summary>
+            Ctor
+            </summary>
+        </member>
+        <member name="M:JsonFx.UI.Jbst.Control.Render(System.Web.UI.HtmlTextWriter)">
+            <summary>
+            Renders the JBST control reference and any stored data to be used.
+            </summary>
+            <param name="writer"></param>
+        </member>
+        <member name="P:JsonFx.UI.Jbst.Control.Name">
+            <summary>
+            Gets and sets the script variable name of the JBST control to be bound.
+            </summary>
+        </member>
+        <member name="P:JsonFx.UI.Jbst.Control.Data">
+            <summary>
+            Gets and sets data to be bound as JavaScript literal or variable reference.
+            </summary>
+        </member>
+        <member name="P:JsonFx.UI.Jbst.Control.InlineData">
+            <summary>
+            Gets and sets data to be bound as an object which will be serialized.
+            </summary>
+        </member>
+        <member name="P:JsonFx.UI.Jbst.Control.Index">
+            <summary>
+            Gets and sets the data index, passed in when binding the data and JBST.
+            </summary>
+        </member>
+        <member name="P:JsonFx.UI.Jbst.Control.Count">
+            <summary>
+            Gets and sets the total data count, passed in when binding the data and JBST.
+            </summary>
+        </member>
+        <member name="P:JsonFx.UI.Jbst.Control.DataItems">
+            <summary>
+            Gets a dictionary of Data to emit to the page.
+            </summary>
+        </member>
+        <member name="P:JsonFx.UI.Jbst.Control.IsDebug">
+            <summary>
+            Gets and sets if should render as a debuggable ("Pretty-Print") block.
+            </summary>
+        </member>
+        <member name="T:JsonFx.UI.JsonMLTextWriter">
+            <summary>
+            Adapter between HtmlTextWriter interface and JbstCompiler internals
+            </summary>
+        </member>
+        <member name="M:JsonFx.UI.JsonMLTextWriter.#ctor(System.IO.TextWriter)">
+            <summary>
+            Ctor
+            </summary>
+            <param name="writer"></param>
+        </member>
+        <member name="M:JsonFx.UI.JsonMLTextWriter.#ctor(System.IO.TextWriter,System.String)">
+            <summary>
+            Ctor
+            </summary>
+            <param name="writer"></param>
+            <param name="tabString"></param>
+        </member>
+        <member name="M:JsonFx.UI.JsonMLTextWriter.NullTextWriter.#ctor(System.Text.Encoding)">
+            <summary>
+            Ctor
+            </summary>
+            <param name="encoding"></param>
+        </member>
+        <member name="T:JsonFx.UI.JsonFxBrowserModule">
+            <summary>
+            HttpModule which augments the HttpRequest.Browser object to signal
+            Request is being made from asynchronous JsonFx call.
+            </summary>
+        </member>
+        <member name="M:JsonFx.UI.JsonFxBrowserModule.System#Web#IHttpModule#Dispose">
+            <summary>
+            Dispose
+            </summary>
+        </member>
+        <member name="M:JsonFx.UI.JsonFxBrowserModule.System#Web#IHttpModule#Init(System.Web.HttpApplication)">
+            <summary>
+            Attaches event handlers
+            </summary>
+            <param name="application"></param>
+        </member>
+        <member name="M:JsonFx.UI.JsonFxBrowserModule.application_BeginRequest(System.Object,System.EventArgs)">
+            <summary>
+            Checks for JsonFx asynchronous calls
+            </summary>
+            <param name="sender"></param>
+            <param name="e"></param>
+        </member>
+        <member name="T:JsonFx.UI.Jbst.JbstContainerControl">
+            <summary>
+            Internal representation of a JBST element.
+            </summary>
+        </member>
+        <member name="M:JsonFx.UI.Jbst.JbstContainerControl.#ctor">
+            <summary>
+            Ctor
+            </summary>
+        </member>
+        <member name="M:JsonFx.UI.Jbst.JbstContainerControl.#ctor(System.String,System.String)">
+            <summary>
+            Ctor
+            </summary>
+            <param name="tagName"></param>
+        </member>
+        <member name="M:JsonFx.UI.Jbst.JbstContainerControl.System#Collections#IEnumerable#GetEnumerator">
+            <summary>
+            Enumerates the control as JsonML.
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="T:JsonFx.UI.Jbst.JbstCompiler">
+            <summary>
+            JBST Template Compiler
+            </summary>
+        </member>
+        <member name="M:JsonFx.UI.Jbst.JbstCompiler.#ctor(System.String)">
+            <summary>
+            Ctor
+            </summary>
+            <param name="virtualPath"></param>
+        </member>
+        <member name="M:JsonFx.UI.Jbst.JbstCompiler.#ctor(System.String,System.Boolean)">
+            <summary>
+            Ctor
+            </summary>
+            <param name="virtualPath"></param>
+            <param name="isTemplate">JBST</param>
+        </member>
+        <member name="M:JsonFx.UI.Jbst.JbstCompiler.Parse(System.String)">
+            <summary>
+            Parses markup.
+            </summary>
+            <param name="literal"></param>
+        </member>
+        <member name="M:JsonFx.UI.Jbst.JbstCompiler.Flush">
+            <summary>
+            Writes any buffered text
+            </summary>
+        </member>
+        <member name="M:JsonFx.UI.Jbst.JbstCompiler.ConvertControlToDeclaration(JsonFx.UI.Jbst.JbstControl)">
+            <summary>
+            Convert a tag and children into declaration block
+            </summary>
+            <param name="control"></param>
+        </member>
+        <member name="M:JsonFx.UI.Jbst.JbstCompiler.GetGlobals">
+            <summary>
+            Generates a globals list from import directives
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:JsonFx.UI.Jbst.JbstCompiler.SplitPrefix(System.String,System.String@)">
+            <summary>
+            Splits the prefix and tag name
+            </summary>
+            <param name="rawName"></param>
+            <param name="tagName"></param>
+            <returns></returns>
+        </member>
+        <member name="P:JsonFx.UI.Jbst.JbstCompiler.Errors">
+            <summary>
+            Gets a list of any errors that were encountered during parsing
+            </summary>
+        </member>
+        <member name="P:JsonFx.UI.Jbst.JbstCompiler.NormalizeLiterals">
+            <summary>
+            Gets and sets if literal output should have whitespace normalized
+            </summary>
+        </member>
+        <member name="P:JsonFx.UI.Jbst.JbstCompiler.Document">
+            <summary>
+            Gets the document root
+            </summary>
+        </member>
+        <member name="M:JsonFx.UI.Jbst.Extensions.ResourceJbstExtension.#ctor(System.String,System.String)">
+            <summary>
+            Ctor
+            </summary>
+            <param name="value"></param>
+            <param name="path"></param>
+        </member>
+        <member name="P:JsonFx.UI.Jbst.Extensions.ResourceJbstExtension.GlobalizationKey">
+            <summary>
+            Gets the resource key for this expression
+            </summary>
+        </member>
+        <member name="T:JsonFx.UI.JsonFxBrowserCapabilities">
+            <summary>
+            Manually augments Browser object to produce strongly-typed HttpBrowserCapabilities
+            </summary>
+            <remarks>
+            Originally JsonFx used ASP.NET .browser files to perform this, but
+            inconsistencies and tighter control make this a preferred solution.
+            The user only needs to add a web.config setting, instead of content files too.
+            </remarks>
+        </member>
+        <member name="M:JsonFx.UI.JsonFxBrowserCapabilities.#ctor(System.Web.HttpBrowserCapabilities)">
+            <summary>
+            Ctor
+            </summary>
+            <param name="browser"></param>
+        </member>
+        <member name="M:JsonFx.UI.JsonFxBrowserCapabilities.IsJsonFxRequest(System.Web.HttpRequest)">
+            <summary>
+            Determines if JsonFx is asynchronously making the request
+            </summary>
+            <param name="request"></param>
+            <returns></returns>
+        </member>
+        <member name="M:JsonFx.UI.JsonFxBrowserCapabilities.ParseBoolean(System.String,System.Boolean)">
+            <summary>
+            Parses a capability and attempts to convert to boolean.
+            </summary>
+            <param name="key"></param>
+            <param name="defaultValue"></param>
+            <returns></returns>
+        </member>
+        <member name="P:JsonFx.UI.JsonFxBrowserCapabilities.SupportsJSON">
+            <summary>Gets a value indicating whether the browser supports JSON.</summary>
+            <returns>true if the browser supports JSON; otherwise, false. The default is false.</returns>
+        </member>
+        <member name="P:JsonFx.UI.JsonFxBrowserCapabilities.SupportsJsonML">
+            <summary>Gets a value indicating whether the browser supports JSON.</summary>
+            <returns>true if the browser supports JSON; otherwise, false. The default is false.</returns>
+        </member>
+        <member name="T:JsonFx.UI.Jbst.JbstControlCollection">
+            <summary>
+            Control collection for JBST nodes.
+            </summary>
+        </member>
+        <member name="T:JsonFx.UI.Jbst.JbstCustomControl">
+            <summary>
+            Internal representation of a nested JBST control.
+            </summary>
+        </member>
+        <member name="M:JsonFx.UI.Jbst.JbstCustomControl.#ctor(System.String)">
+            <summary>
+            Ctor
+            </summary>
+            <param name="commandName"></param>
+        </member>
+        <member name="M:JsonFx.UI.Jbst.JbstCustomControl.RenderCustomControl(JsonFx.Json.JsonWriter)">
+            <summary>
+            Controls the control rendering style
+            </summary>
+            <param name="writer"></param>
+        </member>
+        <member name="M:JsonFx.UI.Jbst.JbstCustomControl.RenderSimpleCustomControl(JsonFx.Json.JsonWriter)">
+            <summary>
+            Renders a simple data binding call to a named template.
+            </summary>
+            <param name="writer"></param>
+        </member>
+        <member name="M:JsonFx.UI.Jbst.JbstCustomControl.RenderInlineCustomControl(JsonFx.Json.JsonWriter)">
+            <summary>
+            Renders a data binding call to an inline anonymous template.
+            </summary>
+            <param name="writer"></param>
+        </member>
+        <member name="M:JsonFx.UI.Jbst.JbstCustomControl.RenderNestedCustomControl(JsonFx.Json.JsonWriter)">
+            <summary>
+            Renders a data binding call to a named template with a nested inline anonymous template.
+            </summary>
+            <param name="writer"></param>
+        </member>
+        <member name="T:JsonFx.UI.Jbst.JbstCustomControl.EnumerableAdapter">
+            <summary>
+            A simple adapter for exposing the IEnumerable interface without exposing the IJsonSerializable interface
+            </summary>
+            <remarks>
+            In order to wrap the output of the JbstControl IJsonSerializable was required, but this takes
+            precedent over the IEnumerable interface which is what should be rendered inside the wrapper.
+            </remarks>
+        </member>
+        <member name="M:JsonFx.UI.Jbst.JbstCustomControl.EnumerableAdapter.#ctor(System.Collections.IEnumerable)">
+            <summary>
+            Ctor
+            </summary>
+            <param name="enumerable"></param>
+        </member>
+    </members>
+</doc>
