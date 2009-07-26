@@ -34,7 +34,7 @@ using System.Collections.Generic;
 using System.Text.RegularExpressions;
 
 using JsonFx.BuildTools;
-using JsonFx.BuildTools.ScriptCompactor;
+using JsonFx.Compilation;
 using JsonFx.Json;
 using JsonFx.Handlers;
 
@@ -95,13 +95,10 @@ namespace JsonFx.Compilation
 				IList<ParseException> parseErrors;
 				try
 				{
-					parseErrors = ScriptCompactor.Compact(
-						virtualPath,
-						sourceText,
-						writer,
-						null,
-						null,
-						ScriptCompactor.Options.None);
+					parseErrors = ScriptCompactionAdapter.Compact(
+						virtualPath, 
+						sourceText, 
+						writer);
 				}
 				catch (ParseException ex)
 				{

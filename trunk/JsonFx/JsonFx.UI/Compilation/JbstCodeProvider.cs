@@ -37,7 +37,7 @@ using System.CodeDom;
 using JsonFx.BuildTools;
 using JsonFx.BuildTools.HtmlDistiller;
 using JsonFx.BuildTools.HtmlDistiller.Filters;
-using JsonFx.BuildTools.ScriptCompactor;
+using JsonFx.Compilation;
 using JsonFx.Handlers;
 using JsonFx.UI.Jbst;
 using JsonFx.UI.Jbst.Extensions;
@@ -112,7 +112,7 @@ namespace JsonFx.Compilation
 			}
 
 			// min the output for better compaction
-			compacted = ScriptCompactor.Compact(virtualPath, renderedTemplate, errors);
+			compacted = ScriptCompactionAdapter.Compact(virtualPath, renderedTemplate, errors);
 			compacted = ScriptResourceCodeProvider.FirewallScript(virtualPath, compacted, true);
 		}
 
