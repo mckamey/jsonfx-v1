@@ -34,6 +34,8 @@ using System.Collections.Generic;
 using System.Reflection;
 
 using JsonFx.BuildTools;
+using JsonFx.BuildTools.HtmlDistiller;
+using JsonFx.BuildTools.HtmlDistiller.Filters;
 using JsonFx.BuildTools.IO;
 using JsonFx.UI.Jbst;
 
@@ -215,12 +217,34 @@ class Program
 		WriteHeader(output, copyright, timeStamp);
 
 		// verify, compact and write out results
-		JbstCompiler parser = new JbstCompiler(inputFile);
-		parser.Parse(inputSource);
-		parser.Render(output, prettyPrint);
+		// parse JBST markup
+		JbstWriter writer = new JbstWriter(inputFile);
+
+		List<ParseException> errors = new List<ParseException>();
+		try
+		{
+			HtmlDistiller parser = new HtmlDistiller();
+			parser.EncodeNonAscii = false;
+			parser.BalanceTags = false;
+			parser.NormalizeWhitespace = false;
+			parser.HtmlWriter = writer;
+			parser.HtmlFilter = new NullHtmlFilter();
+			parser.Parse(inputSource);
+		}
+		catch (ParseException ex)
+		{
+			errors.Add(ex);
+		}
+		catch (Exception ex)
+		{
+			errors.Add(new ParseError(ex.Message, inputFile, 0, 0, ex));
+		}
+
+		// render the pretty-printed version
+		writer.Render(output);
 
 		// return any errors
-		return parser.Errors;
+		return errors;
 	}
 
 	#endregion Public Methods

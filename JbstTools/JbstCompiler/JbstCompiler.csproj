@@ -40,13 +40,15 @@
     </DocumentationFile>
   </PropertyGroup>
   <ItemGroup>
-	  <Reference Include="JsonFx.BuildTools">
-		  <HintPath>$(SolutionDir)\External\JsonFx.BuildTools.dll</HintPath>
-	  </Reference>
-	  <Reference Include="JsonFx.UI">
-		  <HintPath>$(SolutionDir)\External\JsonFx.UI.dll</HintPath>
-	  </Reference>
-	  <Reference Include="System" />
+    <Reference Include="JsonFx.BuildTools">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>$(SolutionDir)\External\JsonFx\JsonFx.BuildTools.dll</HintPath>
+    </Reference>
+    <Reference Include="JsonFx.UI">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>$(SolutionDir)\External\JsonFx\JsonFx.UI.dll</HintPath>
+    </Reference>
+    <Reference Include="System" />
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
@@ -69,7 +71,7 @@
   <Target Name="AfterBuild">
   </Target>
   -->
-	<PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
-		<PreBuildEvent>IF EXIST "$(SolutionDir)\External\AutoVersioning\AutoVersioning.exe" "$(SolutionDir)External\AutoVersioning\AutoVersioning.exe" "$(ProjectDir)Properties\AssemblyVersion.cs" 1 0</PreBuildEvent>
-	</PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+    <PreBuildEvent>IF EXIST "$(SolutionDir)\External\AutoVersioning\AutoVersioning.exe" "$(SolutionDir)External\AutoVersioning\AutoVersioning.exe" "$(ProjectDir)Properties\AssemblyVersion.cs" 1 0</PreBuildEvent>
+  </PropertyGroup>
 </Project>
