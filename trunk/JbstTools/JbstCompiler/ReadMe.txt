@@ -3,6 +3,7 @@ JbstCompiler.exe
 A simple console adapter which allows command line compilation of JBST controls.
 
 NOTE: this requires JsonFx to run.  Download the binaries from http://jsonfx.net/download
+and place into the /External/JsonFx/ folder.
 Updating the JsonFx binaries is just as easy as replacing the DLLs with a new version.
 
 JsonML+BST Template Compiler usage:
