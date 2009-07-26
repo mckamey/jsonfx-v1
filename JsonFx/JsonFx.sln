@@ -43,7 +43,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "JsonFx.WapTemplate", "JsonF
 		Release.AspNetCompiler.Debug = "False"
 	EndProjectSection
 EndProject
-Project("{E24C65DC-7377-472B-9ABA-BC803B73C61A}") = "D:\...\JsonFx.WebTemplate\", "JsonFx.WebTemplate", "{8F7B4ED4-2560-4E82-AD46-D1E8AC2135AD}"
+Project("{E24C65DC-7377-472B-9ABA-BC803B73C61A}") = "D:\...\JsonFx.WebTemplate\", "JsonFx.WebTemplate\", "{8F7B4ED4-2560-4E82-AD46-D1E8AC2135AD}"
 	ProjectSection(WebsiteProperties) = preProject
 		SccProjectName = ""
 		SccAuxPath = ""
@@ -117,8 +117,11 @@ Global
 		{FFBCA2CB-99A9-4975-82A2-F07527C44221}.Signed|Any CPU.ActiveCfg = Release|Any CPU
 		{FFBCA2CB-99A9-4975-82A2-F07527C44221}.Signed|Any CPU.Build.0 = Release|Any CPU
 		{8F7B4ED4-2560-4E82-AD46-D1E8AC2135AD}.Debug|Any CPU.ActiveCfg = Debug|.NET
+		{8F7B4ED4-2560-4E82-AD46-D1E8AC2135AD}.Debug|Any CPU.Build.0 = Debug|.NET
 		{8F7B4ED4-2560-4E82-AD46-D1E8AC2135AD}.Release|Any CPU.ActiveCfg = Debug|.NET
+		{8F7B4ED4-2560-4E82-AD46-D1E8AC2135AD}.Release|Any CPU.Build.0 = Debug|.NET
 		{8F7B4ED4-2560-4E82-AD46-D1E8AC2135AD}.Signed|Any CPU.ActiveCfg = Debug|.NET
+		{8F7B4ED4-2560-4E82-AD46-D1E8AC2135AD}.Signed|Any CPU.Build.0 = Debug|.NET
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
