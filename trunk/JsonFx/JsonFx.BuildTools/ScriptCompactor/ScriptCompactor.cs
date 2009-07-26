@@ -31,6 +31,7 @@
 using System;
 using System.IO;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Text;
 using System.Threading;
 
@@ -144,16 +145,20 @@ namespace JsonFx.BuildTools.ScriptCompactor
 				JavaScriptCompressor compressor = new JavaScriptCompressor(
 					source,
 #if DEBUG
-					true,
+					true,	// verbose logging
 #else
-					false,
+					false,	// verbose logging
 #endif
 					Encoding.UTF8,
-					Thread.CurrentThread.CurrentCulture,
-					true,
+					CultureInfo.InvariantCulture,
+					true,	// is eval ignored
 					errorReporter);
 
-				return compressor.Compress();
+				return compressor.Compress(
+					false,	// obfuscate
+					true,	// perserve unneccessary semicolons
+					true,	// disable micro-optimizations
+					-1);	// word wrap width
 			}
 			catch (Exception ex)
 			{
