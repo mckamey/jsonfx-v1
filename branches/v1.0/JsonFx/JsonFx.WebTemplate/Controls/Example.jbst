@@ -1,0 +1,21 @@
+<%@ Control Name="Example.congrats" Language="JavaScript" %>
+
+<script type="text/javascript">
+
+	/* format integers to have at least two digits */
+	/*int*/ this.format = function(/*int*/ n) {
+        return (n < 10) ? '0' + n : n;
+    };
+
+</script>
+
+<div>
+	<%-- If your configuration is not correct then this message will not show. --%>
+	<p class="ReadMe">
+		Congratulations!
+		As of <%= this.data.renderTime.getHours()+":"+this.format(this.data.renderTime.getMinutes()) %>,
+		setup appears to be configured correctly on <strong><%= window.location.host %> (<%= this.data.serverName %>)</strong>.
+	</p>
+	<p class="ReadMe">See <a href="http://help.jsonfx.net/instructions">http://help.jsonfx.net/instructions</a> for JsonFx customizations to Visual Studio.</p>
+	<p class="ReadMe"><input type="button" value="Try Service" onclick="Example.tryService(this);" /></p>
+</div>
