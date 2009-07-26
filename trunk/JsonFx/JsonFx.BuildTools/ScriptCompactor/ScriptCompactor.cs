@@ -28,19 +28,21 @@
 \*---------------------------------------------------------------------------------*/
 #endregion License
 
-#if __MonoCS__
-// remove JSLINT for Mono Framework
-#undef JSLINT
-#endif
-
 using System;
 using System.IO;
 using System.Collections.Generic;
+using System.Text;
+using System.Threading;
 
+using Yahoo.Yui.Compressor;
 using JsonFx.BuildTools.IO;
 
 namespace JsonFx.BuildTools.ScriptCompactor
 {
+	/// <summary>
+	/// Simple adaptor for underlying compaction mechanism.
+	/// Allows script compaction to be swapped out.
+	/// </summary>
 	public static class ScriptCompactor
 	{
 		#region ScriptCompactor.Options
@@ -56,7 +58,12 @@ namespace JsonFx.BuildTools.ScriptCompactor
 
 		#region Public Methods
 
-		public static List<ParseException> Compact(string inputFile, string outputFile, string copyright, string timeStamp, ScriptCompactor.Options options)
+		public static List<ParseException> Compact(
+			string inputFile,
+			string outputFile,
+			string copyright,
+			string timeStamp,
+			ScriptCompactor.Options options)
 		{
 			if (!File.Exists(inputFile))
 			{
@@ -80,7 +87,13 @@ namespace JsonFx.BuildTools.ScriptCompactor
 			}
 		}
 
-		public static List<ParseException> Compact(string inputFile, string inputSource, TextWriter output, string copyright, string timeStamp, ScriptCompactor.Options options)
+		public static List<ParseException> Compact(
+			string virtualPath,
+			string inputSource,
+			TextWriter output,
+			string copyright,
+			string timeStamp,
+			ScriptCompactor.Options options)
 		{
 			if (output == null)
 			{
@@ -90,47 +103,62 @@ namespace JsonFx.BuildTools.ScriptCompactor
 			// write out header with copyright and timestamp
 			ScriptCompactor.WriteHeader(output, copyright, timeStamp);
 
-			List<ParseException> errors;
-#if JSLINT
-			// verify
-			JSLint jslint = new JSLint();
-			jslint.IsBrowser = true;
-			jslint.AllowDebugger = true;
-			jslint.RequireStrictEquals = true;
-			jslint.NoUndefVars = true;
-
-			jslint.Run(inputFile, inputSource);
-			errors = jslint.Errors;
-#else
-			errors = new List<ParseException>();
-#endif
-			bool isLinted = (errors.Count == 0);
+			List<ParseException> errors = new List<ParseException>();
 
 			// compact and write out results
 			try
 			{
-				JSMin jsmin = new JSMin();
 				if (String.IsNullOrEmpty(inputSource))
 				{
-					jsmin.Run(File.OpenText(inputFile), output, isLinted);
+					inputSource = File.ReadAllText(virtualPath);
 				}
-				else
-				{
-					jsmin.Run(inputSource, output, isLinted);
-				}
+
+				string compacted = ScriptCompactor.Compact(virtualPath, inputSource, errors);
+
+				output.Write(compacted);
 			}
-			catch (ParseException ex)
+			catch (ParseError ex)
 			{
 				errors.Add(ex);
-			}
-			catch (Exception ex)
-			{
-				// a bad JSLint error could cause JSMin to choke
-				errors.Add(new ParseError(ex.Message, inputFile, -1, -1, ex));
 			}
 
 			// return any errors
 			return errors;
+		}
+
+		public static string Compact(string virtalPath, string source)
+		{
+			return Compact(virtalPath, source, null);
+		}
+
+		public static string Compact(string virtalPath, string source, List<ParseException> errors)
+		{
+			BuildErrorReporter errorReporter = null;
+			if (errors != null)
+			{
+				errorReporter = new BuildErrorReporter(virtalPath, errors);
+			}
+
+			try
+			{
+				JavaScriptCompressor compressor = new JavaScriptCompressor(
+					source,
+#if DEBUG
+					true,
+#else
+					false,
+#endif
+					Encoding.UTF8,
+					Thread.CurrentThread.CurrentCulture,
+					true,
+					errorReporter);
+
+				return compressor.Compress();
+			}
+			catch (Exception ex)
+			{
+				throw new ParseError(ex.Message, virtalPath, -1, -1, ex);
+			}
 		}
 
 		#endregion Public Methods

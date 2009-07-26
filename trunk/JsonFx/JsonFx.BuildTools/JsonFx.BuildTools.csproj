@@ -23,7 +23,7 @@
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
     <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>TRACE;DEBUG;JSLINT</DefineConstants>
+    <DefineConstants>TRACE;DEBUG</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <UseVSHostingProcess>false</UseVSHostingProcess>
@@ -34,7 +34,7 @@
     <DebugType>pdbonly</DebugType>
     <Optimize>true</Optimize>
     <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE;JSLINT</DefineConstants>
+    <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <UseVSHostingProcess>false</UseVSHostingProcess>
@@ -43,7 +43,7 @@
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Signed|AnyCPU' ">
     <OutputPath>bin\Signed\</OutputPath>
-    <DefineConstants>TRACE;STRONG;JSLINT</DefineConstants>
+    <DefineConstants>TRACE;STRONG</DefineConstants>
     <Optimize>true</Optimize>
     <DebugType>none</DebugType>
     <PlatformTarget>AnyCPU</PlatformTarget>
@@ -56,7 +56,17 @@
     <NoWarn>1570,1571,1572,1573,1591,1592</NoWarn>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="EcmaScript.NET.modified, Version=0.1.1.0, Culture=neutral, PublicKeyToken=7d53ba4f537753a5, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\External\Yahoo.Yui.Compressor\EcmaScript.NET.modified.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Xml" />
+    <Reference Include="Yahoo.Yui.Compressor.NET20, Version=1.4.0.0, Culture=neutral, PublicKeyToken=0734edc2d38ad47d, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\External\Yahoo.Yui.Compressor\Yahoo.Yui.Compressor.NET20.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Collections\TrieNode.cs" />
@@ -73,26 +83,13 @@
     <Compile Include="ParseExceptions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Properties\AssemblyVersion.cs" />
-    <Compile Include="ScriptCompactor\JavaScriptMinifier.cs" />
-    <Compile Include="ScriptCompactor\JSLint.cs" />
-    <Compile Include="ScriptCompactor\JSMin.cs" />
+    <Compile Include="ScriptCompactor\BuildErrorReporter.cs" />
     <Compile Include="ScriptCompactor\ScriptCompactor.cs" />
-  </ItemGroup>
-  <ItemGroup>
-    <COMReference Include="MSScriptControl">
-      <Guid>{0E59F1D2-1FBE-11D0-8FF2-00A0D10038BC}</Guid>
-      <VersionMajor>1</VersionMajor>
-      <VersionMinor>0</VersionMinor>
-      <Lcid>0</Lcid>
-      <WrapperTool>tlbimp</WrapperTool>
-      <Isolated>False</Isolated>
-    </COMReference>
   </ItemGroup>
   <ItemGroup>
     <Content Include="License.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <EmbeddedResource Include="ScriptCompactor\jslint.js" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
@@ -103,6 +100,6 @@
   </Target>
   -->
   <PropertyGroup Condition=" '$(Configuration)' == 'Signed' ">
-    <PreBuildEvent>IF EXIST "$(SolutionDir)External\AutoVersioning\AutoVersioning.exe" "$(SolutionDir)External\AutoVersioning\AutoVersioning.exe" "$(ProjectDir)Properties\AssemblyVersion.cs"</PreBuildEvent>
+    <PreBuildEvent>IF EXIST "$(SolutionDir)External\AutoVersioning\AutoVersioning.exe" "$(SolutionDir)External\AutoVersioning\AutoVersioning.exe" "$(ProjectDir)Properties\AssemblyVersion.cs" 1 1</PreBuildEvent>
   </PropertyGroup>
 </Project>

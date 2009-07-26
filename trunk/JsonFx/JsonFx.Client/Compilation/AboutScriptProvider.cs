@@ -71,13 +71,7 @@ if (""undefined"" === typeof window.JsonFx) {
 			builder.AppendLine();
 			resource = builder.ToString();
 
-			using (StringWriter writer = new StringWriter())
-			{
-				new JSMin().Run(resource, writer, true);
-				writer.Flush();
-
-				compacted = writer.ToString();
-			}
+			compacted = ScriptCompactor.Compact(String.Empty, resource);
 		}
 
 		#endregion Methods
