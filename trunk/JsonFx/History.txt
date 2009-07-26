@@ -1,5 +1,9 @@
 Release History
 
+v1.0.0907.0109
+- added Source property to IOptimizedResult which provides access to original resource source
+- small tweaks to fix compilation issues under Mono Framework 2.4
+
 v1.0.0906.2823
 - allowed JBSTs returned by code blocks to be further databound (simplifies "switcher" template syntax)
 - fixed JBST parser inconsistencies in possible values for jbst:control arguments
