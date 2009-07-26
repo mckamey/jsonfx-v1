@@ -148,6 +148,7 @@ namespace JsonFx.Compilation
 					width = Math.Max(timeStamp.Length+6, width);
 				}
 
+				builder.AppendLine();
 				builder.AppendLine("/*".PadRight(width, '-')+"*\\");
 
 				if (!String.IsNullOrEmpty(copyright))
