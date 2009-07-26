@@ -38,7 +38,7 @@ using JsonFx.Handlers;
 namespace JsonFx.JsonRpc
 {
 	/// <summary>
-	/// Runtime adaptor between service infrastructure and service implementation
+	/// Runtime adapter between service infrastructure and service implementation
 	/// </summary>
 	public interface IJsonServiceInfo
 	{

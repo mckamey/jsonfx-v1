@@ -29,80 +29,35 @@
 #endregion License
 
 using System;
-using System.IO;
 using System.Collections.Generic;
 using System.Globalization;
+using System.IO;
 using System.Text;
-using System.Threading;
 
 using Yahoo.Yui.Compressor;
-using JsonFx.BuildTools.IO;
+using JsonFx.BuildTools;
+using JsonFx.Configuration;
 
-namespace JsonFx.BuildTools.ScriptCompactor
+namespace JsonFx.Compilation
 {
 	/// <summary>
-	/// Simple adaptor for underlying compaction mechanism.
-	/// Allows script compaction to be swapped out.
+	/// A simple adapter for connecting ResourceBuildProvider to YuiCompressor.NET/EcmaScript.NET.
 	/// </summary>
-	public static class ScriptCompactor
+	public static class ScriptCompactionAdapter
 	{
-		#region ScriptCompactor.Options
-
-		[Flags]
-		public enum Options
-		{
-			None = 0x00,
-			Overwrite = 0x01
-		}
-
-		#endregion ScriptCompactor.Options
+		// TODO: clean up all the various styles of input/output
 
 		#region Public Methods
 
 		public static List<ParseException> Compact(
-			string inputFile,
-			string outputFile,
-			string copyright,
-			string timeStamp,
-			ScriptCompactor.Options options)
-		{
-			if (!File.Exists(inputFile))
-			{
-				throw new FileNotFoundException(String.Format("File (\"{0}\") not found.", inputFile), inputFile);
-			}
-
-			if ((options&ScriptCompactor.Options.Overwrite) == 0x0 && File.Exists(outputFile))
-			{
-				throw new AccessViolationException(String.Format("File (\"{0}\") already exists.", outputFile));
-			}
-
-			if (inputFile.Equals(outputFile, StringComparison.OrdinalIgnoreCase))
-			{
-				throw new ApplicationException("Input and output file are set to the same path.");
-			}
-
-			FileUtility.PrepSavePath(outputFile);
-			using (TextWriter output = File.CreateText(outputFile))
-			{
-				return ScriptCompactor.Compact(inputFile, null, output, copyright, timeStamp, options);
-			}
-		}
-
-		public static List<ParseException> Compact(
-			string virtualPath,
-			string inputSource,
-			TextWriter output,
-			string copyright,
-			string timeStamp,
-			ScriptCompactor.Options options)
+			string virtualPath, 
+			string inputSource, 
+			TextWriter output)
 		{
 			if (output == null)
 			{
 				throw new NullReferenceException("Output TextWriter was null.");
 			}
-
-			// write out header with copyright and timestamp
-			ScriptCompactor.WriteHeader(output, copyright, timeStamp);
 
 			List<ParseException> errors = new List<ParseException>();
 
@@ -114,7 +69,7 @@ namespace JsonFx.BuildTools.ScriptCompactor
 					inputSource = File.ReadAllText(virtualPath);
 				}
 
-				string compacted = ScriptCompactor.Compact(virtualPath, inputSource, errors);
+				string compacted = ScriptCompactionAdapter.Compact(virtualPath, inputSource, errors);
 
 				output.Write(compacted);
 			}
@@ -129,7 +84,7 @@ namespace JsonFx.BuildTools.ScriptCompactor
 
 		public static string Compact(string virtalPath, string source)
 		{
-			return Compact(virtalPath, source, null);
+			return Compact(virtalPath, source, (List<ParseException>)null);
 		}
 
 		public static string Compact(string virtalPath, string source, List<ParseException> errors)
@@ -140,37 +95,44 @@ namespace JsonFx.BuildTools.ScriptCompactor
 				errorReporter = new BuildErrorReporter(virtalPath, errors);
 			}
 
+			ScriptCompactionSection config = ScriptCompactionSection.GetSettings();
+
+			StringBuilder builder = new StringBuilder(source.Length);
+
+			// write out header with copyright and timestamp
+			ScriptCompactionAdapter.WriteHeader(builder, config.Copyright, config.TimeStampFormat);
+
 			try
 			{
 				JavaScriptCompressor compressor = new JavaScriptCompressor(
 					source,
-#if DEBUG
-					true,	// verbose logging
-#else
-					false,	// verbose logging
-#endif
+					config.Verbose,						// verbose logging
 					Encoding.UTF8,
 					CultureInfo.InvariantCulture,
-					true,	// is eval ignored
+					config.IgnoreEval,					// ignore eval
 					errorReporter);
 
-				return compressor.Compress(
-					false,	// obfuscate
-					true,	// perserve unneccessary semicolons
-					true,	// disable micro-optimizations
-					-1);	// word wrap width
+				string compacted = compressor.Compress(
+					config.Obfuscate,					// obfuscate
+					config.PreserveSemicolons,			// preserve unneccessary semicolons
+					config.DisableMicroOptimizations,	// disable micro-optimizations
+					config.WordWrapWidth);				// word wrap width
+
+				builder.Append(compacted);
 			}
 			catch (Exception ex)
 			{
 				throw new ParseError(ex.Message, virtalPath, -1, -1, ex);
 			}
+
+			return builder.ToString();
 		}
 
 		#endregion Public Methods
 
 		#region Private Methods
 
-		private static void WriteHeader(TextWriter writer, string copyright, string timeStamp)
+		private static void WriteHeader(StringBuilder builder, string copyright, string timeStamp)
 		{
 			if (!String.IsNullOrEmpty(copyright) || !String.IsNullOrEmpty(timeStamp))
 			{
@@ -186,19 +148,19 @@ namespace JsonFx.BuildTools.ScriptCompactor
 					width = Math.Max(timeStamp.Length+6, width);
 				}
 
-				writer.WriteLine("/*".PadRight(width, '-')+"*\\");
+				builder.AppendLine("/*".PadRight(width, '-')+"*\\");
 
 				if (!String.IsNullOrEmpty(copyright))
 				{
-					writer.WriteLine("\t"+copyright);
+					builder.AppendLine("\t"+copyright);
 				}
 
 				if (!String.IsNullOrEmpty(timeStamp))
 				{
-					writer.WriteLine("\t"+timeStamp);
+					builder.AppendLine("\t"+timeStamp);
 				}
 
-				writer.WriteLine("\\*".PadRight(width, '-')+"*/");
+				builder.AppendLine("\\*".PadRight(width, '-')+"*/");
 			}
 		}
 

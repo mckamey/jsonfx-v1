@@ -56,13 +56,21 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
+    <Reference Include="System.Configuration" />
     <Reference Include="System.Web" />
-    <Reference Include="System.XML" />
+    <Reference Include="System.Xml" />
+    <Reference Include="EcmaScript.NET.modified">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>$(SolutionDir)External\Yahoo.Yui.Compressor\EcmaScript.NET.modified.dll</HintPath>
+    </Reference>
+    <Reference Include="Yahoo.Yui.Compressor.NET20">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>$(SolutionDir)External\Yahoo.Yui.Compressor\Yahoo.Yui.Compressor.NET20.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Client\ScriptDataBlock.cs" />
-    <Compile Include="Compilation\AboutScriptProvider.cs">
-    </Compile>
+    <Compile Include="Compilation\BuildErrorReporter.cs" />
     <Compile Include="Compilation\CssResourceCodeProvider.cs">
       <SubType>Component</SubType>
     </Compile>
@@ -75,10 +83,12 @@
     <Compile Include="Compilation\ResourceCodeProvider.cs">
       <SubType>Component</SubType>
     </Compile>
+    <Compile Include="Compilation\ScriptCompactionAdapter.cs" />
     <Compile Include="Compilation\ScriptResourceCodeProvider.cs">
       <SubType>Component</SubType>
     </Compile>
     <Compile Include="Client\ResourceInclude.cs" />
+    <Compile Include="Configuration\ScriptCompactionSection.cs" />
     <Compile Include="Handlers\CompressedFileHandler.cs" />
     <Compile Include="Handlers\_Deprecated.cs" />
     <Compile Include="Handlers\ETag.cs" />
