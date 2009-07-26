@@ -120,7 +120,8 @@ JsonFx.Bindings = function() {
 						}
 						window.alert("Error binding "+selector+" (line "+(ex.lineNumber||ex.line||1)+"):\n\""+(ex&&ex.message||String(ex))+"\"");
 						/*jslint debug:true */
-						debugger;
+// TODO: YuiCompressor doesn't like debugger statements...
+//						debugger;
 						/*jslint debug:false */
 					}
 				}

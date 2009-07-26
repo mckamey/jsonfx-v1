@@ -111,16 +111,9 @@ namespace JsonFx.Compilation
 				resource = ScriptResourceCodeProvider.FirewallScript(virtualPath, renderedTemplate, false);
 			}
 
-			using (StringWriter sw = new StringWriter())
-			{
-				// min the output for better compaction
-				// signal to jsmin that isn't delinted so
-				// doesn't break user's code if they leave
-				// off semicolons, etc.
-				new JSMin().Run(renderedTemplate, sw, false, true);
-				sw.Flush();
-			    compacted = ScriptResourceCodeProvider.FirewallScript(virtualPath, sw.ToString(), true);
-			}
+			// min the output for better compaction
+			compacted = ScriptCompactor.Compact(virtualPath, renderedTemplate, errors);
+			compacted = ScriptResourceCodeProvider.FirewallScript(virtualPath, compacted, true);
 		}
 
 		internal static void ExtractGlobalizationKeys(object root, List<string> globalizationKeys)
