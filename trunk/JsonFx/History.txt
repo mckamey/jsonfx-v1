@@ -1,5 +1,9 @@
 Release History
 
+v1.1.0907.2623
+- replaced JSLint/JSMin/MSScriptControl with YuiCompressor.NET/EcmaScript.NET
+- added configuratino section for controlling script compaction
+
 v1.0.0907.0109
 - added Source property to IOptimizedResult which provides access to original resource source
 - small tweaks to fix compilation issues under Mono Framework 2.4
