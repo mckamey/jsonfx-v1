@@ -30,6 +30,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Text;
 
 using JsonFx.Json;
 using JsonFx.UI.Jbst.Extensions;
@@ -73,7 +74,7 @@ namespace JsonFx.UI.Jbst
 		/// <summary>
 		/// Gets the code block content
 		/// </summary>
-		public string Code
+		public virtual string Code
 		{
 			get { return this.code; }
 		}
@@ -144,6 +145,133 @@ namespace JsonFx.UI.Jbst
 		}
 
 		#endregion JbstCodeBlock Members
+	}
+
+	internal class JbstDeclarationBlock : JbstCodeBlock
+	{
+		#region Constants
+
+		private const string DeclarationFormat =
+@"// initialize template in the context of ""this""
+(function() {{
+	{1}
+}}).call({0});";
+
+		#endregion Constants
+
+		#region Fields
+
+		private readonly StringBuilder Content = new StringBuilder();
+		private string ownerName;
+
+		#endregion Fields
+
+		#region Init
+
+		/// <summary>
+		/// Ctor
+		/// </summary>
+		/// <param name="code"></param>
+		public JbstDeclarationBlock()
+			: base(String.Empty)
+		{
+		}
+
+		#endregion Init
+
+		#region Properties
+
+		/// <summary>
+		/// Gets the declaration code block content
+		/// </summary>
+		public override string Code
+		{
+			get { return this.Content.ToString(); }
+		}
+
+		/// <summary>
+		/// Gets an indication if any code has been appended
+		/// </summary>
+		public bool HasCode
+		{
+			get { return this.Content.Length > 0; }
+		}
+
+		/// <summary>
+		/// Gets the name of the owning JBST
+		/// </summary>
+		public string OwnerName
+		{
+			get
+			{
+				if (String.IsNullOrEmpty(this.ownerName))
+				{
+					return "this";
+				}
+				return this.ownerName;
+			}
+			set { this.ownerName = value; }
+		}
+
+		#endregion Properties
+
+		#region JbstCodeBlock Members
+
+		protected override string GetCodeBlock()
+		{
+			string code = this.Code.Trim();
+			if (String.IsNullOrEmpty(code))
+			{
+				return JbstCodeBlock.Noop;
+			}
+
+			// output expressions are the core of the syntax
+			return String.Format(DeclarationFormat, this.OwnerName, code);
+		}
+
+		#endregion JbstCodeBlock Members
+
+		#region Methods
+
+		/// <summary>
+		/// Append another code block onto declaration block
+		/// </summary>
+		/// <param name="control"></param>
+		public void Append(JbstControl control)
+		{
+			if (control is JbstCodeBlock)
+			{
+				this.Content.Append( ((JbstCodeBlock)control).Code );
+			}
+			else if (control is JbstLiteral)
+			{
+				this.Content.Append( ((JbstLiteral)control).Text );
+			}
+			else if (control is JbstContainerControl)
+			{
+				JbstContainerControl parent = (JbstContainerControl)control;
+
+				while (parent.ChildControlsSpecified)
+				{
+					// this will remove it from the collection
+					this.Append(parent.ChildControls[0]);
+				}
+			}
+
+			// remove from the parse tree since is pre-aggregated
+			control.Parent.ChildControls.Remove(control);
+		}
+
+		/// <summary>
+		/// Append another code block onto declaration block
+		/// </summary>
+		/// <param name="control"></param>
+		public void Append(string code)
+		{
+			this.Content.Append(code);
+		}
+
+		#endregion Methods
 	}
 
 	internal class JbstExpressionBlock : JbstCodeBlock
