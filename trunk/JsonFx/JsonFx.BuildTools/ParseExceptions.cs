@@ -44,8 +44,9 @@ namespace JsonFx.BuildTools
 	{
 		#region Constants
 
-		// this cannot change every char is important or VS2005 will not list as error/warning
-		private const string VS2005ErrorFormat = "{0}({1},{2}): {3} {4}: {5}";
+		// this cannot change every char is important or Visual Studio will not list as error/warning
+		// http://blogs.msdn.com/msbuild/archive/2006/11/03/msbuild-visual-studio-aware-error-messages-and-message-formats.aspx
+		private const string MSBuildErrorFormat = "{0}({1},{2}): {3} {4}: {5}";
 
 		#endregion Constants
 
@@ -132,7 +133,7 @@ namespace JsonFx.BuildTools
 		{
 			// format exception as a VS2005 error/warning
 			return String.Format(
-				ParseException.VS2005ErrorFormat,
+				ParseException.MSBuildErrorFormat,
 				this.File,
 				(this.Line > 0) ? this.Line : 1,
 				(this.Column > 0) ? this.Column : 1,
