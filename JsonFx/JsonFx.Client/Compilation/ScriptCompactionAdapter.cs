@@ -34,6 +34,7 @@ using System.Globalization;
 using System.IO;
 using System.Text;
 
+using EcmaScript.NET;
 using Yahoo.Yui.Compressor;
 using JsonFx.BuildTools;
 using JsonFx.Configuration;
@@ -120,9 +121,21 @@ namespace JsonFx.Compilation
 
 				builder.Append(compacted);
 			}
+			catch (EcmaScriptRuntimeException ex)
+			{
+				if (errors.Count > 0 && String.IsNullOrEmpty(ex.SourceName))
+				{
+					// EcmaScript.NET provides an extra error which is a summary count of other errors
+					errors.Add(new ParseWarning(ex.Message, virtalPath, ex.LineNumber, ex.ColumnNumber, ex));
+				}
+				else
+				{
+					errors.Add(new ParseError(ex.Message, ex.SourceName, ex.LineNumber, ex.ColumnNumber, ex));
+				}
+			}
 			catch (Exception ex)
 			{
-				throw new ParseError(ex.Message, virtalPath, -1, -1, ex);
+				errors.Add(new ParseError(ex.Message, virtalPath, -1, -1, ex));
 			}
 
 			return builder.ToString();
