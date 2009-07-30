@@ -56,12 +56,6 @@ namespace JsonFx.UI.Jbst
 
 		private const string AnonymousPrefix = "anonymous_";
 
-		private const string DeclarationFormat =
-@"// initialize template in the context of ""this""
-(function() {{
-	{1}
-}}).call({0});";
-
 		private const string NamespaceFormat = 
 @"/* namespace {0} */
 if (""undefined"" === typeof {0}) {{
@@ -74,7 +68,7 @@ if (""undefined"" === typeof {0}) {{
 
 		private readonly string path;
 		private readonly StringBuilder Directives = new StringBuilder();
-		private readonly StringBuilder Declarations = new StringBuilder();
+		private readonly JbstDeclarationBlock Declarations = new JbstDeclarationBlock();
 		private readonly List<string> Imports = new List<string>();
 		private readonly JbstContainerControl document = new JbstContainerControl();
 
@@ -258,38 +252,10 @@ if (""undefined"" === typeof {0}) {{
 			if (JbstWriter.ScriptTagName.Equals(this.current.RawName, StringComparison.OrdinalIgnoreCase))
 			{
 				// script tags get converted once fully parsed
-				this.ConvertControlToDeclaration(this.current);
+				this.Declarations.Append(this.current);
 			}
 
 			this.current = this.current.Parent;
-		}
-
-		/// <summary>
-		/// Convert a tag and children into declaration block
-		/// </summary>
-		/// <param name="control"></param>
-		private void ConvertControlToDeclaration(JbstControl control)
-		{
-			if (control is JbstCodeBlock)
-			{
-				this.Declarations.Append( ((JbstCodeBlock)control).Code );
-			}
-			else if (control is JbstLiteral)
-			{
-				this.Declarations.Append( ((JbstLiteral)control).Text );
-			}
-			else if (control is JbstContainerControl)
-			{
-				JbstContainerControl parent = (JbstContainerControl)control;
-
-				while (parent.ChildControlsSpecified)
-				{
-					// this will remove it from the collection
-					this.ConvertControlToDeclaration(parent.ChildControls[0]);
-				}
-			}
-
-			control.Parent.ChildControls.Remove(control);
 		}
 
 		private void AddAttribute(string name, string value)
@@ -413,12 +379,10 @@ if (""undefined"" === typeof {0}) {{
 			writer.WriteLine(");");
 
 			// render any declarations
-			if (this.Declarations.Length > 0)
+			if (this.Declarations.HasCode)
 			{
-				writer.WriteLine(
-					JbstWriter.DeclarationFormat,
-					this.Name,
-					this.Declarations);
+				this.Declarations.OwnerName = this.Name;
+				jsWriter.Write(this.Declarations);
 			}
 		}
 
