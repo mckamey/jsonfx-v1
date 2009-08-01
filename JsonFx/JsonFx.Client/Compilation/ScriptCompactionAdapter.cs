@@ -99,10 +99,6 @@ namespace JsonFx.Compilation
 			ScriptCompactionSection config = ScriptCompactionSection.GetSettings();
 
 			StringBuilder builder = new StringBuilder(source.Length);
-
-			// write out header with copyright and timestamp
-			ScriptCompactionAdapter.WriteHeader(builder, config.Copyright, config.TimeStampFormat);
-
 			try
 			{
 				JavaScriptCompressor compressor = new JavaScriptCompressor(
@@ -162,7 +158,7 @@ namespace JsonFx.Compilation
 				}
 
 				builder.AppendLine();
-				builder.AppendLine("/*".PadRight(width, '-')+"*\\");
+				builder.AppendLine("/*!".PadRight(width, '-')+"*\\");
 
 				if (!String.IsNullOrEmpty(copyright))
 				{
