@@ -12,10 +12,8 @@ namespace JsonFx.Configuration
 
 		private const string DefaultSectionPath = "jsonfxSettings/scriptCompaction";
 
-		private const string Key_Copyright = "copyright";
-		private const string Key_TimeStampFormat = "timeStampFormat";
-
 		private const string Key_DisableMicroOptimizations = "disableMicroOptimizations";
+		private const string Key_Firewall = "firewallScripts";
 		private const string Key_IgnoreEval = "ignoreEval";
 		private const string Key_Obfuscate = "obfuscate";
 		private const string Key_PreserveSemicolons = "preserveSemicolons";
@@ -25,23 +23,6 @@ namespace JsonFx.Configuration
 		#endregion Constants
 
 		#region Properties
-
-		[ConfigurationProperty(Key_Copyright, DefaultValue="", IsRequired=false)]
-		public string Copyright
-		{
-			get
-			{
-				try
-				{
-					return (string)this[Key_Copyright]??String.Empty;
-				}
-				catch
-				{
-					return String.Empty;
-				}
-			}
-			set { this[Key_Copyright] = value; }
-		}
 
 		[ConfigurationProperty(Key_DisableMicroOptimizations, DefaultValue="true", IsRequired=false)]
 		public bool DisableMicroOptimizations
@@ -58,6 +39,23 @@ namespace JsonFx.Configuration
 				}
 			}
 			set { this[Key_DisableMicroOptimizations] = value; }
+		}
+
+		[ConfigurationProperty(Key_Firewall, DefaultValue="true", IsRequired=false)]
+		public bool Firewall
+		{
+			get
+			{
+				try
+				{
+					return (bool)this[Key_Firewall];
+				}
+				catch
+				{
+					return true;
+				}
+			}
+			set { this[Key_Firewall] = value; }
 		}
 
 		[ConfigurationProperty(Key_IgnoreEval, DefaultValue="true", IsRequired=false)]
@@ -109,23 +107,6 @@ namespace JsonFx.Configuration
 				}
 			}
 			set { this[Key_PreserveSemicolons] = value; }
-		}
-
-		[ConfigurationProperty(Key_TimeStampFormat, DefaultValue="", IsRequired=false)]
-		public string TimeStampFormat
-		{
-			get
-			{
-				try
-				{
-					return (string)this[Key_TimeStampFormat]??String.Empty;
-				}
-				catch
-				{
-					return String.Empty;
-				}
-			}
-			set { this[Key_TimeStampFormat] = value; }
 		}
 
 		[ConfigurationProperty(Key_Verbose, DefaultValue="false", IsRequired=false)]
