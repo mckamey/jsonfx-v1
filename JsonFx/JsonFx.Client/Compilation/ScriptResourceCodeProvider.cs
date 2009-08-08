@@ -35,6 +35,7 @@ using System.Text.RegularExpressions;
 
 using JsonFx.BuildTools;
 using JsonFx.Compilation;
+using JsonFx.Configuration;
 using JsonFx.Json;
 using JsonFx.Handlers;
 
@@ -127,6 +128,12 @@ namespace JsonFx.Compilation
 
 		public static string FirewallScript(string virtualPath, string source, bool compacted)
 		{
+			ScriptCompactionSection config = ScriptCompactionSection.GetSettings();
+			if (!config.Firewall)
+			{
+				return source;
+			}
+
 			if (compacted)
 			{
 				return String.Concat(
@@ -134,19 +141,18 @@ namespace JsonFx.Compilation
 					source,
 					ScriptResourceCodeProvider.CatchCompact);
 			}
-			else
-			{
-				string path = ResourceHandler.EnsureAppRelative(virtualPath);
-				return String.Concat(
-					Environment.NewLine,
-					ScriptResourceCodeProvider.TryStart,
-					Environment.NewLine,
-					source,
-					Environment.NewLine,
-					ScriptResourceCodeProvider.CatchStart,
-					(path != null) ? path.Replace("\"", "\\\"") : "script",
-					ScriptResourceCodeProvider.CatchEnd);
-			}
+
+			virtualPath = ResourceHandler.EnsureAppRelative(virtualPath);
+			virtualPath = (virtualPath != null) ? virtualPath.Replace("\"", "\\\"") : "script";
+			return String.Concat(
+				Environment.NewLine,
+				ScriptResourceCodeProvider.TryStart,
+				Environment.NewLine,
+				source,
+				Environment.NewLine,
+				ScriptResourceCodeProvider.CatchStart,
+				virtualPath,
+				ScriptResourceCodeProvider.CatchEnd);
 		}
 
 		private void ExtractGlobalizationKeys(string compacted)
