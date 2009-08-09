@@ -61,6 +61,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="About.cs" />
+    <Compile Include="EcmaScriptIdentifier.cs" />
     <Compile Include="EcmaScriptWriter.cs" />
     <Compile Include="IJsonSerializable.cs" />
     <Compile Include="JsonIgnoreAttribute.cs" />

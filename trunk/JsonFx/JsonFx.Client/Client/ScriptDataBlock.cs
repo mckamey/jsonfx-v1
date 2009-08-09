@@ -99,7 +99,7 @@ namespace JsonFx.Client
 			}
 			set
 			{
-				varName = JsonWriter.EnsureValidIdentifier(varName, true);
+				varName = EcmaScriptIdentifier.EnsureValidIdentifier(varName, true);
 				this.Data[varName] = value;
 			}
 		}
