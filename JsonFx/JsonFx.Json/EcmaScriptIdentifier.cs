@@ -152,6 +152,30 @@ namespace JsonFx.Json
 
 		#endregion Methods
 
+		#region Operators
+
+		/// <summary>
+		/// Implicit type conversion allows to be used directly as a String
+		/// </summary>
+		/// <param name="ident">valid ECMAScript identifier</param>
+		/// <returns></returns>
+		public static implicit operator String(EcmaScriptIdentifier ident)
+		{
+			return ident.Identifier;
+		}
+
+		/// <summary>
+		/// Implicit type conversion allows to be used directly with Strings
+		/// </summary>
+		/// <param name="ident">valid ECMAScript identifier</param>
+		/// <returns></returns>
+		public static implicit operator EcmaScriptIdentifier(String ident)
+		{
+			return new EcmaScriptIdentifier(ident);
+		}
+
+		#endregion Operators
+
 		#region IJsonSerializable Members
 
 		void IJsonSerializable.ReadJson(JsonReader reader)
