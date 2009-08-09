@@ -1078,7 +1078,9 @@ namespace JsonFx.Json
 			return (attribute.Value.Equals(value));
 		}
 
-		#region GetFlagList
+		#endregion Private Methods
+
+		#region Utility Methods
 
 		/// <summary>
 		/// Splits a bitwise-OR'd set of enums into a list.
@@ -1129,83 +1131,6 @@ namespace JsonFx.Json
 				enums.Add(Enum.ToObject(enumType, longVal) as Enum);
 
 			return enums.ToArray();
-		}
-
-		#endregion GetFlagList
-
-		#endregion Private Methods
-
-		#region Utility Methods
-
-		/// <summary>
-		/// Verifies is a valid EcmaScript variable expression.
-		/// </summary>
-		/// <param name="varExpr">the variable expression</param>
-		/// <returns>varExpr</returns>
-		public static string EnsureValidIdentifier(string varExpr, bool nested)
-		{
-			return JsonWriter.EnsureValidIdentifier(varExpr, nested, true);
-		}
-
-		/// <summary>
-		/// Verifies is a valid EcmaScript variable expression.
-		/// </summary>
-		/// <param name="varExpr">the variable expression</param>
-		/// <returns>varExpr</returns>
-		/// <remarks>
-		/// http://www.ecma-international.org/publications/files/ECMA-ST/Ecma-262.pdf
-		/// 
-		/// IdentifierName =
-		///		IdentifierStart | IdentifierName IdentifierPart
-		/// IdentifierStart =
-		///		Letter | '$' | '_'
-		/// IdentifierPart =
-		///		IdentifierStart | Digit
-		/// </remarks>
-		public static string EnsureValidIdentifier(string varExpr, bool nested, bool throwOnEmpty)
-		{
-			if (String.IsNullOrEmpty(varExpr))
-			{
-				if (throwOnEmpty)
-				{
-					throw new ArgumentException("Variable expression is empty.");
-				}
-				return String.Empty;
-			}
-
-			varExpr = varExpr.Replace(" ", "");
-
-			bool indentPart = false;
-
-			// TODO: ensure not a keyword
-			foreach (char ch in varExpr)
-			{
-				if (indentPart)
-				{
-					if (ch == '.' && nested)
-					{
-						// reset to IndentifierStart
-						indentPart = false;
-						continue;
-					}
-
-					if (Char.IsDigit(ch))
-					{
-						continue;
-					}
-				}
-
-				// can be start or part
-				if (Char.IsLetter(ch) || ch == '_' || ch == '$')
-				{
-					indentPart = true;
-					continue;
-				}
-
-				throw new ArgumentException("Variable expression \""+varExpr+"\" is not supported.");
-			}
-
-			return varExpr;
 		}
 
 		#endregion Utility Methods

@@ -617,7 +617,7 @@ if (""undefined"" === typeof {0}) {{
 				case "control":
 				{
 					this.Name = attribs.ContainsKey("name") ?
-						JsonWriter.EnsureValidIdentifier(attribs["name"], true) :
+						EcmaScriptIdentifier.EnsureValidIdentifier(attribs["name"], true) :
 						null;
 
 					string package = attribs.ContainsKey("import") ? attribs["import"] : null;
@@ -659,7 +659,7 @@ if (""undefined"" === typeof {0}) {{
 
 			foreach (string import in this.Imports)
 			{
-				string ident = JsonWriter.EnsureValidIdentifier(import, true);
+				string ident = EcmaScriptIdentifier.EnsureValidIdentifier(import, true);
 
 				if (String.IsNullOrEmpty(ident))
 				{

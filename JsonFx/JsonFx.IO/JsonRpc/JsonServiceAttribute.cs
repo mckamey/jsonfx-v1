@@ -65,7 +65,7 @@ namespace JsonFx.JsonRpc
 		public string Namespace
 		{
 			get { return this.nameSpace; }
-			set { this.nameSpace = JsonWriter.EnsureValidIdentifier(value, true); }
+			set { this.nameSpace = EcmaScriptIdentifier.EnsureValidIdentifier(value, true); }
 		}
 
 		#endregion Properties

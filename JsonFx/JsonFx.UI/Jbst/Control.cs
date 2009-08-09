@@ -61,7 +61,7 @@ namespace JsonFx.UI.Jbst
 				}
 				return this.name;
 			}
-			set { this.name = JsonWriter.EnsureValidIdentifier(value, true); }
+			set { this.name = EcmaScriptIdentifier.EnsureValidIdentifier(value, true); }
 		}
 
 		/// <summary>
