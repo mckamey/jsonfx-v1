@@ -150,6 +150,20 @@ namespace JsonFx.Json
 			return varExpr;
 		}
 
+		/// <summary>
+		/// Trivial conversion method. Essentially performs a cast.
+		/// </summary>
+		/// <param name="value"></param>
+		/// <returns></returns>
+		/// <remarks>
+		/// Supports conversion via System.Web.UI.PropertyConverter.ObjectFromString(Type, MemberInfo, string)
+		/// </remarks>
+		public static EcmaScriptIdentifier Parse(string value)
+		{
+			// trivial conversion
+			return (EcmaScriptIdentifier)value;
+		}
+
 		#endregion Methods
 
 		#region Operators
@@ -189,5 +203,18 @@ namespace JsonFx.Json
 		}
 
 		#endregion IJsonSerializable Members
+
+		#region Object Overrides
+
+		/// <summary>
+		/// Returns the identifier.
+		/// </summary>
+		/// <returns></returns>
+		public override string ToString()
+		{
+			return (string)this;
+		}
+
+		#endregion Object Overrides
 	}
 }
