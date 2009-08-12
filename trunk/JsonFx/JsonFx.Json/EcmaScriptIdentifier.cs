@@ -160,8 +160,7 @@ namespace JsonFx.Json
 		/// </remarks>
 		public static EcmaScriptIdentifier Parse(string value)
 		{
-			// trivial conversion
-			return (EcmaScriptIdentifier)value;
+			return new EcmaScriptIdentifier(value);
 		}
 
 		#endregion Methods
@@ -183,7 +182,7 @@ namespace JsonFx.Json
 		/// </summary>
 		/// <param name="ident">valid ECMAScript identifier</param>
 		/// <returns></returns>
-		public static implicit operator EcmaScriptIdentifier(String ident)
+		public static implicit operator EcmaScriptIdentifier(string ident)
 		{
 			return new EcmaScriptIdentifier(ident);
 		}
@@ -212,7 +211,7 @@ namespace JsonFx.Json
 		/// <returns></returns>
 		public override string ToString()
 		{
-			return (string)this;
+			return this.identifier;
 		}
 
 		#endregion Object Overrides
