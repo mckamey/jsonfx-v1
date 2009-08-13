@@ -49,18 +49,17 @@ namespace JsonFx.Json
 		/// Ctor
 		/// </summary>
 		public EcmaScriptIdentifier()
-			: this(String.Empty)
+			: this(null)
 		{
 		}
 
 		/// <summary>
 		/// Ctor
 		/// </summary>
-		public EcmaScriptIdentifier(string identifier)
+		public EcmaScriptIdentifier(string ident)
 		{
-			this.identifier = String.IsNullOrEmpty(identifier) ?
-				"null" :
-				EcmaScriptIdentifier.EnsureValidIdentifier(identifier, true);
+			this.identifier = String.IsNullOrEmpty(ident) ? String.Empty :
+				EcmaScriptIdentifier.EnsureValidIdentifier(ident, true);
 		}
 
 		#endregion Init
@@ -172,9 +171,13 @@ namespace JsonFx.Json
 		/// </summary>
 		/// <param name="ident">valid ECMAScript identifier</param>
 		/// <returns></returns>
-		public static implicit operator String(EcmaScriptIdentifier ident)
+		public static implicit operator string(EcmaScriptIdentifier ident)
 		{
-			return ident.Identifier;
+			if (ident == null)
+			{
+				return String.Empty;
+			}
+			return ident.identifier;
 		}
 
 		/// <summary>
@@ -198,12 +201,42 @@ namespace JsonFx.Json
 
 		void IJsonSerializable.WriteJson(JsonWriter writer)
 		{
-			writer.TextWriter.Write(this.identifier);
+			if (String.IsNullOrEmpty(this.identifier))
+			{
+				writer.TextWriter.Write("null");
+			}
+			else
+			{
+				// TODO: determine if this should output parens around identifier
+				writer.TextWriter.Write(this.identifier);
+			}
 		}
 
 		#endregion IJsonSerializable Members
 
 		#region Object Overrides
+
+		/// <summary>
+		/// Compares the identifiers.
+		/// </summary>
+		/// <param name="obj"></param>
+		/// <returns></returns>
+		public override bool Equals(object obj)
+		{
+			EcmaScriptIdentifier that = obj as EcmaScriptIdentifier;
+			if (that == null)
+			{
+				return base.Equals(obj);
+			}
+
+			if (String.IsNullOrEmpty(this.identifier) && String.IsNullOrEmpty(that.identifier))
+			{
+				// null and String.Empty are equivalent
+				return true;
+			}
+
+			return StringComparer.Ordinal.Equals(this.identifier, that.identifier);
+		}
 
 		/// <summary>
 		/// Returns the identifier.
