@@ -11,13 +11,14 @@
 */
 
 /* namespace JsonFx */
-if ("undefined" === typeof window.JsonFx) {
-	window.JsonFx = {};
+var JsonFx;
+if ("undefined" === typeof JsonFx) {
+	JsonFx = {};
 }
 
 /* dependency checks --------------------------------------------*/
 
-if ("undefined" === typeof window.JSON) {
+if ("undefined" === typeof JSON) {
 	throw new Error("JsonFx.History requires JSON");
 }
 

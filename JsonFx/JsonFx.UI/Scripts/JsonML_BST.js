@@ -1,4 +1,4 @@
-﻿/*global window, JsonML */
+﻿/*global JsonML */
 /*
 	JsonML_BST.js
 	JsonML + Browser-Side Templating (JBST) support
@@ -27,8 +27,9 @@
 */
 
 /* namespace JsonML */
-if ("undefined" === typeof window.JsonML) {
-	window.JsonML = {};
+var JsonML;
+if ("undefined" === typeof JsonML) {
+	JsonML = {};
 }
 
 /* wrapper */
@@ -225,7 +226,7 @@ JsonML.BST.init = function(/*JBST*/ jbst) {
 		fn = rm(el, jL);
 		if ("function" === typeof fn) {
 			// queue up to execute after insertion into parentNode
-			window.setTimeout(function() {
+			setTimeout(function() {
 				// execute in context of element
 				fn.call(el);
 				fn = el = null;

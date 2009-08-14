@@ -1,4 +1,4 @@
-/*global JSON, JsonFx */
+/*global JSON, JsonFx, ActiveXObject */
 /*
 	JsonFx_IO.js
 	Ajax & JSON-RPC support
@@ -12,7 +12,7 @@
 
 /* dependency checks --------------------------------------------*/
 
-if ("undefined" === typeof window.JSON) {
+if ("undefined" === typeof JSON) {
 	throw new Error("JsonFx.IO requires JSON");
 }
 
@@ -24,10 +24,11 @@ if ("undefined" === typeof window.JSON) {
 	// modify the global namespace, and it will be shared
 	var XHR_OCXs;
 
-	if ("undefined" === typeof window.XMLHttpRequest) {
+	if ("undefined" === typeof XMLHttpRequest) {
 
 		// these IDs are as per MSDN documentation (including case)
-		/*string[]*/ XHR_OCXs = !window.ActiveXObject ? [] :
+		/*string[]*/ XHR_OCXs = !ActiveXObject ?
+			[] :
 			[
 				"Msxml2.XMLHTTP.6.0",
 				"Msxml2.XMLHttp.5.0",
@@ -38,10 +39,10 @@ if ("undefined" === typeof window.JSON) {
 			];
 
 		// XMLHttpRequest: augment browser to have "native" XHR
-		/*XMLHttpRequest*/ window.XMLHttpRequest = function() {
+		/*XMLHttpRequest*/ XMLHttpRequest = function() {
 			while (XHR_OCXs.length) {
 				try {
-					return new window.ActiveXObject(XHR_OCXs[0]);
+					return new ActiveXObject(XHR_OCXs[0]);
 				} catch (ex) {
 					// remove the failed XHR_OCXs for all future requests
 					XHR_OCXs.shift();
@@ -57,8 +58,9 @@ if ("undefined" === typeof window.JSON) {
 /* ----------------------------------------------------*/
 
 /* namespace JsonFx */
-if ("undefined" === typeof window.JsonFx) {
-	window.JsonFx = {};
+var JsonFx;
+if ("undefined" === typeof JsonFx) {
+	JsonFx = {};
 }
 
 if ("undefined" === typeof JsonFx.jsonReviver) {
@@ -121,7 +123,7 @@ JsonFx.IO = {
 				name += " ("+code+")";
 			}
 
-			(window.onerror||window.alert)("Request "+name+":\n\""+msg+"\"",
+			(onerror||alert)("Request "+name+":\n\""+msg+"\"",
 				obj,
 				ex.lineNumber||ex.line||1);
 		}
@@ -211,7 +213,7 @@ JsonFx.IO = {
 		var cancel;
 		if (options.timeout > 0) {
 			// kill off request if takes too long
-			cancel = window.setTimeout(
+			cancel = setTimeout(
 				function () {
 					if (xhr) {
 						xhr.onreadystatechange = function(){};
@@ -248,7 +250,7 @@ JsonFx.IO = {
 			if (xhr && xhr.readyState === 4 /*complete*/) {
 
 				// stop the timeout
-				window.clearTimeout(cancel);
+				clearTimeout(cancel);
 
 				// check the status
 				status = 0;

@@ -1,4 +1,4 @@
-/*global JsonFx, JsonML, jQuery */
+/*global JsonFx, JsonML, jQuery, window */
 /*
 	JsonFx_Bindings.js
 	dynamic behavior binding support
@@ -13,8 +13,9 @@
 /* dependency checks --------------------------------------------*/
 
 /* namespace JsonFx */
-if ("undefined" === typeof window.JsonFx) {
-	window.JsonFx = {};
+var JsonFx;
+if ("undefined" === typeof JsonFx) {
+	JsonFx = {};
 }
 /* namespace JsonFx.UI */
 if ("undefined" === typeof JsonFx.UI) {
@@ -118,7 +119,7 @@ JsonFx.Bindings = function() {
 						if (elem.id) {
 							selector += "#"+elem.id;
 						}
-						window.alert("Error binding "+selector+" (line "+(ex.lineNumber||ex.line||1)+"):\n\""+(ex&&ex.message||String(ex))+"\"");
+						alert("Error binding "+selector+" (line "+(ex.lineNumber||ex.line||1)+"):\n\""+(ex&&ex.message||String(ex))+"\"");
 						/*jslint debug:true */
 						debugger;
 						/*jslint debug:false */
@@ -166,7 +167,7 @@ JsonFx.Bindings = function() {
 
 			/*create a closure for replacement*/
 			function queueReplacer(newer, older) {
-				window.setTimeout(function() {
+				setTimeout(function() {
 					if (older && older.parentNode) {
 						older.parentNode.replaceChild(newer, older);
 					}

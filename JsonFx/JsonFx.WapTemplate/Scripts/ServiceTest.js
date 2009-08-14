@@ -7,13 +7,14 @@
 */
 
 /* namespace Example */
-if ("undefined" === typeof window.Example) {
-	window.Example = {};
+var Example;
+if ("undefined" === typeof Example) {
+	Example = {};
 }
 
 /*void*/ Example.asyncError = function (/*object*/ result, /*object*/ cx, /*Error*/ ex) {
 	// just display raw error results
-	window.alert( JSON.stringify(ex, null, "\t") );
+	alert( JSON.stringify(ex, null, "\t") );
 };
 
 /*void*/ Example.tryService = function(/*DOM*/ elem) {

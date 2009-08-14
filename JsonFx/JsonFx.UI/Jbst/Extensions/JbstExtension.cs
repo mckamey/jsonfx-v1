@@ -42,7 +42,7 @@ namespace JsonFx.UI.Jbst.Extensions
 		#region Constants
 
 		private const string PrefixNotFoundError =
-			@"window.alert(""Error in {0}:\nUnknown extension \""{1}\"""")";
+			@"alert(""Error in {0}:\nUnknown extension \""{1}\"""")";
 
 		#endregion Constants
 
