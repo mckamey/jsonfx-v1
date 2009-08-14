@@ -359,7 +359,7 @@ if (""undefined"" === typeof {0}) {{
 			for (int i=0; i<namespaces.Length-1; i++)
 			{
 				string ident = (i == 0) ?
-					"window."+namespaces[i] :
+					namespaces[i] :
 					String.Join(".", namespaces, 0, i+1);
 
 				writer.WriteLine();
@@ -654,7 +654,6 @@ if (""undefined"" === typeof {0}) {{
 			StringBuilder globals = new StringBuilder();
 
 			this.Imports.Insert(0, "JsonML.BST");
-			this.Imports.Insert(0, "window");
 			this.Imports.Add(this.Name);
 
 			foreach (string import in this.Imports)

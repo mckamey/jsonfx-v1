@@ -11,8 +11,9 @@
 */
 
 /* namespace JsonFx */
-if ("undefined" === typeof window.JsonFx) {
-	window.JsonFx = {};
+var JsonFx;
+if ("undefined" === typeof JsonFx) {
+	JsonFx = {};
 }
 /* namespace JsonFx.UI */
 if ("undefined" === typeof JsonFx.UI) {
@@ -21,10 +22,10 @@ if ("undefined" === typeof JsonFx.UI) {
 
 /* dependency checks --------------------------------------------*/
 
-if ("undefined" === typeof window.JSON) {
+if ("undefined" === typeof JSON) {
 	throw new Error("JsonFx.UI requires JSON");
 }
-if ("undefined" === typeof window.JsonML) {
+if ("undefined" === typeof JsonML) {
 	throw new Error("JsonFx.UI requires JsonML");
 }
 if ("undefined" === typeof JsonFx.Bindings) {
@@ -34,7 +35,7 @@ if ("undefined" === typeof JsonFx.Bindings) {
 /* DOM utilities ------------------------------------------------*/
 
 /*bool*/ JsonFx.UI.cancelEvent = function(/*Event*/ evt) {
-	evt = evt || window.event;
+	evt = evt || event;
 	if (evt) {
 		if (evt.stopPropagation) {
 			evt.stopPropagation();

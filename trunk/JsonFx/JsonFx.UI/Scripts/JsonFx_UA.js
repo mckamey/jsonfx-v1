@@ -11,8 +11,9 @@
 */
 
 /* namespace JsonFx */
-if ("undefined" === typeof window.JsonFx) {
-	window.JsonFx = {};
+var JsonFx;
+if ("undefined" === typeof JsonFx) {
+	JsonFx = {};
 }
 
 /*Dictionary<string,string>*/ JsonFx.userAgent = {};

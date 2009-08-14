@@ -165,11 +165,6 @@ namespace JsonFx.Client
 						// make note that we've emitted this namespace before
 						namespaces.Add(ns);
 
-						if (i == 0)
-						{
-							ns = "window."+ns;
-						}
-
 						if (this.IsDebug)
 						{
 							writer.WriteLine(NamespaceCheckDebug, ns);

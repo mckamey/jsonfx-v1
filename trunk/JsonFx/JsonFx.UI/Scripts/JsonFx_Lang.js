@@ -11,8 +11,9 @@
 */
 
 /* namespace JsonFx.Lang */
-if ("undefined" === typeof window.JsonFx) {
-	window.JsonFx = {};
+var JsonFx;
+if ("undefined" === typeof JsonFx) {
+	JsonFx = {};
 }
 
 if ("undefined" === typeof JsonFx.Lang) {
@@ -99,5 +100,5 @@ if ("undefined" === typeof JsonFx.Lang) {
 	JsonFx.Lang = new JsonFx.Lang();
 
 	// uncomment to access like .NET Resources object
-//	window.Resources = JsonFx.Lang.getAll();
+//	var Resources = JsonFx.Lang.getAll();
 }
