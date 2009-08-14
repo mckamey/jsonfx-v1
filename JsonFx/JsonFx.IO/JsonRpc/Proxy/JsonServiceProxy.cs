@@ -289,12 +289,12 @@ namespace JsonFx.JsonRpc.Proxy
 
 		internal override string ExternFormat
 		{
-			get { return ""; }
+			get { return "var {0};"; }
 		}
 
 		internal override string NamespaceFormat
 		{
-			get { return "var {0};if(\"undefined\"===typeof {0}){{{0}={{}};}}"; }
+			get { return "if(\"undefined\"===typeof {0}){{{0}={{}};}}"; }
 		}
 
 		internal override string ProxyInstantiationFormat
@@ -346,12 +346,12 @@ namespace JsonFx.JsonRpc.Proxy
 
 		internal override string ExternFormat
 		{
-			get { return "/*global JsonFx, {0}*/\r\n\r\n"; }
+			get { return "/*global JsonFx, {0}*/\r\n\r\nvar {0};\r\n"; }
 		}
 
 		internal override string NamespaceFormat
 		{
-			get { return "var {0};\r\nif (\"undefined\" === typeof {0}) {{\r\n\t{0} = {{}};\r\n}}\r\n"; }
+			get { return "if (\"undefined\" === typeof {0}) {{\r\n\t{0} = {{}};\r\n}}\r\n"; }
 		}
 
 		internal override string ProxyInstantiationFormat
