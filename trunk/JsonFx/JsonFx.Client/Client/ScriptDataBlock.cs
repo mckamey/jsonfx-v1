@@ -54,9 +54,10 @@ namespace JsonFx.Client
 			if (""undefined"" === typeof {0}) {{
 				{0} = {{}};
 			}}";
-		private const string VarDeclarationDebug = "{0} = ";
-		private const string VarDeclaration = "{0}=";
-		private const string VarDeclarationEnd = ";";
+		private const string VarDeclaration = "var {0};";
+		private const string VarAssignmentDebug = "{0} = ";
+		private const string VarAssignment = "{0}=";
+		private const string VarAssignmentEnd = ";";
 
 		#endregion Constants
 
@@ -165,6 +166,18 @@ namespace JsonFx.Client
 						// make note that we've emitted this namespace before
 						namespaces.Add(ns);
 
+						if (i == 0)
+						{
+							if (this.IsDebug)
+							{
+								writer.WriteLine(VarDeclaration, ns);
+							}
+							else
+							{
+								writer.Write(VarDeclaration, ns);
+							}
+						}
+
 						if (this.IsDebug)
 						{
 							writer.WriteLine(NamespaceCheckDebug, ns);
@@ -184,7 +197,7 @@ namespace JsonFx.Client
 					if (this.IsDebug)
 					{
 						writer.Indent += 3;
-						writer.Write(VarDeclarationDebug, declaration);
+						writer.Write(VarAssignmentDebug, declaration);
 						writer.Indent -= 3;
 						if (this.Data[key] != null &&
 							this.Data[key].GetType().IsClass)
@@ -194,12 +207,12 @@ namespace JsonFx.Client
 					}
 					else
 					{
-						writer.Write(VarDeclaration, declaration);
+						writer.Write(VarAssignment, declaration);
 					}
 
 					// emit the value as JSON
 					jsWriter.Write(this.Data[key]);
-					writer.Write(VarDeclarationEnd);
+					writer.Write(VarAssignmentEnd);
 
 					if (this.IsDebug)
 					{
