@@ -62,11 +62,6 @@ namespace JsonFx.Compilation
 
 		#region Compilation Methods
 
-		protected override void ResetCodeProvider()
-		{
-			// no actual state is stored
-		}
-
 		protected override void ProcessResource(
 			IResourceBuildHelper helper,
 			string virtualPath,
@@ -115,6 +110,10 @@ namespace JsonFx.Compilation
 			compacted = ScriptCompactionAdapter.Compact(virtualPath, renderedTemplate, errors);
 			compacted = ScriptResourceCodeProvider.FirewallScript(virtualPath, compacted, true);
 		}
+
+		#endregion Compilation Methods
+
+		#region Globalization Methods
 
 		internal static void ExtractGlobalizationKeys(object root, List<string> globalizationKeys)
 		{
@@ -187,6 +186,6 @@ namespace JsonFx.Compilation
 			}
 		}
 
-		#endregion Compilation Methods
+		#endregion Globalization Methods
 	}
 }

@@ -78,11 +78,6 @@ namespace JsonFx.Compilation
 
 		#region ResourceCodeProvider Methods
 
-		protected override void ResetCodeProvider()
-		{
-			// no state is actually stored
-		}
-
 		protected internal override void ProcessResource(
 			IResourceBuildHelper helper,
 			string virtualPath,

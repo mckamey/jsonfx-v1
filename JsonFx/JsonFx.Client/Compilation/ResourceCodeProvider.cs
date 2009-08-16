@@ -123,7 +123,6 @@ namespace JsonFx.Compilation
 			out string compacted)
 		{
 			// clear any previously stored state (leave errors for later reporting)
-			this.g11nKeys.Clear();
 			this.ResetCodeProvider();
 
 			string source;
@@ -262,7 +261,10 @@ namespace JsonFx.Compilation
 		/// <summary>
 		/// Clear any state because code providers get reused by BuildManager
 		/// </summary>
-		protected abstract void ResetCodeProvider();
+		protected virtual void ResetCodeProvider()
+		{
+			this.g11nKeys.Clear();
+		}
 
 		#endregion Compaction Methods
 	}
