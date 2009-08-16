@@ -144,7 +144,7 @@ namespace JsonFx.Json
 			{
 				// unknown timezones serialize directly to become browser-local
 				writer.TextWriter.Write(
-					EcmaScriptDateCtor7,
+					EcmaScriptWriter.EcmaScriptDateCtor7,
 					value.Year,			// yyyy
 					value.Month-1,		// 0-11
 					value.Day,			// 1-31
@@ -162,13 +162,15 @@ namespace JsonFx.Json
 			}
 
 			// find the time since Jan 1, 1970
-			TimeSpan duration = value.Subtract(EcmaScriptEpoch);
+			TimeSpan duration = value.Subtract(EcmaScriptWriter.EcmaScriptEpoch);
 
 			// get the total milliseconds
 			long ticks = (long)duration.TotalMilliseconds;
 
 			// write out as a Date constructor
-			writer.TextWriter.Write(EcmaScriptDateCtor1, ticks);
+			writer.TextWriter.Write(
+				EcmaScriptWriter.EcmaScriptDateCtor1,
+				ticks);
 		}
 
 		/// <summary>
@@ -207,30 +209,30 @@ namespace JsonFx.Json
 			if (String.IsNullOrEmpty(pattern))
 			{
 				// must output something otherwise becomes a code comment
-				pattern = EmptyRegExpLiteral;
+				pattern = EcmaScriptWriter.EmptyRegExpLiteral;
 			}
 
 			string modifiers = isGlobal ? "g" : "";
-			switch (regex.Options & (RegexOptions.IgnoreCase | RegexOptions.Multiline))
+			switch (regex.Options & (RegexOptions.IgnoreCase|RegexOptions.Multiline))
 			{
 				case RegexOptions.IgnoreCase:
-					{
-						modifiers += "i";
-						break;
-					}
+				{
+					modifiers += "i";
+					break;
+				}
 				case RegexOptions.Multiline:
-					{
-						modifiers += "m";
-						break;
-					}
-				case RegexOptions.IgnoreCase | RegexOptions.Multiline:
-					{
-						modifiers += "im";
-						break;
-					}
+				{
+					modifiers += "m";
+					break;
+				}
+				case RegexOptions.IgnoreCase|RegexOptions.Multiline:
+				{
+					modifiers += "im";
+					break;
+				}
 			}
 
-			writer.TextWriter.Write(RegExpLiteralDelim);
+			writer.TextWriter.Write(EcmaScriptWriter.RegExpLiteralDelim);
 
 			int length = pattern.Length;
 			int start = 0;
@@ -239,19 +241,19 @@ namespace JsonFx.Json
 			{
 				switch (pattern[i])
 				{
-					case RegExpLiteralDelim:
-						{
-							writer.TextWriter.Write(pattern.Substring(start, i - start));
-							start = i + 1;
-							writer.TextWriter.Write(OperatorCharEscape);
-							writer.TextWriter.Write(pattern[i]);
-							break;
-						}
+					case EcmaScriptWriter.RegExpLiteralDelim:
+					{
+						writer.TextWriter.Write(pattern.Substring(start, i - start));
+						start = i + 1;
+						writer.TextWriter.Write(EcmaScriptWriter.OperatorCharEscape);
+						writer.TextWriter.Write(pattern[i]);
+						break;
+					}
 				}
 			}
 
 			writer.TextWriter.Write(pattern.Substring(start, length - start));
-			writer.TextWriter.Write(RegExpLiteralDelim);
+			writer.TextWriter.Write(EcmaScriptWriter.RegExpLiteralDelim);
 			writer.TextWriter.Write(modifiers);
 		}
 

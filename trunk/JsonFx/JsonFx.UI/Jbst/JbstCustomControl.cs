@@ -234,7 +234,7 @@ namespace JsonFx.UI.Jbst
 		private void RenderSimpleCustomControl(JsonWriter writer)
 		{
 			writer.TextWriter.Write(
-				ControlSimpleFormat,
+				JbstCustomControl.ControlSimpleFormat,
 				this.nameExpr,
 				this.dataExpr,
 				this.indexExpr,
@@ -252,7 +252,7 @@ namespace JsonFx.UI.Jbst
 			writer.Write(new EnumerableAdapter(this));
 
 			writer.TextWriter.Write(
-				ControlInlineEndFormat,
+				JbstCustomControl.ControlInlineEndFormat,
 				this.dataExpr,
 				this.indexExpr,
 				this.countExpr);
@@ -269,7 +269,7 @@ namespace JsonFx.UI.Jbst
 			writer.Write(new EnumerableAdapter(this));
 
 			writer.TextWriter.Write(
-				ControlEndFormat,
+				JbstCustomControl.ControlEndFormat,
 				this.nameExpr,
 				this.dataExpr,
 				this.indexExpr,
