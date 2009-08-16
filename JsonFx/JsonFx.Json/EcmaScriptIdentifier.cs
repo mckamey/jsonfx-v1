@@ -247,6 +247,20 @@ namespace JsonFx.Json
 			return this.identifier;
 		}
 
+		/// <summary>
+		/// Returns the hash code for this identifier.
+		/// </summary>
+		/// <returns></returns>
+		public override int GetHashCode()
+		{
+			if (this.identifier == null)
+			{
+				return 0;
+			}
+
+			return this.identifier.GetHashCode();
+		}
+
 		#endregion Object Overrides
 	}
 }
