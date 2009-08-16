@@ -29,8 +29,9 @@
 #endregion License
 
 using System;
-using System.Text;
+using System.Collections.Generic;
 using System.IO;
+using System.Text;
 using System.Text.RegularExpressions;
 
 namespace JsonFx.Json
@@ -48,6 +49,24 @@ namespace JsonFx.Json
 		private const string EmptyRegExpLiteral = "(?:)";
 		private const char RegExpLiteralDelim = '/';
 		private const char OperatorCharEscape = '\\';
+
+		private const string NamespaceDelim = ".";
+		private static readonly char[] NamespaceDelims = { '.' };
+
+		private const string RootDeclarationDebug =
+@"
+/* namespace {1} */
+var {0};";
+
+		private const string RootDeclaration = @"var {0};";
+
+		private const string NamespaceCheck =
+@"if(""undefined""===typeof {0}){{{0}={{}};}}";
+		private const string NamespaceCheckDebug =
+@"
+if (""undefined"" === typeof {0}) {{
+	{0} = {{}};
+}}";
 
 		#endregion Constants
 
@@ -94,7 +113,7 @@ namespace JsonFx.Json
 		#region Static Methods
 
 		/// <summary>
-		/// A fast method for serializing an object to EcmaScript
+		/// A helper method for serializing an object to EcmaScript
 		/// </summary>
 		/// <param name="value"></param>
 		/// <returns></returns>
@@ -108,6 +127,80 @@ namespace JsonFx.Json
 			}
 
 			return output.ToString();
+		}
+
+		/// <summary>
+		/// Returns a block of script for ensuring that a namespace is declared.
+		/// </summary>
+		/// <param name="writer">the output writer</param>
+		/// <param name="ident">the namespace to ensure</param>
+		/// <param name="namespaces">list of namespaces already emitted</param>
+		/// <param name="debug">determines if should emit pretty-printed</param>
+		/// <returns>if was a nested identifier</returns>
+		public static bool WriteNamespaceDeclaration(TextWriter writer, string ident, List<string> namespaces, bool isDebug)
+		{
+			if (String.IsNullOrEmpty(ident))
+			{
+				return false;
+			}
+
+			if (namespaces == null)
+			{
+				namespaces = new List<string>();
+			}
+
+			string[] nsParts = ident.Split(EcmaScriptWriter.NamespaceDelims, StringSplitOptions.RemoveEmptyEntries);
+			string ns = nsParts[0];
+
+			bool isNested = false;
+			for (int i=0; i<nsParts.Length-1; i++)
+			{
+				isNested = true;
+
+				if (i > 0)
+				{
+					ns += EcmaScriptWriter.NamespaceDelim;
+					ns += nsParts[i];
+				}
+
+				if (namespaces.Contains(ns))
+				{
+					// don't emit multiple checks for same namespace
+					continue;
+				}
+
+				// make note that we've emitted this namespace before
+				namespaces.Add(ns);
+
+				if (i == 0)
+				{
+					if (isDebug)
+					{
+						writer.Write(EcmaScriptWriter.RootDeclarationDebug, ns,
+							String.Join(NamespaceDelim, nsParts, 0, nsParts.Length-1));
+					}
+					else
+					{
+						writer.Write(EcmaScriptWriter.RootDeclaration, ns);
+					}
+				}
+
+				if (isDebug)
+				{
+					writer.WriteLine(EcmaScriptWriter.NamespaceCheckDebug, ns);
+				}
+				else
+				{
+					writer.Write(EcmaScriptWriter.NamespaceCheck, ns);
+				}
+			}
+
+			if (isDebug && isNested)
+			{
+				writer.WriteLine();
+			}
+
+			return isNested;
 		}
 
 		#endregion Static Methods

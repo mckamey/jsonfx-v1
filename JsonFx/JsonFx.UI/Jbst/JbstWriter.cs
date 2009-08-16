@@ -56,12 +56,6 @@ namespace JsonFx.UI.Jbst
 
 		private const string AnonymousPrefix = "anonymous_";
 
-		private const string NamespaceFormat = 
-@"/* namespace {0} */
-if (""undefined"" === typeof {0}) {{
-	{0} = {{}};
-}}";
-
 		#endregion Constants
 
 		#region Fields
@@ -355,17 +349,7 @@ if (""undefined"" === typeof {0}) {{
 				writer.WriteLine("/*global {0} */", globals);
 			}
 
-			string[] namespaces = this.Name.Split(new char[] { '.' }, StringSplitOptions.RemoveEmptyEntries);
-			for (int i=0; i<namespaces.Length-1; i++)
-			{
-				string ident = (i == 0) ?
-					namespaces[i] :
-					String.Join(".", namespaces, 0, i+1);
-
-				writer.WriteLine();
-				writer.WriteLine(NamespaceFormat, ident);
-				writer.WriteLine();
-			}
+			EcmaScriptWriter.WriteNamespaceDeclaration(writer, this.Name, null, true);
 
 			// wrap with ctor and assign
 			writer.Write(this.Name);
@@ -654,7 +638,6 @@ if (""undefined"" === typeof {0}) {{
 			StringBuilder globals = new StringBuilder();
 
 			this.Imports.Insert(0, "JsonML.BST");
-			this.Imports.Add(this.Name);
 
 			foreach (string import in this.Imports)
 			{

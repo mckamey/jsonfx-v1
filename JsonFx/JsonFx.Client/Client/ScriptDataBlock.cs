@@ -46,15 +46,8 @@ namespace JsonFx.Client
 	{
 		#region Constants
 
-		private static readonly char[] VariableDelims = new char[] { '.' };
 		private const string ScriptOpen = "<script type=\"text/javascript\">";
 		private const string ScriptClose = "</script>";
-		private const string NamespaceCheck = @"if(""undefined""===typeof {0}){{{0}={{}};}}";
-		private const string NamespaceCheckDebug = @"
-if (""undefined"" === typeof {0}) {{
-	{0} = {{}};
-}}";
-		private const string VarDeclaration = "var {0};";
 		private const string VarAssignmentDebug = "{0} = ";
 		private const string VarAssignment = "{0}=";
 		private const string VarAssignmentEnd = ";";
@@ -153,42 +146,14 @@ if (""undefined"" === typeof {0}) {{
 
 				foreach (string key in this.Data.Keys)
 				{
-					string[] nsParts = key.Split(VariableDelims, StringSplitOptions.RemoveEmptyEntries);
-					for (int i = 0; i<nsParts.Length-1; i++)
+					string declaration;
+					if (!EcmaScriptWriter.WriteNamespaceDeclaration(writer, key, namespaces, this.IsDebug))
 					{
-						string ns = String.Join(".", nsParts, 0, i+1);
-						if (namespaces.Contains(ns))
-						{
-							// don't emit multiple checks for same namespace
-							continue;
-						}
-
-						// make note that we've emitted this namespace before
-						namespaces.Add(ns);
-
-						if (i == 0)
-						{
-							if (this.IsDebug)
-							{
-								writer.WriteLine();
-							}
-							writer.Write(VarDeclaration, ns);
-						}
-
-						if (this.IsDebug)
-						{
-							writer.WriteLine(NamespaceCheckDebug, ns);
-						}
-						else
-						{
-							writer.Write(NamespaceCheck, ns);
-						}
+						declaration = "var "+key;
 					}
-
-					string declaration = key;
-					if (nsParts.Length == 1)
+					else
 					{
-						declaration = "var "+declaration;
+						declaration = key;
 					}
 
 					if (this.IsDebug)
