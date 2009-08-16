@@ -1,5 +1,19 @@
 Release History
 
+v1.1.0908.1614
+- cleaned up and centralized JavaScript namespace generation
+- added reserved word checking to identifiers
+- cleaned up JSON-RPC service proxy output
+
+v1.1.0908.1209
+- added better EcmaScriptIdentifier/String conversions
+
+v1.1.0908.0911
+- added EcmaScriptIdentifier type to be able to natively serialize references to objects/functions
+
+v1.1.0908.0909
+- add configuration section to be able to better control compaction settings
+
 v1.1.0907.2623
 - replaced JSLint/JSMin/MSScriptControl with YuiCompressor.NET/EcmaScript.NET
 - added configuration section for controlling script compaction
