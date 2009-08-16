@@ -1,4 +1,3 @@
-/*global JsonFx, Resources */
 /*
 	JsonFx_Lang.js
 	client-size globalization support
@@ -15,7 +14,6 @@ var JsonFx;
 if ("undefined" === typeof JsonFx) {
 	JsonFx = {};
 }
-
 if ("undefined" === typeof JsonFx.Lang) {
 
 	/* ctor */

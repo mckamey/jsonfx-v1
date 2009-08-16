@@ -1,4 +1,4 @@
-﻿/*global JSON, Example */
+﻿/*global JSON */
 
 /*
 	it is a best practice to not clutter the global namespace

@@ -1,4 +1,4 @@
-/*global JSON, JsonML, JsonFx, jQuery, $ */
+/*global JSON, JsonML, jQuery, $ */
 /*
 	JsonFx_UI.js
 	DOM utilities
@@ -10,12 +10,11 @@
 	Distributed under an open-source license: http://jsonfx.net/license
 */
 
-/* namespace JsonFx */
+/* namespace JsonFx.UI */
 var JsonFx;
 if ("undefined" === typeof JsonFx) {
 	JsonFx = {};
 }
-/* namespace JsonFx.UI */
 if ("undefined" === typeof JsonFx.UI) {
 	JsonFx.UI = {};
 }

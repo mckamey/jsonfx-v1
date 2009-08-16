@@ -1,5 +1,4 @@
-﻿/*global JsonML */
-/*
+﻿/*
 	JsonML_BST.js
 	JsonML + Browser-Side Templating (JBST) support
 

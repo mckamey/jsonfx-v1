@@ -1,4 +1,4 @@
-﻿/*global JsonFx, jQuery */
+﻿/*global jQuery */
 /*
 	JsonFx_UA.js
 	user-agent specific CSS support
