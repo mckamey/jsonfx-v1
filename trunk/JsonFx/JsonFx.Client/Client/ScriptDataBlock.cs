@@ -51,9 +51,9 @@ namespace JsonFx.Client
 		private const string ScriptClose = "</script>";
 		private const string NamespaceCheck = @"if(""undefined""===typeof {0}){{{0}={{}};}}";
 		private const string NamespaceCheckDebug = @"
-			if (""undefined"" === typeof {0}) {{
-				{0} = {{}};
-			}}";
+if (""undefined"" === typeof {0}) {{
+	{0} = {{}};
+}}";
 		private const string VarDeclaration = "var {0};";
 		private const string VarAssignmentDebug = "{0} = ";
 		private const string VarAssignment = "{0}=";
@@ -170,12 +170,9 @@ namespace JsonFx.Client
 						{
 							if (this.IsDebug)
 							{
-								writer.WriteLine(VarDeclaration, ns);
+								writer.WriteLine();
 							}
-							else
-							{
-								writer.Write(VarDeclaration, ns);
-							}
+							writer.Write(VarDeclaration, ns);
 						}
 
 						if (this.IsDebug)
