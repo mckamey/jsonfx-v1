@@ -29,11 +29,12 @@
 #endregion License
 
 using System;
+using System.Globalization;
 using System.IO;
 using System.Text;
-using System.Globalization;
 using System.Text.RegularExpressions;
 
+using JsonFx.Json;
 using JsonFx.JsonRpc.Discovery;
 
 namespace JsonFx.JsonRpc.Proxy
@@ -47,19 +48,13 @@ namespace JsonFx.JsonRpc.Proxy
 
 		private readonly object SyncLock = new object();
 
-		private const string Pattern_Identifier = @"^[a-zA-Z_][0-9a-zA-Z_]+$";
-		private Regex Regex_Identifier = new Regex(Pattern_Identifier, RegexOptions.Compiled|RegexOptions.CultureInvariant);
-
-		private const char NamespaceDelim = '.';
-		private static readonly char[] NamespaceDelims = { '.' };
-
 		#endregion Constants
 
 		#region Fields
 
-		private JsonServiceDescription service;
-		private string proxyNamespace = null;
 		private JsonServiceProxyFormat formatter = null;
+		private readonly JsonServiceDescription service;
+		private readonly string serviceProxyName = null;
 
 		#endregion Fields
 
@@ -70,7 +65,7 @@ namespace JsonFx.JsonRpc.Proxy
 			this.service = service;
 			if (!String.IsNullOrEmpty(service.Namespace))
 			{
-				this.proxyNamespace = service.Namespace + JsonServiceProxyGenerator.NamespaceDelim;
+				this.serviceProxyName = service.Namespace+'.'+service.Name;
 			}
 		}
 
@@ -85,7 +80,7 @@ namespace JsonFx.JsonRpc.Proxy
 
 		public string ProxyNamespace
 		{
-			get { return this.proxyNamespace; }
+			get { return this.serviceProxyName; }
 		}
 
 		#endregion Properties
@@ -94,16 +89,10 @@ namespace JsonFx.JsonRpc.Proxy
 
 		public string OutputProxy(bool prettyPrint)
 		{
-			StringBuilder builder = new StringBuilder();
-			this.OutputProxy(builder, prettyPrint);
-			return builder.ToString();
-		}
-
-		public void OutputProxy(StringBuilder builder, bool prettyPrint)
-		{
-			using (TextWriter writer = new StringWriter(builder, CultureInfo.InvariantCulture))
+			using (StringWriter writer = new StringWriter(CultureInfo.InvariantCulture))
 			{
 				this.OutputProxy(writer, prettyPrint);
+				return writer.GetStringBuilder().ToString();
 			}
 		}
 
@@ -127,12 +116,12 @@ namespace JsonFx.JsonRpc.Proxy
 				}
 				else
 				{
-					this.formatter = new CompactJsonServiceProxyFormat();
+					this.formatter = new JsonServiceProxyFormat();
 				}
 
 				this.WriteNamespaces(writer);
 
-				writer.Write(this.formatter.ProxyInstantiationFormat, this.ProxyNamespace, this.Service.Name, this.service.Address);
+				writer.Write(this.formatter.ProxyInstantiationFormat, this.ProxyNamespace, EcmaScriptWriter.Serialize(this.service.Address));
 
 				foreach (JsonMethodDescription method in this.Service.Methods)
 				{
@@ -141,7 +130,7 @@ namespace JsonFx.JsonRpc.Proxy
 
 				if (prettyPrint)
 				{
-					this.WriteProperty(writer, "isDebug", "true");
+					this.WriteProperty(writer, "isDebug", true);
 				}
 			}
 		}
@@ -152,51 +141,35 @@ namespace JsonFx.JsonRpc.Proxy
 
 		private void WriteNamespaces(TextWriter writer)
 		{
+			writer.Write(this.formatter.GlobalsFormat);
+
 			if (!String.IsNullOrEmpty(this.ProxyNamespace))
 			{
-				string[] namespaces = this.ProxyNamespace.Split(JsonServiceProxyGenerator.NamespaceDelims, StringSplitOptions.RemoveEmptyEntries);
-				string combined = String.Empty;
-				foreach (string ns in namespaces)
-				{
-					if (!String.IsNullOrEmpty(combined))
-					{
-						combined += JsonServiceProxyGenerator.NamespaceDelim;
-					}
-					else
-					{
-						writer.Write(this.formatter.ExternFormat, ns);
-					}
-					combined += ns;
-					writer.Write(this.formatter.NamespaceFormat, combined);
-				}
-			}
-			else
-			{
-				writer.Write(this.formatter.ExternFormat, this.Service.Name);
+				EcmaScriptWriter.WriteNamespaceDeclaration(writer, this.ProxyNamespace, null, this.formatter.IsDebug);
 			}
 		}
 
-		private void WriteProperty(TextWriter writer, string name, string value)
+		private void WriteProperty(TextWriter writer, string name, object value)
 		{
-			if (Regex_Identifier.Match(name).Success)
+			if (EcmaScriptIdentifier.IsValidIdentifier(name, false))
 			{
-				writer.Write(this.formatter.PropertyFormat, this.ProxyNamespace, this.Service.Name, name, value);
+				writer.Write(this.formatter.PropertyFormat, this.ProxyNamespace, name, EcmaScriptWriter.Serialize(value));
 			}
 			else
 			{
-				writer.Write(this.formatter.SafePropertyFormat, this.ProxyNamespace, this.Service.Name, name, value);
+				writer.Write(this.formatter.SafePropertyFormat, this.ProxyNamespace, EcmaScriptWriter.Serialize(name), EcmaScriptWriter.Serialize(value));
 			}
 		}
 
 		private void WriteMethod(TextWriter writer, JsonMethodDescription method)
 		{
-			if (Regex_Identifier.Match(method.Name).Success)
+			if (EcmaScriptIdentifier.IsValidIdentifier(method.Name, false))
 			{
-				writer.Write(this.formatter.MethodBeginFormat, this.ProxyNamespace, this.Service.Name, this.ConvertParamType(method.Return.Type), method.Name);
+				writer.Write(this.formatter.MethodBeginFormat, this.ProxyNamespace, method.Name, this.ConvertParamType(method.Return.Type));
 			}
 			else
 			{
-				writer.Write(this.formatter.SafeMethodBeginFormat, this.ProxyNamespace, this.Service.Name, this.ConvertParamType(method.Return.Type), method.Name);
+				writer.Write(this.formatter.SafeMethodBeginFormat, this.ProxyNamespace, EcmaScriptWriter.Serialize(method.Name), this.ConvertParamType(method.Return.Type));
 			}
 
 			foreach (JsonNamedParameterDescription param in method.Params)
@@ -204,7 +177,7 @@ namespace JsonFx.JsonRpc.Proxy
 				this.WriteParameter(writer, param);
 			}
 
-			writer.Write(this.formatter.MethodMiddleFormat, method.Name);
+			writer.Write(this.formatter.MethodMiddleFormat, EcmaScriptWriter.Serialize(method.Name));
 
 			if (method.Params.Length > 0)
 			{
@@ -226,7 +199,7 @@ namespace JsonFx.JsonRpc.Proxy
 		private void WriteParameter(TextWriter writer, JsonNamedParameterDescription param)
 		{
 			string paramType = this.ConvertParamType(param.Type);
-			writer.Write(this.formatter.ParamFormat, paramType, param.Name);
+			writer.Write(this.formatter.ParamFormat, param.Name, paramType);
 		}
 
 		private string ConvertParamType(JsonParameterType paramType)
@@ -251,90 +224,63 @@ namespace JsonFx.JsonRpc.Proxy
 		#endregion Methods
 	}
 
-	internal abstract class JsonServiceProxyFormat
+	internal class JsonServiceProxyFormat
 	{
 		#region Properties
 
-		internal abstract string ExternFormat { get; }
+		public virtual bool IsDebug
+		{
+			get { return false; }
+		}
 
-		internal abstract string NamespaceFormat { get; }
-
-		internal abstract string ProxyInstantiationFormat { get; }
-
-		internal abstract string PropertyFormat { get; }
-
-		internal abstract string SafePropertyFormat { get; }
-
-		internal abstract string MethodBeginFormat { get; }
-
-		internal abstract string SafeMethodBeginFormat { get; }
-
-		internal abstract string MethodMiddleFormat { get; }
-
-		internal abstract string MethodEndFormat { get; }
-
-		internal abstract string ParamFormat { get; }
-
-		internal virtual string ArgsFormat
+		public virtual string ArgsFormat
 		{
 			get { return "[{0}]"; }
 		}
 
-		#endregion Properties
-	}
-
-	internal class CompactJsonServiceProxyFormat : JsonServiceProxyFormat
-	{
-		#region Properties
-
-		internal override string ExternFormat
+		public virtual string GlobalsFormat
 		{
-			get { return "var {0};"; }
+			get { return ""; }
 		}
 
-		internal override string NamespaceFormat
+		public virtual string ProxyInstantiationFormat
 		{
-			get { return "if(\"undefined\"===typeof {0}){{{0}={{}};}}"; }
+			get { return "{0}=new JsonFx.IO.Service({1});"; }
 		}
 
-		internal override string ProxyInstantiationFormat
+		public virtual string PropertyFormat
 		{
-			get { return "{0}{1}=new JsonFx.IO.Service(\"{2}\");"; }
+			get { return "{0}.{1}={2};"; }
 		}
 
-		internal override string PropertyFormat
+		public virtual string SafePropertyFormat
 		{
-			get { return "{0}{1}.{2}=\"{3}\";"; }
+			get { return "{0}[{1}]={2};"; }
 		}
 
-		internal override string SafePropertyFormat
+		public virtual string MethodBeginFormat
 		{
-			get { return "{0}{1}.\"{2}\"]=\"{3}\";"; }
+			get { return "{0}.{1}=function("; }
 		}
 
-		internal override string MethodBeginFormat
+		public virtual string SafeMethodBeginFormat
 		{
-			get { return "{0}{1}.{3}=function("; }
+			get { return "{0}[{1}]=function("; }
 		}
 
-		internal override string SafeMethodBeginFormat
+		public virtual string MethodMiddleFormat
 		{
-			get { return "{0}{1}[\"{3}\"]=function("; }
+			get { return "opt){{this.invoke({0},"; }
 		}
 
-		internal override string MethodMiddleFormat
-		{
-			get { return "opt){{this.invoke(\"{0}\","; }
-		}
-
-		internal override string MethodEndFormat
+		public virtual string MethodEndFormat
 		{
 			get { return ",opt);};"; }
 		}
 
-		internal override string ParamFormat
+		public virtual string ParamFormat
 		{
-			get { return "{1},"; }
+			get { return "{0},"; }
 		}
 
 		#endregion Properties
@@ -344,54 +290,59 @@ namespace JsonFx.JsonRpc.Proxy
 	{
 		#region Properties
 
-		internal override string ExternFormat
+		public override bool IsDebug
 		{
-			get { return "/*global JsonFx, {0}*/\r\n\r\nvar {0};\r\n"; }
+			get { return true; }
 		}
 
-		internal override string NamespaceFormat
+		public override string ArgsFormat
 		{
-			get { return "if (\"undefined\" === typeof {0}) {{\r\n\t{0} = {{}};\r\n}}\r\n"; }
+			get { return "[ {0} ]"; }
 		}
 
-		internal override string ProxyInstantiationFormat
+		public override string GlobalsFormat
 		{
-			get { return "\r\n/*proxy*/ {0}{1} = new JsonFx.IO.Service(\"{2}\");\r\n\r\n"; }
+			get { return "/*global JsonFx */\r\n\r\n"; }
 		}
 
-		internal override string PropertyFormat
+		public override string ProxyInstantiationFormat
 		{
-			get { return "/*string*/ {0}{1}.{2} = \"{3}\";\r\n\r\n"; }
+			get { return "\r\n/*proxy*/ {0} = new JsonFx.IO.Service({1});\r\n\r\n"; }
 		}
 
-		internal override string SafePropertyFormat
+		public override string PropertyFormat
 		{
-			get { return "/*string*/ {0}{1}[\"{2}\"] = \"{3}\";\r\n\r\n"; }
+			get { return "/*string*/ {0}.{1} = {2};\r\n\r\n"; }
 		}
 
-		internal override string MethodBeginFormat
+		public override string SafePropertyFormat
 		{
-			get { return "/*{2}*/ {0}{1}.{3} = function("; }
+			get { return "/*string*/ {0}[{1}] = {2};\r\n\r\n"; }
 		}
 
-		internal override string SafeMethodBeginFormat
+		public override string MethodBeginFormat
 		{
-			get { return "/*{2}*/ {0}{1}[\"{3}\"] = function("; }
+			get { return "/*{2}*/ {0}.{1} = function("; }
 		}
 
-		internal override string MethodMiddleFormat
+		public override string SafeMethodBeginFormat
 		{
-			get { return "/*RequestOptions*/ options) {{\r\n\tthis.invoke(\"{0}\", "; }
+			get { return "/*{2}*/ {0}[{1}] = function("; }
 		}
 
-		internal override string MethodEndFormat
+		public override string MethodMiddleFormat
+		{
+			get { return "/*RequestOptions*/ options) {{\r\n\tthis.invoke({0}, "; }
+		}
+
+		public override string MethodEndFormat
 		{
 			get { return ", options);\r\n};\r\n\r\n"; }
 		}
 
-		internal override string ParamFormat
+		public override string ParamFormat
 		{
-			get { return "/*{0}*/ {1}, "; }
+			get { return "/*{1}*/ {0}, "; }
 		}
 
 		#endregion Properties

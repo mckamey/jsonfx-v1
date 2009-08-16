@@ -217,7 +217,7 @@ namespace JsonFx.Json
 		#region Static Methods
 
 		/// <summary>
-		/// A fast method for serializing an object to JSON
+		/// A helper method for serializing an object to JSON
 		/// </summary>
 		/// <param name="value"></param>
 		/// <returns></returns>
