@@ -1,4 +1,4 @@
-/*global JSON, JsonFx, ActiveXObject */
+/*global JSON, ActiveXObject */
 /*
 	JsonFx_IO.js
 	Ajax & JSON-RPC support
@@ -39,7 +39,7 @@ if ("undefined" === typeof JSON) {
 			];
 
 		// XMLHttpRequest: augment browser to have "native" XHR
-		/*XMLHttpRequest*/ XMLHttpRequest = function() {
+		/*XHR*/ XMLHttpRequest = function() {
 			while (XHR_OCXs.length) {
 				try {
 					return new ActiveXObject(XHR_OCXs[0]);
