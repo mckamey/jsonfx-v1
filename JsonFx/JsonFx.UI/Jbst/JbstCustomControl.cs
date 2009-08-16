@@ -233,7 +233,8 @@ namespace JsonFx.UI.Jbst
 		/// <param name="writer"></param>
 		private void RenderSimpleCustomControl(JsonWriter writer)
 		{
-			writer.TextWriter.Write(ControlSimpleFormat,
+			writer.TextWriter.Write(
+				ControlSimpleFormat,
 				this.nameExpr,
 				this.dataExpr,
 				this.indexExpr,
