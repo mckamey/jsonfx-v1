@@ -1,4 +1,4 @@
-/*global JSON, JsonFx */
+/*global JSON */
 /*
 	JsonFx_History.js
 	Ajax history support
@@ -10,16 +10,16 @@
 	Released under an open-source license: http://jsonfx.net/license
 */
 
-/* namespace JsonFx */
-var JsonFx;
-if ("undefined" === typeof JsonFx) {
-	JsonFx = {};
-}
-
 /* dependency checks --------------------------------------------*/
 
 if ("undefined" === typeof JSON) {
 	throw new Error("JsonFx.History requires JSON");
+}
+
+/* namespace JsonFx */
+var JsonFx;
+if ("undefined" === typeof JsonFx) {
+	JsonFx = {};
 }
 
 /* Utilities ----------------------------------------------------*/

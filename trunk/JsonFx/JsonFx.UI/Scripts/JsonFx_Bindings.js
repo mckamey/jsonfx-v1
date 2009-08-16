@@ -1,4 +1,4 @@
-/*global JsonFx, JsonML, jQuery, window */
+/*global JsonML, jQuery, window */
 /*
 	JsonFx_Bindings.js
 	dynamic behavior binding support
@@ -12,12 +12,11 @@
 
 /* dependency checks --------------------------------------------*/
 
-/* namespace JsonFx */
+/* namespace JsonFx.UI */
 var JsonFx;
 if ("undefined" === typeof JsonFx) {
 	JsonFx = {};
 }
-/* namespace JsonFx.UI */
 if ("undefined" === typeof JsonFx.UI) {
 	JsonFx.UI = {};
 }
