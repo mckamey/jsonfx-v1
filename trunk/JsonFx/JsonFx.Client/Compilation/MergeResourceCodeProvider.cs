@@ -79,6 +79,8 @@ namespace JsonFx.Compilation
 
 		protected override void ResetCodeProvider()
 		{
+			base.ResetCodeProvider();
+
 			this.contentType = "text/plain";
 			this.fileExtension = "txt";
 			this.isMimeSet = false;
