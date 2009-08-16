@@ -837,7 +837,7 @@ namespace JsonFx.Json
 					}
 
 					this.WriteLine();
-					this.Write((String)name);
+					this.WriteObjectPropertyName((string)name);
 					this.writer.Write(JsonReader.OperatorNameDelim);
 					this.Write(value[name], true);
 				}
@@ -852,6 +852,11 @@ namespace JsonFx.Json
 				this.WriteLine();
 			}
 			this.writer.Write(JsonReader.OperatorObjectEnd);
+		}
+
+		protected virtual void WriteObjectPropertyName(string name)
+		{
+			this.Write(name);
 		}
 
 		protected virtual void WriteObject(object value, Type type)
@@ -879,7 +884,7 @@ namespace JsonFx.Json
 					}
 
 					this.WriteLine();
-					this.Write(this.TypeHintName);
+					this.WriteObjectPropertyName(this.TypeHintName);
 					this.writer.Write(JsonReader.OperatorNameDelim);
 					this.Write(type.FullName+", "+type.Assembly.GetName().Name, true);
 				}
@@ -927,7 +932,7 @@ namespace JsonFx.Json
 					}
 
 					this.WriteLine();
-					this.Write(propertyName);
+					this.WriteObjectPropertyName(propertyName);
 					this.writer.Write(JsonReader.OperatorNameDelim);
 					this.Write(propertyValue, true);
 				}
@@ -969,7 +974,7 @@ namespace JsonFx.Json
 					}
 
 					// use Attributes here to control naming
-					this.Write(fieldName);
+					this.WriteObjectPropertyName(fieldName);
 					this.writer.Write(JsonReader.OperatorNameDelim);
 					this.Write(fieldValue, true);
 				}

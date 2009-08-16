@@ -138,6 +138,19 @@ namespace JsonFx.Json
 			base.Write(value, isProperty);
 		}
 
+		protected override void WriteObjectPropertyName(string name)
+		{
+			if (!EcmaScriptIdentifier.IsValidIdentifier(name, false))
+			{
+				// write out as a string
+				base.WriteObjectPropertyName(name);
+				return;
+			}
+
+			// write out without quoting
+			this.TextWriter.Write(name);
+		}
+
 		public static void WriteEcmaScriptDate(JsonWriter writer, DateTime value)
 		{
 			if (value.Kind == DateTimeKind.Unspecified)
