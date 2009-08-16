@@ -79,13 +79,39 @@ namespace JsonFx.Json
 		#region Methods
 
 		/// <summary>
-		/// Verifies is a valid EcmaScript variable expression.
+		/// Ensures is a valid EcmaScript variable expression.
 		/// </summary>
 		/// <param name="varExpr">the variable expression</param>
 		/// <returns>varExpr</returns>
 		public static string EnsureValidIdentifier(string varExpr, bool nested)
 		{
 			return EcmaScriptIdentifier.EnsureValidIdentifier(varExpr, nested, true);
+		}
+
+		/// <summary>
+		/// Ensures is a valid EcmaScript variable expression.
+		/// </summary>
+		/// <param name="varExpr">the variable expression</param>
+		/// <returns>varExpr</returns>
+		public static string EnsureValidIdentifier(string varExpr, bool nested, bool throwOnEmpty)
+		{
+			if (String.IsNullOrEmpty(varExpr))
+			{
+				if (throwOnEmpty)
+				{
+					throw new ArgumentException("Variable expression is empty.");
+				}
+				return String.Empty;
+			}
+
+			varExpr = varExpr.Replace(" ", "");
+
+			if (!EcmaScriptIdentifier.IsValidIdentifier(varExpr, nested))
+			{
+				throw new ArgumentException("Variable expression \""+varExpr+"\" is not supported.");
+			}
+
+			return varExpr;
 		}
 
 		/// <summary>
@@ -103,29 +129,22 @@ namespace JsonFx.Json
 		/// IdentifierPart =
 		///		IdentifierStart | Digit
 		/// </remarks>
-		public static string EnsureValidIdentifier(string varExpr, bool nested, bool throwOnEmpty)
+		public static bool IsValidIdentifier(string varExpr, bool nested)
 		{
-			if (String.IsNullOrEmpty(varExpr))
+			// TODO: ensure nested is not a keyword
+			if (!nested && EcmaScriptIdentifier.IsReservedWord(varExpr))
 			{
-				if (throwOnEmpty)
-				{
-					throw new ArgumentException("Variable expression is empty.");
-				}
-				return String.Empty;
+				return false;
 			}
 
-			varExpr = varExpr.Replace(" ", "");
-
 			bool indentPart = false;
-
-			// TODO: ensure is not a keyword
 			foreach (char ch in varExpr)
 			{
 				if (indentPart)
 				{
 					if (ch == '.' && nested)
 					{
-						// reset to IndentifierStart
+						// reset to IdentifierPart
 						indentPart = false;
 						continue;
 					}
@@ -143,10 +162,93 @@ namespace JsonFx.Json
 					continue;
 				}
 
-				throw new ArgumentException("Variable expression \""+varExpr+"\" is not supported.");
+				return false;
 			}
 
-			return varExpr;
+			return true;
+		}
+
+		private static bool IsReservedWord(string varExpr)
+		{
+			// TODO: investigate doing this like Rhino does (switch on length check first letter or two)
+			switch (varExpr)
+			{
+				// literals
+				case "null":
+				case "false":
+				case "true":
+
+				// ES5 Keywords
+				case "break":
+				case "case":
+				case "catch":
+				case "continue":
+				case "debugger":
+				case "default":
+				case "delete":
+				case "do":
+				case "else":
+				case "finally":
+				case "for":
+				case "function":
+				case "if":
+				case "in":
+				case "instanceof":
+				case "new":
+				case "return":
+				case "switch":
+				case "this":
+				case "throw":
+				case "try":
+				case "typeof":
+				case "var":
+				case "void":
+				case "while":
+				case "with":
+
+				// ES5 Future Reserved Words
+				case "abstract":
+				case "boolean":
+				case "byte":
+				case "char":
+				case "class":
+				case "const":
+				case "double":
+				case "enum":
+				case "export":
+				case "extends":
+				case "final":
+				case "float":
+				case "goto":
+				case "implements":
+				case "import":
+				case "int":
+				case "interface":
+				case "long":
+				case "native":
+				case "package":
+				case "private":
+				case "protected":
+				case "public":
+				case "short":
+				case "static":
+				case "super":
+				case "synchronized":
+				case "throws":
+				case "transient":
+				case "volatile":
+
+				// ES5 Possible Reserved Words
+				case "let":
+				case "yield":
+				{
+					return true;
+				}
+				default:
+				{
+					return false;
+				}
+			}
 		}
 
 		/// <summary>
