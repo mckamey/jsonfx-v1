@@ -1,5 +1,9 @@
 Release History
 
+v1.1.0908.1708
+- extended EcmaScriptIdentifier keyword check to support nested Identifiers
+- added list of intrinsic objects so EcmaScriptWriter doesn't emit var for default browser objects
+
 v1.1.0908.1614
 - cleaned up and centralized JavaScript namespace generation
 - added reserved word checking to identifiers
