@@ -67,6 +67,19 @@ var {0};";
 if (""undefined"" === typeof {0}) {{
 	{0} = {{}};
 }}";
+		private static readonly IList<string> BrowserObjects = new List<string>(new string[]
+		{
+			"console",
+			"document",
+			"event",
+			"frames",
+			"history",
+			"location",
+			"navigator",
+			"opera",
+			"screen",
+			"window"
+		});
 
 		#endregion Constants
 
@@ -163,7 +176,8 @@ if (""undefined"" === typeof {0}) {{
 					ns += nsParts[i];
 				}
 
-				if (namespaces.Contains(ns))
+				if (namespaces.Contains(ns) ||
+					EcmaScriptWriter.BrowserObjects.Contains(ns))
 				{
 					// don't emit multiple checks for same namespace
 					continue;
