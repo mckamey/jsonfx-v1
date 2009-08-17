@@ -131,8 +131,25 @@ namespace JsonFx.Json
 		/// </remarks>
 		public static bool IsValidIdentifier(string varExpr, bool nested)
 		{
-			// TODO: ensure nested is not a keyword
-			if (!nested && EcmaScriptIdentifier.IsReservedWord(varExpr))
+			if (String.IsNullOrEmpty(varExpr))
+			{
+				return false;
+			}
+
+			if (nested)
+			{
+				string[] parts = varExpr.Split('.');
+				foreach (string part in parts)
+				{
+					if (!EcmaScriptIdentifier.IsValidIdentifier(part, false))
+					{
+						return false;
+					}
+				}
+				return true;
+			}
+
+			if (EcmaScriptIdentifier.IsReservedWord(varExpr))
 			{
 				return false;
 			}
@@ -140,19 +157,10 @@ namespace JsonFx.Json
 			bool indentPart = false;
 			foreach (char ch in varExpr)
 			{
-				if (indentPart)
+				if (indentPart && Char.IsDigit(ch))
 				{
-					if (ch == '.' && nested)
-					{
-						// reset to IdentifierPart
-						indentPart = false;
-						continue;
-					}
-
-					if (Char.IsDigit(ch))
-					{
-						continue;
-					}
+					// digits are only allowed after first char
+					continue;
 				}
 
 				// can be start or part
