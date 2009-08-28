@@ -115,7 +115,14 @@ namespace JsonFx.JsonRpc
 			if (rpcResponse.ErrorSpecified)
 			{
 				JsonServiceException ex = new JsonServiceException(rpcResponse.Error.Message);
-				ex.Data["JSON-RPC"] = rpcResponse.Error;
+				try
+				{
+					ex.Data["JSON-RPC"] = rpcResponse.Error;
+				}
+				catch (ArgumentException)
+				{
+					// TODO: fix "System.ArgumentException: Argument passed in is not serializable."
+				}
 				throw ex;
 			}
 
