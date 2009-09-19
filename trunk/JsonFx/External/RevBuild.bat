@@ -1,7 +1,7 @@
 @ECHO off
 
 SET AutoVer=AutoVersioning\AutoVersioning.exe
-SET SolnDir=..\..\
+SET SolnDir=..\
 SET BaseVersion=1 1
 
 IF NOT EXIST %AutoVer% (
