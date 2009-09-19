@@ -1,4 +1,6 @@
 using System;
+using System.Collections;
+using System.CodeDom;
 using System.Web.UI;
 
 namespace JsonFx.UI.Jbst
@@ -6,11 +8,6 @@ namespace JsonFx.UI.Jbst
 	public class JbstControlBuilder :
 		System.Web.UI.ControlBuilder
 	{
-		#region Fields
-
-
-		#endregion Fields
-
 		#region ControlBuilder Members
 
 		public override bool AllowWhitespaceLiterals()
@@ -54,7 +51,7 @@ namespace JsonFx.UI.Jbst
 		}
 #endif
 
-		public override Type GetChildControlType(string tagName, System.Collections.IDictionary attribs)
+		public override Type GetChildControlType(string tagName, IDictionary attribs)
 		{
 			return base.GetChildControlType(tagName, attribs);
 		}
@@ -69,7 +66,7 @@ namespace JsonFx.UI.Jbst
 			return base.HtmlDecodeLiterals();
 		}
 
-		public override void Init(TemplateParser parser, ControlBuilder parentBuilder, Type type, string tagName, string id, System.Collections.IDictionary attribs)
+		public override void Init(TemplateParser parser, ControlBuilder parentBuilder, Type type, string tagName, string id, IDictionary attribs)
 		{
 			base.Init(parser, parentBuilder, type, tagName, id, attribs);
 		}
@@ -84,7 +81,7 @@ namespace JsonFx.UI.Jbst
 			base.OnAppendToParentBuilder(parentBuilder);
 		}
 
-		public override void ProcessGeneratedCode(System.CodeDom.CodeCompileUnit codeCompileUnit, System.CodeDom.CodeTypeDeclaration baseType, System.CodeDom.CodeTypeDeclaration derivedType, System.CodeDom.CodeMemberMethod buildMethod, System.CodeDom.CodeMemberMethod dataBindingMethod)
+		public override void ProcessGeneratedCode(CodeCompileUnit codeCompileUnit, CodeTypeDeclaration baseType, CodeTypeDeclaration derivedType, CodeMemberMethod buildMethod, CodeMemberMethod dataBindingMethod)
 		{
 			base.ProcessGeneratedCode(codeCompileUnit, baseType, derivedType, buildMethod, dataBindingMethod);
 		}
@@ -95,10 +92,5 @@ namespace JsonFx.UI.Jbst
 		}
 
 		#endregion ControlBuilder Members
-
-		#region Methods
-
-
-		#endregion Methods
 	}
 }
