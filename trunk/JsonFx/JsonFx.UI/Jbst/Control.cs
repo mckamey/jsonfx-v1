@@ -17,7 +17,7 @@ namespace JsonFx.UI.Jbst
 	//[ParseChildren(false), PersistChildren(false, true)]
 	//[ControlBuilderAttribute(typeof(JbstControlBuilder))]
 	[ToolboxData("<{0}:Control runat=\"server\" Name=\"\"></{0}:Control>")]
-	public class Control : System.Web.UI.Control
+	public class Control : AutoDataBindControl
 	{
 		#region Fields
 
