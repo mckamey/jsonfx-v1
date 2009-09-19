@@ -81,9 +81,9 @@ namespace JsonFx.Client
 			}
 		}
 
-		void OnPreRenderComplete(object sender, EventArgs e)
+		private void OnPreRenderComplete(object sender, EventArgs e)
 		{
-			// DataBind only if needed
+			// DataBind only when needed
 			if (this.needsDataBinding)
 			{
 				this.DataBind();
