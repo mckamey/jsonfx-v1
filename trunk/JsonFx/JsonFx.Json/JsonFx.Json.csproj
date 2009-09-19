@@ -91,7 +91,4 @@
   <Target Name="AfterBuild">
   </Target>
   -->
-  <PropertyGroup Condition=" '$(Configuration)' == 'Signed' ">
-    <PreBuildEvent>IF EXIST "$(SolutionDir)External\AutoVersioning\AutoVersioning.exe" "$(SolutionDir)External\AutoVersioning\AutoVersioning.exe" "$(ProjectDir)Properties\AssemblyVersion.cs" 1 1</PreBuildEvent>
-  </PropertyGroup>
 </Project>
