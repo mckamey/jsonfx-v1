@@ -295,11 +295,20 @@ JsonFx.Bindings = function() {
 
 	// shorthand for auto-replacing an element with JBST bind
 	/*void*/ b.replace = function(/*string*/ selector, /*JBST*/ jbst, /*object*/ data, /*int*/ index, /*int*/ count) {
-		JsonFx.Bindings.add(
-			selector,
-			function(elem) {
-				return JsonML.BST(jbst).bind(data, index, count) || elem;
+		if ("undefined" !== typeof jQuery) {
+			jQuery(function() {
+				var elem = jQuery(selector);
+				if (elem.length) {
+					elem.replaceWith(JsonML.BST(jbst).bind(data, index, count));
+				}
 			});
+		} else {
+			JsonFx.Bindings.add(
+				selector,
+				function(elem) {
+					return JsonML.BST(jbst).bind(data, index, count) || elem;
+				});
+		}
 	};
 
 	/*void*/ function addHandler(/*DOM*/ target, /*string*/ name, /*function*/ handler) {
