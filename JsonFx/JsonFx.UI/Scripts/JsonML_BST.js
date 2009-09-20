@@ -134,7 +134,7 @@ JsonML.BST.init = function(/*JBST*/ jbst) {
 				if (o instanceof JsonML.BST.init) {
 					// allow returned JBSTs to recursively bind
 					// useful for creating "switcher" template methods
-					return db(o, d, n, l, j);
+					return o.dataBind(d, n, l, j);
 				}
 				return o;
 			}
