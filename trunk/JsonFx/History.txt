@@ -1,5 +1,9 @@
 Release History
 
+v1.1.0909.2011
+- leveraging jQuery for replacements if available
+- bug fix for using a switcher method as template name
+
 v1.1.0909.1910
 - enabled autobinding of DataBinding expressions in JBST:Control server control
 - JBST server control can now bind initial data without using code behind
