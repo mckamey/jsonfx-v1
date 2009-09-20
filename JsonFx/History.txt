@@ -1,5 +1,9 @@
 Release History
 
+v1.1.0909.1910
+- enabled autobinding of DataBinding expressions in JBST:Control server control
+- JBST server control can now bind initial data without using code behind
+
 v1.1.0908.1708
 - extended EcmaScriptIdentifier keyword check to support nested Identifiers
 - added list of intrinsic objects so EcmaScriptWriter doesn't emit var for default browser objects
