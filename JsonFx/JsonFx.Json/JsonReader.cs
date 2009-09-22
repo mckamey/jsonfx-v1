@@ -84,7 +84,7 @@ namespace JsonFx.Json
 		private const string ErrorExpectedArray = "Expected JSON array.";
 		private const string ErrorExpectedPropertyName = "Expected JSON object property name.";
 		private const string ErrorExpectedPropertyNameDelim = "Expected JSON object property name delimiter.";
-		internal const string ErrorGenericIDictionary = "Types which implement Generic IDictionary<TKey, TValue> also need to implement IDictionary to be deserialized. ({0})";
+		private const string ErrorGenericIDictionary = "Types which implement Generic IDictionary<TKey, TValue> also need to implement IDictionary to be deserialized. ({0})";
 		private const string ErrorGenericIDictionaryKeys = "Types which implement Generic IDictionary<TKey, TValue> need to have string keys to be deserialized. ({0})";
 
 		#endregion Constants
