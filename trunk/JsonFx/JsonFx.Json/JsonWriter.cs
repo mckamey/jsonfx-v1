@@ -58,8 +58,7 @@ namespace JsonFx.Json
 
 		private const string AnonymousTypePrefix = "<>f__AnonymousType";
 		private const string ErrorMaxDepth = "The maxiumum depth of {0} was exceeded. Check for cycles in object graph.";
-		private const string ErrorGenericIDictionary = "Types which implement Generic IDictionary<TKey, TValue> must have string keys to be serialized. ({0})";
-		private const string ErrorIDictionaryEnumerator = "Types which implement Generic IDictionary<TKey, TValue> must have an enumerator which implements IDictionaryEnumerator. ({0})";
+		private const string ErrorIDictionaryEnumerator = "Types which implement Generic IDictionary<TKey, TValue> must have an IEnumerator which implements IDictionaryEnumerator. ({0})";
 
 		#endregion Constants
 
@@ -439,8 +438,7 @@ namespace JsonFx.Json
 				return;
 			}
 
-			Type genericDictionaryType = type.GetInterface(JsonReader.TypeGenericIDictionary);
-			if (genericDictionaryType != null)
+			if (type.GetInterface(JsonReader.TypeGenericIDictionary) != null)
 			{
 				try
 				{
@@ -454,7 +452,7 @@ namespace JsonFx.Json
 						this.WriteLine();
 					}
 
-					this.WriteGenericDictionary((IEnumerable)value, genericDictionaryType.GetGenericArguments());
+					this.WriteDictionary((IEnumerable)value);
 				}
 				finally
 				{
@@ -838,6 +836,17 @@ namespace JsonFx.Json
 
 		protected virtual void WriteObject(IDictionary value)
 		{
+			this.WriteDictionary((IEnumerable)value);
+		}
+
+		protected virtual void WriteDictionary(IEnumerable value)
+		{
+			IDictionaryEnumerator enumerator = value.GetEnumerator() as IDictionaryEnumerator;
+			if (enumerator == null)
+			{
+				throw new JsonSerializationException(String.Format(JsonWriter.ErrorIDictionaryEnumerator, value.GetType()));
+			}
+
 			bool appendDelim = false;
 
 			this.writer.Write(JsonReader.OperatorObjectStart);
@@ -847,9 +856,10 @@ namespace JsonFx.Json
 			{
 				throw new JsonSerializationException(String.Format(JsonWriter.ErrorMaxDepth, this.maxDepth));
 			}
+
 			try
 			{
-				foreach (object name in value.Keys)
+				while (enumerator.MoveNext())
 				{
 					if (appendDelim)
 					{
@@ -860,7 +870,7 @@ namespace JsonFx.Json
 						appendDelim = true;
 					}
 
-					this.WriteObjectProperty(Convert.ToString(name), value[name]);
+					this.WriteObjectProperty(enumerator.Entry);
 				}
 			}
 			finally
@@ -875,55 +885,9 @@ namespace JsonFx.Json
 			this.writer.Write(JsonReader.OperatorObjectEnd);
 		}
 
-		private void WriteGenericDictionary(IEnumerable value, Type[] genericArgs)
+		private void WriteObjectProperty(DictionaryEntry entry)
 		{
-			if (genericArgs.Length != 2 || genericArgs[0] != typeof(string))
-			{
-				throw new JsonSerializationException(String.Format(JsonWriter.ErrorGenericIDictionary, value.GetType()));
-			}
-
-			bool appendDelim = false;
-
-			this.writer.Write(JsonReader.OperatorObjectStart);
-
-			this.depth++;
-			if (this.depth > this.maxDepth)
-			{
-				throw new JsonSerializationException(String.Format(JsonWriter.ErrorMaxDepth, this.maxDepth));
-			}
-
-			try
-			{
-				IDictionaryEnumerator enumerator = value.GetEnumerator() as IDictionaryEnumerator;
-				if (enumerator == null)
-				{
-					throw new JsonSerializationException(String.Format(JsonWriter.ErrorIDictionaryEnumerator, value.GetType()));
-				}
-
-				while (enumerator.MoveNext())
-				{
-					if (appendDelim)
-					{
-						this.writer.Write(JsonReader.OperatorValueDelim);
-					}
-					else
-					{
-						appendDelim = true;
-					}
-					DictionaryEntry entry = enumerator.Entry;
-					this.WriteObjectProperty(Convert.ToString(entry.Key), entry.Value);
-				}
-			}
-			finally
-			{
-				this.depth--;
-			}
-
-			if (appendDelim)
-			{
-				this.WriteLine();
-			}
-			this.writer.Write(JsonReader.OperatorObjectEnd);
+			this.WriteObjectProperty(Convert.ToString(entry.Key), entry.Value);
 		}
 
 		private void WriteObjectProperty(string key, object value)
