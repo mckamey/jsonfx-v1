@@ -58,6 +58,8 @@ namespace JsonFx.Json
 
 		private const string AnonymousTypePrefix = "<>f__AnonymousType";
 		private const string ErrorMaxDepth = "The maxiumum depth of {0} was exceeded. Check for cycles in object graph.";
+		private const string ErrorGenericIDictionary = "Types which implement Generic IDictionary<TKey, TValue> must have string keys to be serialized. ({0})";
+		private const string ErrorIDictionaryEnumerator = "Types which implement Generic IDictionary<TKey, TValue> must have an enumerator which implements IDictionaryEnumerator. ({0})";
 
 		#endregion Constants
 
@@ -437,9 +439,31 @@ namespace JsonFx.Json
 				return;
 			}
 
-			if (type.GetInterface(JsonReader.TypeGenericIDictionary) != null)
+			Type genericDictionaryType = type.GetInterface(JsonReader.TypeGenericIDictionary);
+			if (genericDictionaryType != null)
 			{
-				throw new JsonSerializationException(String.Format(JsonReader.ErrorGenericIDictionary, type));
+				try
+				{
+					if (isProperty)
+					{
+						this.depth++;
+						if (this.depth > this.maxDepth)
+						{
+							throw new JsonSerializationException(String.Format(JsonWriter.ErrorMaxDepth, this.maxDepth));
+						}
+						this.WriteLine();
+					}
+
+					this.WriteGenericDictionary((IEnumerable)value, genericDictionaryType.GetGenericArguments());
+				}
+				finally
+				{
+					if (isProperty)
+					{
+						this.depth--;
+					}
+				}
+				return;
 			}
 
 			// IDictionary test must happen BEFORE IEnumerable test
@@ -836,10 +860,7 @@ namespace JsonFx.Json
 						appendDelim = true;
 					}
 
-					this.WriteLine();
-					this.WriteObjectPropertyName((string)name);
-					this.writer.Write(JsonReader.OperatorNameDelim);
-					this.Write(value[name], true);
+					this.WriteObjectProperty(Convert.ToString(name), value[name]);
 				}
 			}
 			finally
@@ -852,6 +873,65 @@ namespace JsonFx.Json
 				this.WriteLine();
 			}
 			this.writer.Write(JsonReader.OperatorObjectEnd);
+		}
+
+		private void WriteGenericDictionary(IEnumerable value, Type[] genericArgs)
+		{
+			if (genericArgs.Length != 2 || genericArgs[0] != typeof(string))
+			{
+				throw new JsonSerializationException(String.Format(JsonWriter.ErrorGenericIDictionary, value.GetType()));
+			}
+
+			bool appendDelim = false;
+
+			this.writer.Write(JsonReader.OperatorObjectStart);
+
+			this.depth++;
+			if (this.depth > this.maxDepth)
+			{
+				throw new JsonSerializationException(String.Format(JsonWriter.ErrorMaxDepth, this.maxDepth));
+			}
+
+			try
+			{
+				IDictionaryEnumerator enumerator = value.GetEnumerator() as IDictionaryEnumerator;
+				if (enumerator == null)
+				{
+					throw new JsonSerializationException(String.Format(JsonWriter.ErrorIDictionaryEnumerator, value.GetType()));
+				}
+
+				while (enumerator.MoveNext())
+				{
+					if (appendDelim)
+					{
+						this.writer.Write(JsonReader.OperatorValueDelim);
+					}
+					else
+					{
+						appendDelim = true;
+					}
+					DictionaryEntry entry = enumerator.Entry;
+					this.WriteObjectProperty(Convert.ToString(entry.Key), entry.Value);
+				}
+			}
+			finally
+			{
+				this.depth--;
+			}
+
+			if (appendDelim)
+			{
+				this.WriteLine();
+			}
+			this.writer.Write(JsonReader.OperatorObjectEnd);
+		}
+
+		private void WriteObjectProperty(string key, object value)
+		{
+			this.WriteLine();
+			this.WriteObjectPropertyName(key);
+			this.writer.Write(JsonReader.OperatorNameDelim);
+			this.Write(value, true);
 		}
 
 		protected virtual void WriteObjectPropertyName(string name)
@@ -883,10 +963,7 @@ namespace JsonFx.Json
 						appendDelim = true;
 					}
 
-					this.WriteLine();
-					this.WriteObjectPropertyName(this.TypeHintName);
-					this.writer.Write(JsonReader.OperatorNameDelim);
-					this.Write(type.FullName+", "+type.Assembly.GetName().Name, true);
+					this.WriteObjectProperty(this.TypeHintName, type.FullName+", "+type.Assembly.GetName().Name);
 				}
 
 				bool anonymousType = type.IsGenericType && type.Name.StartsWith(JsonWriter.AnonymousTypePrefix);
@@ -925,16 +1002,14 @@ namespace JsonFx.Json
 						appendDelim = true;
 					}
 
+					// use Attributes here to control naming
 					string propertyName = JsonNameAttribute.GetJsonName(property);
 					if (String.IsNullOrEmpty(propertyName))
 					{
 						propertyName = property.Name;
 					}
 
-					this.WriteLine();
-					this.WriteObjectPropertyName(propertyName);
-					this.writer.Write(JsonReader.OperatorNameDelim);
-					this.Write(propertyValue, true);
+					this.WriteObjectProperty(propertyName, propertyValue);
 				}
 
 				// serialize public fields
@@ -967,16 +1042,14 @@ namespace JsonFx.Json
 						appendDelim = true;
 					}
 
+					// use Attributes here to control naming
 					string fieldName = JsonNameAttribute.GetJsonName(field);
 					if (String.IsNullOrEmpty(fieldName))
 					{
 						fieldName = field.Name;
 					}
 
-					// use Attributes here to control naming
-					this.WriteObjectPropertyName(fieldName);
-					this.writer.Write(JsonReader.OperatorNameDelim);
-					this.Write(fieldValue, true);
+					this.WriteObjectProperty(fieldName, fieldValue);
 				}
 			}
 			finally
