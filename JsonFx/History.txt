@@ -1,5 +1,8 @@
 Release History
 
+v1.1.0909.2208
+- enabling wider serialization of generic IDictionary<TKey, TVal>
+
 v1.1.0909.2011
 - leveraging jQuery for replacements if available
 - bug fix for using a switcher method as template name
