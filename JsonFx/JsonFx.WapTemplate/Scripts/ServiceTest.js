@@ -6,6 +6,8 @@
 	allows us to simulate namespaces
 */
 
+JsonFx.UA.setCssUserAgent();
+
 /* namespace Example */
 var Example;
 if ("undefined" === typeof Example) {
