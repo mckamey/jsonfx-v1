@@ -4,7 +4,7 @@
 	user-agent specific CSS support
 
 	Created: 2006-06-10-1635
-	Modified: 2009-01-17-1321
+	Modified: 2009-09-24-2055
 
 	Copyright (c)2006-2009 Stephen M. McKamey
 	Distributed under an open-source license: http://jsonfx.net/license
