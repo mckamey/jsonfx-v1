@@ -77,7 +77,7 @@ JsonFx.UA = {
 		return fxua;
 	},
 
-	/*void*/ formatCssUserAgent: function (/*Dictionary<string,string>*/ fxua) {
+	/*string*/ formatCssUserAgent: function (/*Dictionary<string,string>*/ fxua) {
 		/*string*/ function format(/*string*/ b, /*string*/ v) {
 			/*const string*/ var PREFIX = " ua-", i;
 
@@ -96,11 +96,9 @@ JsonFx.UA = {
 			return css;
 		}
 
-		var uaCss = "";
-
+		var	uaCss = "";
 		for (var b in fxua) {
 			if (b && fxua.hasOwnProperty(b)) {
-				JsonFx.userAgent[b] = fxua[b];
 				uaCss += format(b, fxua[b]);
 			}
 		}
@@ -109,12 +107,26 @@ JsonFx.UA = {
 		return uaCss;
 	},
 
+	/* Encodes parsed userAgent object as a compact URI-Encoded key-value collection */
+	/*string*/ encodeUserAgent : function(/*Dictionary<string,string>*/ fxua) {
+		var query = "";
+		for (var b in fxua) {
+			if (b && fxua.hasOwnProperty(b)) {
+				if (query) {
+					query += "&";
+				}
+				query += encodeURIComponent(b)+"="+encodeURIComponent(fxua[b]);
+			}
+		}
+		return query;
+	},
+
 	/*	Dynamically appends CSS classes to document.body based upon user-agent. */
 	/*void*/ setCssUserAgent: function() {
 
 		// calculate userAgent immediately, poll until can apply to body
-		var fxua = JsonFx.UA.parseUserAgent(navigator.userAgent);
-		fxua = JsonFx.UA.formatCssUserAgent(fxua);
+		JsonFx.userAgent = JsonFx.UA.parseUserAgent(navigator.userAgent);
+		var fxua = JsonFx.UA.formatCssUserAgent(JsonFx.userAgent);
 
 		/*void*/ function applyCss() {
 			if (document.body.className) {
