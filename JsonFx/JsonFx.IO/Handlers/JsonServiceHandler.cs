@@ -286,7 +286,7 @@ namespace JsonFx.Handlers
 				response.Error = new JsonError(ex, JsonRpcErrors.InvalidParams);
 				Settings.OnError(this.Service, context, request, response, ex);
 			}
-			catch (JsonTypeCoersionException ex)
+			catch (JsonTypeCoercionException ex)
 			{
 				context.Response.ClearContent();
 				response.Result = null;

@@ -1277,14 +1277,14 @@ namespace JsonFx.Json
 			{
 				if (objectType.IsInterface || objectType.IsAbstract || objectType.IsValueType)
 				{
-					throw new JsonTypeCoersionException(
+					throw new JsonTypeCoercionException(
 						String.Format(TypeCoercionUtility.ErrorCannotInstantiate, objectType.FullName));
 				}
 
 				ConstructorInfo ctor = objectType.GetConstructor(Type.EmptyTypes);
 				if (ctor == null)
 				{
-					throw new JsonTypeCoersionException(
+					throw new JsonTypeCoercionException(
 						String.Format(TypeCoercionUtility.ErrorDefaultCtor, objectType.FullName));
 				}
 				Object result;
@@ -1297,9 +1297,9 @@ namespace JsonFx.Json
 				{
 					if (ex.InnerException != null)
 					{
-						throw new JsonTypeCoersionException(ex.InnerException.Message, ex.InnerException);
+						throw new JsonTypeCoercionException(ex.InnerException.Message, ex.InnerException);
 					}
-					throw new JsonTypeCoersionException("Error instantiating " + objectType.FullName, ex);
+					throw new JsonTypeCoercionException("Error instantiating " + objectType.FullName, ex);
 				}
 
 				// don't incurr the cost of member map for dictionaries
@@ -1449,7 +1449,7 @@ namespace JsonFx.Json
 						targetType.IsValueType &&
 						!isNullable)
 					{
-						throw new JsonTypeCoersionException(String.Format(TypeCoercionUtility.ErrorNullValueType, targetType.FullName));
+						throw new JsonTypeCoercionException(String.Format(TypeCoercionUtility.ErrorNullValueType, targetType.FullName));
 					}
 					return value;
 				}
@@ -1573,7 +1573,7 @@ namespace JsonFx.Json
 				}
 				catch (Exception ex)
 				{
-					throw new JsonTypeCoersionException(
+					throw new JsonTypeCoercionException(
 						String.Format("Error converting {0} to {1}", value.GetType().FullName, targetType.FullName), ex);
 				}
 			}
@@ -1635,7 +1635,7 @@ namespace JsonFx.Json
 
 				if (defaultCtor == null)
 				{
-					throw new JsonTypeCoersionException(
+					throw new JsonTypeCoercionException(
 						String.Format(TypeCoercionUtility.ErrorDefaultCtor, targetType.FullName));
 				}
 				object collection;
@@ -1648,9 +1648,9 @@ namespace JsonFx.Json
 				{
 					if (ex.InnerException != null)
 					{
-						throw new JsonTypeCoersionException(ex.InnerException.Message, ex.InnerException);
+						throw new JsonTypeCoercionException(ex.InnerException.Message, ex.InnerException);
 					}
-					throw new JsonTypeCoersionException("Error instantiating " + targetType.FullName, ex);
+					throw new JsonTypeCoercionException("Error instantiating " + targetType.FullName, ex);
 				}
 
 				// many ICollection types have an AddRange method
@@ -1675,9 +1675,9 @@ namespace JsonFx.Json
 					{
 						if (ex.InnerException != null)
 						{
-							throw new JsonTypeCoersionException(ex.InnerException.Message, ex.InnerException);
+							throw new JsonTypeCoercionException(ex.InnerException.Message, ex.InnerException);
 						}
-						throw new JsonTypeCoersionException("Error calling AddRange on " + targetType.FullName, ex);
+						throw new JsonTypeCoercionException("Error calling AddRange on " + targetType.FullName, ex);
 					}
 					return collection;
 				}
@@ -1708,9 +1708,9 @@ namespace JsonFx.Json
 							{
 								if (ex.InnerException != null)
 								{
-									throw new JsonTypeCoersionException(ex.InnerException.Message, ex.InnerException);
+									throw new JsonTypeCoercionException(ex.InnerException.Message, ex.InnerException);
 								}
-								throw new JsonTypeCoersionException("Error calling Add on " + targetType.FullName, ex);
+								throw new JsonTypeCoercionException("Error calling Add on " + targetType.FullName, ex);
 							}
 						}
 						return collection;
@@ -1724,7 +1724,7 @@ namespace JsonFx.Json
 				}
 				catch (Exception ex)
 				{
-					throw new JsonTypeCoersionException(String.Format("Error converting {0} to {1}", value.GetType().FullName, targetType.FullName), ex);
+					throw new JsonTypeCoercionException(String.Format("Error converting {0} to {1}", value.GetType().FullName, targetType.FullName), ex);
 				}
 			}
 
