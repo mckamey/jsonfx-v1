@@ -131,17 +131,17 @@ namespace JsonFx.Json
 		#endregion Methods
 	}
 
-	public class JsonTypeCoersionException : ArgumentException
+	public class JsonTypeCoercionException : ArgumentException
 	{
 		#region Init
 
-		public JsonTypeCoersionException() : base() { }
+		public JsonTypeCoercionException() : base() { }
 
-		public JsonTypeCoersionException(string message) : base(message) { }
+		public JsonTypeCoercionException(string message) : base(message) { }
 
-		public JsonTypeCoersionException(string message, Exception innerException) : base(message, innerException) { }
+		public JsonTypeCoercionException(string message, Exception innerException) : base(message, innerException) { }
 
-		public JsonTypeCoersionException(
+		public JsonTypeCoercionException(
 			System.Runtime.Serialization.SerializationInfo info,
 			System.Runtime.Serialization.StreamingContext context)
 			: base(info, context)
