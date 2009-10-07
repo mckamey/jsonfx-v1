@@ -1,12 +1,10 @@
-2009-06-10 @ 09:23
+2009-10-06 @ 22:31
 
 - Ensure JSON-RPC Notifications suppress response (& client side doesn't care)
 - Batch JSON-RPC request/responses
 - Async JSON-RPC request processing
 
 - Async pages / controls
-- BUG: cannot deserialize standard Arrays
-- research use of doc frag (unique URLs) with JsonFx Ajax History 
 
 - <%# .... %> fails inside textareas?
 - verify that &nbsp; is not being normalized
@@ -17,7 +15,6 @@
 - rework bindings to fire after insert?
 - add JsonFx.Bindings.one which removes once fired (leverage for server jbst:control)
 
-- post InterNetris as example app
 - explain JSON-RPC callback examples
 - explain difference between JsonFx.UI.Binding vs. jQuery.ready
 - explain how to switch templates in list JBSTs
