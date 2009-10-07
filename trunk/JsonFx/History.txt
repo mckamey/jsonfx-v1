@@ -1,5 +1,8 @@
 Release History
 
+v1.1.0910.0621
+- fixing type coercion between different array types
+
 v1.1.0909.2208
 - enabling wider serialization of generic IDictionary<TKey, TVal>
 
