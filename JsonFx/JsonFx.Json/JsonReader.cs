@@ -1249,9 +1249,9 @@ namespace JsonFx.Json
 			/// <param name="memberMap">reference to the memberMap</param>
 			/// <returns></returns>
 			internal object ProcessTypeHint(
-				IDictionary result, 
-				string typeInfo, 
-				out Type objectType, 
+				IDictionary result,
+				string typeInfo,
+				out Type objectType,
 				out Dictionary<string, MemberInfo> memberMap)
 			{
 				if (String.IsNullOrEmpty(typeInfo))
@@ -1506,7 +1506,7 @@ namespace JsonFx.Json
 				if (typeof(IEnumerable).IsAssignableFrom(targetType) &&
 					typeof(IEnumerable).IsAssignableFrom(actualType))
 				{
-					return this.CoerceArray(targetType, actualType, value);
+					return this.CoerceList(targetType, actualType, (IEnumerable)value);
 				}
 
 				if (value is String)
@@ -1594,8 +1594,13 @@ namespace JsonFx.Json
 				return newValue;
 			}
 
-			private object CoerceArray(Type targetType, Type arrayType, object value)
+			private object CoerceList(Type targetType, Type arrayType, IEnumerable value)
 			{
+				if (targetType.IsArray)
+				{
+					return this.CoerceArray(targetType.GetElementType(), value);
+				}
+
 				// targetType serializes as a JSON array but is not an array
 				// assume is an ICollection / IEnumerable with AddRange, Add,
 				// or custom Constructor with which we can populate it
@@ -1693,7 +1698,7 @@ namespace JsonFx.Json
 					if (paramType != null)
 					{
 						// loop through adding items to collection
-						foreach (object item in (IEnumerable)value)
+						foreach (object item in value)
 						{
 							try
 							{
@@ -1726,6 +1731,18 @@ namespace JsonFx.Json
 				{
 					throw new JsonTypeCoercionException(String.Format("Error converting {0} to {1}", value.GetType().FullName, targetType.FullName), ex);
 				}
+			}
+
+			private Array CoerceArray(Type elementType, IEnumerable value)
+			{
+				ArrayList target = new ArrayList();
+
+				foreach (object item in value)
+				{
+					target.Add(this.CoerceType(elementType, item));
+				}
+
+				return target.ToArray(elementType);
 			}
 
 			private static bool IsNullable(Type type)
