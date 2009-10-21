@@ -222,12 +222,30 @@ if (""undefined"" === typeof {0}) {{
 		#region Writer Methods
 
 		/// <summary>
-		/// Writes dates as
+		/// Writes dates as ECMAScript Date constructors
 		/// </summary>
 		/// <param name="value"></param>
 		public override void Write(DateTime value)
 		{
 			EcmaScriptWriter.WriteEcmaScriptDate(this, value);
+		}
+
+		/// <summary>
+		/// Writes out all Single values including NaN, Infinity, -Infinity
+		/// </summary>
+		/// <param name="value">Single</param>
+		public override void Write(float value)
+		{
+			this.TextWriter.Write("{0:r}", value);
+		}
+
+		/// <summary>
+		/// Writes out all Double values including NaN, Infinity, -Infinity
+		/// </summary>
+		/// <param name="value">Double</param>
+		public override void Write(double value)
+		{
+			this.TextWriter.Write("{0:r}", value);
 		}
 
 		protected override void Write(object value, bool isProperty)
