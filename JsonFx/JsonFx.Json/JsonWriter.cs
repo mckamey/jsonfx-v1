@@ -29,12 +29,12 @@
 #endregion License
 
 using System;
-using System.IO;
-using System.ComponentModel;
 using System.Collections;
 using System.Collections.Generic;
-using System.Text;
+using System.ComponentModel;
+using System.IO;
 using System.Reflection;
+using System.Text;
 using System.Xml;
 
 namespace JsonFx.Json
@@ -709,16 +709,37 @@ namespace JsonFx.Json
 
 		public virtual void Write(uint value)
 		{
+			if (this.InvalidIeee754(value))
+			{
+				// emit as string since Number cannot represent
+				this.Write(value.ToString("g"));
+				return;
+			}
+
 			this.writer.Write("{0:g}", value);
 		}
 
 		public virtual void Write(long value)
 		{
+			if (this.InvalidIeee754(value))
+			{
+				// emit as string since Number cannot represent
+				this.Write(value.ToString("g"));
+				return;
+			}
+
 			this.writer.Write("{0:g}", value);
 		}
 
 		public virtual void Write(ulong value)
 		{
+			if (this.InvalidIeee754(value))
+			{
+				// emit as string since Number cannot represent
+				this.Write(value.ToString("g"));
+				return;
+			}
+
 			this.writer.Write("{0:g}", value);
 		}
 
@@ -748,6 +769,13 @@ namespace JsonFx.Json
 
 		public virtual void Write(decimal value)
 		{
+			if (this.InvalidIeee754(value))
+			{
+				// emit as string since Number cannot represent
+				this.Write(value.ToString("g"));
+				return;
+			}
+
 			this.writer.Write("{0:g}", value);
 		}
 
@@ -1160,6 +1188,25 @@ namespace JsonFx.Json
 				enums.Add(Enum.ToObject(enumType, longVal) as Enum);
 
 			return enums.ToArray();
+		}
+
+		/// <summary>
+		/// Determines if a numberic value cannot be represented as IEEE-754.
+		/// </summary>
+		/// <param name="value"></param>
+		/// <returns></returns>
+		protected virtual bool InvalidIeee754(decimal value)
+		{
+			// http://stackoverflow.com/questions/1601646
+
+			try
+			{
+				return (decimal)((double)value) != value;
+			}
+			catch
+			{
+				return true;
+			}
 		}
 
 		#endregion Utility Methods
