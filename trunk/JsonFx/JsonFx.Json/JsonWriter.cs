@@ -66,7 +66,6 @@ namespace JsonFx.Json
 
 		private readonly TextWriter writer = null;
 		private string typeHintName = null;
-		private bool strictConformance = true;
 
 		private bool prettyPrint = false;
 		private bool useXmlSerializationAttributes = false;
@@ -182,18 +181,6 @@ namespace JsonFx.Json
 		{
 			get { return this.useXmlSerializationAttributes; }
 			set { this.useXmlSerializationAttributes = value; }
-		}
-
-		/// <summary>
-		/// Gets and sets if should conform strictly to JSON spec.
-		/// </summary>
-		/// <remarks>
-		/// Setting to true causes NaN, Infinity, -Infinity to serialize as null.
-		/// </remarks>
-		public bool StrictConformance
-		{
-			get { return this.strictConformance; }
-			set { this.strictConformance = value; }
 		}
 
 		/// <summary>
@@ -737,7 +724,7 @@ namespace JsonFx.Json
 
 		public virtual void Write(float value)
 		{
-			if (this.StrictConformance && (Single.IsNaN(value) || Single.IsInfinity(value)))
+			if (Single.IsNaN(value) || Single.IsInfinity(value))
 			{
 				this.writer.Write(JsonReader.LiteralNull);
 			}
@@ -749,7 +736,7 @@ namespace JsonFx.Json
 
 		public virtual void Write(double value)
 		{
-			if (this.StrictConformance && (Double.IsNaN(value) || Double.IsInfinity(value)))
+			if (Double.IsNaN(value) || Double.IsInfinity(value))
 			{
 				this.writer.Write(JsonReader.LiteralNull);
 			}
