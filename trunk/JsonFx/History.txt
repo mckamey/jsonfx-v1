@@ -1,5 +1,8 @@
 Release History
 
+v1.1.0910.3008
+- tweak to IE work-around to better support auto-complete
+
 v1.1.0910.2108
 - emitting numeric values that cannot be expressed in IEEE-754 as strings
 - removed concept of StrictConformance as has been replaced with EcmaScriptWriter
