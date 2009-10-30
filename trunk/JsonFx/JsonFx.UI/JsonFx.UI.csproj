@@ -103,7 +103,9 @@
     <EmbeddedResource Include="Scripts\JsonFx_Bindings.js" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="License.txt" />
+    <Content Include="License.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <EmbeddedResource Include="Scripts\JsonFx_Lang.js" />
     <EmbeddedResource Include="Scripts\JsonFx_UA.js" />
     <EmbeddedResource Include="Scripts\JsonML_BST.js" />

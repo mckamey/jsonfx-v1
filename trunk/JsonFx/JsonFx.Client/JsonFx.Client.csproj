@@ -102,7 +102,12 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="License.txt" />
+    <Content Include="$(SolutionDir)External\External-Licenses.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+    <Content Include="License.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <EmbeddedResource Include="Scripts\IntelliSense.js" />
   </ItemGroup>
   <ItemGroup>
