@@ -4,7 +4,7 @@
 	JsonML support
 
 	Created: 2006-11-09-0116
-	Modified: 2009-05-20-0719
+	Modified: 2009-10-30-0806
 
 	Copyright (c)2006-2009 Stephen M. McKamey
 	Distributed under an open-source license: http://jsonml.org/license
@@ -87,12 +87,16 @@ if ("undefined" === typeof JsonML) {
 			// can add more attributes here as needed
 		};
 
+		var ie = document.attachEvent ? document.createElement("span") : null;
+
 		//addAttributes
 		/*DOM*/ function aa(/*DOM*/ el, /*object*/ a) {
-			if (a.name && document.attachEvent) {
+			if (a.name && ie) {
 				try {
 					// IE fix for not being able to programatically change the name attribute
-					var el2 = document.createElement("<"+el.tagName+" name='"+a.name+"'>");
+					var el2 = a.type && el.tagName === "input" ?
+						ie.innerHTML("<"+el.tagName+" type='"+a.type+" name='"+a.name+"'>").firstChild :
+						document.createElement("<"+el.tagName+" name='"+a.name+"'>");
 					// fix for Opera 8.5 and Netscape 7.1 creating malformed elements
 					if (el.tagName === el2.tagName) {
 						el = el2;
