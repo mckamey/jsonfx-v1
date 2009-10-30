@@ -72,7 +72,9 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
-    <Content Include="License.txt" />
+    <Content Include="License.txt">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
     <Content Include="Readme.txt" />
     <EmbeddedResource Include="Scripts\JsonFx_History.js" />
   </ItemGroup>
