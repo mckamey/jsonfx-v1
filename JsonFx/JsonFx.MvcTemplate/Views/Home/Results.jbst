@@ -6,28 +6,11 @@
 
 	/* this method is used as a callback in a service method */
 	/*void*/ Example.results.success = function(/*object*/ data, /*object*/ cx) {
-		if (!data) {
-			return;
-		}
-
-		var elem = cx && cx.elem;
-		if (!elem || !elem.parentNode) {
-			return;
-		}
-
-		elem = elem.parentNode;
 
 		// this databinds the data to the template and rehydrates to DOM
 		var jbst = Example.results.bind(data);
 
-		// add the result to the container
-		if (jbst) {
-
-			// clear the container contents
-			JsonFx.UI.clear(elem);
-
-			elem.appendChild(jbst);
-		}
+		jQuery(".js-ServiceTest").replaceWith(jbst);
 	};
 
 </script>
