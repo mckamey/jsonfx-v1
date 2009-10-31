@@ -2,7 +2,7 @@
 
 <script type="text/javascript">
 
-	/* NOTE: the template name is an object which can be added to */
+	/* NOTE: the template name is an object which can be added to; equivalent to "this" */
 
 	/* this method is used as a callback in a service method */
 	/*void*/ Example.results.success = function(/*object*/ data, /*object*/ cx) {
