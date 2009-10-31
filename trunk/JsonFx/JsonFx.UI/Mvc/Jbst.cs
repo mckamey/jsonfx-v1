@@ -33,6 +33,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Web.UI;
 
+using JsonFx.Json;
+
 namespace JsonFx.Mvc
 {
 	public static class Jbst
@@ -47,7 +49,7 @@ namespace JsonFx.Mvc
 		/// <param name="data">named data to bind</param>
 		/// <param name="dataItems">collection of data to emit</param>
 		/// <returns></returns>
-		public static string Bind(string jbst, string data, IDictionary<string, object> dataItems)
+		public static string Bind(EcmaScriptIdentifier jbst, EcmaScriptIdentifier data, IDictionary<string, object> dataItems)
 		{
 			// build the control
 			JsonFx.UI.Jbst.Control control = new JsonFx.UI.Jbst.Control();
@@ -74,7 +76,7 @@ namespace JsonFx.Mvc
 		/// <param name="jbst"></param>
 		/// <param name="data"></param>
 		/// <returns></returns>
-		public static string Bind(string jbst, object data)
+		public static string Bind(EcmaScriptIdentifier jbst, object data)
 		{
 			// build the control
 			JsonFx.UI.Jbst.Control control = new JsonFx.UI.Jbst.Control();
@@ -95,7 +97,7 @@ namespace JsonFx.Mvc
 		/// <param name="index"></param>
 		/// <param name="count"></param>
 		/// <returns></returns>
-		public static string Bind(string jbst, object data, int index, int count)
+		public static string Bind(EcmaScriptIdentifier jbst, object data, int index, int count)
 		{
 			// build the control
 			JsonFx.UI.Jbst.Control control = new JsonFx.UI.Jbst.Control();

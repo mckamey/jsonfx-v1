@@ -22,7 +22,7 @@ namespace JsonFx.UI.Jbst
 		#region Fields
 
 		private bool isDebug;
-		private string name;
+		private EcmaScriptIdentifier name;
 		private string data;
 		private object inlineData;
 		//private object inlineJbst;
@@ -51,17 +51,10 @@ namespace JsonFx.UI.Jbst
 		/// Gets and sets the script variable name of the JBST control to be bound.
 		/// </summary>
 		[DefaultValue("")]
-		public virtual string Name
+		public virtual EcmaScriptIdentifier Name
 		{
-			get
-			{
-				if (this.name == null)
-				{
-					return String.Empty;
-				}
-				return this.name;
-			}
-			set { this.name = EcmaScriptIdentifier.EnsureValidIdentifier(value, true); }
+			get { return this.name; }
+			set { this.name = value; }
 		}
 
 		/// <summary>
