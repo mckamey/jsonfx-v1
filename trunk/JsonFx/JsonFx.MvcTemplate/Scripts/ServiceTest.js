@@ -37,7 +37,7 @@ if ("undefined" === typeof Example) {
 
 	// call the JSON-RPC service proxy object with the
 	// method args in order and add an options object at the end
-	Example.MyServiceProxy.getInfo(
+	Example.Service.getInfo(
 		number,
 		options);
 

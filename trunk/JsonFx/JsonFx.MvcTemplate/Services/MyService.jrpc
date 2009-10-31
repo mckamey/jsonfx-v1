@@ -1,4 +1,4 @@
-<%@ JsonService Class="MyApp.Services.MyJsonService" Language="C#" %>
+<%@ JsonService Class="MyApp.Services.MyService" Language="C#" %>
 
 /*
 	This service end-point can reference a class which implements the actual service methods.

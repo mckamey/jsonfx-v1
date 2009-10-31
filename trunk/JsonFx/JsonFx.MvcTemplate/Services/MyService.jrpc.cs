@@ -6,28 +6,27 @@ using JsonFx.JsonRpc;
 
 namespace MyApp.Services
 {
-	[JsonService(Namespace="Example", Name="MyServiceProxy")]
-	public class MyJsonService
+	[JsonService(Namespace="Example", Name="Service")]
+	public class MyService
 	{
 		#region Service Methods
 
 		/* these are the methods that are included in the JavaScript proxy */
 
 		/// <summary>
-		/// proxy function will be Example.MyServiceProxy.getInfo
+		/// proxy function will be Example.Service.getInfo
 		/// </summary>
 		/// <param name="number">a number</param>
 		/// <returns>MyServiceResult</returns>
 		[JsonMethod(Name="getInfo")]
-		public MyServiceResult GetInfo(double number)
+		public object GetInfo(double number)
 		{
-			MyServiceResult result;
-
-			result.Number = number;
-			result.TimeStamp = this.GetTimeStamp();
-			result.MachineName = this.GetMachine();
-
-			return result;
+			return new
+			{
+				number = number,
+				timestamp = this.GetTimeStamp(),
+				machine = this.GetMachine()
+			};
 		}
 
 		#endregion Service Methods
@@ -47,17 +46,5 @@ namespace MyApp.Services
 		}
 
 		#endregion Utility Methods
-	}
-
-	public struct MyServiceResult
-	{
-		[JsonName("timestamp")]
-		public DateTime TimeStamp;
-
-		[JsonName("number")]
-		public double Number;
-
-		[JsonName("machine")]
-		public string MachineName;
 	}
 }
