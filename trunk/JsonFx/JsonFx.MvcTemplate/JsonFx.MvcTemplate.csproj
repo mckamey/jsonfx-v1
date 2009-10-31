@@ -109,6 +109,8 @@
     <None Include="Scripts\Scripts.merge" />
     <None Include="Services\MyService.jrpc" />
     <None Include="Styles\Styles.merge" />
+    <Content Include="Views\Home\Example.jbst" />
+    <Content Include="Views\Home\Results.jbst" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Models\" />
