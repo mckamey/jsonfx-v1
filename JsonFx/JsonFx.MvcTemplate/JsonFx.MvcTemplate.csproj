@@ -31,33 +31,33 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="EcmaScript.NET.modified, Version=0.1.1.0, Culture=neutral, PublicKeyToken=7d53ba4f537753a5, processorArchitecture=MSIL">
+    <Reference Include="EcmaScript.NET.modified">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\External\JsonFx\EcmaScript.NET.modified.dll</HintPath>
+      <HintPath>bin\EcmaScript.NET.modified.dll</HintPath>
     </Reference>
-    <Reference Include="Iesi.Collections, Version=1.0.0.3, Culture=neutral, PublicKeyToken=aa95f207798dfdb4, processorArchitecture=MSIL">
+    <Reference Include="Iesi.Collections">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\External\JsonFx\Iesi.Collections.dll</HintPath>
+      <HintPath>bin\Iesi.Collections.dll</HintPath>
     </Reference>
-    <Reference Include="JsonFx.BuildTools, Version=1.1.910.3008, Culture=neutral, PublicKeyToken=315052dd637f8a52, processorArchitecture=MSIL">
+    <Reference Include="JsonFx.BuildTools">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\External\JsonFx\JsonFx.BuildTools.dll</HintPath>
+      <HintPath>bin\JsonFx.BuildTools.dll</HintPath>
     </Reference>
-    <Reference Include="JsonFx.Client, Version=1.1.910.3008, Culture=neutral, PublicKeyToken=315052dd637f8a52, processorArchitecture=MSIL">
+    <Reference Include="JsonFx.Client">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\External\JsonFx\JsonFx.Client.dll</HintPath>
+      <HintPath>bin\JsonFx.Client.dll</HintPath>
     </Reference>
-    <Reference Include="JsonFx.IO, Version=1.1.910.3008, Culture=neutral, PublicKeyToken=315052dd637f8a52, processorArchitecture=MSIL">
+    <Reference Include="JsonFx.IO">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\External\JsonFx\JsonFx.IO.dll</HintPath>
+      <HintPath>bin\JsonFx.IO.dll</HintPath>
     </Reference>
-    <Reference Include="JsonFx.Json, Version=1.1.910.3008, Culture=neutral, PublicKeyToken=315052dd637f8a52, processorArchitecture=MSIL">
+    <Reference Include="JsonFx.Json">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\External\JsonFx\JsonFx.Json.dll</HintPath>
+      <HintPath>bin\JsonFx.Json.dll</HintPath>
     </Reference>
-    <Reference Include="JsonFx.UI, Version=1.1.910.3008, Culture=neutral, PublicKeyToken=315052dd637f8a52, processorArchitecture=MSIL">
+    <Reference Include="JsonFx.UI">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\External\JsonFx\JsonFx.UI.dll</HintPath>
+      <HintPath>bin\JsonFx.UI.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core">
@@ -69,9 +69,9 @@
     <Reference Include="System.Web.Mvc, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL" />
     <Reference Include="System.Web.Routing" />
     <Reference Include="System.Configuration" />
-    <Reference Include="Yahoo.Yui.Compressor.NET20, Version=1.4.0.0, Culture=neutral, PublicKeyToken=0734edc2d38ad47d, processorArchitecture=MSIL">
+    <Reference Include="Yahoo.Yui.Compressor.NET20">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\External\JsonFx\Yahoo.Yui.Compressor.NET20.dll</HintPath>
+      <HintPath>bin\Yahoo.Yui.Compressor.NET20.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
@@ -83,6 +83,18 @@
     <Compile Include="Services\MyService.jrpc.cs" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="bin\EcmaScript.NET.modified.dll" />
+    <Content Include="bin\External-Licenses.txt" />
+    <Content Include="bin\Iesi.Collections.dll" />
+    <Content Include="bin\JsonFx.BuildTools.dll" />
+    <Content Include="bin\JsonFx.Client.dll" />
+    <Content Include="bin\JsonFx.History.dll" />
+    <Content Include="bin\JsonFx.History.XML" />
+    <Content Include="bin\JsonFx.IO.dll" />
+    <Content Include="bin\JsonFx.Json.dll" />
+    <Content Include="bin\JsonFx.UI.dll" />
+    <Content Include="bin\License.txt" />
+    <Content Include="bin\Yahoo.Yui.Compressor.NET20.dll" />
     <Content Include="Default.aspx" />
     <Content Include="Global.asax" />
     <Content Include="Scripts\ServiceTest.js" />
