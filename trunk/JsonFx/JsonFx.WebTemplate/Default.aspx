@@ -31,12 +31,10 @@
 
 <form id="F" runat="server">
 
-<%-- declaratively add a JBST control to the page and bind example data --%>
-<jbst:Control runat="server" name="Example.congrats" data="Example.myData">
+	<%-- example showing how to directly add to the page a JBST control bound to example data --%>
+	<jbst:Control runat="server" name="Example.congrats" data="Example.myData" />
 
-	<p class="ReadMe">See <a href="http://help.jsonfx.net/instructions">http://help.jsonfx.net/instructions</a> for configuration help.</p>
-    
-</jbst:Control>
+	<p class="ReadMe">See <a href="http://help.jsonfx.net/instructions">http://help.jsonfx.net/instructions</a> for JsonFx customizations to Visual Studio.</p>
 
 </form>
 
