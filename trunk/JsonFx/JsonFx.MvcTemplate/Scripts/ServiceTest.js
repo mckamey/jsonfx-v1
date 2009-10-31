@@ -25,17 +25,22 @@ if ("undefined" === typeof Example) {
 	}
 
 	// this is a parameter to the service method
+	// this will go up to server and come back
 	var number = Math.PI;
 
 	// these are the options for the service proxy
 	var options = {
 		onSuccess: Example.results.success, // defined in Results.jbst
 		onFailure: Example.asyncError,
-		context: { elem: elem, foo: "bar" }
+		context: null
 	};
 
-	// call the JSON-RPC service proxy object with the method args in order and add an options object at the end
-	Example.MyServiceProxy.getInfo(number, options);
+	// call the JSON-RPC service proxy object with the
+	// method args in order and add an options object at the end
+	Example.MyServiceProxy.getInfo(
+		number,
+		options);
 
-	// when the request completes, the appropriate callback will get called with the return value and the context object
+	// when the request completes, the appropriate callback will
+	// get called with the return value and the context object
 };
