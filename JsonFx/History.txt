@@ -1,5 +1,9 @@
 Release History
 
+v1.1.0910.3107
+- added JsonFx-enabled ASP.NET MVC project template
+- using EcmaScriptIdentifier to enforce JBST names
+
 v1.1.0910.3008
 - tweak to IE work-around to better support auto-complete
 
