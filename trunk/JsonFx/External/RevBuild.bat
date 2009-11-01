@@ -21,6 +21,8 @@ IF NOT EXIST %AutoVer% (
 
 %AutoVer% "%SolnDir%JsonFx.Json.UnitTests\Properties\AssemblyVersion.cs" %BaseVersion%
 
+%AutoVer% "%SolnDir%JsonFx.Mvc\Properties\AssemblyVersion.cs" %BaseVersion%
+
 %AutoVer% "%SolnDir%JsonFx.UI\Properties\AssemblyVersion.cs" %BaseVersion%
 
 :Done
