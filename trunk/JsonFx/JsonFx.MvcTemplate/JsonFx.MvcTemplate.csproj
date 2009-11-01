@@ -113,6 +113,10 @@
       <Project>{ABA23F14-7E47-43FE-A3E7-1FF97840C3FB}</Project>
       <Name>JsonFx.Json</Name>
     </ProjectReference>
+    <ProjectReference Include="..\JsonFx.Mvc\JsonFx.Mvc.csproj">
+      <Project>{FC5DBE18-C229-424D-8CF6-1E40A2A8DD85}</Project>
+      <Name>JsonFx.Mvc</Name>
+    </ProjectReference>
     <ProjectReference Include="..\JsonFx.UI\JsonFx.UI.csproj">
       <Project>{17417DF0-B12F-4D5B-A9E7-8B7D894F93B4}</Project>
       <Name>JsonFx.UI</Name>
