@@ -31,34 +31,6 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="EcmaScript.NET.modified">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>bin\EcmaScript.NET.modified.dll</HintPath>
-    </Reference>
-    <Reference Include="Iesi.Collections">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>bin\Iesi.Collections.dll</HintPath>
-    </Reference>
-    <Reference Include="JsonFx.BuildTools">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>bin\JsonFx.BuildTools.dll</HintPath>
-    </Reference>
-    <Reference Include="JsonFx.Client">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>bin\JsonFx.Client.dll</HintPath>
-    </Reference>
-    <Reference Include="JsonFx.IO">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>bin\JsonFx.IO.dll</HintPath>
-    </Reference>
-    <Reference Include="JsonFx.Json">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>bin\JsonFx.Json.dll</HintPath>
-    </Reference>
-    <Reference Include="JsonFx.UI">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>bin\JsonFx.UI.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core">
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
@@ -69,10 +41,6 @@
     <Reference Include="System.Web.Mvc, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL" />
     <Reference Include="System.Web.Routing" />
     <Reference Include="System.Configuration" />
-    <Reference Include="Yahoo.Yui.Compressor.NET20">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>bin\Yahoo.Yui.Compressor.NET20.dll</HintPath>
-    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Controllers\HomeController.cs" />
@@ -109,9 +77,46 @@
     <None Include="Scripts\Scripts.merge" />
     <None Include="Services\MyService.jrpc" />
     <None Include="Styles\Styles.merge" />
+    <Content Include="bin\JsonFx.BuildTools.pdb" />
+    <Content Include="bin\JsonFx.BuildTools.XML" />
+    <Content Include="bin\JsonFx.Client.pdb" />
+    <Content Include="bin\JsonFx.Client.XML" />
+    <Content Include="bin\JsonFx.History.pdb" />
+    <Content Include="bin\JsonFx.IO.pdb" />
+    <Content Include="bin\JsonFx.IO.XML" />
+    <Content Include="bin\JsonFx.Json.pdb" />
+    <Content Include="bin\JsonFx.Json.XML" />
+    <Content Include="bin\JsonFx.UI.pdb" />
+    <Content Include="bin\JsonFx.UI.XML" />
     <Content Include="Scripts\jquery-1.3.2.js" />
     <Content Include="Views\Home\Example.jbst" />
     <Content Include="Views\Home\Results.jbst" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\JsonFx.BuildTools\JsonFx.BuildTools.csproj">
+      <Project>{7E5F1250-473C-494F-BFBD-835A1CE9CC13}</Project>
+      <Name>JsonFx.BuildTools</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\JsonFx.Client\JsonFx.Client.csproj">
+      <Project>{5A84EB39-D30B-4085-8365-E1C05590F3BF}</Project>
+      <Name>JsonFx.Client</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\JsonFx.History\JsonFx.History.csproj">
+      <Project>{241E7122-64CA-43B8-B3F0-5BC776FC37BC}</Project>
+      <Name>JsonFx.History</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\JsonFx.IO\JsonFx.IO.csproj">
+      <Project>{6DC125A3-2C11-4FEA-B948-1C563B0FAE52}</Project>
+      <Name>JsonFx.IO</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\JsonFx.Json\JsonFx.Json.csproj">
+      <Project>{ABA23F14-7E47-43FE-A3E7-1FF97840C3FB}</Project>
+      <Name>JsonFx.Json</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\JsonFx.UI\JsonFx.UI.csproj">
+      <Project>{17417DF0-B12F-4D5B-A9E7-8B7D894F93B4}</Project>
+      <Name>JsonFx.UI</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Models\" />
