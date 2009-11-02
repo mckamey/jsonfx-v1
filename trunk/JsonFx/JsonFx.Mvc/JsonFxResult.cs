@@ -104,7 +104,9 @@ namespace JsonFx.Mvc
 
 			if (this.Data != null)
 			{
-				response.Write(JsonWriter.Serialize(this.Data));
+				JsonWriter writer = new JsonWriter(response.Output);
+				writer.PrettyPrint = context.HttpContext != null && context.HttpContext.IsDebuggingEnabled;
+				writer.Write(this.Data);
 			}
 		}
 
