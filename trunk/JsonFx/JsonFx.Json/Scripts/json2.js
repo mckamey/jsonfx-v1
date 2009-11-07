@@ -1,6 +1,6 @@
 /*
     http://www.JSON.org/json2.js
-    2009-04-16
+    2009-09-29
 
     Public Domain.
 
@@ -33,7 +33,7 @@
             value represented by the name/value pair that should be serialized,
             or undefined if nothing should be serialized. The toJSON method
             will be passed the key associated with the value, and this will be
-            bound to the object holding the key.
+            bound to the value
 
             For example, this would serialize Dates as ISO strings.
 
@@ -144,16 +144,16 @@
     NOT CONTROL.
 */
 
-/*jslint evil: true */
+/*jslint evil: true, strict: false */
 
-/*global JSON */
 
 // Create a JSON object only if one does not already exist. We create the
 // methods in a closure to avoid creating global variables.
 
 if (!this.JSON) {
-    JSON = {};
+    this.JSON = {};
 }
+
 (function () {
 
     function f(n) {
@@ -165,12 +165,13 @@ if (!this.JSON) {
 
         Date.prototype.toJSON = function (key) {
 
-            return this.getUTCFullYear()   + '-' +
+            return isFinite(this.valueOf()) ?
+                   this.getUTCFullYear()   + '-' +
                  f(this.getUTCMonth() + 1) + '-' +
                  f(this.getUTCDate())      + 'T' +
                  f(this.getUTCHours())     + ':' +
                  f(this.getUTCMinutes())   + ':' +
-                 f(this.getUTCSeconds())   + 'Z';
+                 f(this.getUTCSeconds())   + 'Z' : null;
         };
 
         String.prototype.toJSON =
