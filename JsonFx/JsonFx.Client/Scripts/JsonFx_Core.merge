@@ -1,4 +1,4 @@
-# Core unique JsonFx functionality
+# core JsonFx functionality (excludes History and DOM helpers)
 
 # client-side JSON serialization
 JsonFx.Scripts.json2.js, JsonFx.Json
@@ -15,8 +15,8 @@ JsonFx.Scripts.JsonFx_IO.js, JsonFx.IO
 # CssUserAgent support
 JsonFx.Scripts.JsonFx_UA.js, JsonFx.UI
 
-# dynamic behavior binding support
-JsonFx.Scripts.JsonFx_Bindings.js, JsonFx.UI
-
 # client-side globalization support
 JsonFx.Scripts.JsonFx_Lang.js, JsonFx.UI
+
+# dynamic behavior binding support
+JsonFx.Scripts.JsonFx_Bindings.js, JsonFx.UI
