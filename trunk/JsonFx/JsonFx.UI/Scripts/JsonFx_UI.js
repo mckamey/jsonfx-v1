@@ -1,10 +1,10 @@
-/*global JSON, JsonML, jQuery, $ */
+/*global JsonML, jQuery */
 /*
 	JsonFx_UI.js
 	DOM utilities
 
 	Created: 2006-11-11-1759
-	Modified: 2009-03-03-0833
+	Modified: 2009-11-07-1038
 
 	Copyright (c)2006-2009 Stephen M. McKamey
 	Distributed under an open-source license: http://jsonfx.net/license
@@ -21,9 +21,6 @@ if ("undefined" === typeof JsonFx.UI) {
 
 /* dependency checks --------------------------------------------*/
 
-if ("undefined" === typeof JSON) {
-	throw new Error("JsonFx.UI requires JSON");
-}
 if ("undefined" === typeof JsonML) {
 	throw new Error("JsonFx.UI requires JsonML");
 }

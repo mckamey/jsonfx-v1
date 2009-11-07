@@ -108,7 +108,6 @@
     <Content Include="License.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
-    <EmbeddedResource Include="Scripts\IntelliSense.js" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\JsonFx.BuildTools\JsonFx.BuildTools.csproj">
@@ -122,6 +121,12 @@
   </ItemGroup>
   <ItemGroup>
     <EmbeddedResource Include="Scripts\JsonFx.merge" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Scripts\JBST.merge" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Scripts\JsonFx_Core.merge" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

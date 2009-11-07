@@ -19,11 +19,11 @@ JsonFx.Scripts.JsonML_BST.js, JsonFx.UI
 # JSON-RPC support
 JsonFx.Scripts.JsonFx_IO.js, JsonFx.IO
 
-# dynamic behavior binding support
-JsonFx.Scripts.JsonFx_Bindings.js, JsonFx.UI
-
 # CssUserAgent support
 JsonFx.Scripts.JsonFx_UA.js, JsonFx.UI
+
+# dynamic behavior binding support
+JsonFx.Scripts.JsonFx_Bindings.js, JsonFx.UI
 
 # DOM utilities
 JsonFx.Scripts.JsonFx_UI.js, JsonFx.UI

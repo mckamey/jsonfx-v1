@@ -4,7 +4,7 @@
 	dynamic behavior binding support
 
 	Created: 2006-11-11-1759
-	Modified: 2009-06-20-1342
+	Modified: 2009-11-07-1031
 
 	Copyright (c)2006-2009 Stephen M. McKamey
 	Distributed under an open-source license: http://jsonfx.net/license
@@ -12,13 +12,10 @@
 
 /* dependency checks --------------------------------------------*/
 
-/* namespace JsonFx.UI */
+/* namespace JsonFx */
 var JsonFx;
 if ("undefined" === typeof JsonFx) {
 	JsonFx = {};
-}
-if ("undefined" === typeof JsonFx.UI) {
-	JsonFx.UI = {};
 }
 
 /* singleton JsonFx.Bindings --------------------------------------------*/
