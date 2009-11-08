@@ -449,7 +449,12 @@ namespace JsonFx.BuildTools.IO
 						if (ch2 != endToken[i])
 						{
 							// reset search
-							i = -1;
+							while (i > 0)
+							{
+								i--;
+								this.PutBack();
+							}
+							i--;
 						}
 					}
 					return this.Read(true);
