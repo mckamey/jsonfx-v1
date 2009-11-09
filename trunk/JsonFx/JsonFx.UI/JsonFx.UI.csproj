@@ -66,6 +66,7 @@
     <Compile Include="Jbst\Extensions\AppSettingsJbstExtension.cs" />
     <Compile Include="Jbst\Extensions\JbstExtension.cs" />
     <Compile Include="Jbst\Extensions\ResourceJbstExtension.cs" />
+    <Compile Include="Jbst\JbstCompiler.cs" />
     <Compile Include="Jbst\JbstControl.cs" />
     <Compile Include="Jbst\JbstCodeBlock.cs" />
     <Compile Include="Jbst\JbstContainerControl.cs" />
@@ -74,7 +75,6 @@
     <Compile Include="Jbst\JbstCustomControl.cs" />
     <Compile Include="Jbst\JbstLiteral.cs" />
     <Compile Include="Compilation\JbstCodeProvider.cs">
-      <SubType>Component</SubType>
     </Compile>
     <Compile Include="Jbst\JbstWriter.cs" />
     <Compile Include="Mvc\Jbst.cs" />

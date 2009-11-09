@@ -1,10 +1,10 @@
 /*global JSON */
 /*
 	JsonML2.js
-	JsonML support
+	JsonML builder
 
 	Created: 2006-11-09-0116
-	Modified: 2009-11-07-1003
+	Modified: 2009-11-08-1728
 
 	Copyright (c)2006-2009 Stephen M. McKamey
 	Distributed under an open-source license: http://jsonml.org/license
@@ -87,21 +87,12 @@ if ("undefined" === typeof JsonML) {
 			// can add more attributes here as needed
 		};
 
-//		var ie = document.attachEvent ? document.createElement("span") : null;
-
 		//addAttributes
 		/*DOM*/ function aa(/*DOM*/ el, /*object*/ a) {
 			if (a.name && document.attachEvent) {
 				try {
 					// IE fix for not being able to programatically change the name attribute
-					var el2;
-//					if (a.type && el.tagName === "INPUT") {
-//						ie.innerHTML = "<"+el.tagName+" type='"+a.type+"' name='"+a.name+"'>";
-//						el2 = ie.firstChild;
-//						try { delete a.type; } catch (ex) {}
-//					} else {
-						el2 = document.createElement("<"+el.tagName+" name='"+a.name+"'>");
-//					}
+					var el2 = document.createElement("<"+el.tagName+" name='"+a.name+"'>");
 					// fix for Opera 8.5 and Netscape 7.1 creating malformed elements
 					if (el.tagName === el2.tagName) {
 						el = el2;
