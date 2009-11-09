@@ -29,6 +29,7 @@
 #endregion License
 
 using System;
+using System.Net;
 using System.Text;
 using System.Web;
 using System.Web.Mvc;
@@ -71,6 +72,15 @@ namespace JsonFx.Mvc
 			set;
 		}
 
+		/// <summary>
+		/// Gets and sets the HTTP status code of the response
+		/// </summary>
+		public HttpStatusCode HttpStatusCode
+		{
+			get;
+			set;
+		}
+
 		#endregion Properties
 
 		#region Methods
@@ -95,6 +105,11 @@ namespace JsonFx.Mvc
 			else
 			{
 				response.ContentType = "application/json";
+			}
+
+			if (this.HttpStatusCode != default(HttpStatusCode))
+			{
+				response.StatusCode = (int)this.HttpStatusCode;
 			}
 
 			if (this.ContentEncoding != null)
