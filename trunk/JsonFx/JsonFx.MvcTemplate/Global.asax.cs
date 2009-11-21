@@ -24,6 +24,8 @@ namespace MyApp
 		protected void Application_Start()
 		{
 			RegisterRoutes(RouteTable.Routes);
+
+			MvcHandler.DisableMvcResponseHeader = true;
 		}
 
 		#region Stream Compression
