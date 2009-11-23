@@ -357,7 +357,7 @@ namespace JsonFx.UI.Jbst
 
 			// render root node of content (null is OK)
 			EcmaScriptWriter jsWriter = new EcmaScriptWriter(writer);
-			jsWriter.PrettyPrint = true;
+			jsWriter.Settings.PrettyPrint = true;
 			jsWriter.Write(this.JbstParseTree);
 
 			writer.WriteLine(");");

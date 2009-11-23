@@ -138,9 +138,9 @@ namespace JsonFx.Client
 				List<string> namespaces = new List<string>();
 
 				EcmaScriptWriter jsWriter = new EcmaScriptWriter(writer);
-				jsWriter.PrettyPrint = this.IsDebug;
-				jsWriter.NewLine = Environment.NewLine;
-				jsWriter.Tab = "\t";
+				jsWriter.Settings.PrettyPrint = this.IsDebug;
+				jsWriter.Settings.NewLine = Environment.NewLine;
+				jsWriter.Settings.Tab = "\t";
 
 				writer.Write(ScriptOpen);
 

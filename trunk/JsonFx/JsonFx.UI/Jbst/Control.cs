@@ -225,9 +225,9 @@ namespace JsonFx.UI.Jbst
 				{
 					// serialize InlineData as a JavaScript literal
 					EcmaScriptWriter jsWriter = new EcmaScriptWriter(builder);
-					jsWriter.PrettyPrint = this.IsDebug;
-					jsWriter.NewLine = Environment.NewLine;
-					jsWriter.Tab = "\t";
+					jsWriter.Settings.PrettyPrint = this.IsDebug;
+					jsWriter.Settings.NewLine = Environment.NewLine;
+					jsWriter.Settings.Tab = "\t";
 					jsWriter.Write(this.InlineData);
 				}
 				else if (!String.IsNullOrEmpty(this.Data))

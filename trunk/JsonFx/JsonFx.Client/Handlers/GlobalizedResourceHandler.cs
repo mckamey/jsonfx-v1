@@ -247,13 +247,13 @@ namespace JsonFx.Handlers
 			response.Write(ResStart);
 
 			EcmaScriptWriter writer = new EcmaScriptWriter(response.Output);
-			writer.PrettyPrint = this.IsDebug;
+			writer.Settings.PrettyPrint = this.IsDebug;
 			writer.Write(res);
 
 			response.Write(",");
 
 			writer = new EcmaScriptWriter(response.Output);
-			writer.PrettyPrint = this.IsDebug;
+			writer.Settings.PrettyPrint = this.IsDebug;
 			writer.Write(Thread.CurrentThread.CurrentCulture.Name);
 
 			response.Write(ResEnd);
