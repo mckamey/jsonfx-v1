@@ -29,6 +29,7 @@
 #endregion License
 
 using System;
+using System.Collections.Generic;
 using System.Net;
 using System.Web;
 using System.Web.Mvc;
@@ -158,5 +159,76 @@ namespace JsonFx.Mvc
 		}
 
 		#endregion ActionResult Members
+
+		#region Header Methods
+
+		/// <summary>
+		/// Parses HTTP headers for Media-Types
+		/// </summary>
+		/// <param name="accept">HTTP Accept header</param>
+		/// <param name="contentType">HTTP Content-Type header</param>
+		/// <returns>sequence of Media-Types</returns>
+		/// <remarks>
+		/// http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html
+		/// </remarks>
+		public static IEnumerable<string> ParseHeaders(string accept, string contentType)
+		{
+			string mime;
+
+			// check for a matching accept type
+			foreach (string type in DataResult.SplitTrim(accept, ','))
+			{
+				mime = DataResult.ParseMediaType(type);
+				if (!String.IsNullOrEmpty(mime))
+				{
+					yield return mime;
+				}
+			}
+
+			// fallback on content-type
+			mime = DataResult.ParseMediaType(contentType);
+			if (!String.IsNullOrEmpty(mime))
+			{
+				yield return mime;
+			}
+		}
+
+		private static string ParseMediaType(string type)
+		{
+			foreach (string mime in DataResult.SplitTrim(type, ';'))
+			{
+				// only return first part
+				return mime;
+			}
+
+			// if no parts was empty
+			return String.Empty;
+		}
+
+		private static IEnumerable<string> SplitTrim(string source, char ch)
+		{
+			if (String.IsNullOrEmpty(source))
+			{
+				yield break;
+			}
+
+			int length = source.Length;
+			for (int prev=0, next=0; prev<length && next>=0; prev=next+1)
+			{
+				next = source.IndexOf(ch, prev);
+				if (next < 0)
+				{
+					next = length;
+				}
+
+				string part = source.Substring(prev, next-prev).Trim();
+				if (part.Length > 0)
+				{
+					yield return part;
+				}
+			}
+		}
+
+		#endregion Methods
 	}
 }
