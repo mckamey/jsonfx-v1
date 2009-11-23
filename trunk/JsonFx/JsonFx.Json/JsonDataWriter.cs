@@ -39,6 +39,13 @@ namespace JsonFx.Json
 	/// </summary>
 	public class JsonDataWriter : IDataWriter
 	{
+		#region Constants
+
+		public const string JsonMimeType = JsonWriter.JsonMimeType;
+		public const string JsonFileExtension = JsonWriter.JsonFileExtension;
+
+		#endregion Constants
+
 		#region Fields
 
 		private readonly JsonWriterSettings Settings;
@@ -77,7 +84,7 @@ namespace JsonFx.Json
 		/// </summary>
 		public string ContentType
 		{
-			get { return JsonWriter.JsonMimeType; }
+			get { return JsonDataWriter.JsonMimeType; }
 		}
 
 		/// <summary>
@@ -85,7 +92,7 @@ namespace JsonFx.Json
 		/// </summary>
 		public string FileExtension
 		{
-			get { return JsonWriter.JsonFileExtension; }
+			get { return JsonDataWriter.JsonFileExtension; }
 		}
 
 		/// <summary>
