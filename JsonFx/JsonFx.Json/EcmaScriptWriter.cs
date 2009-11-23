@@ -252,7 +252,7 @@ if (""undefined"" === typeof {0}) {{
 		{
 			if (value is Regex)
 			{
-				if (isProperty && this.PrettyPrint)
+				if (isProperty && this.Settings.PrettyPrint)
 				{
 					this.TextWriter.Write(' ');
 				}
