@@ -139,6 +139,18 @@ namespace JsonFx.Mvc
 				response.ContentEncoding = this.Writer.ContentEncoding;
 			}
 
+			string ext = this.Writer.FileExtension;
+			if (!String.IsNullOrEmpty(ext))
+			{
+				if (!ext.StartsWith("."))
+				{
+					ext = '.'+ext;
+				}
+
+				// this helps IE determine the Content-Type
+				response.Headers["Content-Disposition"] = "inline;filename=data"+ext;
+			}
+
 			if (this.Data != null)
 			{
 				this.Writer.Serialize(response.Output, this.Data);
