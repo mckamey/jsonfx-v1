@@ -1,6 +1,6 @@
 Release History
 
-v1.2.0911.2216
+v1.2.0911.2217
 - added an abstraction for serializers which allows easily switching between XML & JSON
 - added a ASP.NET MVC ActionResult which allows switching output via Dependency Injection
 - moved all MVC classes into JsonFx.Mvc
