@@ -106,5 +106,23 @@ namespace JsonFx.Json
 		}
 
 		#endregion IDataSerializer Members
+
+		#region Methods
+
+		/// <summary>
+		/// Builds a common settings objects
+		/// </summary>
+		/// <param name="prettyPrint"></param>
+		/// <returns></returns>
+		public static JsonWriterSettings CreateSettings(bool prettyPrint)
+		{
+			JsonWriterSettings settings = new JsonWriterSettings();
+
+			settings.PrettyPrint = prettyPrint;
+
+			return settings;
+		}
+
+		#endregion Methods
 	}
 }
