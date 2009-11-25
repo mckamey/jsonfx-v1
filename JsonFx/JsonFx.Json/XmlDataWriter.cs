@@ -146,7 +146,7 @@ namespace JsonFx.Xml
 			XmlWriterSettings settings = new XmlWriterSettings();
 			settings.CheckCharacters = true;
 			settings.CloseOutput = false;
-			settings.ConformanceLevel = ConformanceLevel.Document;
+			settings.ConformanceLevel = ConformanceLevel.Fragment;
 			settings.Encoding = encoding;
 
 			if (prettyPrint)

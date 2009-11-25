@@ -118,10 +118,8 @@ namespace JsonFx.Mvc
 
 			HttpResponseBase response = context.HttpContext.Response;
 
-			if (this.HttpStatusCode != default(HttpStatusCode))
-			{
-				response.StatusCode = (int)this.HttpStatusCode;
-			}
+			// need this to write out custom error objects
+			response.TrySkipIisCustomErrors = true;
 
 			if (String.IsNullOrEmpty(this.Writer.ContentType))
 			{
@@ -155,6 +153,11 @@ namespace JsonFx.Mvc
 			if (this.Data != null)
 			{
 				this.Writer.Serialize(response.Output, this.Data);
+			}
+
+			if (this.HttpStatusCode != default(HttpStatusCode))
+			{
+				response.StatusCode = (int)this.HttpStatusCode;
 			}
 		}
 
