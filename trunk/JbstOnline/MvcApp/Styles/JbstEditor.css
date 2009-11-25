@@ -1,0 +1,71 @@
+﻿h1.title
+{
+	text-align: right;
+	border-bottom: 1px solid silver;
+	margin-bottom: 1em;
+	padding-bottom: 1em;
+}
+
+div.main
+{
+	clear: both;
+	float: left;
+	padding: 1% 0 1% 1%;
+	width: 99%;
+}
+
+div.step
+{
+	clear: both;
+	float: left;
+	width: 100%;
+}
+
+#jbst-editor,
+#jbst-display
+{
+	float: left;
+	font-family: Consolas, "Bitstream Vera Sans Mono", "Courier New", Courier, monospace !important;
+	font-size: 12px;
+	line-height: 1.1em;
+	margin: 1em 0;
+	padding: 0;
+	padding-left: 10px;
+	width: 90%;
+}
+#jbst-editor
+{
+	background-color: #F5F5F5;
+	color: black;
+	border-style: none;
+	border-left: 3px solid silver;
+	margin-left: 51px;
+	padding: 1px;
+	position: absolute;
+	visibility: hidden;
+}
+.ua-safari #jbst-editor
+{
+	margin-left: 50px;
+}
+.ua-chrome #jbst-editor
+{
+	margin-left: 52px;
+}
+
+body.editing #jbst-editor
+{
+	position: static;
+	visibility: visible;
+}
+
+body.editing #jbst-display
+{
+	display: none;
+}
+
+.compilation-results
+{
+	clear: both;
+	margin: 2em;
+}
