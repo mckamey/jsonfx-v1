@@ -49,7 +49,11 @@ namespace JbstOnline.Mvc.ActionResults
 			{
 				statusCode = ex.GetHttpCode();
 			}
+#if DEBUG
+			message = this.Error.ToString();
+#else
 			message = this.Error.Message;
+#endif
 
 			context.HttpContext.Response.StatusCode = statusCode;
 			context.HttpContext.Response.ContentType = "text/plain";

@@ -34,7 +34,7 @@ namespace JbstOnline.Mvc.HttpModules
 		private void OnEndRequest(object sender, EventArgs e)
 		{
 			// customize the "Server" HTTP Header
-			HttpContext.Current.Response.Headers["Server"] = this.ServerAgent;
+			HttpContext.Current.Response.AddHeader("Server", this.ServerAgent);
 		}
 
 		#endregion Request Events
