@@ -20,14 +20,18 @@
     <OutputPath>.\Debug</OutputPath>
     <EnableUpdateable>false</EnableUpdateable>
     <UseMerge>true</UseMerge>
-    <SingleAssemblyName>MvcApp.Deploy</SingleAssemblyName>
+    <SingleAssemblyName>
+    </SingleAssemblyName>
+    <ContentAssemblyName>JbstOnline.Deploy</ContentAssemblyName>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugSymbols>false</DebugSymbols>
     <OutputPath>.\Release</OutputPath>
     <EnableUpdateable>false</EnableUpdateable>
     <UseMerge>true</UseMerge>
-    <SingleAssemblyName>MvcApp.Deploy</SingleAssemblyName>
+    <SingleAssemblyName>
+    </SingleAssemblyName>
+    <ContentAssemblyName>JbstOnline.Deploy</ContentAssemblyName>
   </PropertyGroup>
   <ItemGroup>
   </ItemGroup>
