@@ -147,7 +147,7 @@ namespace JsonFx.Mvc
 				}
 
 				// this helps IE determine the Content-Type
-				response.Headers["Content-Disposition"] = "inline;filename=data"+ext;
+				response.AddHeader("Content-Disposition", "inline;filename=data"+ext);
 			}
 
 			if (this.Data != null)
