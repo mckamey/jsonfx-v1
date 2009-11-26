@@ -1,4 +1,4 @@
-#region License
+﻿#region License
 /*---------------------------------------------------------------------------------*\
 
 	Distributed under the terms of an MIT-style license:
@@ -35,9 +35,9 @@ using System.Text;
 namespace JsonFx.Json
 {
 	/// <summary>
-	/// An <see cref="IDataWriter"/> adapter for <see cref="JsonWriter"/>
+	/// An <see cref="IDataReader"/> adapter for <see cref="JsonDataReader"/>
 	/// </summary>
-	public class JsonDataWriter : IDataWriter
+	public class JsonDataReader : IDataReader
 	{
 		#region Constants
 
@@ -48,7 +48,7 @@ namespace JsonFx.Json
 
 		#region Fields
 
-		private readonly JsonWriterSettings Settings;
+		private readonly JsonReaderSettings Settings;
 
 		#endregion Fields
 
@@ -58,7 +58,7 @@ namespace JsonFx.Json
 		/// Ctor
 		/// </summary>
 		/// <param name="settings">JsonWriterSettings</param>
-		public JsonDataWriter(JsonWriterSettings settings)
+		public JsonDataReader(JsonReaderSettings settings)
 		{
 			if (settings == null)
 			{
@@ -69,56 +69,40 @@ namespace JsonFx.Json
 
 		#endregion Init
 
-		#region IDataSerializer Members
-
-		/// <summary>
-		/// Gets the content encoding
-		/// </summary>
-		public Encoding ContentEncoding
-		{
-			get { return Encoding.UTF8; }
-		}
+		#region IDataReader Members
 
 		/// <summary>
 		/// Gets the content type
 		/// </summary>
 		public string ContentType
 		{
-			get { return JsonDataWriter.JsonMimeType; }
+			get { return JsonDataReader.JsonMimeType; }
 		}
 
 		/// <summary>
-		/// Gets the file extension
-		/// </summary>
-		public string FileExtension
-		{
-			get { return JsonDataWriter.JsonFileExtension; }
-		}
-
-		/// <summary>
-		/// Serializes the data object to the output
+		/// Deserializes a data object of Type <param name="type">type</param> from the <param name="input">input</param>
 		/// </summary>
 		/// <param name="output"></param>
 		/// <param name="data"></param>
-		public void Serialize(TextWriter output, object data)
+		public object Deserialize(TextReader input, Type type)
 		{
-			new JsonWriter(output, this.Settings).Write(data);
+			return new JsonReader(input, this.Settings).Deserialize(type);
 		}
 
-		#endregion IDataSerializer Members
+		#endregion IDataReader Members
 
 		#region Methods
 
 		/// <summary>
 		/// Builds a common settings objects
 		/// </summary>
-		/// <param name="prettyPrint"></param>
+		/// <param name="allowNullValueTypes"></param>
 		/// <returns></returns>
-		public static JsonWriterSettings CreateSettings(bool prettyPrint)
+		public static JsonReaderSettings CreateSettings(bool allowNullValueTypes)
 		{
-			JsonWriterSettings settings = new JsonWriterSettings();
+			JsonReaderSettings settings = new JsonReaderSettings();
 
-			settings.PrettyPrint = prettyPrint;
+			settings.AllowNullValueTypes = allowNullValueTypes;
 
 			return settings;
 		}
