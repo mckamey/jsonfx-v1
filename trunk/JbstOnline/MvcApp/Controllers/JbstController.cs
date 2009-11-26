@@ -85,13 +85,7 @@ namespace JbstOnline.Controllers
 				};
 			}
 
-			// TODO: configure this with Ninject
-			DataResult actionResult = new DataResult(new JsonDataWriter(JsonDataWriter.CreateSettings(false)));
-			actionResult.Data = data;
-
-			// TODO: figure out why MVC isn't displaying actual content
-			actionResult.HttpStatusCode = statusCode;
-			return actionResult;
+			return this.DataResult(data, statusCode);
         }
 
 		#region Scripts

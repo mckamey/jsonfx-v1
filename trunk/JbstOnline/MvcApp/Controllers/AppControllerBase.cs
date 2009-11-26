@@ -5,6 +5,7 @@ using System.Web.Mvc;
 using System.Web.Routing;
 
 using JbstOnline.Mvc.ActionResults;
+using JsonFx.Mvc;
 using Ninject;
 
 namespace JbstOnline.Controllers
@@ -41,6 +42,29 @@ namespace JbstOnline.Controllers
 		}
 
 		#endregion Error Handling Methods
+
+		#region View Methods
+
+		protected virtual DataResult DataResult(object data)
+		{
+			return this.DataResult(data, HttpStatusCode.OK);
+		}
+
+		protected virtual DataResult DataResult(object data, HttpStatusCode status)
+		{
+			DataResult result = this.ApiState.IoC.Get<DataResult>();
+
+			result.Data = data;
+
+			if (status != HttpStatusCode.OK)
+			{
+				result.HttpStatusCode = status;
+			}
+
+			return result;
+		}
+
+		#endregion View Methods
 
 		#region ControllerBase Members
 
