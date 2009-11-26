@@ -120,7 +120,7 @@ namespace JsonFx.Xml
 			// setup document formatting
 			XmlReaderSettings settings = new XmlReaderSettings();
 			settings.CloseInput = false;
-			settings.ConformanceLevel = ConformanceLevel.Fragment;
+			settings.ConformanceLevel = ConformanceLevel.Auto;
 			settings.IgnoreComments = true;
 			settings.IgnoreWhitespace = true;
 			settings.IgnoreProcessingInstructions = true;
