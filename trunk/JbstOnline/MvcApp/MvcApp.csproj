@@ -97,6 +97,8 @@
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
+    <Compile Include="Models\CompilationError.cs" />
+    <Compile Include="Models\CompilationResult.cs" />
     <Compile Include="Mvc\ActionResults\ErrorResult.cs" />
     <Compile Include="Mvc\HttpModules\HeadersModule.cs" />
     <Compile Include="Mvc\IoC\AppIocModule.cs" />
@@ -176,9 +178,6 @@
     <None Include="Views\Home\CompileError.jbst">
       <SubType>UserControl</SubType>
     </None>
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="Models\" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <Import Project="$(MSBuildExtensionsPath)\Microsoft\VisualStudio\v9.0\WebApplications\Microsoft.WebApplication.targets" />

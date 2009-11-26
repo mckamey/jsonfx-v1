@@ -6,16 +6,23 @@ using System.Web;
 using System.Web.Compilation;
 using System.Web.Mvc;
 
+using JbstOnline.Models;
 using JsonFx.BuildTools;
 using JsonFx.Handlers;
-using JsonFx.Json;
-using JsonFx.Mvc;
 using JsonFx.UI.Jbst;
 
 namespace JbstOnline.Controllers
 {
 	public class JbstController : AppControllerBase
     {
+		public ActionResult Test(CompilationResult result)
+		{
+			string message = result != null ? "Awesome." : "Dang.";
+			HttpStatusCode status = result != null ? HttpStatusCode.OK : HttpStatusCode.InternalServerError;
+
+			return this.DataResult(message, status);
+		}
+
 		public ActionResult Compile()
         {
 			// TODO: use ModelBinder or Ninject to get request data
@@ -58,17 +65,17 @@ namespace JbstOnline.Controllers
 			else if (compactionErrors.Count > 0)
 			{
 				statusCode = HttpStatusCode.BadRequest;
-				List<object> foo = new List<object>(compactionErrors.Count);
+				List<CompilationError> foo = new List<CompilationError>(compactionErrors.Count);
 				foreach (ParseException ex in compactionErrors)
 				{
-					foo.Add(new
+					foo.Add(new CompilationError
 					{
 						Message = ex.Message,
 						Line = ex.Line,
 						Col = ex.Column
 					});
 				}
-				data = new
+				data = new CompilationResult
 				{
 					key = result.Hash+result.FileExtension,
 					source = result.PrettyPrinted,
@@ -77,7 +84,7 @@ namespace JbstOnline.Controllers
 			}
 			else
 			{
-				data = new
+				data = new CompilationResult
 				{
 					key = result.Hash+result.FileExtension,
 					pretty = result.PrettyPrinted,

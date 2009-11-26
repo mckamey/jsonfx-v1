@@ -5,9 +5,11 @@ using System.Reflection;
 using System.Web.Mvc;
 using System.Web.Routing;
 
+using JbstOnline.Models;
+using JbstOnline.Mvc.IoC;
+using JsonFx.Mvc;
 using Ninject;
 using Ninject.Web.Mvc;
-using JbstOnline.Mvc.IoC;
 
 namespace JbstOnline
 {
@@ -37,10 +39,22 @@ namespace JbstOnline
 			);
 
 			routes.MapRoute(
+				"test",
+				"test",
+				new { controller = "Jbst", action = "Test" }
+			);
+
+			routes.MapRoute(
 				"Default",
 				"{controller}",
 				new { controller = "Home", action = "Index", id = "" }
 			);
+		}
+
+		private void RegisterBinders()
+		{
+			// allows this to automatically be bound from the post body
+			ModelBinders.Binders[typeof(CompilationResult)] = this.Kernel.Get<DataModelBinder>();
 		}
 
 		#region Ninject
@@ -54,6 +68,7 @@ namespace JbstOnline
 		{
 			this.RegisterAllControllersIn(Assembly.GetExecutingAssembly());
 			this.RegisterRoutes(RouteTable.Routes);
+			this.RegisterBinders();
 
 			MvcHandler.DisableMvcResponseHeader = true;
 		}
