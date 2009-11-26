@@ -61,6 +61,8 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="About.cs" />
+    <Compile Include="DataReaderProvider.cs" />
+    <Compile Include="DataWriterProvider.cs" />
     <Compile Include="XmlDataReader.cs" />
     <Compile Include="IDataReader.cs" />
     <Compile Include="EcmaScriptIdentifier.cs" />

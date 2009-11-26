@@ -29,23 +29,26 @@
 #endregion License
 
 using System;
-using System.IO;
-using System.Text;
-using System.Web;
-using System.Web.Mvc;
+using System.Collections.Generic;
 
-using JsonFx.Json;
-
-namespace JsonFx.Mvc
+namespace JsonFx.Json
 {
+	public interface IDataReaderProvider
+	{
+		IDataReader DefaultDataReader { get; }
+
+		IDataReader Find(string contentTypeHeader);
+	}
+
 	/// <summary>
-	/// Deserializes data according to a specified format
+	/// Provides lookup capabilities for finding an IDataReader
 	/// </summary>
-	public class DataModelBinder : IModelBinder
+	public class DataReaderProvider : IDataReaderProvider
 	{
 		#region Fields
 
-		private readonly IDataReaderProvider Provider;
+		private readonly IDataReader DefaultReader;
+		private readonly IDictionary<string, IDataReader> ReadersByMime = new Dictionary<string, IDataReader>(StringComparer.OrdinalIgnoreCase);
 
 		#endregion Fields
 
@@ -54,46 +57,58 @@ namespace JsonFx.Mvc
 		/// <summary>
 		/// Ctor
 		/// </summary>
-		/// <param name="provider"></param>
-		public DataModelBinder(IDataReaderProvider provider)
+		/// <param name="readers">inject with all possible readers</param>
+		public DataReaderProvider(IEnumerable<IDataReader> readers)
 		{
-			if (provider == null)
+			if (readers != null)
 			{
-				throw new ArgumentNullException("provider");
-			}
+				foreach (IDataReader reader in readers)
+				{
+					if (this.DefaultReader == null)
+					{
+						// TODO: decide less arbitrary way to choose default
+						// without hardcoding value into IDataReader
+						this.DefaultReader = reader;
+					}
 
-			this.Provider = provider;
+					if (!String.IsNullOrEmpty(reader.ContentType))
+					{
+						this.ReadersByMime[reader.ContentType] = reader;
+					}
+				}
+			}
 		}
 
 		#endregion Init
 
-		#region IModelBinder Members
+		#region Properties
 
-		/// <summary>
-		/// Reads the request body using the supplied IDataReader
-		/// </summary>
-		/// <param name="controllerContext"></param>
-		/// <param name="bindingContext"></param>
-		/// <returns></returns>
-		public object BindModel(ControllerContext controllerContext, ModelBindingContext bindingContext)
+		public IDataReader DefaultDataReader
 		{
-			HttpRequestBase request = controllerContext.HttpContext.Request;
-
-			IDataReader reader = this.Provider.Find(request.ContentType);
-			if (reader == null)
-			{
-				reader = this.Provider.DefaultDataReader;
-			}
-			if (reader == null)
-			{
-				throw new InvalidOperationException("No available IDataReader implementations");
-			}
-
-			return reader.Deserialize(
-				new StreamReader(request.InputStream, request.ContentEncoding??Encoding.UTF8),
-				bindingContext.ModelType);
+			get { return this.DefaultReader; }
 		}
 
-		#endregion IModelBinder Members
+		#endregion Properties
+
+		#region Methods
+
+		/// <summary>
+		/// Finds an IDataReader by content-type header
+		/// </summary>
+		/// <param name="contentTypeHeader"></param>
+		/// <returns></returns>
+		public IDataReader Find(string contentTypeHeader)
+		{
+			string type = DataWriterProvider.ParseMediaType(contentTypeHeader);
+
+			if (this.ReadersByMime.ContainsKey(type))
+			{
+				return ReadersByMime[type];
+			}
+
+			return null;
+		}
+
+		#endregion Methods
 	}
 }
