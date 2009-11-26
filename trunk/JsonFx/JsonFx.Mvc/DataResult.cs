@@ -52,7 +52,7 @@ namespace JsonFx.Mvc
 
 		#region Fields
 
-		private readonly IDataWriter Writer;
+		private readonly IDataWriterProvider Provider;
 
 		#endregion Fields
 
@@ -61,15 +61,15 @@ namespace JsonFx.Mvc
 		/// <summary>
 		/// Ctor
 		/// </summary>
-		/// <param name="writer">the IDataWriter implementation</param>
-		public DataResult(IDataWriter writer)
+		/// <param name="provider"></param>
+		public DataResult(IDataWriterProvider provider)
 		{
-			if (writer == null)
+			if (provider == null)
 			{
-				throw new ArgumentNullException("writer");
+				throw new ArgumentNullException("provider");
 			}
 
-			this.Writer = writer;
+			this.Provider = provider;
 		}
 
 		#endregion Init
@@ -97,9 +97,9 @@ namespace JsonFx.Mvc
 		/// <summary>
 		/// Gets the underlying IDataWriter
 		/// </summary>
-		public IDataWriter DataWriter
+		public IDataWriterProvider DataWriterProvider
 		{
-			get { return this.Writer; }
+			get { return this.Provider; }
 		}
 
 		#endregion Properties
@@ -117,7 +117,18 @@ namespace JsonFx.Mvc
 				throw new ArgumentNullException("context");
 			}
 
+			HttpRequestBase request = context.HttpContext.Request;
 			HttpResponseBase response = context.HttpContext.Response;
+
+			IDataWriter writer = this.Provider.Find(request.Headers["Accept"], request.Headers["Content-Type"]);
+			if (writer == null)
+			{
+				writer = this.Provider.Find(request.RawUrl);
+			}
+			if (writer == null)
+			{
+				throw new InvalidOperationException("No available IDataWriter implementations");
+			}
 
 			// need this to write out custom error objects
 			response.TrySkipIisCustomErrors = true;
@@ -127,7 +138,7 @@ namespace JsonFx.Mvc
 				response.StatusCode = (int)this.HttpStatusCode;
 			}
 
-			if (String.IsNullOrEmpty(this.Writer.ContentType))
+			if (String.IsNullOrEmpty(writer.ContentType))
 			{
 				// use the default content type
 				response.ContentType = DataResult.DefaultContentType;
@@ -135,19 +146,19 @@ namespace JsonFx.Mvc
 			else
 			{
 				// set the response content type
-				response.ContentType = this.Writer.ContentType;
+				response.ContentType = writer.ContentType;
 			}
 
-			if (this.Writer.ContentEncoding != null)
+			if (writer.ContentEncoding != null)
 			{
 				// set the response content encoding
-				response.ContentEncoding = this.Writer.ContentEncoding;
+				response.ContentEncoding = writer.ContentEncoding;
 			}
 
-			string ext = this.Writer.FileExtension;
+			string ext = writer.FileExtension;
 			if (!String.IsNullOrEmpty(ext))
 			{
-				string filename = this.ScrubFilename(context.HttpContext.Request.RawUrl, ext);
+				string filename = this.ScrubFilename(request.RawUrl, ext);
 
 				// this helps IE determine the Content-Type
 				response.AddHeader("Content-Disposition", "inline;filename="+filename);
@@ -155,81 +166,20 @@ namespace JsonFx.Mvc
 
 			if (this.Data != null)
 			{
-				this.Writer.Serialize(response.Output, this.Data);
+				writer.Serialize(response.Output, this.Data);
 			}
 		}
 
 		#endregion ActionResult Members
 
-		#region Header Methods
+		#region Utility Methods
 
 		/// <summary>
-		/// Parses HTTP headers for Media-Types
+		/// Produces a header friendly name which ends in the given extension
 		/// </summary>
-		/// <param name="accept">HTTP Accept header</param>
-		/// <param name="contentType">HTTP Content-Type header</param>
-		/// <returns>sequence of Media-Types</returns>
-		/// <remarks>
-		/// http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html
-		/// </remarks>
-		public static IEnumerable<string> ParseHeaders(string accept, string contentType)
-		{
-			string mime;
-
-			// check for a matching accept type
-			foreach (string type in DataResult.SplitTrim(accept, ','))
-			{
-				mime = DataResult.ParseMediaType(type);
-				if (!String.IsNullOrEmpty(mime))
-				{
-					yield return mime;
-				}
-			}
-
-			// fallback on content-type
-			mime = DataResult.ParseMediaType(contentType);
-			if (!String.IsNullOrEmpty(mime))
-			{
-				yield return mime;
-			}
-		}
-
-		private static string ParseMediaType(string type)
-		{
-			foreach (string mime in DataResult.SplitTrim(type, ';'))
-			{
-				// only return first part
-				return mime;
-			}
-
-			// if no parts was empty
-			return String.Empty;
-		}
-
-		private static IEnumerable<string> SplitTrim(string source, char ch)
-		{
-			if (String.IsNullOrEmpty(source))
-			{
-				yield break;
-			}
-
-			int length = source.Length;
-			for (int prev=0, next=0; prev<length && next>=0; prev=next+1)
-			{
-				next = source.IndexOf(ch, prev);
-				if (next < 0)
-				{
-					next = length;
-				}
-
-				string part = source.Substring(prev, next-prev).Trim();
-				if (part.Length > 0)
-				{
-					yield return part;
-				}
-			}
-		}
-
+		/// <param name="url"></param>
+		/// <param name="ext"></param>
+		/// <returns></returns>
 		private string ScrubFilename(string url, string ext)
 		{
 			int last = 0,
@@ -268,6 +218,6 @@ namespace JsonFx.Mvc
 			return builder.ToString();
 		}
 
-		#endregion Methods
+		#endregion Utility Methods
 	}
 }
