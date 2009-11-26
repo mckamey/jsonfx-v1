@@ -30,7 +30,6 @@
 
 using System;
 using System.IO;
-using System.Text;
 using System.Xml;
 using System.Xml.Serialization;
 
@@ -39,20 +38,19 @@ using JsonFx.Json;
 namespace JsonFx.Xml
 {
 	/// <summary>
-	/// An <see cref="IDataWriter"/> adapter for <see cref="XmlWriter"/>
+	/// An <see cref="IDataReader"/> adapter for <see cref="XmlReader"/>
 	/// </summary>
-	public class XmlDataWriter : IDataWriter
+	public class XmlDataReader : IDataReader
 	{
 		#region Constants
 
-		public const string XmlMimeType = "application/xml";
-		public const string XmlFileExtension = ".xml";
+		public const string XmlMimeType = XmlDataWriter.XmlMimeType;
 
 		#endregion Constants
 
 		#region Fields
 
-		private readonly XmlWriterSettings Settings;
+		private readonly XmlReaderSettings Settings;
 		private readonly XmlSerializerNamespaces Namespaces;
 
 		#endregion Fields
@@ -64,7 +62,7 @@ namespace JsonFx.Xml
 		/// </summary>
 		/// <param name="settings"></param>
 		/// <param name="namespaces"></param>
-		public XmlDataWriter(XmlWriterSettings settings, XmlSerializerNamespaces namespaces)
+		public XmlDataReader(XmlReaderSettings settings, XmlSerializerNamespaces namespaces)
 		{
 			if (settings == null)
 			{
@@ -84,14 +82,6 @@ namespace JsonFx.Xml
 		#region IDataSerializer Members
 
 		/// <summary>
-		/// Gets the content encoding
-		/// </summary>
-		public Encoding ContentEncoding
-		{
-			get { return this.Settings.Encoding ?? Encoding.UTF8; }
-		}
-
-		/// <summary>
 		/// Gets the content type
 		/// </summary>
 		public string ContentType
@@ -100,34 +90,21 @@ namespace JsonFx.Xml
 		}
 
 		/// <summary>
-		/// Gets the file extension
+		/// Deserializes a data object from the given input
 		/// </summary>
-		public string FileExtension
+		/// <param name="input"></param>
+		/// <param name="type"></param>
+		/// <returns></returns>
+		public object Deserialize(TextReader input, Type type)
 		{
-			get { return XmlDataWriter.XmlFileExtension; }
-		}
+			XmlReader reader = XmlReader.Create(input, this.Settings);
 
-		/// <summary>
-		/// Serializes the data object to the given output
-		/// </summary>
-		/// <param name="output"></param>
-		/// <param name="data"></param>
-		public void Serialize(TextWriter output, object data)
-		{
-			if (data == null)
-			{
-				return;
-			}
-
-			if (this.Settings.Encoding == null)
-			{
-				this.Settings.Encoding = this.ContentEncoding;
-			}
-			XmlWriter writer = XmlWriter.Create(output, this.Settings);
+			// skip DocType / processing instructions
+			reader.MoveToContent();
 
 			// serialize feed
-			XmlSerializer serializer = new XmlSerializer(data.GetType());
-			serializer.Serialize(writer, data, this.Namespaces);
+			XmlSerializer serializer = new XmlSerializer(type);
+			return serializer.Deserialize(reader);
 		}
 
 		#endregion IDataSerializer Members
@@ -137,32 +114,16 @@ namespace JsonFx.Xml
 		/// <summary>
 		/// Builds a common settings objects
 		/// </summary>
-		/// <param name="encoding"></param>
-		/// <param name="prettyPrint"></param>
 		/// <returns></returns>
-		public static XmlWriterSettings CreateSettings(Encoding encoding, bool prettyPrint)
+		public static XmlReaderSettings CreateSettings()
 		{
 			// setup document formatting
-			XmlWriterSettings settings = new XmlWriterSettings();
-			settings.CheckCharacters = true;
-			settings.CloseOutput = false;
+			XmlReaderSettings settings = new XmlReaderSettings();
+			settings.CloseInput = false;
 			settings.ConformanceLevel = ConformanceLevel.Fragment;
-			settings.Encoding = encoding;
-
-			if (prettyPrint)
-			{
-				// make human readable
-				settings.Indent = true;
-				settings.IndentChars = "\t";
-			}
-			else
-			{
-				// compact
-				settings.Indent = false;
-				settings.NewLineChars = String.Empty;
-			}
-			settings.NewLineHandling = NewLineHandling.Replace;
-
+			settings.IgnoreComments = true;
+			settings.IgnoreWhitespace = true;
+			settings.IgnoreProcessingInstructions = true;
 			return settings;
 		}
 

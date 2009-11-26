@@ -31,6 +31,7 @@
 using System;
 using System.Collections.Generic;
 using System.Net;
+using System.Text;
 using System.Web;
 using System.Web.Mvc;
 
@@ -39,7 +40,7 @@ using JsonFx.Json;
 namespace JsonFx.Mvc
 {
 	/// <summary>
-	/// Serializes the data according to the specified format
+	/// Serializes data according to a specified format
 	/// </summary>
 	public class DataResult : ActionResult
 	{
@@ -60,7 +61,7 @@ namespace JsonFx.Mvc
 		/// <summary>
 		/// Ctor
 		/// </summary>
-		/// <param name="serializer">the serialization implementation</param>
+		/// <param name="writer">the IDataWriter implementation</param>
 		public DataResult(IDataWriter writer)
 		{
 			if (writer == null)
@@ -106,7 +107,7 @@ namespace JsonFx.Mvc
 		#region ActionResult Members
 
 		/// <summary>
-		/// Executes the result
+		/// Serializes the data using the specified IDataWriter
 		/// </summary>
 		/// <param name="context">ControllerContext</param>
 		public override void ExecuteResult(ControllerContext context)
@@ -120,6 +121,11 @@ namespace JsonFx.Mvc
 
 			// need this to write out custom error objects
 			response.TrySkipIisCustomErrors = true;
+
+			if (this.HttpStatusCode != default(HttpStatusCode))
+			{
+				response.StatusCode = (int)this.HttpStatusCode;
+			}
 
 			if (String.IsNullOrEmpty(this.Writer.ContentType))
 			{
@@ -141,23 +147,15 @@ namespace JsonFx.Mvc
 			string ext = this.Writer.FileExtension;
 			if (!String.IsNullOrEmpty(ext))
 			{
-				if (!ext.StartsWith("."))
-				{
-					ext = '.'+ext;
-				}
+				string filename = this.ScrubFilename(context.HttpContext.Request.RawUrl, ext);
 
 				// this helps IE determine the Content-Type
-				response.AddHeader("Content-Disposition", "inline;filename=data"+ext);
+				response.AddHeader("Content-Disposition", "inline;filename="+filename);
 			}
 
 			if (this.Data != null)
 			{
 				this.Writer.Serialize(response.Output, this.Data);
-			}
-
-			if (this.HttpStatusCode != default(HttpStatusCode))
-			{
-				response.StatusCode = (int)this.HttpStatusCode;
 			}
 		}
 
@@ -230,6 +228,44 @@ namespace JsonFx.Mvc
 					yield return part;
 				}
 			}
+		}
+
+		private string ScrubFilename(string url, string ext)
+		{
+			int last = 0,
+				length = url.Length;
+
+			StringBuilder builder = new StringBuilder(length + ext.Length);
+			for (int i=0; i<length; i++)
+			{
+				char ch = url[i];
+				if (Char.IsLetterOrDigit(ch) || ch == '_' || ch == '-' || ch == '.')
+				{
+					continue;
+				}
+
+				if (last < i)
+				{
+					builder.Append(url, last, i-last);
+				}
+				last = i+1;
+			}
+			if (last < length)
+			{
+				builder.Append(url, last, length-last);
+			}
+			if (builder.Length == 0)
+			{
+				builder.Append("data");
+			}
+
+			if (ext[0] != '.')
+			{
+				builder.Append('.');
+			}
+			builder.Append(ext);
+
+			return builder.ToString();
 		}
 
 		#endregion Methods
