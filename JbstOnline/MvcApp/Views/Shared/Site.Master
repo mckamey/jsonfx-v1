@@ -19,5 +19,7 @@
 	<asp:ContentPlaceHolder ID="Content" runat="server" />
 </div>
 
+	<JsonFx:ResourceInclude runat="server" SourceUrl="~/Scripts/GA.js" />
+
 </body>
 </html>

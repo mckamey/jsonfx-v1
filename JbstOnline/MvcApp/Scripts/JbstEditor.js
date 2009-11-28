@@ -85,8 +85,9 @@ JbstEditor.generate = function() {
 	var val = (editor.innerText || editor.value);
 
 	var btn = this;
+	var url = "/compiler";
 	JsonFx.IO.sendJsonRequest(
-		"/compiler",
+		url,
 		{
 			params: val,
 			method: "POST",
@@ -94,6 +95,7 @@ JbstEditor.generate = function() {
 				"Content-Type": "text/plain"
 			},
 			onSuccess: function(/*JSON*/ results) {
+				GA.track(url+"#success");
 				results = JbstOnline.CompileSuccess.bind(results);
 				var display = $("#compilation-results");
 				if (display.length) {
@@ -103,6 +105,7 @@ JbstEditor.generate = function() {
 				}
 			},
 			onFailure: function(/*JSON*/ obj, /*object*/ cx, /*error*/ ex) {
+				GA.track(url+"#failure");
 				var results;
 				try {
 					results = JSON.parse(obj);
@@ -110,8 +113,9 @@ JbstEditor.generate = function() {
 
 				if (!results || !results.errors)
 				{
-					alert("Unexpected error:\r\n"+obj);
-//debugger;
+					if (!GA.track(url+"#fatal")) {
+						alert("Unexpected error:\r\n"+obj);
+					}
 					return;
 				}
 
