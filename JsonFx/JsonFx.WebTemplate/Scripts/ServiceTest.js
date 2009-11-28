@@ -19,23 +19,30 @@ if ("undefined" === typeof Example) {
 	alert( JSON.stringify(ex, null, "\t") );
 };
 
-/*void*/ Example.tryService = function(/*DOM*/ elem) {
+/*void*/ Example.callJsonRpc = function(/*DOM*/ elem) {
 	if (!elem) {
 		return;
 	}
 
 	// this is a parameter to the service method
-	var number = Math.PI;
+	// this will go up to server and come back populated
+	var info = {
+		Number: Math.PI
+	};
 
-	// these are the options for the service proxy
+	// these are the options for the Ajax request
 	var options = {
 		onSuccess: Example.results.success, // defined in Results.jbst
 		onFailure: Example.asyncError,
 		context: { elem: elem, foo: "bar" }
 	};
 
-	// call the JSON-RPC service proxy object with the method args in order and add an options object at the end
-	Example.MyServiceProxy.getInfo(number, options);
+	// call JSON-RPC service proxy objects with the
+	// method args in order and add an options object at the end
+	Example.Service.getInfo(
+		info,
+		options);
 
-	// when the request completes, the appropriate callback will get called with the return value and the context object
+	// when the request completes, the appropriate callback will
+	// get called with the return value and the context object
 };
