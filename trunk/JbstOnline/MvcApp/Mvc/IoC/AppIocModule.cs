@@ -36,9 +36,6 @@ namespace JbstOnline.Mvc.IoC
 
 			// MVC and IoC types
 			this.Bind<IActionInvoker>().To<NinjectActionInvoker>().InTransientScope();
-
-			// scope of ApiState is per request
-			this.Bind<AppState>().ToSelf().InRequestScope();
 		}
 
 		#endregion NinjectModule Members
