@@ -7,7 +7,8 @@ if ("undefined" === typeof GA) {
 }
 
 /*bool*/ GA.init = function(/*string*/ id) {
-	if (_gat && !document.location.port || document.location.port === 80) {
+	if ("undefined" !== typeof _gat &&
+		!document.location.port || document.location.port === 80) {
 		GA.gat = _gat._getTracker(id);
 		GA.gat._trackPageview();
 		return true;
