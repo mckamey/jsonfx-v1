@@ -117,7 +117,6 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Images\Buttons\ButtonFade.png" />
-    <Content Include="Sample.txt" />
     <Content Include="Scripts\JbstEditor.js" />
     <Content Include="Scripts\jQuery\jquery.autogrow.js" />
     <Content Include="Scripts\jQuery\jquery.js" />
@@ -170,6 +169,7 @@
     <Content Include="Styles\SyntaxHighlighter\shThemeRDark.css" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="Sample.jbst" />
     <None Include="Scripts\JBST.merge" />
     <None Include="Scripts\SyntaxHighlighter\SyntaxHighlighter.merge" />
     <None Include="Styles\SyntaxHighlighter\SyntaxHighlighter.merge" />

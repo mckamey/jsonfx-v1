@@ -24,26 +24,26 @@ namespace JbstOnline
 			routes.MapRoute(
 				"Compile",
 				"compiler",
-				new { controller = "Jbst", action = "Compile" }
-			);
+				new { controller = "Jbst", action = "Compile" },
+				new { httpMethod = new HttpMethodConstraint("POST") });
 
 			routes.MapRoute(
 				"PrettyPrinted",
 				"compiler/scripts",
-				new { controller = "Jbst", action = "SupportScripts" }
-			);
+				new { controller = "Jbst", action = "SupportScripts" },
+				new { httpMethod = new HttpMethodConstraint("GET") });
 
 			routes.MapRoute(
 				"Compacted",
 				"compiler/compacted",
-				new { controller = "Jbst", action = "ScriptsCompacted" }
-			);
+				new { controller = "Jbst", action = "ScriptsCompacted" },
+				new { httpMethod = new HttpMethodConstraint("GET") });
 
 			routes.MapRoute(
 				"test",
 				"test",
-				new { controller = "Jbst", action = "Test" }
-			);
+				new { controller = "Jbst", action = "Test" },
+				new { httpMethod = new HttpMethodConstraint("POST") });
 
 			routes.MapRoute(
 				"Default",
