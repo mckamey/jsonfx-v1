@@ -32,7 +32,9 @@ namespace JsonFx.Mvc
 			this.OnException(context);
 		}
 
-		protected abstract void OnException(ExceptionContext context);
+		protected virtual void OnException(ExceptionContext context)
+		{
+		}
 
 		#endregion Error Handling Methods
 
