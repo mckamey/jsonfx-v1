@@ -12,7 +12,7 @@ namespace JbstOnline.Controllers
 		#region Properties
 
 		/// <summary>
-		/// Gets the ApiState for this request
+		/// Gets the IoC
 		/// </summary>
 		[Inject]
 		public IKernel IoC
@@ -31,9 +31,15 @@ namespace JbstOnline.Controllers
 			context.ExceptionHandled = true;
 		}
 
-		public override T Get<T>()
+		protected override DataResult DataResult()
 		{
-			return this.IoC.Get<T>();
+			return this.IoC.Get<DataResult>();
+		}
+
+		protected override IActionInvoker ActionInvoker
+		{
+			get { return this.IoC.Get<IActionInvoker>(); }
+			set {}
 		}
 
 		#endregion LiteController Methods
