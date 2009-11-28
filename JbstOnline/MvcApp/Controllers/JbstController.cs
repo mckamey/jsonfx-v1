@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Net;
-using System.Web.Compilation;
 using System.Web.Mvc;
 
 using JbstOnline.Models;
@@ -13,11 +12,14 @@ using JsonFx.UI.Jbst;
 namespace JbstOnline.Controllers
 {
 	public class JbstController : AppControllerBase
-    {
-		public ActionResult Test(CompilationResult result)
-		{
-			return this.DataResult(result);
-		}
+	{
+		#region Constants
+
+		public const string SupportScriptPath = "~/Scripts/JBST.Merge";
+
+		#endregion Constants
+
+		#region Controller Actions
 
 		public ActionResult Compile(TextReader source)
         {
@@ -63,7 +65,7 @@ namespace JbstOnline.Controllers
 				}
 				data = new CompilationResult
 				{
-					key = result.Hash+result.FileExtension,
+					key = result.Hash,
 					source = result.PrettyPrinted,
 					errors = foo
 				};
@@ -72,7 +74,7 @@ namespace JbstOnline.Controllers
 			{
 				data = new CompilationResult
 				{
-					key = result.Hash+result.FileExtension,
+					key = result.Hash,
 					pretty = result.PrettyPrinted,
 					compacted = result.Compacted
 				};
@@ -81,11 +83,16 @@ namespace JbstOnline.Controllers
 			return this.DataResult(data, statusCode);
         }
 
-		#region Scripts
+#if DEBUG
+		public ActionResult Test(CompilationResult result)
+		{
+			return this.DataResult(result);
+		}
+#endif
 
 		public ActionResult SupportScripts()
 		{
-			IOptimizedResult result = JbstController.GetSupportScripts();
+			IOptimizedResult result = ResourceHandler.Create<IOptimizedResult>(JbstController.SupportScriptPath);
 
 			return new JavaScriptResult()
 			{
@@ -95,7 +102,7 @@ namespace JbstOnline.Controllers
 
 		public ActionResult ScriptsCompacted()
 		{
-			IOptimizedResult result = JbstController.GetSupportScripts();
+			IOptimizedResult result = ResourceHandler.Create<IOptimizedResult>(JbstController.SupportScriptPath);
 
 			return new JavaScriptResult()
 			{
@@ -103,11 +110,7 @@ namespace JbstOnline.Controllers
 			};
 		}
 
-		public static IOptimizedResult GetSupportScripts()
-		{
-			return (IOptimizedResult)BuildManager.CreateInstanceFromVirtualPath("~/Scripts/JBST.Merge", typeof(IOptimizedResult));
-		}
+		#endregion Controller Actions
 
-		#endregion Scripts
 	}
 }

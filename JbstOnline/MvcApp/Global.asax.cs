@@ -79,7 +79,8 @@ namespace JbstOnline
 			this.RegisterRoutes(RouteTable.Routes);
 			this.RegisterBinders();
 
-			MvcHandler.DisableMvcResponseHeader = true;
+			CleanHeadersModule.Headers["Server"] = CleanHeadersModule.BuildServerHeader(Assembly.GetExecutingAssembly());
+			CleanHeadersModule.Headers["X-JsonFx-Version"] = JsonFx.About.Fx.Version.ToString();
 		}
 
 		#endregion Ninject

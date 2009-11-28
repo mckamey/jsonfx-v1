@@ -1,4 +1,4 @@
-﻿<%@ Page Language="C#" MasterPageFile="~/Views/Shared/Site.Master" Title="Online JBST Compiler" Inherits="System.Web.Mvc.ViewPage" %>
+﻿<%@ Page Language="C#" MasterPageFile="~/Views/Shared/Site.Master" Title="Online JBST Compiler" Inherits="System.Web.Mvc.ViewPage<JbstOnline.Models.HomeViewModel>" %>
 
 <asp:Content ID="C" ContentPlaceHolderID="Content" runat="server">
 
@@ -7,7 +7,7 @@
 	<h2>1. Design your template (click to edit).</h2>
 	<p class="instructions">For JBST syntax details, see: <a href="http://starterkit.jsonfx.net/jbst" target="_blank">http://starterkit.jsonfx.net/jbst</a></p>
 
-	<textarea id="jbst-editor"><%= this.ViewData["jbst-source"] %></textarea>
+	<textarea id="jbst-editor"><%= this.Model.SampleSource %></textarea>
 </div>
 
 <div class="step">
@@ -24,9 +24,9 @@
 	<p class="instructions">This is the only additional script needed to dynamically bind your control in the browser. It is only needed once, no matter how many different JBST controls you create.</p>
 
 	<div class="buttons">
-		<a href="/compiler/scripts" class="button button-large">Full Source - <%= this.ViewData["full-size"]%></a>
-		<a href="/compiler/compacted" class="button button-large">Compacted - <%= this.ViewData["compact-size"]%></a>
-		<b>(GZipped - <%= this.ViewData["gzip-size"]%>, Deflated - <%= this.ViewData["deflate-size"]%>)</b>
+		<a href="/compiler/scripts" class="button button-large" target="_blank">Full Source - <%= this.Model.FullSize %></a>
+		<a href="/compiler/compacted" class="button button-large" target="_blank">Compacted - <%= this.Model.CompactSize %></a>
+		<b>[ GZipped - <%= this.Model.GzipSize %>, Deflated - <%= this.Model.DeflateSize %> ]</b>
 	</div>
 </div>
 
