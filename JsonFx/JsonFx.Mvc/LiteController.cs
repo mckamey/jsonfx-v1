@@ -1,30 +1,24 @@
 ﻿using System;
 using System.Net;
+using System.Text;
 using System.Web;
 using System.Web.Mvc;
 using System.Web.Routing;
+using System.Xml.Serialization;
+
+using JsonFx.Json;
+using JsonFx.Xml;
 
 namespace JsonFx.Mvc
 {
 	/// <summary>
 	/// A light-weight Controller base for basis of a Layer Supertype.
-	/// Encourages IoC and reduces clutter.
+	/// Encourages IoC and reduces default clutter.
 	/// </summary>
 	public abstract class LiteController :
 		ControllerBase,
 		IExceptionFilter
 	{
-		#region IoC Container
-
-		/// <summary>
-		/// IoC Container convenience method
-		/// </summary>
-		/// <typeparam name="T"></typeparam>
-		/// <returns></returns>
-		public abstract T Get<T>();
-
-		#endregion IoC Container
-
 		#region Error Handling Methods
 
 		void IExceptionFilter.OnException(ExceptionContext context)
@@ -40,16 +34,37 @@ namespace JsonFx.Mvc
 
 		#region ActionResult Methods
 
-		protected virtual DataResult DataResult(object data)
+		/// <summary>
+		/// Override with IoC container resolution of DataResult
+		/// </summary>
+		/// <returns></returns>
+		protected virtual DataResult DataResult()
 		{
-			return this.DataResult(data, HttpStatusCode.OK);
+			bool isDebug =
+				this.ControllerContext.HttpContext != null ?
+				this.ControllerContext.HttpContext.IsDebuggingEnabled :
+				false;
+
+			return new DataResult(
+				new DataWriterProvider(new IDataWriter[]
+				{
+					new JsonDataWriter(JsonDataWriter.CreateSettings(isDebug)),
+					new XmlDataWriter(XmlDataWriter.CreateSettings(Encoding.UTF8, isDebug), new XmlSerializerNamespaces())
+				}));
 		}
 
-		protected virtual DataResult DataResult(object data, HttpStatusCode status)
+		protected DataResult DataResult(object data)
 		{
-			DataResult result = this.Get<DataResult>();
+			DataResult result = this.DataResult();
 
 			result.Data = data;
+
+			return result;
+		}
+
+		protected DataResult DataResult(object data, HttpStatusCode status)
+		{
+			DataResult result = this.DataResult(data);
 
 			if (status != HttpStatusCode.OK)
 			{
@@ -99,20 +114,44 @@ namespace JsonFx.Mvc
 
 		#region ControllerBase Members
 
+		private IActionInvoker actionInvoker;
+
+		/// <summary>
+		/// Override with IoC container resolution of IActionInvoker
+		/// </summary>
+		/// <returns></returns>
+		protected virtual IActionInvoker ActionInvoker
+		{
+			get
+			{
+				if (this.actionInvoker == null)
+				{
+					this.actionInvoker = new ControllerActionInvoker();
+				}
+				return this.actionInvoker;
+			}
+			set { this.actionInvoker = value; }
+		}
+
 		protected override void ExecuteCore()
 		{
-			RouteData routeData = this.ControllerContext == null ? null :
+			RouteData routeData =
+				this.ControllerContext == null ?
+				null :
 				this.ControllerContext.RouteData;
 
-			IActionInvoker actionInvoker = this.Get<IActionInvoker>();
-
 			string actionName = routeData.GetRequiredString("action");
-			if (!actionInvoker.InvokeAction(this.ControllerContext, actionName))
+			if (!this.ActionInvoker.InvokeAction(this.ControllerContext, actionName))
 			{
-				throw new HttpException(
-					(int)HttpStatusCode.NotFound,
-					String.Format("A public action method '{0}' could not be found on controller '{1}'.", actionName, this.GetType().FullName));
+				this.HandleUnknownAction(actionName);
 			}
+		}
+
+		protected virtual void HandleUnknownAction(string actionName)
+		{
+			throw new HttpException(
+				(int)HttpStatusCode.NotFound,
+				String.Format("A public action method '{0}' could not be found on controller '{1}'.", actionName, this.GetType().FullName));
 		}
 
 		#endregion ControllerBase Members
