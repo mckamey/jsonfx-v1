@@ -10,8 +10,8 @@ html, body
 body
 {
     background-color: #5c87b2;
-    font-size: .75em;
-    font-family: Verdana, Helvetica, Sans-Serif;
+    font-size: 12px;
+    font-family: Tahoma, "Lucida Grande", "Helvetica Neue", Helvetica, Arial, Sans-Serif;
     color: #696969;
 }
 
@@ -117,6 +117,10 @@ page width. Or, you can specify an exact pixel width. */
     background-color: #fff;
     margin-bottom: 30px;
     _height: 1px; /* only IE6 applies CSS properties starting with an underscrore */
+
+	border-radius: 8px;
+	-moz-border-radius: 8px;
+	-webkit-border-radius: 8px;
 }
 
 #footer
@@ -160,7 +164,7 @@ ul#menu li a
     padding: 10px 20px;
     font-weight: bold;
     text-decoration: none;
-    line-height: 2.8em;
+    line-height: 16px;
     background-color: #e8eef4;
     color: #034af3;
 }

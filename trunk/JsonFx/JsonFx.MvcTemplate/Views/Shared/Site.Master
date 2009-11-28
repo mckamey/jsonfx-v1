@@ -5,7 +5,7 @@
 <head runat="server">
 	<meta http-equiv="Content-Type" content="application/xhtml+xml; charset=UTF-8" />
 
-	<title><asp:ContentPlaceHolder ID="TitleContent" runat="server" /></title>
+	<title></title>
 
 	<%-- one tag to include all the style sheets --%>
 	<JsonFx:ResourceInclude runat="server" SourceUrl="~/Styles/Styles.merge" />
@@ -19,7 +19,7 @@
 
         <div id="header">
             <div id="title">
-                <h1>My JsonFx/MVC Application </h1>
+                <h1>Sample JsonFx/MVC Application </h1>
             </div>
 	    <div id="loginPlaceholder">&nbsp;</div>
 
@@ -33,7 +33,7 @@
         </div>
 
         <div id="main">
-            <asp:ContentPlaceHolder ID="MainContent" runat="server" />
+            <asp:ContentPlaceHolder ID="Content" runat="server" />
 
             <div id="footer">
             </div>

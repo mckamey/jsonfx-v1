@@ -8,8 +8,8 @@
 # content can be directly in the project or embedded in linked assemblies
 # merge files can even merge other merge files
 
-# add all of the JsonFx scripts at once
-JsonFx.Scripts.JsonFx.merge, JsonFx.Client
+# core JsonFx scripts
+JsonFx.Scripts.JsonFx_Core.merge, JsonFx.Client
 
 # add jQuery into template
 ~/Scripts/jQuery-1.3.2.js

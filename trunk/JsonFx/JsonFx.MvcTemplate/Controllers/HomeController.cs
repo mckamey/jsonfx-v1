@@ -1,19 +1,24 @@
 ﻿using System;
+using System.Web;
 using System.Web.Mvc;
+
+using JsonFx.Mvc;
+using MyApp.Models;
 
 namespace MyApp.Controllers
 {
-	[HandleError]
-	public class HomeController : Controller
+	public class HomeController : LiteController
 	{
 		public ActionResult Index()
 		{
-			// populate data to be used directly in a JBST
-			this.ViewData["renderTime"] = DateTime.Now;
-			this.ViewData["serverName"] = this.Server.MachineName;
-			this.ViewData["JsonFxVersion"] = JsonFx.About.Fx.Version;
-
-			return View();
+			// populate data to be used in a JBST
+			return this.View(
+				new HomeViewModel
+				{
+					RenderTime = DateTime.Now,
+					ServerName = HttpContext.Current.Server.MachineName,
+					JsonFxVersion = JsonFx.About.Fx.Version
+				});
 		}
 	}
 }
