@@ -4,7 +4,7 @@
 	Ajax & JSON-RPC support
 
 	Created: 2006-11-09-0120
-	Modified: 2009-06-02-0906
+	Modified: 2009-11-28-1519
 
 	Copyright (c)2006-2009 Stephen M. McKamey
 	Released under an open-source license: http://jsonfx.net/license
@@ -330,11 +330,15 @@ JsonFx.IO = {
 		if ("undefined" !== typeof options &&
 			"undefined" !== typeof options.params) {
 
-			options.params = JSON.stringify(options.params);
-			if (!options.headers) {
-				options.headers = {};
+			// if Content-Type is not specified, then encode as JSON
+			if (!options.headers || !options.headers["Content-Type"]) {
+
+				options.params = JSON.stringify(options.params);
+				if (!options.headers) {
+					options.headers = {};
+				}
+				options.headers["Content-Type"] = "application/json";
 			}
-			options.headers["Content-Type"] = "application/json";
 		}
 
 		// ensure defaults
