@@ -33,8 +33,16 @@ namespace JbstOnline.Mvc.HttpModules
 
 		private void OnEndRequest(object sender, EventArgs e)
 		{
+			HttpResponse response = HttpContext.Current.Response;
+
 			// customize the "Server" HTTP Header
-			HttpContext.Current.Response.AddHeader("Server", this.ServerAgent);
+			try
+			{
+				response.Headers.Remove("Server");
+			}
+			catch (PlatformNotSupportedException) {}
+
+			response.AppendHeader("Server", this.ServerAgent);
 		}
 
 		#endregion Request Events
