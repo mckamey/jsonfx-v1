@@ -1,6 +1,9 @@
 ﻿using System;
 using System.Web;
+using System.Web.Compilation;
 using System.Web.Mvc;
+
+using JsonFx.Handlers;
 
 namespace JbstOnline.Controllers
 {
@@ -9,11 +12,10 @@ namespace JbstOnline.Controllers
 	{
 		public ActionResult Index()
 		{
-			// TODO: use ModelBinder or DI to map path
+			IOptimizedResult sample = (IOptimizedResult)BuildManager.CreateInstanceFromVirtualPath("~/Sample.jbst", typeof(IOptimizedResult));
 
 			// populate data to be used directly in a JBST
-			this.ViewData["jbst-source"] = HttpUtility.HtmlEncode(
-				System.IO.File.ReadAllText(HttpContext.Current.Server.MapPath("~/Sample.txt")));
+			this.ViewData["jbst-source"] = HttpUtility.HtmlEncode(sample.Source);
 
 			return new ViewResult
 			{
