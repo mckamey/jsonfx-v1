@@ -35,8 +35,6 @@ namespace JsonFx.Json
 {
 	public interface IDataReaderProvider
 	{
-		IDataReader DefaultDataReader { get; }
-
 		IDataReader Find(string contentTypeHeader);
 	}
 
@@ -47,7 +45,6 @@ namespace JsonFx.Json
 	{
 		#region Fields
 
-		private readonly IDataReader DefaultReader;
 		private readonly IDictionary<string, IDataReader> ReadersByMime = new Dictionary<string, IDataReader>(StringComparer.OrdinalIgnoreCase);
 
 		#endregion Fields
@@ -64,13 +61,6 @@ namespace JsonFx.Json
 			{
 				foreach (IDataReader reader in readers)
 				{
-					if (this.DefaultReader == null)
-					{
-						// TODO: decide less arbitrary way to choose default
-						// without hardcoding value into IDataReader
-						this.DefaultReader = reader;
-					}
-
 					if (!String.IsNullOrEmpty(reader.ContentType))
 					{
 						this.ReadersByMime[reader.ContentType] = reader;
@@ -80,15 +70,6 @@ namespace JsonFx.Json
 		}
 
 		#endregion Init
-
-		#region Properties
-
-		public IDataReader DefaultDataReader
-		{
-			get { return this.DefaultReader; }
-		}
-
-		#endregion Properties
 
 		#region Methods
 
