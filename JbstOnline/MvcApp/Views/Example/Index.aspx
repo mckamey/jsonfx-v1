@@ -99,7 +99,7 @@
 	<p class="copyright">Copyright &copy;2006-2009 Stephen M. McKamey. Powered by <a href="http://starterkit.jsonfx.net/jbst">JsonFx.NET</a>.</p>
 </div>
 
-<JsonFx:ResourceInclude runat="server" SourceUrl="~/Scripts/GA.js" />
+<JsonFx:ResourceInclude runat="server" SourceUrl="~/Scripts/GA.js" defer="defer" />
 
 </body>
 </html>
