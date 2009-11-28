@@ -31,7 +31,7 @@
 		</jbst:control>
 	</ul>
 
-	<h4 style="margin-top:1em">Error Source (<%= (this.data.source.length/1024).toFixed(2) %> KB)</h4>
+	<h4 style="margin-top:1em">Error Source</h4>
 	<p style="margin-top:1em"><pre class="<%= this.getSettings(this.data.errors) %>"><%= this.data.source %></pre></p>
 
 </div>

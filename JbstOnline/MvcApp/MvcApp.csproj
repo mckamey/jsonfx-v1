@@ -90,6 +90,7 @@
   <ItemGroup>
     <Compile Include="AppState.cs" />
     <Compile Include="Controllers\AppControllerBase.cs" />
+    <Compile Include="Controllers\ExampleController.cs" />
     <Compile Include="Controllers\JbstController.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -167,12 +168,14 @@
     <Content Include="Styles\SyntaxHighlighter\shThemeFadeToGrey.css" />
     <Content Include="Styles\SyntaxHighlighter\shThemeMidnight.css" />
     <Content Include="Styles\SyntaxHighlighter\shThemeRDark.css" />
+    <Content Include="Views\Example\Index.aspx" />
   </ItemGroup>
   <ItemGroup>
-    <None Include="Sample.jbst" />
+    <None Include="Scripts\Example.merge" />
     <None Include="Scripts\JBST.merge" />
     <None Include="Scripts\SyntaxHighlighter\SyntaxHighlighter.merge" />
     <None Include="Styles\SyntaxHighlighter\SyntaxHighlighter.merge" />
+    <None Include="Views\Example\Foo.MyZebraList.jbst" />
     <None Include="Views\Home\CompileSuccess.jbst">
       <SubType>UserControl</SubType>
     </None>
