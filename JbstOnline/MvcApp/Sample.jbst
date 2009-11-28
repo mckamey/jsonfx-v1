@@ -6,13 +6,13 @@
 	this.zebraStripe = function(/*int*/ index, /*int*/ count) {
 		var style = "";
 		if (index % 2 === 0) {
-			style += "background-color:silver;"
+			style += "background-color:silver;";
 		}
 		if (index === 0) {
-			style += "border-top:1px solid gray;"
+			style += "border-top:1px solid gray;";
 		}
 		if (index === count-1) {
-			style += "border-bottom:1px solid gray;"
+			style += "border-bottom:1px solid gray;";
 		}
 	};
 
