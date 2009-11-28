@@ -127,6 +127,10 @@ namespace JsonFx.Mvc
 			}
 			if (writer == null)
 			{
+				writer = this.Provider.DefaultDataWriter;
+			}
+			if (writer == null)
+			{
 				throw new InvalidOperationException("No available IDataWriter implementations");
 			}
 
