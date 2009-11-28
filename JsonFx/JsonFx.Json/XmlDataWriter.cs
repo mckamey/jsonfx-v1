@@ -148,6 +148,7 @@ namespace JsonFx.Xml
 			settings.CloseOutput = false;
 			settings.ConformanceLevel = ConformanceLevel.Auto;
 			settings.Encoding = encoding;
+			settings.OmitXmlDeclaration = true;
 
 			if (prettyPrint)
 			{
