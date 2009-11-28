@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Net;
-using System.Web;
 using System.Web.Compilation;
 using System.Web.Mvc;
 
@@ -17,28 +16,15 @@ namespace JbstOnline.Controllers
     {
 		public ActionResult Test(CompilationResult result)
 		{
-			string message = result != null ? "Awesome." : "Dang.";
-			HttpStatusCode status = result != null ? HttpStatusCode.OK : HttpStatusCode.InternalServerError;
-
-			return this.DataResult(message, status);
+			return this.DataResult(result);
 		}
 
-		public ActionResult Compile()
+		public ActionResult Compile(TextReader source)
         {
-			// TODO: use ModelBinder or Ninject to get request data
-			HttpRequest request = HttpContext.Current.Request;
-			JbstCompiler compiler = new JbstCompiler();
-
 			List<ParseException> compilationErrors = new List<ParseException>();
 			List<ParseException> compactionErrors = new List<ParseException>();
-			IOptimizedResult result;
-			using (var reader = new StreamReader(request.InputStream))
-			{
-				using (var writer = new StringWriter())
-				{
-					result = compiler.Compile(reader.ReadToEnd(), null, compilationErrors, compactionErrors);
-				}
-			}
+
+			IOptimizedResult result = new JbstCompiler().Compile(source, null, compilationErrors, compactionErrors);
 
 			HttpStatusCode statusCode = HttpStatusCode.OK;
 			object data;

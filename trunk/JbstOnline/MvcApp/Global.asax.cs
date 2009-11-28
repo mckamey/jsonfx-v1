@@ -1,12 +1,13 @@
 ﻿//#define GZIP
 
 using System;
+using System.IO;
 using System.Reflection;
 using System.Web.Mvc;
 using System.Web.Routing;
 
-using JbstOnline.Models;
 using JbstOnline.Mvc.IoC;
+using JbstOnline.Mvc.ModelBinders;
 using JsonFx.Mvc;
 using Ninject;
 using Ninject.Web.Mvc;
@@ -54,7 +55,14 @@ namespace JbstOnline
 		private void RegisterBinders()
 		{
 			// allows this to automatically be bound from the post body
-			ModelBinders.Binders[typeof(CompilationResult)] = this.Kernel.Get<DataModelBinder>();
+			DataModelBinder binder = this.Kernel.Get<DataModelBinder>();
+			binder.DefaultBinder = ModelBinders.Binders.DefaultBinder;
+
+			// set as the new default
+			ModelBinders.Binders.DefaultBinder = binder;
+
+			// binder for reading the raw post-body
+			ModelBinders.Binders[typeof(TextReader)] = new TextReaderBinder();
 		}
 
 		#region Ninject
