@@ -30,23 +30,25 @@ if ("undefined" === typeof GA) {
 };
 
 if (document.location.hostname.toLowerCase().indexOf("jbst.net") >= 0) {
-	var url = "http://www.google-analytics.com/ga.js";
-
-	if (!document.body) {
-		/*jslint evil:true */
-		document.write('<' + 'script src="' + url + '" type="text/javascript"><' + '/script>');
-		/*jslint evil:false */
-	} else {
-		// create a new script request
-		var elem = document.createElement("script");
-		elem.setAttribute("type","text/javascript");
-		elem.setAttribute("src", url);
-
-		// append to body
-		document.body.appendChild(elem);
-	}
-
 	setTimeout(function() {
-		GA.init("UA-1294169-19");
-	}, 100);
+		var url = "http://www.google-analytics.com/ga.js";
+
+		if (!document.body) {
+			/*jslint evil:true */
+			document.write('<' + 'script src="' + url + '" type="text/javascript"><' + '/script>');
+			/*jslint evil:false */
+		} else {
+			// create a new script request
+			var elem = document.createElement("script");
+			elem.setAttribute("type","text/javascript");
+			elem.setAttribute("src", url);
+
+			// append to body
+			document.body.appendChild(elem);
+		}
+
+		setTimeout(function() {
+			GA.init("UA-1294169-19");
+		}, 100);
+	}, 0);
 }
