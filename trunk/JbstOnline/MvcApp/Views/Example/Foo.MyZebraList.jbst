@@ -2,6 +2,14 @@
 
 <script type="text/javascript">
 
+	/* private methods ------------------------------------------ */
+
+	/*int*/ function digits(/*int*/ n) {
+		return (n < 10) ? '0' + n : n;
+	};
+
+	/* public methods ------------------------------------------- */
+
 	// use the item index to alternate colors and add top/bottom borders
 	this.zebraStripe = function(/*int*/ index, /*int*/ count) {
 		var style;
@@ -20,7 +28,7 @@
 	};
 
 	this.formatTime = function(/*Date*/ time) {
-		return time.getHours() + ':' + time.getMinutes() + ':' + time.getSeconds();
+		return time.getHours() + ':' + digits(time.getMinutes()) + ':' + digits(time.getSeconds());
 	};
 
 </script>
