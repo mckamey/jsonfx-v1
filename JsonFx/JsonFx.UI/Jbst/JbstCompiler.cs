@@ -119,7 +119,15 @@ namespace JsonFx.UI.Jbst
 
 		#region Compiler Methods
 
-		public IOptimizedResult Compile(string input, string filename, List<ParseException> compilationErrors, List<ParseException> compactionErrors)
+		/// <summary>
+		/// Compiles the provided input
+		/// </summary>
+		/// <param name="input"></param>
+		/// <param name="filename"></param>
+		/// <param name="compilationErrors"></param>
+		/// <param name="compactionErrors"></param>
+		/// <returns></returns>
+		public IOptimizedResult Compile(TextReader input, string filename, List<ParseException> compilationErrors, List<ParseException> compactionErrors)
 		{
 			if (input == null)
 			{
@@ -130,6 +138,7 @@ namespace JsonFx.UI.Jbst
 			// parse JBST markup
 			JbstWriter writer = new JbstWriter(filename);
 
+			string source = input.ReadToEnd();
 			try
 			{
 				HtmlDistiller parser = new HtmlDistiller();
@@ -138,7 +147,7 @@ namespace JsonFx.UI.Jbst
 				parser.NormalizeWhitespace = false;
 				parser.HtmlWriter = writer;
 				parser.HtmlFilter = new NullHtmlFilter();
-				parser.Parse(input);
+				parser.Parse(source);
 			}
 			catch (ParseException ex)
 			{
@@ -156,7 +165,7 @@ namespace JsonFx.UI.Jbst
 
 			SimpleBuildResult result = new SimpleBuildResult();
 
-			result.Source = input;
+			result.Source = source;
 			result.PrettyPrinted = sw.GetStringBuilder().ToString();
 			result.Compacted = this.Compact(result.PrettyPrinted, filename, compactionErrors);
 			result.ContentType = "text/javascript";
