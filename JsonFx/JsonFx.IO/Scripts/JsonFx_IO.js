@@ -327,6 +327,16 @@ JsonFx.IO = {
 		/*string*/ restUrl,
 		/*RequestOptions*/ options) {
 
+		if ("undefined" !== typeof options &&
+			"undefined" !== typeof options.params) {
+
+			options.params = JSON.stringify(options.params);
+			if (!options.headers) {
+				options.headers = {};
+			}
+			options.headers["Content-Type"] = "application/json";
+		}
+
 		// ensure defaults
 		options = JsonFx.IO.validateOptions(options);
 
