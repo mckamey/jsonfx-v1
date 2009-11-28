@@ -99,3 +99,12 @@ body.editing #jbst-display
 	border-right: 1px solid silver;
 	padding: 0.25em;
 }
+
+.copyright
+{
+	border-top: 1px solid silver;
+	clear: both;
+	padding: 0.5em;
+	margin: 0.5em;
+	text-align: right;
+}

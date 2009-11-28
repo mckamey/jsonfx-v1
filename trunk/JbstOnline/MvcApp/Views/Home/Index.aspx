@@ -3,7 +3,7 @@
 <asp:Content ID="C" ContentPlaceHolderID="Content" runat="server">
 
 <div class="step">
-	<h1 class="title">Generate Ajax controls from declarative templates.</h1>
+	<h1 class="title">Generate dynamic Ajax controls from intuitive declarative templates.</h1>
 	<h2>1. Design your template (click to edit).</h2>
 	<p class="instructions">For JBST syntax details, see: <a href="http://starterkit.jsonfx.net/jbst" target="_blank">http://starterkit.jsonfx.net/jbst</a></p>
 
@@ -59,6 +59,7 @@
 	<div class="buttons">
 		<a href="/example" class="button button-large">See the example in action &raquo;</a>
 	</div>
+	<p class="copyright">Copyright &copy;2006-2009 Stephen M. McKamey. Powered by <a href="http://starterkit.jsonfx.net/jbst">JsonFx.NET</a>.</p>
 </div>
 
 </asp:Content>

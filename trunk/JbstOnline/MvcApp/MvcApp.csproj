@@ -118,6 +118,7 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Images\Buttons\ButtonFade.png" />
+    <Content Include="Scripts\GA.js" />
     <Content Include="Scripts\JbstEditor.js" />
     <Content Include="Scripts\jQuery\jquery.autogrow.js" />
     <Content Include="Scripts\jQuery\jquery.js" />

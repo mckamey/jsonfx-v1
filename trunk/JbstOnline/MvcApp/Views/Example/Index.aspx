@@ -16,7 +16,7 @@
 	<JsonFx:ResourceInclude runat="server" SourceUrl="~/Scripts/Example.merge" />
 
 <div class="main">
-	<h1 class="title">Generate Ajax controls from declarative templates.</h1>
+	<h1 class="title">Generate dynamic Ajax controls from intuitive declarative templates.</h1>
 	<div class="step">
 		<h2>Design your own template.</a></h2>
 		<div class="buttons">
@@ -87,6 +87,8 @@
 
 				// insert into the page
 				document.body.appendChild(myList);
+
+				GA.track("#showExample");
 			}
 
 		</script>
@@ -94,7 +96,10 @@
 			<a href="#showExample" class="button button-large" onclick="showExample();return false;">Show example!</a>
 		</div>
 	</div>
+	<p class="copyright">Copyright &copy;2006-2009 Stephen M. McKamey. Powered by <a href="http://starterkit.jsonfx.net/jbst">JsonFx.NET</a>.</p>
 </div>
+
+<JsonFx:ResourceInclude runat="server" SourceUrl="~/Scripts/GA.js" />
 
 </body>
 </html>
