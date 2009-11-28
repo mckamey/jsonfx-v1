@@ -48,7 +48,8 @@ namespace JbstOnline
 			routes.MapRoute(
 				"Default",
 				"{controller}",
-				new { controller = "Home", action = "Index", id = "" }
+				new { controller = "Home", action = "Index" },
+				new { httpMethod = new HttpMethodConstraint("GET") }
 			);
 		}
 

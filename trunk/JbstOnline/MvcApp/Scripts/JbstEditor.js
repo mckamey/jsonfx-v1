@@ -110,8 +110,8 @@ JbstEditor.generate = function() {
 
 				if (!results || !results.errors)
 				{
-					alert("Uexpected error:\r\n"+obj);
-debugger;
+					alert("Unexpected error:\r\n"+obj);
+//debugger;
 					return;
 				}
 

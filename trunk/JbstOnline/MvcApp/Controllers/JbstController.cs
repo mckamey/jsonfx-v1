@@ -85,7 +85,7 @@ namespace JbstOnline.Controllers
 
 		public ActionResult SupportScripts()
 		{
-			IOptimizedResult result = (IOptimizedResult)BuildManager.CreateInstanceFromVirtualPath("~/Scripts/JBST.Merge", typeof(IOptimizedResult));
+			IOptimizedResult result = JbstController.GetSupportScripts();
 
 			return new JavaScriptResult()
 			{
@@ -95,12 +95,17 @@ namespace JbstOnline.Controllers
 
 		public ActionResult ScriptsCompacted()
 		{
-			IOptimizedResult result = (IOptimizedResult)BuildManager.CreateInstanceFromVirtualPath("~/Scripts/JBST.Merge", typeof(IOptimizedResult));
+			IOptimizedResult result = JbstController.GetSupportScripts();
 
 			return new JavaScriptResult()
 			{
 				Script = result.Compacted
 			};
+		}
+
+		public static IOptimizedResult GetSupportScripts()
+		{
+			return (IOptimizedResult)BuildManager.CreateInstanceFromVirtualPath("~/Scripts/JBST.Merge", typeof(IOptimizedResult));
 		}
 
 		#endregion Scripts
