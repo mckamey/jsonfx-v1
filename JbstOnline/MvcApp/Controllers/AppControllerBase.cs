@@ -15,7 +15,7 @@ namespace JbstOnline.Controllers
 		/// Gets the ApiState for this request
 		/// </summary>
 		[Inject]
-		public AppState ApiState
+		public IKernel IoC
 		{
 			get;
 			set;
@@ -33,7 +33,7 @@ namespace JbstOnline.Controllers
 
 		public override T Get<T>()
 		{
-			return this.ApiState.IoC.Get<T>();
+			return this.IoC.Get<T>();
 		}
 
 		#endregion LiteController Methods

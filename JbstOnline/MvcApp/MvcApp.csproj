@@ -88,7 +88,6 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AppState.cs" />
     <Compile Include="Controllers\AppControllerBase.cs" />
     <Compile Include="Controllers\ExampleController.cs" />
     <Compile Include="Controllers\JbstController.cs">
