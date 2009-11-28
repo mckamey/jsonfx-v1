@@ -43,12 +43,6 @@ namespace JsonFx.Mvc
 	/// </summary>
 	public class DataModelBinder : IModelBinder
 	{
-		#region Fields
-
-		private readonly IDataReaderProvider Provider;
-
-		#endregion Fields
-
 		#region Init
 
 		/// <summary>
@@ -63,9 +57,32 @@ namespace JsonFx.Mvc
 			}
 
 			this.Provider = provider;
+			this.DefaultBinder = new DefaultModelBinder();
 		}
 
 		#endregion Init
+
+		#region Properties
+
+		/// <summary>
+		/// Gets and sets the binder used if the provider cannot find a matching IDataReaders 
+		/// </summary>
+		public IModelBinder DefaultBinder
+		{
+			get;
+			set;
+		}
+
+		/// <summary>
+		/// Gets the provider which finds the matching IDataReader
+		/// </summary>
+		public IDataReaderProvider Provider
+		{
+			get;
+			private set;
+		}
+
+		#endregion Properties
 
 		#region IModelBinder Members
 
@@ -82,11 +99,7 @@ namespace JsonFx.Mvc
 			IDataReader reader = this.Provider.Find(request.ContentType);
 			if (reader == null)
 			{
-				reader = this.Provider.DefaultDataReader;
-			}
-			if (reader == null)
-			{
-				throw new InvalidOperationException("No available IDataReader implementations");
+				return this.DefaultBinder.BindModel(controllerContext, bindingContext);
 			}
 
 			return reader.Deserialize(
