@@ -95,6 +95,18 @@ namespace JsonFx.Mvc
 		}
 
 		/// <summary>
+		/// Gets and sets a filename hint
+		/// </summary>
+		/// <remarks>
+		/// Used in Content-Disposition header
+		/// </remarks>
+		public string Filename
+		{
+			get;
+			set;
+		}
+
+		/// <summary>
 		/// Gets the underlying IDataWriter
 		/// </summary>
 		public IDataWriterProvider DataWriterProvider
@@ -160,9 +172,15 @@ namespace JsonFx.Mvc
 			}
 
 			string ext = writer.FileExtension;
-			if (!String.IsNullOrEmpty(ext))
+			string filename = this.Filename;
+			if (!String.IsNullOrEmpty(ext) ||
+				!String.IsNullOrEmpty(filename))
 			{
-				string filename = this.ScrubFilename(request.RawUrl, ext);
+				if (String.IsNullOrEmpty(filename))
+				{
+					filename = request.RawUrl;
+				}
+				filename = this.ScrubFilename(filename, ext??String.Empty);
 
 				// this helps IE determine the Content-Type
 				response.AddHeader("Content-Disposition", "inline;filename="+filename);
@@ -195,25 +213,35 @@ namespace JsonFx.Mvc
 				char ch = url[i];
 				if (Char.IsLetterOrDigit(ch) || ch == '_' || ch == '-' || ch == '.')
 				{
+					// skip safe chars
 					continue;
+				}
+				if (ch == '?')
+				{
+					// effectively terminate string
+					length = i;
 				}
 
 				if (last < i)
 				{
+					// write out any unwritten safe chars
 					builder.Append(url, last, i-last);
 				}
+				// effectively skip char
 				last = i+1;
 			}
 			if (last < length)
 			{
+				// write out any trailing safe chars
 				builder.Append(url, last, length-last);
 			}
 			if (builder.Length == 0)
 			{
+				// no safe chars, just use simple name
 				builder.Append("data");
 			}
 
-			if (ext[0] != '.')
+			if (ext.Length > 0 && ext[0] != '.')
 			{
 				builder.Append('.');
 			}
