@@ -23,6 +23,15 @@ namespace JbstOnline.Controllers
 
 		#endregion Properties
 
+		#region Methods
+
+		protected T Get<T>()
+		{
+			return this.IoC.Get<T>();
+		}
+
+		#endregion Methods
+
 		#region LiteController Methods
 
 		protected override void OnException(ExceptionContext context)
@@ -33,12 +42,12 @@ namespace JbstOnline.Controllers
 
 		protected override DataResult DataResult()
 		{
-			return this.IoC.Get<DataResult>();
+			return this.Get<DataResult>();
 		}
 
 		protected override IActionInvoker ActionInvoker
 		{
-			get { return this.IoC.Get<IActionInvoker>(); }
+			get { return this.Get<IActionInvoker>(); }
 			set {}
 		}
 
