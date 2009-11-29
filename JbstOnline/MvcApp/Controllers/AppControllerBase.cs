@@ -42,12 +42,12 @@ namespace JbstOnline.Controllers
 
 		protected override DataResult DataResult()
 		{
-			return this.Get<DataResult>();
+			return this.IoC.Get<DataResult>();
 		}
 
 		protected override IActionInvoker ActionInvoker
 		{
-			get { return this.Get<IActionInvoker>(); }
+			get { return this.IoC.Get<IActionInvoker>(); }
 			set {}
 		}
 
