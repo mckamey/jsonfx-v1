@@ -29,8 +29,8 @@
 #endregion License
 
 using System;
-using System.Collections.Generic;
 using System.Net;
+using System.Net.Mime;
 using System.Text;
 using System.Web;
 using System.Web.Mvc;
@@ -183,7 +183,13 @@ namespace JsonFx.Mvc
 				filename = this.ScrubFilename(filename, ext??String.Empty);
 
 				// this helps IE determine the Content-Type
-				response.AddHeader("Content-Disposition", "inline;filename="+filename);
+				// http://tools.ietf.org/html/rfc2183#section-2.3
+				ContentDisposition disposition = new ContentDisposition
+				{
+					Inline = true,
+					FileName = filename
+				};
+				response.AddHeader("Content-Disposition", disposition.ToString());
 			}
 
 			if (this.Data != null)
