@@ -297,7 +297,7 @@ namespace JsonFx.Json
 			bool isNullable = TypeCoercionUtility.IsNullable(targetType);
 			if (value == null)
 			{
-				if (allowNullValueTypes &&
+				if (!allowNullValueTypes &&
 					targetType.IsValueType &&
 					!isNullable)
 				{
