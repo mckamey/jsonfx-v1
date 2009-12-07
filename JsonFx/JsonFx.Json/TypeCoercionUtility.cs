@@ -53,7 +53,7 @@ namespace JsonFx.Json
 		#region Fields
 
 		private Dictionary<Type, Dictionary<string, MemberInfo>> memberMapCache;
-		private bool allowNullValueTypes;
+		private bool allowNullValueTypes = true;
 
 		#endregion Fields
 
