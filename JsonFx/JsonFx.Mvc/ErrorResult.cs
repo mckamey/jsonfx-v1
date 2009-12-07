@@ -93,9 +93,9 @@ namespace JsonFx.Mvc
 		protected virtual Exception EnsureException(Exception ex)
 		{
 			// ensure and unwrap exception
-			if (this.Error == null)
+			if (ex == null)
 			{
-				return new Exception();
+				return new Exception("");
 			}
 
 			if ((ex.InnerException != null) &&
