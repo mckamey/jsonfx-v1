@@ -136,8 +136,7 @@ namespace JsonFx.Mvc
 		protected override void ExecuteCore()
 		{
 			RouteData routeData =
-				this.ControllerContext == null ?
-				null :
+				(this.ControllerContext == null) ? null :
 				this.ControllerContext.RouteData;
 
 			string actionName = routeData.GetRequiredString("action");

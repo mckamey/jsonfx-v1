@@ -68,6 +68,8 @@
   <ItemGroup>
     <Compile Include="DataModelBinder.cs" />
     <Compile Include="DataResult.cs" />
+    <Compile Include="ErrorResult.cs" />
+    <Compile Include="HttpResult.cs" />
     <Compile Include="JbstHelper.cs" />
     <Compile Include="LiteController.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
