@@ -1246,10 +1246,7 @@ namespace JsonFx.Json
 			if (longVal == 0L)
 			{
 				// Return the value of empty, or zero if none exists
-				if (Convert.ToUInt64(enumValues.GetValue(0)) == 0L)
-					enums.Add(enumValues.GetValue(0) as Enum);
-				else
-					enums.Add(null);
+				enums.Add((Enum)Convert.ChangeType(value, enumType));
 				return enums.ToArray();
 			}
 
@@ -1258,7 +1255,9 @@ namespace JsonFx.Json
 				ulong enumValue = Convert.ToUInt64(enumValues.GetValue(i));
 
 				if ((i == 0) && (enumValue == 0L))
+				{
 					continue;
+				}
 
 				// matches a value in enumeration
 				if ((longVal & enumValue) == enumValue)
@@ -1272,7 +1271,9 @@ namespace JsonFx.Json
 			}
 
 			if (longVal != 0x0L)
+			{
 				enums.Add(Enum.ToObject(enumType, longVal) as Enum);
+			}
 
 			return enums.ToArray();
 		}
