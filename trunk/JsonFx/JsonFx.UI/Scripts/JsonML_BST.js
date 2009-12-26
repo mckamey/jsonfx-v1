@@ -149,7 +149,7 @@ JsonML.BST.init = function(/*JBST*/ jbst) {
 				}
 
 				// if o has attributes, check for JBST commands
-				if (o.length > 1 && ("object" === typeof o[1]) && !(o[1] instanceof Array)) {
+				if (o.length > 1 && o[1] && ("object" === typeof o[1]) && !(o[1] instanceof Array)) {
 					// visibility JBST command
 					var c = o[1][jV];
 					if ("undefined" !== typeof c) {
