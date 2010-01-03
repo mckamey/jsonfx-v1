@@ -3,7 +3,7 @@
 	JsonML + Browser-Side Templating (JBST)
 
 	Created: 2008-07-28-2337
-	Modified: 2009-09-20-1223
+	Modified: 2009-12-26-1120
 
 	Copyright (c)2006-2009 Stephen M. McKamey
 	Distributed under an open-source license: http://jsonml.org/license
