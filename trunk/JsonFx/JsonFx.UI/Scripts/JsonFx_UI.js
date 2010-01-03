@@ -1,4 +1,4 @@
-/*global JsonML, jQuery */
+/*global JsonML, jQuery, window */
 /*
 	JsonFx_UI.js
 	DOM utilities
@@ -31,7 +31,7 @@ if ("undefined" === typeof JsonFx.Bindings) {
 /* DOM utilities ------------------------------------------------*/
 
 /*bool*/ JsonFx.UI.cancelEvent = function(/*Event*/ evt) {
-	evt = evt || event;
+	evt = evt || window.event;
 	if (evt) {
 		if (evt.stopPropagation) {
 			evt.stopPropagation();
