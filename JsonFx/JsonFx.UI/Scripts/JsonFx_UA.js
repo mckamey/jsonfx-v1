@@ -34,7 +34,7 @@ JsonFx.UA = {
 		// http://www.user-agents.org
 		// http://en.wikipedia.org/wiki/User_agent
 		// http://www.zytrax.com/tech/web/mobile_ids.html
-		var R_All = /\S+[\/][v]?\d+(\.\d+)*/g;
+		var R_All = /[\w\-\.]+[\/][v]?\d+(\.\d+)*/g;
 		var R_AOL = /\b(america online browser|aol)[\s\/]*(\d+(\.\d+)*)/;
 		var R_MSIE = /(\bmsie|microsoft internet explorer)[\s\/]*(\d+(\.\d+)*)/;
 		var R_Gecko = /rv[:](\d+(\.\d+)*).*?gecko[\/]\d+/;
@@ -42,7 +42,7 @@ JsonFx.UA = {
 		var R_MSPIE = /\b(mspie|microsoft pocket internet explorer)[\s\/]*(\d+(\.\d+)*)/;
 		var R_iCab = /\bicab[\s\/]*(\d+(\.\d+)*)/;
 		var R_BlackBerry = /\bblackberry\w+[\s\/]+(\d+(\.\d+)*)/;
-		var R_mobile = /(\w*mobile\w*|\w*phone\w*|\bpda\b|\bchtml\b|blackberry)/;
+		var R_mobile = /(\w*mobile\w*|\w*phone\w*|\bpda\b|\bchtml\b|\bmidp\b|\bcldc\b|blackberry\w*|windows ce\b|palm\w*\b|symbian\w*\b)/;
 
 		// do this first for all (covers most browser types)
 		var i, s, b, raw = ua.match(R_All);
@@ -91,12 +91,13 @@ JsonFx.UA = {
 
 	/*string*/ formatCssUserAgent: function (/*Dictionary<string,string>*/ fxua) {
 		/*string*/ function format(/*string*/ b, /*string*/ v) {
-			/*const string*/ var PREFIX = " ua-", i;
+			/*const string*/ var PREFIX = " ua-";
 
+			b = b.replace(/\./g, '-');
 			/*string*/ var css = PREFIX+b;
 			if (v) {
 				v = v.replace(/\./g, '-');
-				i = v.indexOf('-');
+				var i = v.indexOf('-');
 				while (i > 0) {
 					// loop through chopping last '-' to end off
 					// concat result onto return string
