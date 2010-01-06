@@ -82,7 +82,7 @@ JsonFx.UA = {
 		if (!fxua.blackberry && R_BlackBerry.exec(ua)) {
 			fxua.blackberry = RegExp.$1;
 		}
-		if (!fxua.mobile && R_mobile(ua)) {
+		if (!fxua.mobile && R_mobile.exec(ua)) {
 			fxua.mobile = RegExp.$1;
 		}
 		
