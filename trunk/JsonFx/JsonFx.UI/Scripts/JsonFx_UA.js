@@ -4,7 +4,7 @@
 	user-agent specific CSS support
 
 	Created: 2006-06-10-1635
-	Modified: 2009-09-24-2055
+	Modified: 2010-01-06-0814
 
 	Copyright (c)2006-2009 Stephen M. McKamey
 	Distributed under an open-source license: http://jsonfx.net/license
@@ -33,6 +33,7 @@ JsonFx.UA = {
 		// http://www.useragentstring.com/pages/useragentstring.php
 		// http://www.user-agents.org
 		// http://en.wikipedia.org/wiki/User_agent
+		// http://www.zytrax.com/tech/web/mobile_ids.html
 		var R_All = /\S+[\/][v]?\d+(\.\d+)*/g;
 		var R_AOL = /\b(america online browser|aol)[\s\/]*(\d+(\.\d+)*)/;
 		var R_MSIE = /(\bmsie|microsoft internet explorer)[\s\/]*(\d+(\.\d+)*)/;
@@ -40,6 +41,8 @@ JsonFx.UA = {
 		var R_Opera = /\bopera[\s\/]*(\d+(\.\d+)*)/;
 		var R_MSPIE = /\b(mspie|microsoft pocket internet explorer)[\s\/]*(\d+(\.\d+)*)/;
 		var R_iCab = /\bicab[\s\/]*(\d+(\.\d+)*)/;
+		var R_BlackBerry = /\bblackberry\w+[\s\/]+(\d+(\.\d+)*)/;
+		var R_mobile = /(\w*mobile\w*|\w*phone\w*|\bpda\b|\bchtml\b|blackberry)/;
 
 		// do this first for all (covers most browser types)
 		var i, s, b, raw = ua.match(R_All);
@@ -74,6 +77,15 @@ JsonFx.UA = {
 		} else if (R_Gecko.exec(ua)) {
 			fxua.gecko = RegExp.$1;
 		}
+
+		// ensure that mobile devices have indication
+		if (!fxua.blackberry && R_BlackBerry.exec(ua)) {
+			fxua.blackberry = RegExp.$1;
+		}
+		if (!fxua.mobile && R_mobile(ua)) {
+			fxua.mobile = RegExp.$1;
+		}
+		
 		return fxua;
 	},
 
