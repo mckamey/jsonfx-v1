@@ -51,7 +51,7 @@ if ("undefined" === typeof JsonFx.Bindings) {
 /*void*/ JsonFx.UI.addHandler = function(/*DOM*/ target, /*string*/ name, /*function*/ handler) {
 	if (typeof jQuery !== "undefined") {
 		jQuery(target).bind(name, handler);
-	} if (target.addEventListener) {
+	} else if (target.addEventListener) {
 		// DOM Level 2 model for binding events
 		target.addEventListener(name, handler, false);
 	} else if (target.attachEvent) {
