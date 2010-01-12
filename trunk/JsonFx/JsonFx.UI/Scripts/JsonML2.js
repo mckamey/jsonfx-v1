@@ -1,10 +1,10 @@
-/*global JSON, jQuery */
+/*global JSON */
 /*
 	JsonML2.js
 	JsonML builder
 
 	Created: 2006-11-09-0116
-	Modified: 2010-01-07-0827
+	Modified: 2010-01-12-0556
 
 	Copyright (c)2006-2009 Stephen M. McKamey
 	Distributed under an open-source license: http://jsonml.org/license
@@ -105,20 +105,7 @@ if ("undefined" === typeof JsonML) {
 			return;
 		}
 
-		if ("undefined" !== typeof jQuery) {
-			jQuery(el).bind(en, fn);
-		} else if (el.addEventListener) {
-			// DOM Level 2 model for binding events
-			el.addEventListener(en, fn, false);
-		} else if (el.attachEvent) {
-			// IE model for binding events
-			el.attachEvent("on"+en, fn);
-		} else {
-			// DOM Level 0 model for binding events
-			var old = el["on"+en];
-			el["on"+en] = ("function" !== typeof old) ? fn :
-				function(/*Event*/ e) { fn(e); return old(e); };
-		}
+		el[en] = fn;
 	}
 
 	//addAttributes
@@ -150,7 +137,7 @@ if ("undefined" === typeof JsonML) {
 					} else if (an === "class") {
 						el.className = av;
 					} else if (evts[an]) {
-						ah(el, evts[an], av);
+						ah(el, an, av);
 
 						// also set duplicated events
 						if (ad[an]) {
