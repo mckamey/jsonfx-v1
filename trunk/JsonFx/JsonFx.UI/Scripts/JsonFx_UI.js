@@ -49,7 +49,17 @@ if ("undefined" === typeof JsonFx.Bindings) {
 };
 
 /*void*/ JsonFx.UI.addHandler = function(/*DOM*/ target, /*string*/ name, /*function*/ handler) {
-	if (typeof jQuery !== "undefined") {
+	if ("string" === typeof handler) {
+		/*jslint evil:true */
+		handler = new Function(handler);
+		/*jslint evil:false */
+	}
+
+	if ("function" !== typeof handler) {
+		return;
+	}
+
+	if ("undefined" !== typeof jQuery) {
 		jQuery(target).bind(name, handler);
 	} else if (target.addEventListener) {
 		// DOM Level 2 model for binding events
@@ -60,9 +70,29 @@ if ("undefined" === typeof JsonFx.Bindings) {
 	} else {
 		// DOM Level 0 model for binding events
 		var old = target["on"+name];
-		target["on"+name] = ("function" === typeof old) ?
-			function(/*Event*/ evt) { handler(evt); return old(evt); } :
-			handler;
+		target["on"+name] = ("function" !== typeof old) ? handler :
+			function(/*Event*/ e) { return (old.call(this, e) !== false) && (handler.call(this, e) !== false); };
+	}
+};
+
+/*void*/ JsonFx.UI.removeHandler = function(/*DOM*/ target, /*string*/ name, /*function*/ handler) {
+	if ("function" !== typeof handler) {
+		// DOM Level 0 model for binding events
+		target["on"+name] = null;
+		return;
+	}
+
+	if ("undefined" !== typeof jQuery) {
+		jQuery(target).unbind(name, handler);
+	} else if (target.addEventListener) {
+		// DOM Level 2 model for binding events
+		target.removeEventListener(name, handler, false);
+	} else if (target.attachEvent) {
+		// IE model for binding events
+		target.detachEvent("on"+name, handler);
+	} else {
+		// DOM Level 0 model for binding events
+		target["on"+name] = null;
 	}
 };
 
