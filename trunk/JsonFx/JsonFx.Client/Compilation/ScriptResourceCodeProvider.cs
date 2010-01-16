@@ -60,6 +60,8 @@ namespace JsonFx.Compilation
 }";
 		private const string CatchCompact = "}catch(ex){}";
 
+		public const string ExternalImport = @"document.write('<scr'+'ipt type=""text\/javascript"" src=""{0}""><\/'+'script>');";
+
 		#endregion Constants
 
 		#region ResourceCodeProvider Properties
@@ -119,6 +121,19 @@ namespace JsonFx.Compilation
 
 				this.ExtractGlobalizationKeys(compacted);
 			}
+		}
+
+		protected internal override void ProcessExternalResource(
+			IResourceBuildHelper helper,
+			string url,
+			out string preProcessed,
+			out string compacted,
+			List<ParseException> errors)
+		{
+			compacted = preProcessed = String.Format(ScriptResourceCodeProvider.ExternalImport, url);
+
+			preProcessed = ScriptResourceCodeProvider.FirewallScript(url, preProcessed, true);
+			compacted = ScriptResourceCodeProvider.FirewallScript(url, compacted, true);
 		}
 
 		public static string FirewallScript(string virtualPath, string source, bool compacted)

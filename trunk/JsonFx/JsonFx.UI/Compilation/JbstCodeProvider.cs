@@ -111,6 +111,19 @@ namespace JsonFx.Compilation
 			compacted = ScriptResourceCodeProvider.FirewallScript(virtualPath, compacted, true);
 		}
 
+		protected override void ProcessExternalResource(
+			IResourceBuildHelper helper,
+			string url,
+			out string preProcessed,
+			out string compacted,
+			List<ParseException> errors)
+		{
+			compacted = preProcessed = String.Format(ScriptResourceCodeProvider.ExternalImport, url);
+
+			preProcessed = ScriptResourceCodeProvider.FirewallScript(url, preProcessed, true);
+			compacted = ScriptResourceCodeProvider.FirewallScript(url, compacted, true);
+		}
+
 		#endregion Compilation Methods
 
 		#region Globalization Methods

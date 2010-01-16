@@ -110,7 +110,7 @@ namespace JsonFx.Compilation
 				try
 				{
 					string file = files[i],
-							compactAlt = null;
+						compactAlt = null;
 
 					if (file != null)
 					{
@@ -125,15 +125,26 @@ namespace JsonFx.Compilation
 						continue;
 					}
 
-					string[] alts = file.Split(AltDelims, 2, StringSplitOptions.RemoveEmptyEntries);
-					if (alts.Length > 1)
+					MergeResourceCodeProvider.SplitAlternates(file, out file, out compactAlt);
+
+					if (file.IndexOf("://") >= 0)
 					{
-						file = alts[0].Trim();
-						compactAlt = alts[1].Trim();
+						string preProcessed, compact;
+
+						this.ProcessExternalResource(helper, file, out preProcessed, out compact, errors);
+
+						if (!String.IsNullOrEmpty(compactAlt))
+						{
+							this.ProcessExternalResource(helper, compactAlt, out compactAlt, out compact, errors);
+						}
+
+						compacts.Append(compact);
+						resources.Append(preProcessed);
+						continue;
 					}
 
 					// process embedded resource
-					if (files[i].IndexOf(',') >= 0)
+					if (file.IndexOf(',') >= 0)
 					{
 						string preProcessed, compact;
 
@@ -221,14 +232,28 @@ namespace JsonFx.Compilation
 			compacted = compacts.ToString();
 		}
 
+		public static void SplitAlternates(string original, out string full, out string compact)
+		{
+			string[] alts = original.Split(MergeResourceCodeProvider.AltDelims, 2, StringSplitOptions.RemoveEmptyEntries);
+			if (alts.Length > 1)
+			{
+				full = alts[0].Trim();
+				compact = alts[1].Trim();
+			}
+			else
+			{
+				full = compact = original;
+			}
+		}
+
 		private IOptimizedResult ProcessPrecompiled(IResourceBuildHelper helper, string file)
 		{
 			IOptimizedResult result = ResourceHandler.Create<IOptimizedResult>(file);
 			if (result != null)
 			{
 				if (!this.isMimeSet &&
-				!String.IsNullOrEmpty(result.ContentType) &&
-				!String.IsNullOrEmpty(result.FileExtension))
+					!String.IsNullOrEmpty(result.ContentType) &&
+					!String.IsNullOrEmpty(result.FileExtension))
 				{
 					this.contentType = result.ContentType;
 					this.fileExtension = result.FileExtension;
@@ -332,6 +357,60 @@ namespace JsonFx.Compilation
 			catch (Exception ex)
 			{
 				errors.Add(new ParseError(ex.Message, parts[0], 0, 0, ex));
+			}
+
+			if (!this.isMimeSet &&
+				!String.IsNullOrEmpty(provider.ContentType) &&
+				!String.IsNullOrEmpty(provider.FileExtension))
+			{
+				this.contentType = provider.ContentType;
+				this.fileExtension = provider.FileExtension;
+				this.isMimeSet = true;
+			}
+		}
+
+		protected internal override void ProcessExternalResource(
+			IResourceBuildHelper helper,
+			string url,
+			out string preProcessed,
+			out string compacted,
+			List<ParseException> errors)
+		{
+			compacted = preProcessed = String.Empty;
+
+			Uri uri;
+			if (!Uri.TryCreate(url, UriKind.Absolute, out uri))
+			{
+				throw new ArgumentException("Invalid external URL");
+			}
+
+			string ext = Path.GetExtension(uri.AbsolutePath).Trim('.');
+			CompilerType compiler = helper.GetDefaultCompilerTypeForLanguage(ext);
+			if (!typeof(ResourceCodeProvider).IsAssignableFrom(compiler.CodeDomProviderType))
+			{
+				// don't know how to process any further
+				return;
+			}
+
+			ResourceCodeProvider provider = (ResourceCodeProvider)Activator.CreateInstance(compiler.CodeDomProviderType);
+
+			try
+			{
+				// concatenate the preprocessed source for current merge phase
+				provider.ProcessExternalResource(
+					helper,
+					url,
+					out preProcessed,
+					out compacted,
+					errors);
+			}
+			catch (ParseException ex)
+			{
+				errors.Add(ex);
+			}
+			catch (Exception ex)
+			{
+				errors.Add(new ParseError(ex.Message, url, 0, 0, ex));
 			}
 
 			if (!this.isMimeSet &&

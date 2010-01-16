@@ -259,6 +259,21 @@ namespace JsonFx.Compilation
 			List<ParseException> errors);
 
 		/// <summary>
+		/// Process as external resources
+		/// </summary>
+		/// <param name="helper"></param>
+		/// <param name="url"></param>
+		/// <param name="preProcessed"></param>
+		/// <param name="compacted"></param>
+		/// <param name="errors"></param>
+		protected internal abstract void ProcessExternalResource(
+			IResourceBuildHelper helper,
+			string url,
+			out string preProcessed,
+			out string compacted,
+			List<ParseException> errors);
+
+		/// <summary>
 		/// Clear any state because code providers get reused by BuildManager
 		/// </summary>
 		protected virtual void ResetCodeProvider()
