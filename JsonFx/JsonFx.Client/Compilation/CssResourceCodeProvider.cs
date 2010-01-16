@@ -105,6 +105,16 @@ namespace JsonFx.Compilation
 			}
 		}
 
+		protected internal override void ProcessExternalResource(
+			IResourceBuildHelper helper,
+			string url,
+			out string preProcessed,
+			out string compacted,
+			List<ParseException> errors)
+		{
+			compacted = preProcessed = String.Format("@import url('{0}');", url);
+		}
+
 		#endregion ResourceCodeProvider Members
 	}
 }
