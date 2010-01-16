@@ -4,7 +4,7 @@
 	JsonML builder
 
 	Created: 2006-11-09-0116
-	Modified: 2010-01-12-0556
+	Modified: 2010-01-16-0819
 
 	Copyright (c)2006-2009 Stephen M. McKamey
 	Distributed under an open-source license: http://jsonml.org/license
@@ -97,7 +97,7 @@ if ("undefined" === typeof JsonML) {
 	/*void*/ function ah(/*DOM*/ el, /*string*/ en, /*function*/ fn) {
 		if ("string" === typeof fn) {
 			/*jslint evil:true */
-			fn = new Function(fn);
+			fn = new Function("event", fn);
 			/*jslint evil:false */
 		}
 
