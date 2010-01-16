@@ -31,14 +31,13 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Text;
+using System.Threading;
 using System.Web;
 using System.Web.UI;
-using System.Globalization;
-using System.Threading;
-using System.Text;
 
-using JsonFx.Handlers;
 using JsonFx.Compilation;
+using JsonFx.Handlers;
 
 namespace JsonFx.Client
 {
@@ -176,8 +175,13 @@ namespace JsonFx.Client
 		protected override void Render(HtmlTextWriter writer)
 		{
 			string url = this.SourceUrl;
-			IBuildResult info = this.GetResourceInfo(url);
-			if (info == null)
+
+			bool isExternal = (url != null) && (url.IndexOf("://") > 0);
+
+			IBuildResult info = isExternal ? null :
+				this.GetResourceInfo(url);
+
+			if (info == null && !isExternal)
 			{
 				throw new ArgumentException(String.Format(
 					"Error loading resources for \"{0}\".\r\n"+
@@ -188,8 +192,9 @@ namespace JsonFx.Client
 
 			url = ResourceHandler.GetResourceUrl(info, url, this.isDebug);
 			url = this.ResolveUrl(url);
+
 			string type =
-				String.IsNullOrEmpty(info.ContentType) ?
+				isExternal || String.IsNullOrEmpty(info.ContentType) ?
 				String.Empty :
 				info.ContentType.ToLowerInvariant();
 
@@ -209,6 +214,11 @@ namespace JsonFx.Client
 						format = ResourceInclude.StyleLink;
 					}
 					break;
+				}
+				case "":
+				{
+					type = ScriptResourceCodeProvider.MimeType;
+					goto default;
 				}
 				default:
 				{
