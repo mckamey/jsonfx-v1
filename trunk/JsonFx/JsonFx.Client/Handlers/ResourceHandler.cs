@@ -32,10 +32,10 @@ using System;
 using System.IO;
 using System.IO.Compression;
 using System.Web;
-using System.Reflection;
-using System.Text;
-using System.Web.Hosting;
 using System.Web.Compilation;
+using System.Web.Hosting;
+
+using JsonFx.Compilation;
 
 namespace JsonFx.Handlers
 {
@@ -184,6 +184,13 @@ namespace JsonFx.Handlers
 
 		protected internal static string GetResourceUrl(IBuildResult info, string path, bool isDebug)
 		{
+			if ((path != null) && (path.IndexOf("://") > 0))
+			{
+				string alt;
+				MergeResourceCodeProvider.SplitAlternates(path, out path, out alt);
+				return isDebug ? path : alt;
+			}
+
 			if (info == null)
 			{
 				info = ResourceHandler.Create<IBuildResult>(path);
