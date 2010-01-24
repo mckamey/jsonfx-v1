@@ -41,7 +41,7 @@ namespace JsonFx.Json.Test
 	{
 		#region Constants
 
-		private const string ReportPath = "Report.txt";
+		private const string ReportPath = "{0:yyyy-MM-dd-HHmmss}_Report.txt";
 		private const string UnitTestsFolder = @".\UnitTests\";
 		private const string OutputFolder = @".\Output\";
 		private const string HeaderMessage =
@@ -54,14 +54,16 @@ namespace JsonFx.Json.Test
 
 		static void Main(string[] args)
 		{
+			DateTime now = DateTime.Now;
+			string reportPath = String.Format(ReportPath, now);
 			const int Count = 100;
 			double total = 0;
 
 			for (int i=0; i<Count; i++)
 			{
-				using (StreamWriter writer = new StreamWriter(ReportPath, false, Encoding.UTF8))
+				using (StreamWriter writer = new StreamWriter(reportPath, false, Encoding.UTF8))
 				{
-					writer.WriteLine(HeaderMessage, DateTime.Now);
+					writer.WriteLine(HeaderMessage, now);
 
 					Stopwatch watch = Stopwatch.StartNew();
 
@@ -82,7 +84,7 @@ namespace JsonFx.Json.Test
 
 			Process process = new Process();
 			process.StartInfo.FileName = "notepad.exe";
-			process.StartInfo.Arguments = ReportPath;
+			process.StartInfo.Arguments = reportPath;
 			process.Start();
 		}
 
