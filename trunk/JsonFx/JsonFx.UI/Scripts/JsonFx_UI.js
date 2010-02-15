@@ -110,8 +110,18 @@ if ("undefined" === typeof JsonFx.Bindings) {
 };
 
 /*bool*/ JsonFx.UI.hasClass = function(/*DOM*/ elem, /*string*/ cssClass) {
-	return elem && elem.className && cssClass &&
-		!!elem.className.match(new RegExp("(^|\\s)"+cssClass+"(\\s|$)"));
+	if (!elem || !elem.className || !cssClass) {
+		return false;
+	}
+	
+	var css = elem.className.split(' ');
+	for (var i=0; i < css.length; i++) {
+		if (css[i] === cssClass) {
+			return true;
+		}
+	}
+
+	return false;
 };
 
 /*void*/ JsonFx.UI.addClass = function(/*DOM*/ elem, /*string*/ cssClass) {
@@ -127,7 +137,15 @@ if ("undefined" === typeof JsonFx.Bindings) {
 		return;
 	}
 
-	elem.className = elem.className.replace(new RegExp("(^|\\s+)"+cssClass+"(\\s+|$)"), " ");
+	var css = elem.className.split(' ');
+	for (var i=0; i < css.length; i++) {
+		if (!css[i] || css[i] === cssClass) {
+			css.splice(i, 1);
+			i--;
+		}
+	}
+
+	elem.className = css.join(" ");
 };
 
 /*DOM*/ JsonFx.UI.findParent = function(/*DOM*/ elem, /*string*/ cssClass, /*bool*/ skipRoot) {
