@@ -40,6 +40,7 @@ namespace JsonFx.Json
 		#region Fields
 
 		internal readonly TypeCoercionUtility Coercion = new TypeCoercionUtility();
+		private bool allowUnquotedObjectKeys = false;
 		private string typeHintName;
 
 		#endregion Fields
@@ -59,6 +60,15 @@ namespace JsonFx.Json
 		{
 			get { return this.Coercion.AllowNullValueTypes; }
 			set { this.Coercion.AllowNullValueTypes = value; }
+		}
+
+		/// <summary>
+		/// Gets and sets if objects can have unquoted property names
+		/// </summary>
+		public bool AllowUnquotedObjectKeys
+		{
+			get { return this.allowUnquotedObjectKeys; }
+			set { this.allowUnquotedObjectKeys = value; }
 		}
 
 		/// <summary>
