@@ -415,19 +415,21 @@ namespace JsonFx.Json
 				}
 
 				// get next token
-				token = this.Tokenize();
+				token = this.Tokenize(this.Settings.AllowUnquotedObjectKeys);
 				if (token == JsonToken.ObjectEnd)
 				{
 					break;
 				}
 
-				if (token != JsonToken.String)
+				if (token != JsonToken.String && token != JsonToken.UnquotedName)
 				{
 					throw new JsonDeserializationException(JsonReader.ErrorExpectedPropertyName, this.index);
 				}
 
 				// parse object member value
-				string memberName = (String)this.ReadString(null);
+				string memberName = (token == JsonToken.String) ?
+					(String)this.ReadString(null) :
+					this.ReadUnquotedKey();
 
 				if (genericDictionaryType == null && memberMap != null)
 				{
@@ -601,6 +603,22 @@ namespace JsonFx.Json
 
 			// convert to an object array for consistency
 			return jsArray.ToArray();
+		}
+
+		/// <summary>
+		/// Reads an unquoted JSON object key
+		/// </summary>
+		/// <returns></returns>
+		private string ReadUnquotedKey()
+		{
+			int start = this.index;
+			do
+			{
+				// continue scanning until reach a valid token
+				this.index++;
+			} while (this.Tokenize(true) == JsonToken.UnquotedName);
+
+			return this.Source.Substring(start, this.index - start);
 		}
 
 		/// <summary>
@@ -974,6 +992,12 @@ namespace JsonFx.Json
 
 		private JsonToken Tokenize()
 		{
+			// unquoted object keys are only allowed in object properties
+			return this.Tokenize(false);
+		}
+
+		private JsonToken Tokenize(bool allowUnquotedString)
+		{
 			if (this.index >= this.SourceLength)
 			{
 				return JsonToken.End;
@@ -1162,6 +1186,11 @@ namespace JsonFx.Json
 			if (this.MatchLiteral(JsonReader.LiteralUndefined))
 			{
 				return JsonToken.Undefined;
+			}
+
+			if (allowUnquotedString)
+			{
+				return JsonToken.UnquotedName;
 			}
 
 			throw new JsonDeserializationException(JsonReader.ErrorUnrecognizedToken, this.index);
