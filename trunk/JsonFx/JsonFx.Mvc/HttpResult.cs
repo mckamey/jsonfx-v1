@@ -37,6 +37,14 @@ namespace JsonFx.Mvc
 		public override void ExecuteResult(ControllerContext context)
 		{
 			HttpResponseBase response = context.HttpContext.Response;
+
+			try
+			{
+				response.ClearHeaders();
+				response.ClearContent();
+			}
+			catch { }
+
 			response.TrySkipIisCustomErrors = true;
 
 			if (this.HttpStatus != default(HttpStatusCode))
