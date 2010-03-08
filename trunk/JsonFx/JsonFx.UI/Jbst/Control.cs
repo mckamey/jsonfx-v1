@@ -196,12 +196,11 @@ namespace JsonFx.UI.Jbst
 				//    this.dataBlock.RenderControl(writer);
 				//}
 
+				writer.Write("</div>");
+
 				// build the binding script
 				StringBuilder builder = new StringBuilder();
 
-				builder.Append("JsonFx.Bindings.replace(\"#");
-				builder.Append(this.ClientID);
-				builder.Append("\",");
 				/*if (this.inlineJbst != null)
 				{
 					// serialize InlineJbst as a JavaScript literal
@@ -211,7 +210,8 @@ namespace JsonFx.UI.Jbst
 					jsWriter.Tab = "\t";
 					jsWriter.Write(this.inlineJbst);
 				}
-				else*/ if (!String.IsNullOrEmpty(this.Name))
+				else*/
+				if (!String.IsNullOrEmpty(this.Name))
 				{
 					builder.Append(this.Name);
 				}
@@ -219,8 +219,10 @@ namespace JsonFx.UI.Jbst
 				{
 					throw new ArgumentNullException("jbst:Control Name and InlineJbst cannot both be empty.");
 				}
+				builder.Append(".replace(\"");
+				builder.Append(this.ClientID);
+				builder.Append("\",");
 
-				builder.Append(",");
 				if (this.InlineData != null)
 				{
 					// serialize InlineData as a JavaScript literal
@@ -278,8 +280,6 @@ namespace JsonFx.UI.Jbst
 					writer.Write(builder.ToString());
 					writer.Write("</script>");
 				}
-
-				writer.Write("</div>");
 			}
 			finally
 			{
