@@ -4,9 +4,9 @@
 	JsonML builder
 
 	Created: 2006-11-09-0116
-	Modified: 2010-01-16-0819
+	Modified: 2010-03-09-0531
 
-	Copyright (c)2006-2009 Stephen M. McKamey
+	Copyright (c)2006-2010 Stephen M. McKamey
 	Distributed under an open-source license: http://jsonml.org/license
 
     This file creates a global JsonML object containing this method:
@@ -50,6 +50,12 @@
 				}
 				return elem;
 			});
+
+		Implement onerror to handle any runtime errors while binding:
+		JsonML.onerror = function (ex, jml, filter) {
+			// display inline error message
+			return document.createTextNode("["+ex+"]");
+		};
 
 */
 
@@ -258,100 +264,113 @@ if ("undefined" === typeof JsonML) {
 		this.value = value;
 	}
 
+	// default onerror handler
+	// ex: exception
+	// jml: JsonML
+	// filter: function
+	/*DOM*/ function eh(/*Error*/ ex, /*JsonML*/ jml, /*function*/ filter) {
+		return document.createTextNode("["+ex+"]");
+	}
+
+	/* override this to perform custom error handling during binding */
+	JsonML.onerror = null;	
+
 	//JsonML.parse
 	/*DOM*/ function p(/*JsonML*/ jml, /*function*/ filter) {
-		if (!jml) {
-			return null;
-		}
-		if ("string" === typeof jml) {
-			return document.createTextNode(jml);
-		}
-		if (jml instanceof Unparsed) {
-			return u(jml.value);
-		}
-		if (!(jml instanceof Array) || !jml.length || "string" !== typeof jml[0]) {
-			throw new Error("JsonML.parse: invalid JsonML tree");
-		}
+		try {
+			if (!jml) {
+				return null;
+			}
+			if ("string" === typeof jml) {
+				return document.createTextNode(jml);
+			}
+			if (jml instanceof Unparsed) {
+				return u(jml.value);
+			}
+			if (!(jml instanceof Array) || !jml.length || "string" !== typeof jml[0]) {
+				throw new Error("JsonML.parse: invalid JsonML tree");
+			}
 
-		var i;
-		var t = jml[0]; // tagName
-		if (!t) {
-			// correctly handle a list of JsonML trees
-			// create a document fragment to hold elements
-			var f = document.createDocumentFragment ?
-				document.createDocumentFragment() :
-				document.createElement("");
+			var i;
+			var t = jml[0]; // tagName
+			if (!t) {
+				// correctly handle a list of JsonML trees
+				// create a document fragment to hold elements
+				var f = document.createDocumentFragment ?
+					document.createDocumentFragment() :
+					document.createElement("");
+				for (i=1; i<jml.length; i++) {
+					ac(f, p(jml[i], filter));
+				}
+
+				// trim extraneous whitespace
+				tw(f);
+
+				// eliminate wrapper for single nodes
+				if (f.childNodes.length === 1) {
+					return f.firstChild;
+				}
+				return f;
+			}
+
+			var x = (t.toLowerCase() === "script"); // check for scripts
+			var css = (t.toLowerCase() === "style" && document.createStyleSheet);
+			var el;
+			if (css) {
+				// IE requires this interface for styles
+				el = document.createStyleSheet();
+			} else {
+				el = x ? null : document.createElement(t);
+			}
+
 			for (i=1; i<jml.length; i++) {
-				ac(f, p(jml[i], filter));
+				if (!x) {
+					if (jml[i] instanceof Array || "string" === typeof jml[i]) {
+						if (css) {
+							// IE requires this interface for styles
+							el.cssText = jml[i];
+						} else {
+							// append children
+							ac(el, p(jml[i], filter));
+						}
+					} else if (jml[i] instanceof Unparsed) {
+						ac(el, u(jml[i].value));
+					} else if ("object" === typeof jml[i] && jml[i] !== null && el.nodeType === 1) {
+						// add attributes
+						el = aa(el, jml[i]);
+					}
+				//} else if (typeof(jml[i]) === "string") {
+					/*	JSLint: "eval is evil"
+						uncomment at your own risk, executes script elements immediately */
+					//eval( "(" + jml[i] + ")" );
+				}
+			}
+
+			if (css) {
+				// in IE styles are effective immediately
+				return null;
 			}
 
 			// trim extraneous whitespace
-			tw(f);
-
-			// eliminate wrapper for single nodes
-			if (f.childNodes.length === 1) {
-				return f.firstChild;
-			}
-			return f;
+			tw(el);
+			return (el && "function" === typeof filter) ? filter(el) : el;
+		} catch (ex) {
+			// handle error with complete context
+			return (JsonML.onerror||eh)(ex, jml, filter);
 		}
-
-		var x = (t.toLowerCase() === "script"); // check for scripts
-		var css = (t.toLowerCase() === "style" && document.createStyleSheet);
-		var el;
-		if (css) {
-			// IE requires this interface for styles
-			el = document.createStyleSheet();
-		} else {
-			el = x ? null : document.createElement(t);
-		}
-
-		for (i=1; i<jml.length; i++) {
-			if (!x) {
-				if (jml[i] instanceof Array || "string" === typeof jml[i]) {
-					if (css) {
-						// IE requires this interface for styles
-						el.cssText = jml[i];
-					} else {
-						// append children
-						ac(el, p(jml[i], filter));
-					}
-				} else if (jml[i] instanceof Unparsed) {
-					ac(el, u(jml[i].value));
-				} else if ("object" === typeof jml[i] && jml[i] !== null && el.nodeType === 1) {
-					// add attributes
-					el = aa(el, jml[i]);
-				}
-			//} else if (typeof(jml[i]) === "string") {
-				/*	JSLint: "eval is evil"
-					uncomment at your own risk, executes script elements immediately */
-				//eval( "(" + jml[i] + ")" );
-			}
-		}
-
-		if (css) {
-			// in IE styles are effective immediately
-			return null;
-		}
-
-		// trim extraneous whitespace
-		tw(el);
-		return (el && "function" === typeof filter) ? filter(el) : el;
 	}
 
 	JsonML.parse = function(/*JsonML*/ jml, /*DOM function(DOM)*/ filter) {
 
-		if (jml instanceof Array) {
-			return p(jml, filter);
-		}
 		if ("string" === typeof jml) {
 			try {
 				jml = JSON.parse(jml);
 			} catch (ex) {
 				return null;
 			}
-			if (jml instanceof Array) {
-				return p(jml, filter);
-			}
+		}
+		if (jml instanceof Array) {
+			return p(jml, filter);
 		}
 		return null;
 	};
