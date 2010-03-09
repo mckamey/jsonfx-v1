@@ -96,7 +96,7 @@
 			<a href="#showExample" class="button button-large" onclick="showExample();return false;">Show example!</a>
 		</div>
 	</div>
-	<p class="copyright">Copyright &copy;2006-2009 Stephen M. McKamey. Powered by <a href="http://starterkit.jsonfx.net/jbst">JsonFx.NET</a>.</p>
+	<p class="copyright">Copyright &copy;2006-2010 Stephen M. McKamey. Powered by <a href="http://starterkit.jsonfx.net/jbst">JsonFx.NET v<%= JsonFx.About.Fx.Version %></a>.</p>
 </div>
 
 <JsonFx:ResourceInclude runat="server" SourceUrl="~/Scripts/GA.js" defer="defer" />
