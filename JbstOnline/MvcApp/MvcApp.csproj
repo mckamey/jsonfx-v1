@@ -100,7 +100,6 @@
     <Compile Include="Models\CompilationError.cs" />
     <Compile Include="Models\CompilationResult.cs" />
     <Compile Include="Models\HomeViewModel.cs" />
-    <Compile Include="Mvc\ActionResults\ErrorResult.cs" />
     <Compile Include="Mvc\IoC\AppIocModule.cs" />
     <Compile Include="Mvc\ModelBinders\TextReaderBinder.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

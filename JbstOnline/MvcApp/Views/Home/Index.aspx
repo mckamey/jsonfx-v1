@@ -59,7 +59,7 @@
 	<div class="buttons">
 		<a href="/example" class="button button-large">See the example in action &raquo;</a>
 	</div>
-	<p class="copyright">Copyright &copy;2006-2009 Stephen M. McKamey. Powered by <a href="http://starterkit.jsonfx.net/jbst">JsonFx.NET</a>.</p>
+	<p class="copyright">Copyright &copy;2006-2010 Stephen M. McKamey. Powered by <a href="http://starterkit.jsonfx.net/jbst">JsonFx.NET v<%= JsonFx.About.Fx.Version %></a>.</p>
 </div>
 
 </asp:Content>
