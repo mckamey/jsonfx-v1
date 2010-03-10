@@ -1,13 +1,11 @@
 using System;
-using System.IO;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Text;
 using System.Web.UI;
 
-using JsonFx.Json;
 using JsonFx.Client;
-using JsonFx.Compilation;
+using JsonFx.Json;
 
 namespace JsonFx.UI.Jbst
 {
@@ -180,6 +178,11 @@ namespace JsonFx.UI.Jbst
 
 				// generate an ID for controls which do not have explicit
 				this.EnsureID();
+				if (String.IsNullOrEmpty(this.ClientID))
+				{
+					// happens with no parents
+					this.ID = Guid.NewGuid().ToString("n");
+				}
 
 				// render the placeholder hook
 				writer.Write("<div id=\"");
@@ -217,7 +220,7 @@ namespace JsonFx.UI.Jbst
 				}
 				else
 				{
-					throw new ArgumentNullException("jbst:Control Name and InlineJbst cannot both be empty.");
+					throw new ArgumentNullException("jbst:Control Name must be specified.");
 				}
 				builder.Append(".replace(\"");
 				builder.Append(this.ClientID);
@@ -250,36 +253,20 @@ namespace JsonFx.UI.Jbst
 					builder.Append(",(");
 					builder.Append(this.Index);
 					builder.Append(')');
-				}
-				else
-				{
-					builder.Append(",NaN");
-				}
 
-				if (this.Count >= 0)
-				{
-					builder.Append(",(");
-					builder.Append(this.Count);
-					builder.Append(')');
+					if (this.Count >= 0)
+					{
+						builder.Append(",(");
+						builder.Append(this.Count);
+						builder.Append(')');
+					}
 				}
 				builder.Append(");");
 
-				if (this.Page != null && this.Page.Form != null)
-				{
-					// register the binding script
-					this.Page.ClientScript.RegisterStartupScript(
-						typeof(Control),
-						this.ClientID + "_init",
-						builder.ToString(),
-						true);
-				}
-				else
-				{
-					// render the binding script
-					writer.Write("<script type=\"text/javascript\">");
-					writer.Write(builder.ToString());
-					writer.Write("</script>");
-				}
+				// render the binding script
+				writer.Write("<script type=\"text/javascript\">");
+				writer.Write(builder.ToString());
+				writer.Write("</script>");
 			}
 			finally
 			{

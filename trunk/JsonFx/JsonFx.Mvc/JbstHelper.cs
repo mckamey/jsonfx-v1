@@ -53,7 +53,6 @@ namespace JsonFx.Mvc
 		{
 			// build the control
 			JsonFx.UI.Jbst.Control control = new JsonFx.UI.Jbst.Control();
-			control.ID = Guid.NewGuid().ToString("n");
 			control.Name = jbst;
 			control.Data = data;
 
@@ -80,7 +79,6 @@ namespace JsonFx.Mvc
 		{
 			// build the control
 			JsonFx.UI.Jbst.Control control = new JsonFx.UI.Jbst.Control();
-			control.ID = Guid.NewGuid().ToString("n");
 			control.Name = jbst;
 			control.InlineData = data;
 
@@ -101,7 +99,6 @@ namespace JsonFx.Mvc
 		{
 			// build the control
 			JsonFx.UI.Jbst.Control control = new JsonFx.UI.Jbst.Control();
-			control.ID = Guid.NewGuid().ToString("n");
 			control.Name = jbst;
 			control.InlineData = data;
 			control.Index = index;
