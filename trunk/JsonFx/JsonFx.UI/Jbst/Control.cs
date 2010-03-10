@@ -187,25 +187,25 @@ namespace JsonFx.UI.Jbst
 					this.dataBlock.RenderControl(writer);
 				}
 
-				// build the binding script
-				StringBuilder builder = new StringBuilder();
+				// render the binding script
+				writer.Write("<script type=\"text/javascript\">");
 
 				if (!String.IsNullOrEmpty(this.Name))
 				{
-					builder.Append(this.Name);
+					writer.Write(this.Name);
 				}
 				else
 				{
 					throw new ArgumentNullException("jbst:Control Name must be specified.");
 				}
-				builder.Append(".replace(\"");
-				builder.Append(this.ClientID);
-				builder.Append("\",");
+				writer.Write(".replace(\"");
+				writer.Write(this.ClientID);
+				writer.Write("\",");
 
 				if (this.InlineData != null)
 				{
 					// serialize InlineData as a JavaScript literal
-					EcmaScriptWriter jsWriter = new EcmaScriptWriter(builder);
+					EcmaScriptWriter jsWriter = new EcmaScriptWriter(writer);
 					jsWriter.Settings.PrettyPrint = this.IsDebug;
 					jsWriter.Settings.NewLine = Environment.NewLine;
 					jsWriter.Settings.Tab = "\t";
@@ -214,34 +214,31 @@ namespace JsonFx.UI.Jbst
 				else if (!String.IsNullOrEmpty(this.Data))
 				{
 					// assume Data is either a JavaScript literal or variable reference
-					builder.Append('(');
-					builder.Append(this.Data);
-					builder.Append(')');
+					writer.Write('(');
+					writer.Write(this.Data);
+					writer.Write(')');
 				}
 				else
 				{
 					// smallest most innocuous default data
-					builder.Append("{}");
+					writer.Write("{}");
 				}
 
 				if (this.Index >= 0)
 				{
-					builder.Append(",(");
-					builder.Append(this.Index);
-					builder.Append(')');
+					writer.Write(",(");
+					writer.Write(this.Index);
+					writer.Write(')');
 
 					if (this.Count >= 0)
 					{
-						builder.Append(",(");
-						builder.Append(this.Count);
-						builder.Append(')');
+						writer.Write(",(");
+						writer.Write(this.Count);
+						writer.Write(')');
 					}
 				}
-				builder.Append(");");
+				writer.Write(");");
 
-				// render the binding script
-				writer.Write("<script type=\"text/javascript\">");
-				writer.Write(builder.ToString());
 				writer.Write("</script>");
 			}
 			finally
