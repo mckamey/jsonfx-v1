@@ -70,6 +70,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Client\AutoDataBindControl.cs" />
+    <Compile Include="Client\JsonMarkupWriter.cs" />
     <Compile Include="Client\ScriptDataBlock.cs" />
     <Compile Include="Compilation\BuildErrorReporter.cs" />
     <Compile Include="Compilation\CssResourceCodeProvider.cs">
