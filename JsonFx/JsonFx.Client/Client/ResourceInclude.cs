@@ -67,7 +67,7 @@ namespace JsonFx.Client
 		private string sourceUrl;
 		private bool usePageCulture = true;
 		private bool suppressLocalization;
-		private StyleIncludeType styleFormat = StyleIncludeType.Import;
+		private StyleIncludeType styleFormat = StyleIncludeType.Link;
 		private Dictionary<string, string> attributes;
 
 		#endregion Fields
@@ -138,19 +138,11 @@ namespace JsonFx.Client
 		/// Gets and sets if page determines the culture or
 		/// if uses CurrentUICulture
 		/// </summary>
-		[DefaultValue(StyleIncludeType.Import)]
+		[DefaultValue(StyleIncludeType.Link)]
 		public StyleIncludeType StyleFormat
 		{
 			get { return this.styleFormat; }
-			set
-			{
-				this.styleFormat = value;
-				if (value == StyleIncludeType.Link &&
-					!this.Attributes.ContainsKey("rel"))
-				{
-					this.Attributes["rel"] = "stylesheet";
-				}
-			}
+			set { this.styleFormat = value; }
 		}
 
 		/// <summary>
@@ -198,20 +190,27 @@ namespace JsonFx.Client
 				String.Empty :
 				info.ContentType.ToLowerInvariant();
 
-			string attrib = this.BuildCustomAttributes();
-
 			string format;
 			switch (type)
 			{
 				case CssResourceCodeProvider.MimeType:
 				{
-					if (this.styleFormat == StyleIncludeType.Import)
+					switch (this.StyleFormat)
 					{
-						format = ResourceInclude.StyleImport;
-					}
-					else
-					{
-						format = ResourceInclude.StyleLink;
+						case StyleIncludeType.Import:
+						{
+							format = ResourceInclude.StyleImport;
+							break;
+						}
+						default:
+						{
+							format = ResourceInclude.StyleLink;
+							if (!this.Attributes.ContainsKey("rel"))
+							{
+								this.Attributes["rel"] = "stylesheet";
+							}
+							break;
+						}
 					}
 					break;
 				}
@@ -226,6 +225,8 @@ namespace JsonFx.Client
 					break;
 				}
 			}
+
+			string attrib = this.BuildCustomAttributes();
 			writer.Write(format, type, url, attrib);
 
 			if (!this.SuppressLocalization &&
