@@ -29,9 +29,8 @@
 #endregion License
 
 using System;
-using System.ComponentModel;
 using System.Collections.Generic;
-using System.Web;
+using System.ComponentModel;
 using System.Web.UI;
 
 using JsonFx.Json;
@@ -99,7 +98,7 @@ namespace JsonFx.Client
 		}
 
 		/// <summary>
-		/// Gets access to 
+		/// Gets access to data items as dictionary
 		/// </summary>
 		public IDictionary<string, object> DataItems
 		{
@@ -128,7 +127,7 @@ namespace JsonFx.Client
 		{
 			if (this.Data.Count < 1)
 			{
-				// emit nothing if empty
+				// emit nothing when empty
 				return;
 			}
 
@@ -138,11 +137,14 @@ namespace JsonFx.Client
 				List<string> namespaces = new List<string>();
 
 				EcmaScriptWriter jsWriter = new EcmaScriptWriter(writer);
-				jsWriter.Settings.PrettyPrint = this.IsDebug;
-				jsWriter.Settings.NewLine = Environment.NewLine;
-				jsWriter.Settings.Tab = "\t";
+				if (this.IsDebug)
+				{
+					jsWriter.Settings.PrettyPrint = true;
+					jsWriter.Settings.NewLine = Environment.NewLine;
+					jsWriter.Settings.Tab = "\t";
+				}
 
-				writer.Write(ScriptOpen);
+				writer.Write(ScriptDataBlock.ScriptOpen);
 
 				foreach (string key in this.Data.Keys)
 				{
@@ -159,7 +161,7 @@ namespace JsonFx.Client
 					if (this.IsDebug)
 					{
 						writer.Indent += 3;
-						writer.Write(VarAssignmentDebug, declaration);
+						writer.Write(ScriptDataBlock.VarAssignmentDebug, declaration);
 						writer.Indent -= 3;
 						if (this.Data[key] != null &&
 							this.Data[key].GetType().IsClass)
@@ -169,12 +171,12 @@ namespace JsonFx.Client
 					}
 					else
 					{
-						writer.Write(VarAssignment, declaration);
+						writer.Write(ScriptDataBlock.VarAssignment, declaration);
 					}
 
 					// emit the value as JSON
 					jsWriter.Write(this.Data[key]);
-					writer.Write(VarAssignmentEnd);
+					writer.Write(ScriptDataBlock.VarAssignmentEnd);
 
 					if (this.IsDebug)
 					{
@@ -182,7 +184,7 @@ namespace JsonFx.Client
 					}
 				}
 
-				writer.Write(ScriptClose);
+				writer.Write(ScriptDataBlock.ScriptClose);
 			}
 			finally
 			{
