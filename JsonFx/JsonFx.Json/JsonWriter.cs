@@ -5,7 +5,7 @@
 
 	The MIT License
 
-	Copyright (c) 2006-2009 Stephen M. McKamey
+	Copyright (c) 2006-2010 Stephen M. McKamey
 
 	Permission is hereby granted, free of charge, to any person obtaining a copy
 	of this software and associated documentation files (the "Software"), to deal
@@ -228,6 +228,14 @@ namespace JsonFx.Json
 		{
 			get { return this.settings.NewLine; }
 			set { this.Writer.NewLine = this.settings.NewLine = value; }
+		}
+
+		/// <summary>
+		/// Gets the current nesting depth
+		/// </summary>
+		protected int Depth
+		{
+			get { return this.depth; }
 		}
 
 		/// <summary>
@@ -913,7 +921,7 @@ namespace JsonFx.Json
 				{
 					if (appendDelim)
 					{
-						this.Writer.Write(JsonReader.OperatorValueDelim);
+						this.WriteArrayItemDelim();
 					}
 					else
 					{
@@ -921,7 +929,7 @@ namespace JsonFx.Json
 					}
 
 					this.WriteLine();
-					this.Write(item, false);
+					this.WriteArrayItem(item);
 				}
 			}
 			finally
@@ -934,6 +942,11 @@ namespace JsonFx.Json
 				this.WriteLine();
 			}
 			this.Writer.Write(JsonReader.OperatorArrayEnd);
+		}
+
+		protected virtual void WriteArrayItem(object item)
+		{
+			this.Write(item, false);
 		}
 
 		protected virtual void WriteObject(IDictionary value)
@@ -965,7 +978,7 @@ namespace JsonFx.Json
 				{
 					if (appendDelim)
 					{
-						this.Writer.Write(JsonReader.OperatorValueDelim);
+						this.WriteObjectPropertyDelim();
 					}
 					else
 					{
@@ -997,12 +1010,17 @@ namespace JsonFx.Json
 			this.WriteLine();
 			this.WriteObjectPropertyName(key);
 			this.Writer.Write(JsonReader.OperatorNameDelim);
-			this.Write(value, true);
+			this.WriteObjectPropertyValue(value);
 		}
 
 		protected virtual void WriteObjectPropertyName(string name)
 		{
 			this.Write(name);
+		}
+
+		protected virtual void WriteObjectPropertyValue(object value)
+		{
+			this.Write(value, true);
 		}
 
 		protected virtual void WriteObject(object value, Type type)
@@ -1022,7 +1040,7 @@ namespace JsonFx.Json
 				{
 					if (appendDelim)
 					{
-						this.Writer.Write(JsonReader.OperatorValueDelim);
+						this.WriteObjectPropertyDelim();
 					}
 					else
 					{
@@ -1061,7 +1079,7 @@ namespace JsonFx.Json
 
 					if (appendDelim)
 					{
-						this.Writer.Write(JsonReader.OperatorValueDelim);
+						this.WriteObjectPropertyDelim();
 					}
 					else
 					{
@@ -1100,7 +1118,7 @@ namespace JsonFx.Json
 
 					if (appendDelim)
 					{
-						this.Writer.Write(JsonReader.OperatorValueDelim);
+						this.WriteObjectPropertyDelim();
 						this.WriteLine();
 					}
 					else
@@ -1128,6 +1146,16 @@ namespace JsonFx.Json
 				this.WriteLine();
 			}
 			this.Writer.Write(JsonReader.OperatorObjectEnd);
+		}
+
+		protected virtual void WriteArrayItemDelim()
+		{
+			this.Writer.Write(JsonReader.OperatorValueDelim);
+		}
+
+		protected virtual void WriteObjectPropertyDelim()
+		{
+			this.Writer.Write(JsonReader.OperatorValueDelim);
 		}
 
 		protected virtual void WriteLine()
