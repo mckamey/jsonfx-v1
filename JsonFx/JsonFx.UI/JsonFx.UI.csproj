@@ -106,6 +106,7 @@
     <Content Include="License.txt">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>
+    <EmbeddedResource Include="Scripts\JsonML_DOM.js" />
     <EmbeddedResource Include="Scripts\JsonFx_Lang.js" />
     <EmbeddedResource Include="Scripts\JsonFx_UA.js" />
     <EmbeddedResource Include="Scripts\JsonML_BST.js" />
