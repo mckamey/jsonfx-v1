@@ -31,6 +31,8 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.IO;
+using System.Web;
 using System.Web.UI;
 
 using JsonFx.Json;
@@ -47,6 +49,8 @@ namespace JsonFx.Client
 
 		private const string ScriptOpen = "<script type=\"text/javascript\">";
 		private const string ScriptClose = "</script>";
+		private const string NoScriptOpen = "<noscript>";
+		private const string NoScriptClose = "</noscript>";
 		private const string VarAssignmentDebug = "{0} = ";
 		private const string VarAssignment = "{0}=";
 		private const string VarAssignmentEnd = ";";
@@ -56,6 +60,7 @@ namespace JsonFx.Client
 		#region Fields
 
 		private bool isDebug;
+		private bool autoMarkup;
 		private readonly Dictionary<string, object> Data = new Dictionary<string, object>(StringComparer.Ordinal);
 
 		#endregion Fields
@@ -115,6 +120,16 @@ namespace JsonFx.Client
 			set { this.isDebug = value; }
 		}
 
+		/// <summary>
+		/// Gets and sets if should also render the data as markup for noscript clients.
+		/// </summary>
+		[DefaultValue(false)]
+		public bool AutoMarkup
+		{
+			get { return this.autoMarkup; }
+			set { this.autoMarkup = value; }
+		}
+
 		#endregion Properties
 
 		#region Page Event Handlers
@@ -136,7 +151,19 @@ namespace JsonFx.Client
 			{
 				List<string> namespaces = new List<string>();
 
-				EcmaScriptWriter jsWriter = new EcmaScriptWriter(writer);
+				StringWriter markup;
+				EcmaScriptWriter jsWriter;
+				if (this.AutoMarkup)
+				{
+					markup = new StringWriter();
+					jsWriter = new JsonMarkupWriter(writer, markup);
+				}
+				else
+				{
+					markup = null;
+					jsWriter = new EcmaScriptWriter(writer);
+				}
+
 				if (this.IsDebug)
 				{
 					jsWriter.Settings.PrettyPrint = true;
@@ -148,6 +175,17 @@ namespace JsonFx.Client
 
 				foreach (string key in this.Data.Keys)
 				{
+					if (markup != null)
+					{
+						if (this.IsDebug)
+						{
+							markup.WriteLine();
+						}
+						markup.Write("<div title=\"");
+						HttpUtility.HtmlAttributeEncode(key, markup);
+						markup.Write("\">");
+					}
+
 					string declaration;
 					if (!EcmaScriptWriter.WriteNamespaceDeclaration(writer, key, namespaces, this.IsDebug))
 					{
@@ -178,6 +216,11 @@ namespace JsonFx.Client
 					jsWriter.Write(this.Data[key]);
 					writer.Write(ScriptDataBlock.VarAssignmentEnd);
 
+					if (markup != null)
+					{
+						markup.Write("</div>");
+					}
+
 					if (this.IsDebug)
 					{
 						writer.WriteLine();
@@ -185,6 +228,13 @@ namespace JsonFx.Client
 				}
 
 				writer.Write(ScriptDataBlock.ScriptClose);
+
+				if (markup != null && this.Data.Count > 0)
+				{
+					writer.Write(ScriptDataBlock.NoScriptOpen);
+					writer.Write(markup.ToString());
+					writer.Write(ScriptDataBlock.NoScriptClose);
+				}
 			}
 			finally
 			{

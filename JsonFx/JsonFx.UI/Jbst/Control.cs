@@ -1,3 +1,33 @@
+#region License
+/*---------------------------------------------------------------------------------*\
+
+	Distributed under the terms of an MIT-style license:
+
+	The MIT License
+
+	Copyright (c) 2006-2009 Stephen M. McKamey
+
+	Permission is hereby granted, free of charge, to any person obtaining a copy
+	of this software and associated documentation files (the "Software"), to deal
+	in the Software without restriction, including without limitation the rights
+	to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+	copies of the Software, and to permit persons to whom the Software is
+	furnished to do so, subject to the following conditions:
+
+	The above copyright notice and this permission notice shall be included in
+	all copies or substantial portions of the Software.
+
+	THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+	IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+	FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+	AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+	LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+	OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+	THE SOFTWARE.
+
+\*---------------------------------------------------------------------------------*/
+#endregion License
+
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -18,6 +48,7 @@ namespace JsonFx.UI.Jbst
 		#region Fields
 
 		private bool isDebug;
+		private bool autoMarkup;
 		private EcmaScriptIdentifier name;
 		private string data;
 		private object inlineData;
@@ -138,7 +169,6 @@ namespace JsonFx.UI.Jbst
 				if (this.dataBlock == null)
 				{
 					this.dataBlock = new ScriptDataBlock();
-					this.Controls.Add(this.dataBlock);
 				}
 				return this.dataBlock.DataItems;
 			}
@@ -154,6 +184,16 @@ namespace JsonFx.UI.Jbst
 			set { this.isDebug = value; }
 		}
 
+		/// <summary>
+		/// Gets and sets if should also render the data as markup for noscript clients.
+		/// </summary>
+		[DefaultValue(false)]
+		public bool AutoMarkup
+		{
+			get { return this.autoMarkup; }
+			set { this.autoMarkup = value; }
+		}
+
 		#endregion Properties
 
 		#region Page Event Handlers
@@ -167,25 +207,65 @@ namespace JsonFx.UI.Jbst
 			writer.BeginRender();
 			try
 			{
+				// render any named data items
+				if (this.dataBlock != null)
+				{
+					this.dataBlock.AutoMarkup = this.AutoMarkup;
+					this.dataBlock.RenderControl(writer);
+				}
+
 				// generate an ID for controls which do not have explicit
 				this.EnsureID();
 				if (String.IsNullOrEmpty(this.ClientID))
 				{
 					// happens with no parents
-					this.ID = Guid.NewGuid().ToString("n");
+					this.ID = "_"+Guid.NewGuid().ToString("n");
 				}
 
-				// render the placeholder hook with any children as loading/error markup
-				writer.Write("<div id=\"");
+				bool hasControls = this.HasControls();
+				string placeholder = hasControls ? "div" : "noscript";
+
+				// render the placeholder hook
+				writer.Write('<');
+				writer.Write(placeholder);
+				writer.Write(" id=\"");
 				writer.Write(this.ClientID);
 				writer.Write("\">");
-				base.RenderChildren(writer);
-				writer.Write("</div>");
 
-				if (this.dataBlock != null)
+				// render any children as loading/error markup
+				base.RenderChildren(writer);
+
+				string inlineData = null;
+				if (this.AutoMarkup && this.InlineData != null)
 				{
-					this.dataBlock.RenderControl(writer);
+					if (hasControls)
+					{
+						writer.Write("<noscript>");
+					}
+
+					// serialize InlineData as a JavaScript literal
+					StringBuilder builder = new StringBuilder();
+
+					JsonMarkupWriter jsWriter = new JsonMarkupWriter(builder, writer);
+					if (this.IsDebug)
+					{
+						jsWriter.Settings.PrettyPrint = true;
+						jsWriter.Settings.NewLine = Environment.NewLine;
+						jsWriter.Settings.Tab = "\t";
+					}
+					jsWriter.Write(this.InlineData);
+
+					if (hasControls)
+					{
+						writer.Write("</noscript>");
+					}
+
+					inlineData = builder.ToString();
 				}
+
+				writer.Write("</");
+				writer.Write(placeholder);
+				writer.Write('>');
 
 				// render the binding script
 				writer.Write("<script type=\"text/javascript\">");
@@ -202,13 +282,20 @@ namespace JsonFx.UI.Jbst
 				writer.Write(this.ClientID);
 				writer.Write("\",");
 
-				if (this.InlineData != null)
+				if (!String.IsNullOrEmpty(inlineData))
+				{
+					writer.Write(inlineData);
+				}
+				else if (this.InlineData != null)
 				{
 					// serialize InlineData as a JavaScript literal
 					EcmaScriptWriter jsWriter = new EcmaScriptWriter(writer);
-					jsWriter.Settings.PrettyPrint = this.IsDebug;
-					jsWriter.Settings.NewLine = Environment.NewLine;
-					jsWriter.Settings.Tab = "\t";
+					if (this.IsDebug)
+					{
+						jsWriter.Settings.PrettyPrint = true;
+						jsWriter.Settings.NewLine = Environment.NewLine;
+						jsWriter.Settings.Tab = "\t";
+					}
 					jsWriter.Write(this.InlineData);
 				}
 				else if (!String.IsNullOrEmpty(this.Data))
