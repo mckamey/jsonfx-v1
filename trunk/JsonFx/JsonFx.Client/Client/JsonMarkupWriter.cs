@@ -33,6 +33,7 @@ using System.Collections;
 using System.IO;
 using System.Text;
 using System.Web;
+using System.Xml;
 
 using JsonFx.Json;
 
@@ -43,9 +44,17 @@ namespace JsonFx.Client
 	/// </summary>
 	public class JsonMarkupWriter : EcmaScriptWriter
 	{
+		#region Constants
+
+		private const string LiteralTrue = "true";
+		private const string LiteralFalse = "false";
+
+		#endregion Constants
+
 		#region Fields
 
-		private StringBuilder markup = new StringBuilder();
+		private readonly TextWriter markup = new StringWriter();
+		private bool suppressWrite = false;
 
 		#endregion Fields
 
@@ -54,45 +63,69 @@ namespace JsonFx.Client
 		/// <summary>
 		/// Ctor
 		/// </summary>
-		public JsonMarkupWriter()
-			: this(TextWriter.Null)
+		public JsonMarkupWriter(TextWriter markupWriter)
+			: this(TextWriter.Null, markupWriter)
 		{
 		}
 
 		/// <summary>
 		/// Ctor
 		/// </summary>
-		/// <param name="output">TextWriter for writing</param>
-		public JsonMarkupWriter(TextWriter output)
+		/// <param name="output">TextWriter for data</param>
+		/// <param name="output">TextWriter for markup</param>
+		public JsonMarkupWriter(TextWriter output, TextWriter markupWriter)
 			: base(output)
 		{
+			if (markupWriter == null)
+			{
+				markupWriter = new StringWriter();
+			}
+			this.markup = markupWriter;
 		}
 
 		/// <summary>
 		/// Ctor
 		/// </summary>
-		/// <param name="output">Stream for writing</param>
-		public JsonMarkupWriter(Stream output)
+		/// <param name="output">Stream for data</param>
+		/// <param name="output">TextWriter for markup</param>
+		public JsonMarkupWriter(Stream output, TextWriter markupWriter)
 			: base(output)
 		{
+			if (markupWriter == null)
+			{
+				markupWriter = new StringWriter();
+			}
+			this.markup = markupWriter;
 		}
 
 		/// <summary>
 		/// Ctor
 		/// </summary>
-		/// <param name="output">File name for writing</param>
-		public JsonMarkupWriter(string outputFileName)
+		/// <param name="output">File name for data</param>
+		/// <param name="output">TextWriter for markup</param>
+		public JsonMarkupWriter(string outputFileName, TextWriter markupWriter)
 			: base(outputFileName)
 		{
+			if (markupWriter == null)
+			{
+				markupWriter = new StringWriter();
+			}
+			this.markup = markupWriter;
 		}
 
 		/// <summary>
 		/// Ctor
 		/// </summary>
-		/// <param name="output">StringBuilder for appending</param>
-		public JsonMarkupWriter(StringBuilder output)
+		/// <param name="output">StringBuilder for data</param>
+		/// <param name="output">TextWriter for markup</param>
+		public JsonMarkupWriter(StringBuilder output, TextWriter markupWriter)
 			: base(output)
 		{
+			if (markupWriter == null)
+			{
+				markupWriter = new StringWriter();
+			}
+			this.markup = markupWriter;
 		}
 
 		#endregion Init
@@ -100,260 +133,106 @@ namespace JsonFx.Client
 		#region Properties
 
 		/// <summary>
-		/// Gets
+		/// Gets and sets the TextWriter used for markup
 		/// </summary>
-		public string MarkupContent
+		public TextWriter MarkupWriter
 		{
-			get { return this.markup.ToString(); }
+			get { return this.markup; }
 		}
 
 		#endregion Properties
 
-		#region Serialization Methods
+		#region Writer Methods
 
 		protected override void WriteArray(IEnumerable value)
 		{
-			this.markup.Append("<ul>");
+			this.MarkupWriteLine();
+			this.markup.Write("<ul>");
 
 			base.WriteArray(value);
 
-			this.markup.Append("</ul>");
+			this.MarkupWriteLine();
+			this.markup.Write("</ul>");
 		}
 
 		protected override void WriteArrayItem(object item)
 		{
-			this.markup.Append("<li>");
+			this.MarkupWriteLine();
+			this.markup.Write("<li>");
 
 			base.WriteArrayItem(item);
 
-			this.markup.Append("</li>");
-		}
-
-		protected override void WriteDictionary(IEnumerable value)
-		{
-			this.markup.Append("<dl>");
-
-			base.WriteDictionary(value);
-
-			this.markup.Append("</dl>");
-		}
-
-		protected override void WriteObject(object value, Type type)
-		{
-			this.markup.Append("<dl>");
-
-			base.WriteObject(value, type);
-
-			this.markup.Append("</dl>");
-		}
-
-		protected override void WriteObjectPropertyName(string name)
-		{
-			this.markup.Append("<dt>");
-			this.markup.Append(HttpUtility.HtmlEncode(name));
-
-			base.WriteObjectPropertyName(name);
-
-			this.markup.Append("</dt>");
-		}
-
-		protected override void WriteObjectPropertyValue(object value)
-		{
-			this.markup.Append("</dd>");
-
-			base.WriteObjectPropertyValue(value);
-
-			this.markup.Append("</dd>");
-		}
-
-		public override void Write(bool value)
-		{
-			this.markup.Append(value);
-
-			base.Write(value);
-		}
-
-		public override void Write(byte value)
-		{
-			this.markup.Append(value);
-
-			base.Write(value);
-		}
-
-		public override void Write(char value)
-		{
-			this.markup.Append(value);
-
-			base.Write(value);
-		}
-
-		public override void Write(DateTime value)
-		{
-			this.markup.Append(value.ToString("yyyy-MM-dd HH:mm:ss zzz"));
-
-			base.Write(value);
-		}
-
-		public override void Write(decimal value)
-		{
-			this.markup.Append(value);
-
-			base.Write(value);
-		}
-
-		public override void Write(double value)
-		{
-			this.markup.Append(value);
-
-			base.Write(value);
-		}
-
-		public override void Write(Enum value)
-		{
-			this.markup.Append(value.ToString("F"));
-
-			base.Write(value);
-		}
-
-		public override void Write(float value)
-		{
-			this.markup.Append(value);
-
-			base.Write(value);
-		}
-
-		public override void Write(Guid value)
-		{
-			this.markup.Append(value.ToString("N"));
-
-			base.Write(value);
-		}
-
-		public override void Write(int value)
-		{
-			this.markup.Append(value);
-
-			base.Write(value);
-		}
-
-		public override void Write(long value)
-		{
-			this.markup.Append(value);
-
-			base.Write(value);
-		}
-
-		public override void Write(sbyte value)
-		{
-			this.markup.Append(value);
-
-			base.Write(value);
-		}
-
-		public override void Write(short value)
-		{
-			this.markup.Append(value);
-
-			base.Write(value);
-		}
-
-		public override void Write(string value)
-		{
-			this.markup.Append(HttpUtility.HtmlEncode(value));
-
-			base.Write(value);
-		}
-
-		public override void Write(System.Xml.XmlNode value)
-		{
-			// TODO: ???
-			this.markup.Append(value);
-
-			base.Write(value);
-		}
-
-		public override void Write(TimeSpan value)
-		{
-			this.markup.Append(value);
-
-			base.Write(value);
-		}
-
-		public override void Write(uint value)
-		{
-			this.markup.Append(value);
-
-			base.Write(value);
-		}
-
-		public override void Write(ulong value)
-		{
-			this.markup.Append(value);
-
-			base.Write(value);
-		}
-
-		public override void Write(Uri value)
-		{
-			this.markup.Append(value);
-
-			base.Write(value);
-		}
-
-		public override void Write(ushort value)
-		{
-			this.markup.Append(value);
-
-			base.Write(value);
-		}
-
-		public override void Write(Version value)
-		{
-			this.markup.Append(value);
-
-			base.Write(value);
-		}
-
-		public override void WriteBase64(byte[] value)
-		{
-			// TODO: ???
-			this.markup.Append(value);
-
-			base.WriteBase64(value);
-		}
-
-		public override void WriteHexString(byte[] value)
-		{
-			// TODO: ???
-			this.markup.Append(value);
-
-			base.WriteHexString(value);
-		}
-
-		protected override void Write(object value, bool isProperty)
-		{
-			string tag = isProperty ? "span>" : "div>";
-
-			this.markup.Append('<');
-			this.markup.Append(tag);
-
-			// this calls other overrides
-			base.Write(value, isProperty);
-
-			this.markup.Append("</");
-			this.markup.Append(tag);
-		}
-
-		protected override void WriteObject(IDictionary value)
-		{
-			// this calls other overrides
-			base.WriteObject(value);
+			this.markup.Write("</li>");
 		}
 
 		protected override void WriteArrayItemDelim()
 		{
 			// nothing needed
 			base.WriteArrayItemDelim();
+		}
+
+		protected override void Write(object value, bool isProperty)
+		{
+			// this calls other write methods
+			base.Write(value, isProperty);
+		}
+
+		protected override void WriteObject(IDictionary value)
+		{
+			// this calls other write methods
+			base.WriteObject(value);
+		}
+
+		protected override void WriteDictionary(IEnumerable value)
+		{
+			this.MarkupWriteLine();
+			this.markup.Write("<dl>");
+
+			base.WriteDictionary(value);
+
+			this.MarkupWriteLine();
+			this.markup.Write("</dl>");
+		}
+
+		protected override void WriteObject(object value, Type type)
+		{
+			this.MarkupWriteLine();
+			this.markup.Write("<dl>");
+
+			base.WriteObject(value, type);
+
+			this.MarkupWriteLine();
+			this.markup.Write("</dl>");
+		}
+
+		protected override void WriteObjectPropertyName(string name)
+		{
+			this.MarkupWriteLine();
+			this.markup.Write("<dt>");
+
+			this.markup.Write(name);
+
+			this.suppressWrite = true;
+			try
+			{
+				base.WriteObjectPropertyName(name);
+			}
+			finally
+			{
+				this.suppressWrite = false;
+			}
+
+			this.markup.Write("</dt>");
+		}
+
+		protected override void WriteObjectPropertyValue(object value)
+		{
+			this.MarkupWriteLine();
+			this.markup.Write("<dd>");
+
+			base.WriteObjectPropertyValue(value);
+
+			this.markup.Write("</dd>");
 		}
 
 		protected override void WriteObjectPropertyDelim()
@@ -364,19 +243,306 @@ namespace JsonFx.Client
 
 		protected override void WriteLine()
 		{
-			if (this.Settings.PrettyPrint)
-			{
-				string tab = this.Settings.Tab;
-				for (int i=0; i<this.Depth; i++)
-				{
-					this.markup.Append(tab);
-				}
-				this.markup.Append(this.Settings.NewLine);
-			}
-
+			// nothing needed
 			base.WriteLine();
 		}
 
-		#endregion Serialization Methods
+		private void MarkupWriteLine()
+		{
+			if (!this.Settings.PrettyPrint)
+			{
+				return;
+			}
+
+			string tab = this.Settings.Tab;
+			for (int i=this.Depth; i>0; i--)
+			{
+				this.markup.Write(tab);
+			}
+			this.markup.Write(this.Settings.NewLine);
+		}
+
+		#endregion Writer Methods
+
+		#region Primative Writer Methods
+
+		public override void Write(bool value)
+		{
+			this.markup.Write(value ? JsonMarkupWriter.LiteralTrue : JsonMarkupWriter.LiteralFalse);
+
+			this.suppressWrite = true;
+			try
+			{
+				base.Write(value);
+			}
+			finally
+			{
+				this.suppressWrite = false;
+			}
+		}
+
+		public override void Write(byte value)
+		{
+			this.markup.Write("{0:g}", value);
+
+			this.suppressWrite = true;
+			try
+			{
+				base.Write(value);
+			}
+			finally
+			{
+				this.suppressWrite = false;
+			}
+		}
+
+		public override void Write(char value)
+		{
+			// this calls other write methods
+			base.Write(value);
+		}
+
+		public override void Write(DateTime value)
+		{
+			this.markup.Write(value.ToString("yyyy-MM-dd HH:mm:ss zzz"));
+
+			this.suppressWrite = true;
+			try
+			{
+				base.Write(value);
+			}
+			finally
+			{
+				this.suppressWrite = false;
+			}
+		}
+
+		public override void Write(decimal value)
+		{
+			this.markup.Write("{0:g}", value);
+
+			this.suppressWrite = true;
+			try
+			{
+				base.Write(value);
+			}
+			finally
+			{
+				this.suppressWrite = false;
+			}
+		}
+
+		public override void Write(double value)
+		{
+			this.markup.Write("{0:g}", value);
+
+			this.suppressWrite = true;
+			try
+			{
+				base.Write(value);
+			}
+			finally
+			{
+				this.suppressWrite = false;
+			}
+		}
+
+		public override void Write(float value)
+		{
+			this.markup.Write("{0:g}", value);
+
+			this.suppressWrite = true;
+			try
+			{
+				base.Write(value);
+			}
+			finally
+			{
+				this.suppressWrite = false;
+			}
+		}
+
+		public override void Write(int value)
+		{
+			this.markup.Write("{0:g}", value);
+
+			this.suppressWrite = true;
+			try
+			{
+				base.Write(value);
+			}
+			finally
+			{
+				this.suppressWrite = false;
+			}
+		}
+
+		public override void Write(long value)
+		{
+			this.markup.Write("{0:g}", value);
+
+			this.suppressWrite = true;
+			try
+			{
+				base.Write(value);
+			}
+			finally
+			{
+				this.suppressWrite = false;
+			}
+		}
+
+		public override void Write(sbyte value)
+		{
+			this.markup.Write("{0:g}", value);
+
+			this.suppressWrite = true;
+			try
+			{
+				base.Write(value);
+			}
+			finally
+			{
+				this.suppressWrite = false;
+			}
+		}
+
+		public override void Write(short value)
+		{
+			this.markup.Write("{0:g}", value);
+
+			this.suppressWrite = true;
+			try
+			{
+				base.Write(value);
+			}
+			finally
+			{
+				this.suppressWrite = false;
+			}
+		}
+
+		public override void Write(string value)
+		{
+			if (!this.suppressWrite && !String.IsNullOrEmpty(value))
+			{
+				this.markup.Write(value);
+			}
+
+			base.Write(value);
+		}
+
+		public override void Write(uint value)
+		{
+			this.markup.Write("{0:g}", value);
+
+			this.suppressWrite = true;
+			try
+			{
+				base.Write(value);
+			}
+			finally
+			{
+				this.suppressWrite = false;
+			}
+		}
+
+		public override void Write(ulong value)
+		{
+			this.markup.Write("{0:g}", value);
+
+			this.suppressWrite = true;
+			try
+			{
+				base.Write(value);
+			}
+			finally
+			{
+				this.suppressWrite = false;
+			}
+		}
+
+		public override void Write(ushort value)
+		{
+			this.markup.Write("{0:g}", value);
+
+			this.suppressWrite = true;
+			try
+			{
+				base.Write(value);
+			}
+			finally
+			{
+				this.suppressWrite = false;
+			}
+		}
+
+		#endregion Primative Writer Methods
+
+		#region Convenience Writer Methods
+
+		public override void Write(Enum value)
+		{
+			// this calls other write methods
+			base.Write(value);
+		}
+
+		public override void Write(Guid value)
+		{
+			// this calls other write methods
+			base.Write(value);
+		}
+
+		public override void Write(TimeSpan value)
+		{
+			// this calls other write methods
+			base.Write(value);
+		}
+
+		public override void Write(Uri value)
+		{
+			this.markup.Write("<a href=\"");
+			this.markup.Write(HttpUtility.HtmlAttributeEncode(value.AbsoluteUri));
+			this.markup.Write("\">");
+
+			base.Write(value);
+
+			this.markup.Write("</a>");
+		}
+
+		public override void Write(Version value)
+		{
+			// this calls other write methods
+			base.Write(value);
+		}
+
+		public override void Write(XmlNode value)
+		{
+			this.markup.Write(value.OuterXml);
+
+			this.suppressWrite = true;
+			try
+			{
+				base.Write(value);
+			}
+			finally
+			{
+				this.suppressWrite = false;
+			}
+		}
+
+		public override void WriteBase64(byte[] value)
+		{
+			// this calls other write methods
+			base.WriteBase64(value);
+		}
+
+		public override void WriteHexString(byte[] value)
+		{
+			// this calls other write methods
+			base.WriteHexString(value);
+		}
+
+		#endregion Convenience Writer Methods
 	}
 }
