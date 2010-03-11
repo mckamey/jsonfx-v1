@@ -265,15 +265,16 @@ if (""undefined"" === typeof {0}) {{
 
 		protected override void WriteObjectPropertyName(string name)
 		{
-			if (!EcmaScriptIdentifier.IsValidIdentifier(name, false))
+			if (EcmaScriptIdentifier.IsValidIdentifier(name, false))
 			{
-				// write out as a string
-				base.WriteObjectPropertyName(name);
-				return;
+				// write out without quoting
+				this.TextWriter.Write(name);
 			}
-
-			// write out without quoting
-			this.TextWriter.Write(name);
+			else
+			{
+				// write out as an escaped string
+				base.WriteObjectPropertyName(name);
+			}
 		}
 
 		public static void WriteEcmaScriptDate(JsonWriter writer, DateTime value)
