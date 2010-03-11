@@ -49,6 +49,25 @@ namespace JsonFx.Client
 		private const string LiteralTrue = "true";
 		private const string LiteralFalse = "false";
 
+		private const string ArrayStart = "<ul>";
+		private const string ArrayEnd = "</ul>";
+
+		private const string ArrayItemStart = "<li>";
+		private const string ArrayItemEnd = "</li>";
+
+		private const string ObjectStart = "<dl>";
+		private const string ObjectEnd = "</dl>";
+
+		private const string ObjectPropertyNameStart = "<dt>";
+		private const string ObjectPropertyNameEnd = "</dt>";
+
+		private const string ObjectPropertyValueStart = "<dd>";
+		private const string ObjectPropertyValueEnd = "</dd>";
+
+		private const string LinkStart = "<a href=\"";
+		private const string LinkStart2 = "\">";
+		private const string LinkEnd = "</a>";
+
 		#endregion Constants
 
 		#region Fields
@@ -147,22 +166,22 @@ namespace JsonFx.Client
 		protected override void WriteArray(IEnumerable value)
 		{
 			this.MarkupWriteLine();
-			this.markup.Write("<ul>");
+			this.markup.Write(JsonMarkupWriter.ArrayStart);
 
 			base.WriteArray(value);
 
 			this.MarkupWriteLine();
-			this.markup.Write("</ul>");
+			this.markup.Write(JsonMarkupWriter.ArrayEnd);
 		}
 
 		protected override void WriteArrayItem(object item)
 		{
 			this.MarkupWriteLine();
-			this.markup.Write("<li>");
+			this.markup.Write(JsonMarkupWriter.ArrayItemStart);
 
 			base.WriteArrayItem(item);
 
-			this.markup.Write("</li>");
+			this.markup.Write(JsonMarkupWriter.ArrayItemEnd);
 		}
 
 		protected override void WriteArrayItemDelim()
@@ -186,29 +205,29 @@ namespace JsonFx.Client
 		protected override void WriteDictionary(IEnumerable value)
 		{
 			this.MarkupWriteLine();
-			this.markup.Write("<dl>");
+			this.markup.Write(JsonMarkupWriter.ObjectStart);
 
 			base.WriteDictionary(value);
 
 			this.MarkupWriteLine();
-			this.markup.Write("</dl>");
+			this.markup.Write(JsonMarkupWriter.ObjectEnd);
 		}
 
 		protected override void WriteObject(object value, Type type)
 		{
 			this.MarkupWriteLine();
-			this.markup.Write("<dl>");
+			this.markup.Write(JsonMarkupWriter.ObjectStart);
 
 			base.WriteObject(value, type);
 
 			this.MarkupWriteLine();
-			this.markup.Write("</dl>");
+			this.markup.Write(JsonMarkupWriter.ObjectEnd);
 		}
 
 		protected override void WriteObjectPropertyName(string name)
 		{
 			this.MarkupWriteLine();
-			this.markup.Write("<dt>");
+			this.markup.Write(JsonMarkupWriter.ObjectPropertyNameStart);
 
 			this.markup.Write(name);
 
@@ -222,17 +241,17 @@ namespace JsonFx.Client
 				this.suppressWrite = false;
 			}
 
-			this.markup.Write("</dt>");
+			this.markup.Write(JsonMarkupWriter.ObjectPropertyNameEnd);
 		}
 
 		protected override void WriteObjectPropertyValue(object value)
 		{
 			this.MarkupWriteLine();
-			this.markup.Write("<dd>");
+			this.markup.Write(JsonMarkupWriter.ObjectPropertyValueStart);
 
 			base.WriteObjectPropertyValue(value);
 
-			this.markup.Write("</dd>");
+			this.markup.Write(JsonMarkupWriter.ObjectPropertyValueEnd);
 		}
 
 		protected override void WriteObjectPropertyDelim()
@@ -501,13 +520,13 @@ namespace JsonFx.Client
 
 		public override void Write(Uri value)
 		{
-			this.markup.Write("<a href=\"");
+			this.markup.Write(JsonMarkupWriter.LinkStart);
 			this.markup.Write(HttpUtility.HtmlAttributeEncode(value.AbsoluteUri));
-			this.markup.Write("\">");
+			this.markup.Write(JsonMarkupWriter.LinkStart2);
 
 			base.Write(value);
 
-			this.markup.Write("</a>");
+			this.markup.Write(JsonMarkupWriter.LinkEnd);
 		}
 
 		public override void Write(Version value)
