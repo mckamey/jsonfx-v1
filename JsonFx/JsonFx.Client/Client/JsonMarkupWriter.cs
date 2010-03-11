@@ -49,20 +49,19 @@ namespace JsonFx.Client
 		private const string LiteralTrue = "true";
 		private const string LiteralFalse = "false";
 
-		private const string ArrayStart = "<ul>";
-		private const string ArrayEnd = "</ul>";
+		private const string ArrayStart = "<ol>";
+		private const string ArrayEnd = "</ol>";
 
 		private const string ArrayItemStart = "<li>";
 		private const string ArrayItemEnd = "</li>";
 
-		private const string ObjectStart = "<dl>";
-		private const string ObjectEnd = "</dl>";
+		private const string ObjectStart = "<ul>";
+		private const string ObjectEnd = "</ul>";
 
-		private const string ObjectPropertyNameStart = "<dt>";
-		private const string ObjectPropertyNameEnd = "</dt>";
+		private const string ObjectPropertyStart = "<li title=\"";
+		private const string ObjectPropertyStart2 = "\">";
 
-		private const string ObjectPropertyValueStart = "<dd>";
-		private const string ObjectPropertyValueEnd = "</dd>";
+		private const string ObjectPropertyEnd = "</li>";
 
 		private const string LinkStart = "<a href=\"";
 		private const string LinkStart2 = "\">";
@@ -227,9 +226,9 @@ namespace JsonFx.Client
 		protected override void WriteObjectPropertyName(string name)
 		{
 			this.MarkupWriteLine();
-			this.markup.Write(JsonMarkupWriter.ObjectPropertyNameStart);
+			this.markup.Write(JsonMarkupWriter.ObjectPropertyStart);
 
-			this.markup.Write(name);
+			HttpUtility.HtmlAttributeEncode(name, this.markup);
 
 			this.suppressWrite = true;
 			try
@@ -241,17 +240,14 @@ namespace JsonFx.Client
 				this.suppressWrite = false;
 			}
 
-			this.markup.Write(JsonMarkupWriter.ObjectPropertyNameEnd);
+			this.markup.Write(JsonMarkupWriter.ObjectPropertyStart2);
 		}
 
 		protected override void WriteObjectPropertyValue(object value)
 		{
-			this.MarkupWriteLine();
-			this.markup.Write(JsonMarkupWriter.ObjectPropertyValueStart);
-
 			base.WriteObjectPropertyValue(value);
 
-			this.markup.Write(JsonMarkupWriter.ObjectPropertyValueEnd);
+			this.markup.Write(JsonMarkupWriter.ObjectPropertyEnd);
 		}
 
 		protected override void WriteObjectPropertyDelim()
@@ -521,7 +517,7 @@ namespace JsonFx.Client
 		public override void Write(Uri value)
 		{
 			this.markup.Write(JsonMarkupWriter.LinkStart);
-			this.markup.Write(HttpUtility.HtmlAttributeEncode(value.AbsoluteUri));
+			HttpUtility.HtmlAttributeEncode(value.AbsoluteUri, this.markup);
 			this.markup.Write(JsonMarkupWriter.LinkStart2);
 
 			base.Write(value);
