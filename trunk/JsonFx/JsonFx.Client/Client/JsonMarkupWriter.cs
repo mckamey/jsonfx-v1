@@ -319,7 +319,26 @@ namespace JsonFx.Client
 
 		public override void Write(DateTime value)
 		{
-			this.markup.Write(value.ToString("yyyy-MM-dd HH:mm:ss zzz"));
+			switch (value.Kind)
+			{
+				case DateTimeKind.Local:
+				{
+					this.markup.Write(value.ToString("yyyy-MM-dd HH:mm:ss"));
+					break;
+				}
+				case DateTimeKind.Utc:
+				{
+					// UTC DateTime
+					this.markup.Write(value.ToString("yyyy-MM-dd HH:mm:ss 'UTC'"));
+					break;
+				}
+				default:
+				{
+					// DateTime
+					this.markup.Write(value.ToString("yyyy-MM-dd HH:mm:ss zzz"));
+					break;
+				}
+			}
 
 			this.suppressWrite = true;
 			try
