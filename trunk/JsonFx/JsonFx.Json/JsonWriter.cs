@@ -985,7 +985,7 @@ namespace JsonFx.Json
 						appendDelim = true;
 					}
 
-					this.WriteObjectProperty(enumerator.Entry);
+					this.WriteObjectProperty(Convert.ToString(enumerator.Entry.Key), enumerator.Entry.Value);
 				}
 			}
 			finally
@@ -998,11 +998,6 @@ namespace JsonFx.Json
 				this.WriteLine();
 			}
 			this.Writer.Write(JsonReader.OperatorObjectEnd);
-		}
-
-		private void WriteObjectProperty(DictionaryEntry entry)
-		{
-			this.WriteObjectProperty(Convert.ToString(entry.Key), entry.Value);
 		}
 
 		private void WriteObjectProperty(string key, object value)
