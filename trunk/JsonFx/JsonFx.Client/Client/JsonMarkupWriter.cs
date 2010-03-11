@@ -323,19 +323,20 @@ namespace JsonFx.Client
 			{
 				case DateTimeKind.Local:
 				{
-					this.markup.Write(value.ToString("yyyy-MM-dd HH:mm:ss"));
+					// render as server-local date
+					this.markup.Write(value.ToString("yyyy-MM-dd HH:mm:ss zzz"));
 					break;
 				}
 				case DateTimeKind.Utc:
 				{
-					// UTC DateTime
+					// render as UTC date
 					this.markup.Write(value.ToString("yyyy-MM-dd HH:mm:ss 'UTC'"));
 					break;
 				}
 				default:
 				{
-					// DateTime
-					this.markup.Write(value.ToString("yyyy-MM-dd HH:mm:ss zzz"));
+					// render as browser-local date
+					this.markup.Write(value.ToString("yyyy-MM-dd HH:mm:ss"));
 					break;
 				}
 			}
