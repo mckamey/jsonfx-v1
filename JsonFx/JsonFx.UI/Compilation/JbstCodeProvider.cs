@@ -5,7 +5,7 @@
 
 	The MIT License
 
-	Copyright (c) 2006-2009 Stephen M. McKamey
+	Copyright (c) 2006-2010 Stephen M. McKamey
 
 	Permission is hereby granted, free of charge, to any person obtaining a copy
 	of this software and associated documentation files (the "Software"), to deal
@@ -29,16 +29,16 @@
 #endregion License
 
 using System;
-using System.IO;
-using System.Collections.Generic;
-using System.Web.Compilation;
 using System.CodeDom;
+using System.Collections.Generic;
+using System.IO;
 
 using JsonFx.BuildTools;
 using JsonFx.BuildTools.HtmlDistiller;
 using JsonFx.BuildTools.HtmlDistiller.Filters;
-using JsonFx.Compilation;
+using JsonFx.Client;
 using JsonFx.Handlers;
+using JsonFx.Json;
 using JsonFx.UI.Jbst;
 using JsonFx.UI.Jbst.Extensions;
 
@@ -46,6 +46,12 @@ namespace JsonFx.Compilation
 {
 	public class JbstCodeProvider : JsonFx.Compilation.ResourceCodeProvider
 	{
+		#region Fields
+
+		private JbstWriter jbstWriter;
+
+		#endregion Fields
+
 		#region ResourceCodeProvider Properties
 
 		public override string ContentType
@@ -71,7 +77,7 @@ namespace JsonFx.Compilation
 			List<ParseException> errors)
 		{
 			// parse JBST markup
-			JbstWriter writer = new JbstWriter(virtualPath);
+			this.jbstWriter = new JbstWriter(virtualPath);
 
 			try
 			{
@@ -79,12 +85,12 @@ namespace JsonFx.Compilation
 				parser.EncodeNonAscii = false;
 				parser.BalanceTags = false;
 				parser.NormalizeWhitespace = false;
-				parser.HtmlWriter = writer;
+				parser.HtmlWriter = this.jbstWriter;
 				parser.HtmlFilter = new NullHtmlFilter();
 				parser.Parse(sourceText);
 
 				// determine which globalization keys were used
-				JbstCodeProvider.ExtractGlobalizationKeys(writer.JbstParseTree, this.GlobalizationKeys);
+				JbstCodeProvider.ExtractGlobalizationKeys(this.jbstWriter.JbstParseTree, this.GlobalizationKeys);
 			}
 			catch (ParseException ex)
 			{
@@ -99,7 +105,7 @@ namespace JsonFx.Compilation
 			using (StringWriter sw = new StringWriter())
 			{
 				// render the pretty-printed version
-				writer.Render(sw);
+				this.jbstWriter.Render(sw);
 				sw.Flush();
 				renderedTemplate = sw.ToString();
 
@@ -125,6 +131,77 @@ namespace JsonFx.Compilation
 		}
 
 		#endregion Compilation Methods
+
+		#region ResourceCodeProvider Methods
+
+		protected override void ResetCodeProvider()
+		{
+			this.jbstWriter = null;
+
+			base.ResetCodeProvider();
+		}
+
+		protected override void GenerateCodeExtensions(CodeTypeDeclaration resourceType)
+		{
+			base.GenerateCodeExtensions(resourceType);
+
+			if (this.jbstWriter == null)
+			{
+				throw new InvalidOperationException("JbstCodeProvider: JbstWriter is missing");
+			}
+
+			string jbstName = this.jbstWriter.JbstName;
+			AutoMarkupType autoMarkup = this.jbstWriter.AutoMarkup;
+
+			resourceType.BaseTypes.Add(typeof(IJbstBuildResult));
+
+			#region private static readonly EcmaScriptIdentifier jbstName
+
+			CodeMemberField field = new CodeMemberField();
+			field.Name = "jbstName";
+			field.Type = new CodeTypeReference(typeof(EcmaScriptIdentifier));
+			field.Attributes = MemberAttributes.Private|MemberAttributes.Static|MemberAttributes.Final;
+
+			field.InitExpression = new CodePrimitiveExpression(jbstName);
+
+			resourceType.Members.Add(field);
+
+			#endregion private static readonly EcmaScriptIdentifier jbstName
+
+			#region EcmaScriptIdentifier IJbstBuildResult.JbstName { get; }
+
+			// add a readonly property returning the static data
+			CodeMemberProperty property = new CodeMemberProperty();
+			property.Name = "JbstName";
+			property.Type = new CodeTypeReference(typeof(EcmaScriptIdentifier));
+			property.PrivateImplementationType = new CodeTypeReference(typeof(IJbstBuildResult));
+			property.HasGet = true;
+			// get { return jbstName; }
+			property.GetStatements.Add(new CodeMethodReturnStatement(
+				new CodeFieldReferenceExpression(
+					new CodeTypeReferenceExpression(resourceType.Name),
+					field.Name)));
+			resourceType.Members.Add(property);
+
+			#endregion EcmaScriptIdentifier IJbstBuildResult.JbstName { get; }
+
+			#region AutoMarkupType IJbstBuildResult.AutoMarkup { get; }
+
+			// add a readonly property returning the static data
+			property = new CodeMemberProperty();
+			property.Name = "AutoMarkup";
+			property.Type = new CodeTypeReference(typeof(AutoMarkupType));
+			property.PrivateImplementationType = new CodeTypeReference(typeof(IJbstBuildResult));
+			property.HasGet = true;
+			// get { return autoMarkup; }
+			property.GetStatements.Add(new CodeMethodReturnStatement(
+				new CodeFieldReferenceExpression(new CodeTypeReferenceExpression(typeof(AutoMarkupType)), autoMarkup.ToString())));
+			resourceType.Members.Add(property);
+
+			#endregion AutoMarkupType IJbstBuildResult.AutoMarkup { get; }
+		}
+
+		#endregion ResourceCodeProvider Methods
 
 		#region Globalization Methods
 

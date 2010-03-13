@@ -5,7 +5,7 @@
 
 	The MIT License
 
-	Copyright (c) 2006-2009 Stephen M. McKamey
+	Copyright (c) 2006-2010 Stephen M. McKamey
 
 	Permission is hereby granted, free of charge, to any person obtaining a copy
 	of this software and associated documentation files (the "Software"), to deal
@@ -48,7 +48,7 @@ namespace JsonFx.UI.Jbst
 		#region Fields
 
 		private bool isDebug;
-		private bool autoMarkup;
+		private AutoMarkupType autoMarkup;
 		private EcmaScriptIdentifier name;
 		private string data;
 		private object inlineData;
@@ -187,8 +187,8 @@ namespace JsonFx.UI.Jbst
 		/// <summary>
 		/// Gets and sets if should also render the data as markup for noscript clients.
 		/// </summary>
-		[DefaultValue(false)]
-		public bool AutoMarkup
+		[DefaultValue(AutoMarkupType.None)]
+		public AutoMarkupType AutoMarkup
 		{
 			get { return this.autoMarkup; }
 			set { this.autoMarkup = value; }
@@ -207,6 +207,8 @@ namespace JsonFx.UI.Jbst
 			writer.BeginRender();
 			try
 			{
+				// TODO: get AutoMarkup setting from JBST
+
 				// render any named data items
 				if (this.dataBlock != null)
 				{
@@ -236,7 +238,7 @@ namespace JsonFx.UI.Jbst
 				base.RenderChildren(writer);
 
 				string inlineData = null;
-				if (this.AutoMarkup && this.InlineData != null)
+				if (this.AutoMarkup != AutoMarkupType.None && this.InlineData != null)
 				{
 					if (hasControls)
 					{

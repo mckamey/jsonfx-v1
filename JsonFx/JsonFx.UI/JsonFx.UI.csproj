@@ -62,6 +62,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Compilation\IJbstBuildResult.cs" />
     <Compile Include="Jbst\Control.cs" />
     <Compile Include="Jbst\Extensions\AppSettingsJbstExtension.cs" />
     <Compile Include="Jbst\Extensions\JbstExtension.cs" />
@@ -70,7 +71,6 @@
     <Compile Include="Jbst\JbstControl.cs" />
     <Compile Include="Jbst\JbstCodeBlock.cs" />
     <Compile Include="Jbst\JbstContainerControl.cs" />
-    <Compile Include="Jbst\JbstControlBuilder.cs" />
     <Compile Include="Jbst\JbstControlCollection.cs" />
     <Compile Include="Jbst\JbstCustomControl.cs" />
     <Compile Include="Jbst\JbstLiteral.cs" />

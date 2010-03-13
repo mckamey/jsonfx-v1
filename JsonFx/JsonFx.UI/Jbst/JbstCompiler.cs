@@ -5,7 +5,7 @@
 
 	The MIT License
 
-	Copyright (c) 2006-2009 Stephen M. McKamey
+	Copyright (c) 2006-2010 Stephen M. McKamey
 
 	Permission is hereby granted, free of charge, to any person obtaining a copy
 	of this software and associated documentation files (the "Software"), to deal
@@ -35,8 +35,10 @@ using System.IO;
 using JsonFx.BuildTools;
 using JsonFx.BuildTools.HtmlDistiller;
 using JsonFx.BuildTools.HtmlDistiller.Filters;
+using JsonFx.Client;
 using JsonFx.Compilation;
 using JsonFx.Handlers;
+using JsonFx.Json;
 
 namespace JsonFx.UI.Jbst
 {
@@ -47,7 +49,9 @@ namespace JsonFx.UI.Jbst
 	{
 		#region BuildResult
 
-		private class SimpleBuildResult : IOptimizedResult
+		private class SimpleBuildResult :
+			IOptimizedResult,
+			IJbstBuildResult
 		{
 			#region Fields
 
@@ -57,6 +61,8 @@ namespace JsonFx.UI.Jbst
 			private string fileExtension;
 			private string hash;
 			private string contentType;
+			private EcmaScriptIdentifier jbstName;
+			private AutoMarkupType autoMarkup;
 
 			#endregion Fields
 
@@ -113,6 +119,22 @@ namespace JsonFx.UI.Jbst
 			}
 
 			#endregion IOptimizedResult Members
+
+			#region IJbstBuildResult Members
+
+			public EcmaScriptIdentifier JbstName
+			{
+				get { return this.jbstName; }
+				set { this.jbstName = value; }
+			}
+
+			public AutoMarkupType AutoMarkup
+			{
+				get { return this.autoMarkup; }
+				set { this.autoMarkup = value; }
+			}
+
+			#endregion IJbstBuildResult Members
 		}
 
 		#endregion BuildResult
@@ -138,6 +160,8 @@ namespace JsonFx.UI.Jbst
 			// parse JBST markup
 			JbstWriter writer = new JbstWriter(filename);
 
+			StringWriter sw = new StringWriter();
+
 			string source = input.ReadToEnd();
 			try
 			{
@@ -148,6 +172,9 @@ namespace JsonFx.UI.Jbst
 				parser.HtmlWriter = writer;
 				parser.HtmlFilter = new NullHtmlFilter();
 				parser.Parse(source);
+
+				// render the pretty-printed version
+				writer.Render(sw);
 			}
 			catch (ParseException ex)
 			{
@@ -158,11 +185,6 @@ namespace JsonFx.UI.Jbst
 				compilationErrors.Add(new ParseError(ex.Message, filename, 0, 0, ex));
 			}
 
-			StringWriter sw = new StringWriter();
-
-			// render the pretty-printed version
-			writer.Render(sw);
-
 			SimpleBuildResult result = new SimpleBuildResult();
 
 			result.Source = source;
@@ -171,6 +193,8 @@ namespace JsonFx.UI.Jbst
 			result.ContentType = "text/javascript";
 			result.FileExtension = ".jbst.js";
 			result.Hash = this.ComputeHash(result.Source);
+			result.JbstName = writer.JbstName;
+			result.AutoMarkup = writer.AutoMarkup;
 
 			// return any errors
 			return result;
