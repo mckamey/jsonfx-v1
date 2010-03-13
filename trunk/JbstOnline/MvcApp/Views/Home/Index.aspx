@@ -26,7 +26,7 @@
 	<div class="buttons">
 		<a href="/compiler/scripts" class="button button-large" target="_blank">Full Source - <%= this.Model.FullSize %></a>
 		<a href="/compiler/compacted" class="button button-large" target="_blank">Compacted - <%= this.Model.CompactSize %></a>
-		<b>[ GZipped - <%= this.Model.GzipSize %>, Deflated - <%= this.Model.DeflateSize %> ]</b>
+		<b>[ GZip - <%= this.Model.GzipSize %>, Deflate - <%= this.Model.DeflateSize %> ]</b>
 	</div>
 </div>
 
@@ -59,7 +59,7 @@
 	<div class="buttons">
 		<a href="/example" class="button button-large">See the example in action &raquo;</a>
 	</div>
-	<p class="copyright">Copyright &copy;2006-2010 Stephen M. McKamey. Powered by <a href="http://starterkit.jsonfx.net/jbst">JsonFx.NET v<%= JsonFx.About.Fx.Version %></a>.</p>
+	<p class="copyright">Copyright &copy;2006-2010 Stephen M. McKamey. Powered by <a href="http://starterkit.jsonfx.net/jbst">JsonFx.NET</a> (v<%= JsonFx.About.Fx.Version %>).</p>
 </div>
 
 </asp:Content>
