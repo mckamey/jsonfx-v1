@@ -474,6 +474,11 @@
             Gets and sets the line terminator string
             </summary>
         </member>
+        <member name="P:JsonFx.Json.JsonWriter.Depth">
+            <summary>
+            Gets the current nesting depth
+            </summary>
+        </member>
         <member name="P:JsonFx.Json.JsonWriter.MaxDepth">
             <summary>
             Gets and sets the maximum depth to be serialized
@@ -639,25 +644,25 @@
         </member>
         <member name="M:JsonFx.Json.EcmaScriptWriter.#ctor(System.IO.TextWriter)">
             <summary>
-            Ctor.
+            Ctor
             </summary>
             <param name="output">TextWriter for writing</param>
         </member>
         <member name="M:JsonFx.Json.EcmaScriptWriter.#ctor(System.IO.Stream)">
             <summary>
-            Ctor.
+            Ctor
             </summary>
             <param name="output">Stream for writing</param>
         </member>
         <member name="M:JsonFx.Json.EcmaScriptWriter.#ctor(System.String)">
             <summary>
-            Ctor.
+            Ctor
             </summary>
             <param name="output">File name for writing</param>
         </member>
         <member name="M:JsonFx.Json.EcmaScriptWriter.#ctor(System.Text.StringBuilder)">
             <summary>
-            Ctor.
+            Ctor
             </summary>
             <param name="output">StringBuilder for appending</param>
         </member>

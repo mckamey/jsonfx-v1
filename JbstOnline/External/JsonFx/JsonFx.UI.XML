@@ -77,6 +77,11 @@
             Gets and sets if should render as a debuggable ("Pretty-Print") block.
             </summary>
         </member>
+        <member name="P:JsonFx.UI.Jbst.Control.AutoMarkup">
+            <summary>
+            Gets and sets if should also render the data as markup for noscript clients.
+            </summary>
+        </member>
         <member name="T:JsonFx.UI.Jbst.JbstControl">
             <summary>
             Common base for all JBST nodes.
