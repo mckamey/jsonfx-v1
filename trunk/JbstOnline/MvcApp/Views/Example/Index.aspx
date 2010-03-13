@@ -31,7 +31,7 @@
 		<p class="instructions"></p>
 		<div class="code-example">
 			<pre class="brush:html;tab-size:4">
-				&lt;script type="text/javascript" src="/scripts/jbst.js"&gt;&lt;/script&gt;
+				&lt;script type="text/javascript" src="/scripts/jbst-runtime.js"&gt;&lt;/script&gt;
 				&lt;script type="text/javascript" src="/scripts/Foo.MyZebraList.js"&gt;&lt;/script&gt;
 			</pre>
 		</div>
@@ -50,12 +50,15 @@
 							description: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam lacinia consequat diam, ac auctor eros suscipit et. Donec rhoncus bibendum scelerisque.",
 							timestamp: new Date(),
 							children: [
-								{ label: "The first item" },
-								{ label: "Another child item" },
-								{ label: "And again" },
-								{ label: "Final item" }
+								{ label: "The first item", selected: false },
+								{ label: "Another child item", selected: false },
+								{ label: "And again", selected: false },
+								{ label: "Final item", selected: false }
 							]
 						};
+
+					// randomly mark one as selected
+					myData.children[Math.floor(Math.random() * myData.children.length)].selected = true;
 
 					// bind the control to your data
 					var myList = Foo.MyZebraList.bind(myData);
@@ -75,12 +78,15 @@
 						description: "Lorem ipsum dolor sit amet, consectetur adipiscing elit. Nam lacinia consequat diam, ac auctor eros suscipit et. Donec rhoncus bibendum scelerisque.",
 						timestamp: new Date(),
 						children: [
-							{ label: "The first item" },
-							{ label: "Another child item" },
-							{ label: "And again" },
-							{ label: "Final item" }
+							{ label: "The first item", selected: false },
+							{ label: "Another child item", selected: false },
+							{ label: "And again", selected: false },
+							{ label: "Final item", selected: false }
 						]
 					};
+
+				// randomly mark one as selected
+				myData.children[Math.floor(Math.random() * myData.children.length)].selected = true;
 
 				// bind the control to your data
 				var myList = Foo.MyZebraList.bind(myData);
@@ -93,7 +99,7 @@
 
 		</script>
 		<div class="buttons">
-			<a href="#showExample" class="button button-large" onclick="showExample();return false;">Show example!</a>
+			<a href="#showExample" class="button button-large" style="font-weight:bold" onclick="showExample();return false;">Show example!</a>
 		</div>
 	</div>
 	<p class="copyright">Copyright &copy;2006-2010 Stephen M. McKamey. Powered by <a href="http://starterkit.jsonfx.net/jbst">JsonFx.NET</a> (v<%= JsonFx.About.Fx.Version %>).</p>

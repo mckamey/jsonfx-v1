@@ -6,6 +6,7 @@ using System.Web.Mvc;
 
 using JbstOnline.Models;
 using JsonFx.BuildTools;
+using JsonFx.Compilation;
 using JsonFx.Handlers;
 using JsonFx.UI.Jbst;
 
@@ -22,11 +23,14 @@ namespace JbstOnline.Controllers
 		#region Controller Actions
 
 		public ActionResult Compile(TextReader source)
-        {
+		{
 			List<ParseException> compilationErrors = new List<ParseException>();
 			List<ParseException> compactionErrors = new List<ParseException>();
 
 			IOptimizedResult result = new JbstCompiler().Compile(source, null, compilationErrors, compactionErrors);
+
+			string jbstName = (result is IJbstBuildResult) ?
+				(string)((IJbstBuildResult)result).JbstName : String.Empty;
 
 			HttpStatusCode statusCode = HttpStatusCode.OK;
 			object data;
@@ -45,7 +49,8 @@ namespace JbstOnline.Controllers
 				}
 				data = new
 				{
-					key = result.Hash+result.FileExtension,
+					name = jbstName,
+					key = result.Hash,
 					source = result.Source,
 					errors = foo
 				};
@@ -65,6 +70,7 @@ namespace JbstOnline.Controllers
 				}
 				data = new CompilationResult
 				{
+					name = jbstName,
 					key = result.Hash,
 					source = result.PrettyPrinted,
 					errors = foo
@@ -74,6 +80,7 @@ namespace JbstOnline.Controllers
 			{
 				data = new CompilationResult
 				{
+					name = jbstName,
 					key = result.Hash,
 					pretty = result.PrettyPrinted,
 					compacted = result.Compacted
@@ -81,7 +88,7 @@ namespace JbstOnline.Controllers
 			}
 
 			return this.DataResult(data, statusCode);
-        }
+		}
 
 #if DEBUG
 		public ActionResult Test(CompilationResult result)
