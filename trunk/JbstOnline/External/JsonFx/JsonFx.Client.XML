@@ -331,6 +331,49 @@
             <param name="entity"></param>
             <returns></returns>
         </member>
+        <member name="T:JsonFx.Client.JsonMarkupWriter">
+            <summary>
+            An EcmaScriptWriter which also generates a markup version of the data.
+            </summary>
+        </member>
+        <member name="M:JsonFx.Client.JsonMarkupWriter.#ctor(System.IO.TextWriter)">
+            <summary>
+            Ctor
+            </summary>
+        </member>
+        <member name="M:JsonFx.Client.JsonMarkupWriter.#ctor(System.IO.TextWriter,System.IO.TextWriter)">
+            <summary>
+            Ctor
+            </summary>
+            <param name="output">TextWriter for data</param>
+            <param name="output">TextWriter for markup</param>
+        </member>
+        <member name="M:JsonFx.Client.JsonMarkupWriter.#ctor(System.IO.Stream,System.IO.TextWriter)">
+            <summary>
+            Ctor
+            </summary>
+            <param name="output">Stream for data</param>
+            <param name="output">TextWriter for markup</param>
+        </member>
+        <member name="M:JsonFx.Client.JsonMarkupWriter.#ctor(System.String,System.IO.TextWriter)">
+            <summary>
+            Ctor
+            </summary>
+            <param name="output">File name for data</param>
+            <param name="output">TextWriter for markup</param>
+        </member>
+        <member name="M:JsonFx.Client.JsonMarkupWriter.#ctor(System.Text.StringBuilder,System.IO.TextWriter)">
+            <summary>
+            Ctor
+            </summary>
+            <param name="output">StringBuilder for data</param>
+            <param name="output">TextWriter for markup</param>
+        </member>
+        <member name="P:JsonFx.Client.JsonMarkupWriter.MarkupWriter">
+            <summary>
+            Gets and sets the TextWriter used for markup
+            </summary>
+        </member>
         <member name="T:JsonFx.Compilation.IGlobalizedBuildResult">
             <summary>
             A globalized compilation result which specifies the resource keys it needs.
@@ -562,12 +605,17 @@
         </member>
         <member name="P:JsonFx.Client.ScriptDataBlock.DataItems">
             <summary>
-            Gets access to 
+            Gets access to data items as dictionary
             </summary>
         </member>
         <member name="P:JsonFx.Client.ScriptDataBlock.IsDebug">
             <summary>
             Gets and sets if should render as a debuggable ("Pretty-Print") block.
+            </summary>
+        </member>
+        <member name="P:JsonFx.Client.ScriptDataBlock.AutoMarkup">
+            <summary>
+            Gets and sets if should also render the data as markup for noscript clients.
             </summary>
         </member>
         <member name="T:JsonFx.Client.AutoDataBindControl">
