@@ -5,7 +5,7 @@
 
 	The MIT License
 
-	Copyright (c) 2006-2009 Stephen M. McKamey
+	Copyright (c) 2006-2010 Stephen M. McKamey
 
 	Permission is hereby granted, free of charge, to any person obtaining a copy
 	of this software and associated documentation files (the "Software"), to deal
@@ -31,13 +31,13 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Web;
 using System.Text;
 
 using JsonFx.BuildTools.HtmlDistiller;
 using JsonFx.BuildTools.HtmlDistiller.Writers;
-using JsonFx.Json;
+using JsonFx.Client;
 using JsonFx.Compilation;
+using JsonFx.Json;
 
 namespace JsonFx.UI.Jbst
 {
@@ -66,8 +66,9 @@ namespace JsonFx.UI.Jbst
 		private readonly List<string> Imports = new List<string>();
 		private readonly JbstContainerControl document = new JbstContainerControl();
 
-		private JbstContainerControl current = null;
-		private string name = null;
+		private JbstContainerControl current;
+		private string jbstName;
+		private AutoMarkupType autoMarkup;
 
 		#endregion Fields
 
@@ -94,17 +95,23 @@ namespace JsonFx.UI.Jbst
 
 		#region Properties
 
-		public string Name
+		public string JbstName
 		{
 			get
 			{
-				if (String.IsNullOrEmpty(this.name))
+				if (String.IsNullOrEmpty(this.jbstName))
 				{
-					this.name = AnonymousPrefix+Guid.NewGuid().ToString("n");
+					this.jbstName = AnonymousPrefix+Guid.NewGuid().ToString("n");
 				}
-				return this.name;
+				return this.jbstName;
 			}
-			set { this.name = value; }
+			set { this.jbstName = value; }
+		}
+
+		public AutoMarkupType AutoMarkup
+		{
+			get { return this.autoMarkup; }
+			set { this.autoMarkup = value; }
 		}
 
 		/// <summary>
@@ -349,10 +356,10 @@ namespace JsonFx.UI.Jbst
 				writer.WriteLine("/*global {0} */", globals);
 			}
 
-			EcmaScriptWriter.WriteNamespaceDeclaration(writer, this.Name, null, true);
+			EcmaScriptWriter.WriteNamespaceDeclaration(writer, this.JbstName, null, true);
 
 			// wrap with ctor and assign
-			writer.Write(this.Name);
+			writer.Write(this.JbstName);
 			writer.WriteLine(" = JsonML.BST(");
 
 			// render root node of content (null is OK)
@@ -365,7 +372,7 @@ namespace JsonFx.UI.Jbst
 			// render any declarations
 			if (this.Declarations.HasCode)
 			{
-				this.Declarations.OwnerName = this.Name;
+				this.Declarations.OwnerName = this.JbstName;
 				jsWriter.Write(this.Declarations);
 			}
 		}
@@ -600,9 +607,25 @@ namespace JsonFx.UI.Jbst
 				case "page":
 				case "control":
 				{
-					this.Name = attribs.ContainsKey("name") ?
+					this.JbstName = attribs.ContainsKey("name") ?
 						EcmaScriptIdentifier.EnsureValidIdentifier(attribs["name"], true) :
 						null;
+
+					if (attribs.ContainsKey("AutoMarkup"))
+					{
+						try
+						{
+							this.AutoMarkup = (AutoMarkupType)Enum.Parse(typeof(AutoMarkupType), attribs["AutoMarkup"], true);
+						}
+						catch
+						{
+							throw new ArgumentException("\""+attribs["AutoMarkup"]+"\" is an invalid value for AutoMarkup.");
+						}
+					}
+					else
+					{
+						this.AutoMarkup = AutoMarkupType.None;
+					}
 
 					string package = attribs.ContainsKey("import") ? attribs["import"] : null;
 					if (!String.IsNullOrEmpty(package))
