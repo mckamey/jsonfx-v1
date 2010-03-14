@@ -514,6 +514,9 @@ namespace JsonFx.Compilation
 				#endregion IEnumerable<string> IDependentResult.VirtualPathDependencies { get; }
 			}
 
+			// Generate _ASP FastObjectFactory
+			assemblyBuilder.GenerateTypeFactory(this.ResourceFullName);
+
 			assemblyBuilder.AddCodeCompileUnit(this, generatedUnit);
 		}
 
