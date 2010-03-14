@@ -337,6 +337,10 @@ namespace JsonFx.UI.Jbst
 			}
 		}
 
+		#endregion Page Event Handlers
+
+		#region Utility Methods
+
 		private void EnsureAutoMarkup()
 		{
 			if (this.AutoMarkup != AutoMarkupType.Auto)
@@ -356,6 +360,6 @@ namespace JsonFx.UI.Jbst
 			}
 		}
 
-		#endregion Page Event Handlers
+		#endregion Utility Methods
 	}
 }
