@@ -289,7 +289,8 @@ namespace JsonFx.Compilation
 				throw new ArgumentNullException("jbstName");
 			}
 
-			return ResourceBuildProvider.RootNamespace+".JBST."+jbstName.Replace('$', '_');
+			// this needs a different namespace since isn't generated from virtual path
+			return "_JBST."+jbstName.Replace('$', '_');
 		}
 
 		string IResourceNameGenerator.GenerateResourceName(string virtualPath)
