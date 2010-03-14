@@ -48,6 +48,11 @@ using JsonFx.Handlers;
 
 namespace JsonFx.Compilation
 {
+	public interface IResourceNameGenerator
+	{
+		string GenerateResourceName(string virtualPath);
+	}
+
 	public interface IResourceBuildHelper
 	{
 		void AddVirtualPathDependency(string virtualPath);
@@ -63,12 +68,13 @@ namespace JsonFx.Compilation
 	/// to both resources.
 	/// </summary>
 	[PermissionSet(SecurityAction.Demand, Unrestricted=true)]
-	public class ResourceBuildProvider : System.Web.Compilation.BuildProvider, IResourceBuildHelper
+	public class ResourceBuildProvider :
+		System.Web.Compilation.BuildProvider,
+		IResourceBuildHelper
 	{
 		#region Constants
 
-		private const string RootNamespace = "__JsonFx";
-		private static readonly SHA1 HashProvider = SHA1.Create();
+		public const string RootNamespace = "__JsonFx";
 
 		#endregion Constants
 
@@ -90,10 +96,11 @@ namespace JsonFx.Compilation
 			{
 				if (String.IsNullOrEmpty(this.resourceFullName))
 				{
-					this.resourceFullName = ResourceBuildProvider.GenerateTypeName(base.VirtualPath);
+					throw new InvalidOperationException("ResourceFullName is empty");
 				}
 				return this.resourceFullName;
 			}
+			set { this.resourceFullName = value; }
 		}
 
 		protected string ResourceNamespace
@@ -152,9 +159,9 @@ namespace JsonFx.Compilation
 
 		public override Type GetGeneratedType(CompilerResults results)
 		{
-			System.Diagnostics.Debug.Assert(!String.IsNullOrEmpty(this.resourceFullName));
+			System.Diagnostics.Debug.Assert(!String.IsNullOrEmpty(this.ResourceFullName));
 
-			return results.CompiledAssembly.GetType(this.resourceFullName);
+			return results.CompiledAssembly.GetType(this.ResourceFullName);
 		}
 
 		public override void GenerateCode(AssemblyBuilder assemblyBuilder)
@@ -184,6 +191,16 @@ namespace JsonFx.Compilation
 
 				contentType = "text/plain";
 				fileExtension = "txt";
+			}
+
+			IResourceNameGenerator nameGenerator = assemblyBuilder.CodeDomProvider as IResourceNameGenerator;
+			if (nameGenerator != null)
+			{
+				this.ResourceFullName = nameGenerator.GenerateResourceName(base.VirtualPath);
+			}
+			else
+			{
+				this.ResourceFullName = ResourceBuildProvider.GenerateTypeNameFromPath(base.VirtualPath);
 			}
 
 			byte[] gzippedBytes, deflatedBytes;
@@ -400,6 +417,30 @@ namespace JsonFx.Compilation
 			resourceType.Members.Add(property);
 
 			#endregion string IBuildResultMeta.Hash { get; }
+
+			resourceType.BaseTypes.Add(typeof(IBuildCacheKey));
+
+			string virtualPath = base.VirtualPath;
+			if (HttpRuntime.AppDomainAppVirtualPath.Length > 1)
+			{
+				virtualPath = virtualPath.Substring(HttpRuntime.AppDomainAppVirtualPath.Length);
+			}
+			virtualPath = "~"+virtualPath;
+
+			#region string IBuildCacheKey.VirtualPath { get; }
+
+			// add a readonly property returning the static data
+			property = new CodeMemberProperty();
+			property.Name = "VirtualPath";
+			property.Type = new CodeTypeReference(typeof(string));
+			property.PrivateImplementationType = new CodeTypeReference(typeof(IBuildCacheKey));
+			property.HasGet = true;
+			// get { return virtualPath; }
+			property.GetStatements.Add(new CodeMethodReturnStatement(
+					new CodePrimitiveExpression(virtualPath)));
+			resourceType.Members.Add(property);
+
+			#endregion string IBuildCacheKey.VirtualPath { get; }
 
 			if (this.VirtualPathDependencies.Count > 0)
 			{
@@ -620,11 +661,13 @@ namespace JsonFx.Compilation
 		/// </summary>
 		/// <param name="virtualPath"></param>
 		/// <returns></returns>
-		public static string GenerateTypeName(string virtualPath)
+		public static string GenerateTypeNameFromPath(string virtualPath)
 		{
+			string rootNamespace = ResourceBuildProvider.RootNamespace+".Path";
+
 			if (String.IsNullOrEmpty(virtualPath))
 			{
-				return ResourceBuildProvider.RootNamespace+"._"+Guid.NewGuid().ToString("N");
+				return rootNamespace+"._"+Guid.NewGuid().ToString("N");
 			}
 
 			StringBuilder builder = new StringBuilder(virtualPath);
@@ -633,32 +676,53 @@ namespace JsonFx.Compilation
 				builder.Remove(0, 1);
 			}
 
+			bool startChar = true;
 			for (int i=0; i<builder.Length; i++)
 			{
-				if (Char.IsLetterOrDigit(builder[i]))
+				char ch = builder[i];
+				if (Char.IsDigit(ch))
 				{
+					if (startChar)
+					{
+						builder.Insert(i, '_');
+						startChar = false;
+						i++;
+					}
+
+					// digits are only allowed after first char
 					continue;
 				}
 
-				switch (builder[i])
+				if (Char.IsLetter(ch))
 				{
+					startChar = false;
+					continue;
+				}
+
+				switch (ch)
+				{
+					case '_':
+					{
+						startChar = false;
+						break;
+					}
 					case '\\':
 					case '/':
 					{
 						builder[i] = '.';
+						startChar = true;
 						break;
 					}
-					case '-':
-					case '.':
 					default:
 					{
 						builder[i] = '_';
+						startChar = false;
 						break;
 					}
 				}
 			}
 
-			return ResourceBuildProvider.RootNamespace+builder.ToString();
+			return rootNamespace+builder.ToString();
 		}
 
 		/// <summary>
@@ -681,12 +745,8 @@ namespace JsonFx.Compilation
 		/// <returns></returns>
 		protected static string ComputeHash(Stream value)
 		{
-			byte[] hash;
-			lock (HashProvider)
-			{
-				// generate hash
-				hash = HashProvider.ComputeHash(value);
-			}
+			// generate hash
+			byte[] hash = SHA1.Create().ComputeHash(value);
 
 			// convert hash to string
 			return ResourceBuildProvider.FormatBytes(hash);
@@ -699,12 +759,8 @@ namespace JsonFx.Compilation
 		/// <returns></returns>
 		protected static string ComputeHash(byte[] value)
 		{
-			byte[] hash;
-			lock (HashProvider)
-			{
-				// generate hash
-				hash = HashProvider.ComputeHash(value);
-			}
+			// generate hash
+			byte[] hash = SHA1.Create().ComputeHash(value);
 
 			// convert hash to string
 			return ResourceBuildProvider.FormatBytes(hash);

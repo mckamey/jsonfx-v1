@@ -29,22 +29,19 @@
 #endregion License
 
 using System;
+using System.CodeDom;
+using System.CodeDom.Compiler;
 using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
-using System.Web;
-using System.Web.Hosting;
-using System.Web.Compilation;
-using System.CodeDom;
-using System.CodeDom.Compiler;
 using System.Security.Permissions;
-using System.Text.RegularExpressions;
-using System.IO;
+using System.Web;
+using System.Web.Compilation;
 
+using JsonFx.Handlers;
 using JsonFx.JsonRpc;
 using JsonFx.JsonRpc.Discovery;
 using JsonFx.JsonRpc.Proxy;
-using JsonFx.Handlers;
 
 namespace JsonFx.Compilation
 {
@@ -136,6 +133,16 @@ namespace JsonFx.Compilation
 
 		private void GenerateServiceProxyCode(AssemblyBuilder assemblyBuilder, Type serviceType)
 		{
+			IResourceNameGenerator nameGenerator = assemblyBuilder.CodeDomProvider as IResourceNameGenerator;
+			if (nameGenerator != null)
+			{
+				this.ResourceFullName = nameGenerator.GenerateResourceName(base.VirtualPath);
+			}
+			else
+			{
+				this.ResourceFullName = ResourceBuildProvider.GenerateTypeNameFromPath(base.VirtualPath);
+			}
+
 			// TODO: consolidate app relative path conversion
 			// calculate the service end-point path
 			string proxyPath = ResourceHandler.EnsureAppRelative(base.VirtualPath).TrimStart('~');

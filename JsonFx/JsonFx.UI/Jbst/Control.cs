@@ -35,6 +35,7 @@ using System.Text;
 using System.Web.UI;
 
 using JsonFx.Client;
+using JsonFx.Compilation;
 using JsonFx.Json;
 
 namespace JsonFx.UI.Jbst
@@ -207,7 +208,12 @@ namespace JsonFx.UI.Jbst
 			writer.BeginRender();
 			try
 			{
-				// TODO: get AutoMarkup setting from JBST
+				// get AutoMarkup setting from JBST
+				IJbstBuildResult jbst = JbstCodeProvider.FindJbst(this.Name);
+				if (jbst != null)
+				{
+					this.AutoMarkup = jbst.AutoMarkup;
+				}
 
 				// render any named data items
 				if (this.dataBlock != null)
