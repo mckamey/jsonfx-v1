@@ -77,12 +77,15 @@ namespace JsonFx.Compilation
 			string virtualPath = this.GetPath(typeName);
 			if (!String.IsNullOrEmpty(virtualPath))
 			{
+				// return cached copy
 				return BuildManager.CreateInstanceFromVirtualPath(virtualPath, typeof(object)) as T;
 			}
 
+			// precompiled sites can bring back directly
 			Type type = BuildManager.GetType(typeName, false, false);
 			if (type == null)
 			{
+				// dynamic apps compile to temp directory
 				foreach (string asm in Directory.GetFiles(AppDomain.CurrentDomain.DynamicDirectory, "*.dll", SearchOption.TopDirectoryOnly))
 				{
 					type = Assembly.LoadFrom(asm).GetType(typeName, false, false);
