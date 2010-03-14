@@ -103,7 +103,14 @@ namespace JsonFx.Compilation
 				{
 					string type = this.ResourceFullName;
 					int dot = type.LastIndexOf('.');
-					this.resourceNamespace = type.Substring(0, dot);
+					if (dot > 0)
+					{
+						this.resourceNamespace = type.Substring(0, dot);
+					}
+					else
+					{
+						this.resourceNamespace = String.Empty;
+					}
 				}
 				return this.resourceNamespace;
 			}
@@ -469,6 +476,9 @@ namespace JsonFx.Compilation
 			// allow the code provider to extend with additional properties
 			provider.GenerateCodeExtensions(resourceType);
 
+			// Generate _ASP FastObjectFactory
+			assemblyBuilder.GenerateTypeFactory(this.ResourceFullName);
+
 			assemblyBuilder.AddCodeCompileUnit(this, generatedUnit);
 		}
 
@@ -647,21 +657,39 @@ namespace JsonFx.Compilation
 		/// <returns></returns>
 		public static string GenerateTypeNameFromPath(string virtualPath)
 		{
-			const string rootNamespace = "_JsonFx";
+			const string rootNamespace = "ASP.";
 
-			if (String.IsNullOrEmpty(virtualPath))
+			if (virtualPath == null)
 			{
-				return rootNamespace+"._"+Guid.NewGuid().ToString("N");
+				virtualPath = String.Empty;
 			}
 
-			StringBuilder builder = new StringBuilder(virtualPath);
-			if (builder[0] == '~')
+			// skip leading path chars
+			int i;
+			for (i=0; i<virtualPath.Length; i++)
 			{
-				builder.Remove(0, 1);
+				switch (virtualPath[i])
+				{
+					case '~':
+					case '/':
+					case '\\':
+					{
+						continue;
+					}
+				}
+
+				// found first real char
+				break;
+			}
+
+			StringBuilder builder = new StringBuilder(virtualPath, i, virtualPath.Length-i, virtualPath.Length+10);
+			if (builder.Length <= 0)
+			{
+				return rootNamespace+"_"+Guid.NewGuid().ToString("n");
 			}
 
 			bool startChar = true;
-			for (int i=0; i<builder.Length; i++)
+			for (i=0; i<builder.Length; i++)
 			{
 				char ch = builder[i];
 				if (Char.IsDigit(ch))
@@ -690,13 +718,13 @@ namespace JsonFx.Compilation
 						startChar = false;
 						break;
 					}
-					case '\\':
-					case '/':
-					{
-						builder[i] = '.';
-						startChar = true;
-						break;
-					}
+					//case '\\':
+					//case '/':
+					//{
+					//    builder[i] = '.';
+					//    startChar = true;
+					//    break;
+					//}
 					default:
 					{
 						builder[i] = '_';
@@ -706,7 +734,7 @@ namespace JsonFx.Compilation
 				}
 			}
 
-			return rootNamespace+builder.ToString();
+			return rootNamespace+builder.ToString().ToLowerInvariant();
 		}
 
 		/// <summary>
