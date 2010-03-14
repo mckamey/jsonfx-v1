@@ -46,6 +46,44 @@ namespace JsonFx.UI.Jbst
 	[ToolboxData("<{0}:Control runat=\"server\" Name=\"\"></{0}:Control>")]
 	public class Control : AutoDataBindControl
 	{
+		#region EmptyJbst
+
+		private class EmptyJbst : IJbstBuildResult
+		{
+			#region Constants
+
+			public static readonly EmptyJbst Empty = new EmptyJbst();
+
+			#endregion Constants
+
+			#region Constants
+
+			/// <summary>
+			/// Ctor
+			/// </summary>
+			private EmptyJbst()
+			{
+			}
+
+			#endregion Constants
+
+			#region IJbstBuildResult Members
+
+			EcmaScriptIdentifier IJbstBuildResult.JbstName
+			{
+				get { return ""; }
+			}
+
+			AutoMarkupType IJbstBuildResult.AutoMarkup
+			{
+				get { return AutoMarkupType.None; }
+			}
+
+			#endregion IJbstBuildResult Members
+		}
+
+		#endregion EmptyJbst
+
 		#region Fields
 
 		private bool isDebug;
@@ -56,6 +94,7 @@ namespace JsonFx.UI.Jbst
 		private int? index;
 		private int? count;
 		private ScriptDataBlock dataBlock;
+		private IJbstBuildResult jbst;
 
 		#endregion Fields
 
@@ -80,7 +119,11 @@ namespace JsonFx.UI.Jbst
 		public virtual EcmaScriptIdentifier Name
 		{
 			get { return this.name; }
-			set { this.name = value; }
+			set
+			{
+				this.name = value;
+				this.jbst = null;
+			}
 		}
 
 		/// <summary>
@@ -208,12 +251,10 @@ namespace JsonFx.UI.Jbst
 			writer.BeginRender();
 			try
 			{
-				this.EnsureAutoMarkup();
-
 				// render any named data items
 				if (this.dataBlock != null)
 				{
-					this.dataBlock.AutoMarkup = this.AutoMarkup;
+					this.dataBlock.AutoMarkup = this.EnsureAutoMarkup();
 					this.dataBlock.RenderControl(writer);
 				}
 
@@ -239,7 +280,7 @@ namespace JsonFx.UI.Jbst
 				base.RenderChildren(writer);
 
 				string inlineData = null;
-				if (this.AutoMarkup == AutoMarkupType.Data && this.InlineData != null)
+				if (this.InlineData != null && this.EnsureAutoMarkup() == AutoMarkupType.Data)
 				{
 					if (hasControls)
 					{
@@ -341,16 +382,15 @@ namespace JsonFx.UI.Jbst
 
 		#region Utility Methods
 
-		private void EnsureAutoMarkup()
+		private AutoMarkupType EnsureAutoMarkup()
 		{
 			if (this.AutoMarkup != AutoMarkupType.Auto)
 			{
-				return;
+				return this.AutoMarkup;
 			}
 
 			// get AutoMarkup setting from JBST
-			IJbstBuildResult jbst = JbstCodeProvider.FindJbst(this.Name);
-			if (jbst != null && jbst.AutoMarkup != AutoMarkupType.None)
+			if (this.EnsureJbst().AutoMarkup != AutoMarkupType.None)
 			{
 				this.AutoMarkup = AutoMarkupType.Data;
 			}
@@ -358,6 +398,26 @@ namespace JsonFx.UI.Jbst
 			{
 				this.AutoMarkup = AutoMarkupType.None;
 			}
+
+			return this.AutoMarkup;
+		}
+
+		private IJbstBuildResult EnsureJbst()
+		{
+			if (this.jbst != null)
+			{
+				return this.jbst;
+			}
+
+			this.jbst = JbstCodeProvider.FindJbst(this.Name);
+
+			if (this.jbst == null)
+			{
+				// sentinel value to avoid rechecking
+				this.jbst = EmptyJbst.Empty;
+			}
+
+			return this.jbst;
 		}
 
 		#endregion Utility Methods
