@@ -220,6 +220,22 @@ namespace JsonFx.Compilation
 
 			#endregion public sealed class ResourceTypeName
 
+			#region [BuildPath(virtualPath)]
+
+			string virtualPath = base.VirtualPath;
+			if (HttpRuntime.AppDomainAppVirtualPath.Length > 1)
+			{
+				virtualPath = virtualPath.Substring(HttpRuntime.AppDomainAppVirtualPath.Length);
+			}
+			virtualPath = "~"+virtualPath;
+
+			CodeAttributeDeclaration attribute = new CodeAttributeDeclaration(
+				new CodeTypeReference(typeof(BuildPathAttribute)),
+				new CodeAttributeArgument(new CodePrimitiveExpression(virtualPath)));
+			resourceType.CustomAttributes.Add(attribute);
+
+			#endregion [BuildPath(virtualPath)]
+
 			#region private static readonly byte[] GzippedBytes
 
 			CodeMemberField field = new CodeMemberField();
@@ -409,22 +425,6 @@ namespace JsonFx.Compilation
 			resourceType.Members.Add(property);
 
 			#endregion string IBuildResultMeta.Hash { get; }
-
-			#region [BuildPath(virtualPath)]
-
-			string virtualPath = base.VirtualPath;
-			if (HttpRuntime.AppDomainAppVirtualPath.Length > 1)
-			{
-				virtualPath = virtualPath.Substring(HttpRuntime.AppDomainAppVirtualPath.Length);
-			}
-			virtualPath = "~"+virtualPath;
-
-			CodeAttributeDeclaration attribute = new CodeAttributeDeclaration(
-				new CodeTypeReference(typeof(BuildPathAttribute)),
-				new CodeAttributeArgument(new CodePrimitiveExpression(virtualPath)));
-			resourceType.CustomAttributes.Add(attribute);
-
-			#endregion [BuildPath(virtualPath)]
 
 			if (this.VirtualPathDependencies.Count > 0)
 			{
