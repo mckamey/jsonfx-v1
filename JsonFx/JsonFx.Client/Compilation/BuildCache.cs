@@ -86,7 +86,7 @@ namespace JsonFx.Compilation
 			if (type == null)
 			{
 				// dynamic apps compile to temp directory
-				foreach (string asm in Directory.GetFiles(AppDomain.CurrentDomain.DynamicDirectory, "*.dll", SearchOption.TopDirectoryOnly))
+				foreach (string asm in Directory.GetFiles(AppDomain.CurrentDomain.DynamicDirectory, "App_Web_*.dll", SearchOption.TopDirectoryOnly))
 				{
 					type = Assembly.LoadFrom(asm).GetType(typeName, false, false);
 					if (type != null)
