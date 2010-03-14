@@ -60,7 +60,7 @@ namespace JsonFx.Client
 		#region Fields
 
 		private bool isDebug;
-		private AutoMarkupType autoMarkup;
+		private AutoMarkupType autoMarkup = AutoMarkupType.Auto;
 		private readonly Dictionary<string, object> Data = new Dictionary<string, object>(StringComparer.Ordinal);
 
 		#endregion Fields
@@ -123,7 +123,7 @@ namespace JsonFx.Client
 		/// <summary>
 		/// Gets and sets if should also render the data as markup for noscript clients.
 		/// </summary>
-		[DefaultValue(AutoMarkupType.Off)]
+		[DefaultValue(AutoMarkupType.Auto)]
 		public AutoMarkupType AutoMarkup
 		{
 			get { return this.autoMarkup; }
@@ -153,15 +153,15 @@ namespace JsonFx.Client
 
 				StringWriter markup;
 				EcmaScriptWriter jsWriter;
-				if (this.AutoMarkup == AutoMarkupType.Off)
-				{
-					markup = null;
-					jsWriter = new EcmaScriptWriter(writer);
-				}
-				else
+				if (this.AutoMarkup == AutoMarkupType.Data)
 				{
 					markup = new StringWriter();
 					jsWriter = new JsonMarkupWriter(writer, markup);
+				}
+				else
+				{
+					markup = null;
+					jsWriter = new EcmaScriptWriter(writer);
 				}
 
 				if (this.IsDebug)

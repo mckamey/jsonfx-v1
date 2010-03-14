@@ -624,7 +624,7 @@ namespace JsonFx.UI.Jbst
 					}
 					else
 					{
-						this.AutoMarkup = AutoMarkupType.Off;
+						this.AutoMarkup = AutoMarkupType.None;
 					}
 
 					string package = attribs.ContainsKey("import") ? attribs["import"] : null;

@@ -49,7 +49,7 @@ namespace JsonFx.UI.Jbst
 		#region Fields
 
 		private bool isDebug;
-		private AutoMarkupType autoMarkup;
+		private AutoMarkupType autoMarkup = AutoMarkupType.Auto;
 		private EcmaScriptIdentifier name;
 		private string data;
 		private object inlineData;
@@ -188,7 +188,7 @@ namespace JsonFx.UI.Jbst
 		/// <summary>
 		/// Gets and sets if should also render the data as markup for noscript clients.
 		/// </summary>
-		[DefaultValue(AutoMarkupType.Off)]
+		[DefaultValue(AutoMarkupType.Auto)]
 		public AutoMarkupType AutoMarkup
 		{
 			get { return this.autoMarkup; }
@@ -239,7 +239,7 @@ namespace JsonFx.UI.Jbst
 				base.RenderChildren(writer);
 
 				string inlineData = null;
-				if (this.AutoMarkup != AutoMarkupType.Off && this.InlineData != null)
+				if (this.AutoMarkup == AutoMarkupType.Data && this.InlineData != null)
 				{
 					if (hasControls)
 					{
@@ -346,13 +346,13 @@ namespace JsonFx.UI.Jbst
 
 			// get AutoMarkup setting from JBST
 			IJbstBuildResult jbst = JbstCodeProvider.FindJbst(this.Name);
-			if (jbst != null && jbst.AutoMarkup != AutoMarkupType.Off)
+			if (jbst != null && jbst.AutoMarkup != AutoMarkupType.None)
 			{
-				this.AutoMarkup = AutoMarkupType.On;
+				this.AutoMarkup = AutoMarkupType.Data;
 			}
 			else
 			{
-				this.AutoMarkup = AutoMarkupType.Off;
+				this.AutoMarkup = AutoMarkupType.None;
 			}
 		}
 

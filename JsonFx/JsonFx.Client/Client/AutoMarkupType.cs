@@ -37,8 +37,8 @@ namespace JsonFx.Client
 	/// </summary>
 	public enum AutoMarkupType
 	{
-		Off,
-		On,
-		Auto
+		Auto,
+		None,
+		Data
 	}
 }
