@@ -188,7 +188,7 @@ namespace JsonFx.UI.Jbst
 		/// <summary>
 		/// Gets and sets if should also render the data as markup for noscript clients.
 		/// </summary>
-		[DefaultValue(AutoMarkupType.None)]
+		[DefaultValue(AutoMarkupType.Off)]
 		public AutoMarkupType AutoMarkup
 		{
 			get { return this.autoMarkup; }
@@ -208,12 +208,7 @@ namespace JsonFx.UI.Jbst
 			writer.BeginRender();
 			try
 			{
-				// get AutoMarkup setting from JBST
-				IJbstBuildResult jbst = JbstCodeProvider.FindJbst(this.Name);
-				if (jbst != null)
-				{
-					this.AutoMarkup = jbst.AutoMarkup;
-				}
+				this.EnsureAutoMarkup();
 
 				// render any named data items
 				if (this.dataBlock != null)
@@ -244,7 +239,7 @@ namespace JsonFx.UI.Jbst
 				base.RenderChildren(writer);
 
 				string inlineData = null;
-				if (this.AutoMarkup != AutoMarkupType.None && this.InlineData != null)
+				if (this.AutoMarkup != AutoMarkupType.Off && this.InlineData != null)
 				{
 					if (hasControls)
 					{
@@ -339,6 +334,25 @@ namespace JsonFx.UI.Jbst
 			finally
 			{
 				writer.EndRender();
+			}
+		}
+
+		private void EnsureAutoMarkup()
+		{
+			if (this.AutoMarkup != AutoMarkupType.Auto)
+			{
+				return;
+			}
+
+			// get AutoMarkup setting from JBST
+			IJbstBuildResult jbst = JbstCodeProvider.FindJbst(this.Name);
+			if (jbst != null && jbst.AutoMarkup != AutoMarkupType.Off)
+			{
+				this.AutoMarkup = AutoMarkupType.On;
+			}
+			else
+			{
+				this.AutoMarkup = AutoMarkupType.Off;
 			}
 		}
 

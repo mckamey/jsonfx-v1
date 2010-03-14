@@ -32,10 +32,13 @@ using System;
 
 namespace JsonFx.Client
 {
+	/// <summary>
+	/// Determines if markup should be generated for JBST data
+	/// </summary>
 	public enum AutoMarkupType
 	{
-		None,
-		Auto,
-		Always
+		Off,
+		On,
+		Auto
 	}
 }

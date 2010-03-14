@@ -123,7 +123,7 @@ namespace JsonFx.Client
 		/// <summary>
 		/// Gets and sets if should also render the data as markup for noscript clients.
 		/// </summary>
-		[DefaultValue(AutoMarkupType.None)]
+		[DefaultValue(AutoMarkupType.Off)]
 		public AutoMarkupType AutoMarkup
 		{
 			get { return this.autoMarkup; }
@@ -153,15 +153,15 @@ namespace JsonFx.Client
 
 				StringWriter markup;
 				EcmaScriptWriter jsWriter;
-				if (this.AutoMarkup != AutoMarkupType.None)
-				{
-					markup = new StringWriter();
-					jsWriter = new JsonMarkupWriter(writer, markup);
-				}
-				else
+				if (this.AutoMarkup == AutoMarkupType.Off)
 				{
 					markup = null;
 					jsWriter = new EcmaScriptWriter(writer);
+				}
+				else
+				{
+					markup = new StringWriter();
+					jsWriter = new JsonMarkupWriter(writer, markup);
 				}
 
 				if (this.IsDebug)
