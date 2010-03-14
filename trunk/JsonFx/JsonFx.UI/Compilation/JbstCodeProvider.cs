@@ -289,7 +289,7 @@ namespace JsonFx.Compilation
 				throw new ArgumentNullException("jbstName");
 			}
 
-			return ResourceBuildProvider.RootNamespace+".JBST"+jbstName.Replace('$', '_');
+			return ResourceBuildProvider.RootNamespace+".JBST."+jbstName.Replace('$', '_');
 		}
 
 		string IResourceNameGenerator.GenerateResourceName(string virtualPath)
