@@ -72,12 +72,6 @@ namespace JsonFx.Compilation
 		System.Web.Compilation.BuildProvider,
 		IResourceBuildHelper
 	{
-		#region Constants
-
-		public const string RootNamespace = "__JsonFx";
-
-		#endregion Constants
-
 		#region Fields
 
 		private List<string> pathDependencies;
@@ -663,7 +657,7 @@ namespace JsonFx.Compilation
 		/// <returns></returns>
 		public static string GenerateTypeNameFromPath(string virtualPath)
 		{
-			string rootNamespace = ResourceBuildProvider.RootNamespace+".Path";
+			const string rootNamespace = "_JsonFx";
 
 			if (String.IsNullOrEmpty(virtualPath))
 			{
