@@ -36,12 +36,51 @@ using System.Web.Compilation;
 
 namespace JsonFx.Compilation
 {
-	public interface IBuildCacheKey
+	[AttributeUsage(AttributeTargets.Class, Inherited=false, AllowMultiple=false)]
+	public class BuildPathAttribute : Attribute
 	{
-		string VirtualPath
+		#region Fields
+
+		private readonly string VirtualPath;
+
+		#endregion Fields
+
+		#region Init
+
+		/// <summary>
+		/// Ctor
+		/// </summary>
+		public BuildPathAttribute(string virtualPath)
 		{
-			get;
+			this.VirtualPath = virtualPath;
 		}
+
+		#endregion Init
+
+		#region Methods
+
+		/// <summary>
+		/// Gets the corresponding virtual path for the source of the given generated type.
+		/// </summary>
+		/// <param name="type">the Type marked with VirtualPathAttribute</param>
+		/// <returns>virtual path of the source</returns>
+		public static string GetVirtualPath(Type type)
+		{
+			if (type == null)
+			{
+				return null;
+			}
+
+			BuildPathAttribute attrib = Attribute.GetCustomAttribute(type, typeof(BuildPathAttribute), false) as BuildPathAttribute;
+			if (attrib == null)
+			{
+				return null;
+			}
+
+			return attrib.VirtualPath;
+		}
+
+		#endregion Methods
 	}
 
 	public sealed class BuildCache
@@ -67,25 +106,63 @@ namespace JsonFx.Compilation
 		#region Methods
 
 		/// <summary>
-		/// Creates an instance from the type name
+		/// Creates an instance from the simple type name
 		/// </summary>
 		/// <param name="type"></param>
 		/// <returns></returns>
 		public T Create<T>(string typeName)
 			where T : class
 		{
-			string virtualPath = this.GetPath(typeName);
-			if (!String.IsNullOrEmpty(virtualPath))
+			string virtualPath = this.GetVirtualPath(typeName);
+			if (String.IsNullOrEmpty(virtualPath))
 			{
-				// return cached copy
-				return BuildManager.CreateInstanceFromVirtualPath(virtualPath, typeof(object)) as T;
+				return default(T);
 			}
 
-			// precompiled sites can bring back directly
+			// instantiate using cached path
+			return BuildManager.CreateInstanceFromVirtualPath(virtualPath, typeof(object)) as T;
+		}
+
+		/// <summary>
+		/// Gets the type from the simple type name
+		/// </summary>
+		/// <param name="type"></param>
+		/// <returns></returns>
+		public Type GetType(string typeName)
+		{
+			string virtualPath = this.GetVirtualPath(typeName);
+			if (String.IsNullOrEmpty(virtualPath))
+			{
+				return null;
+			}
+
+			// return using cached path
+			return BuildManager.GetCompiledType(virtualPath);
+		}
+
+		/// <summary>
+		/// Gets the virtual path of the source of the generated type
+		/// </summary>
+		/// <param name="typeName"></param>
+		/// <returns></returns>
+		public string GetVirtualPath(string typeName)
+		{
+			string virtualPath;
+
+			lock (this.Cache)
+			{
+				// check the cache to prevent extra lookups
+				if (this.Cache.TryGetValue(typeName, out virtualPath))
+				{
+					return virtualPath;
+				}
+			}
+
+			// precompiled sites can bring back directly since already loaded in AppDomain
 			Type type = BuildManager.GetType(typeName, false, false);
 			if (type == null)
 			{
-				// dynamic apps compile to temp directory
+				// dynamic apps compile to a temp directory
 				foreach (string asm in Directory.GetFiles(AppDomain.CurrentDomain.DynamicDirectory, "App_Web_*.dll", SearchOption.TopDirectoryOnly))
 				{
 					type = Assembly.LoadFrom(asm).GetType(typeName, false, false);
@@ -96,43 +173,18 @@ namespace JsonFx.Compilation
 				}
 			}
 
-			if (type == null)
+			// save the virtual path in cache for future lookup
+			virtualPath = BuildPathAttribute.GetVirtualPath(type);
+			if (!String.IsNullOrEmpty(virtualPath))
 			{
-				return default(T);
-			}
-
-			object value = Activator.CreateInstance(type);
-
-			IBuildCacheKey cacheKey = value as IBuildCacheKey;
-			if (cacheKey != null && !String.IsNullOrEmpty(cacheKey.VirtualPath))
-			{
-				virtualPath = cacheKey.VirtualPath;
 				lock (this.Cache)
 				{
-					this.Cache[typeName] = this.Cache[type.FullName] = virtualPath;
+					// apply to both just in case discrepancy
+					this.Cache[type.FullName] = this.Cache[typeName] = virtualPath;
 				}
 			}
 
-			return value as T;
-		}
-
-		/// <summary>
-		/// Gets the path
-		/// </summary>
-		/// <param name="typeName"></param>
-		/// <returns></returns>
-		public string GetPath(string typeName)
-		{
-			lock (this.Cache)
-			{
-				string virtualPath;
-				if (this.Cache.TryGetValue(typeName, out virtualPath))
-				{
-					return virtualPath;
-				}
-			}
-
-			return null;
+			return virtualPath;
 		}
 
 		#endregion Methods
