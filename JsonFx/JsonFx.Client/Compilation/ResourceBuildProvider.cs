@@ -5,7 +5,7 @@
 
 	The MIT License
 
-	Copyright (c) 2006-2009 Stephen M. McKamey
+	Copyright (c) 2006-2010 Stephen M. McKamey
 
 	Permission is hereby granted, free of charge, to any person obtaining a copy
 	of this software and associated documentation files (the "Software"), to deal
@@ -29,21 +29,19 @@
 #endregion License
 
 using System;
-using System.IO;
-using System.IO.Compression;
-using System.Collections;
-using System.Collections.Generic;
-using System.Text;
-using System.Reflection;
-using System.Web;
-using System.Web.Hosting;
-using System.Web.Compilation;
 using System.CodeDom;
 using System.CodeDom.Compiler;
-using System.Security.Permissions;
+using System.Collections;
+using System.Collections.Generic;
+using System.IO;
+using System.IO.Compression;
+using System.Reflection;
 using System.Security.Cryptography;
+using System.Security.Permissions;
+using System.Text;
+using System.Web;
+using System.Web.Compilation;
 
-using JsonFx.BuildTools;
 using JsonFx.Handlers;
 
 namespace JsonFx.Compilation
@@ -412,7 +410,7 @@ namespace JsonFx.Compilation
 
 			#endregion string IBuildResultMeta.Hash { get; }
 
-			resourceType.BaseTypes.Add(typeof(IBuildCacheKey));
+			#region [BuildPath(virtualPath)]
 
 			string virtualPath = base.VirtualPath;
 			if (HttpRuntime.AppDomainAppVirtualPath.Length > 1)
@@ -421,20 +419,12 @@ namespace JsonFx.Compilation
 			}
 			virtualPath = "~"+virtualPath;
 
-			#region string IBuildCacheKey.VirtualPath { get; }
+			CodeAttributeDeclaration attribute = new CodeAttributeDeclaration(
+				new CodeTypeReference(typeof(BuildPathAttribute)),
+				new CodeAttributeArgument(new CodePrimitiveExpression(virtualPath)));
+			resourceType.CustomAttributes.Add(attribute);
 
-			// add a readonly property returning the static data
-			property = new CodeMemberProperty();
-			property.Name = "VirtualPath";
-			property.Type = new CodeTypeReference(typeof(string));
-			property.PrivateImplementationType = new CodeTypeReference(typeof(IBuildCacheKey));
-			property.HasGet = true;
-			// get { return virtualPath; }
-			property.GetStatements.Add(new CodeMethodReturnStatement(
-					new CodePrimitiveExpression(virtualPath)));
-			resourceType.Members.Add(property);
-
-			#endregion string IBuildCacheKey.VirtualPath { get; }
+			#endregion [BuildPath(virtualPath)]
 
 			if (this.VirtualPathDependencies.Count > 0)
 			{
