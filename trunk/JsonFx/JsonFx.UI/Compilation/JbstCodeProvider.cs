@@ -44,7 +44,9 @@ using JsonFx.UI.Jbst.Extensions;
 
 namespace JsonFx.Compilation
 {
-	public class JbstCodeProvider : JsonFx.Compilation.ResourceCodeProvider
+	public class JbstCodeProvider :
+		ResourceCodeProvider,
+		IResourceNameGenerator
 	{
 		#region Fields
 
@@ -180,7 +182,7 @@ namespace JsonFx.Compilation
 			property.GetStatements.Add(new CodeMethodReturnStatement(
 				new CodeFieldReferenceExpression(
 					new CodeTypeReferenceExpression(resourceType.Name),
-					field.Name)));
+					"jbstName")));
 			resourceType.Members.Add(property);
 
 			#endregion EcmaScriptIdentifier IJbstBuildResult.JbstName { get; }
@@ -277,5 +279,30 @@ namespace JsonFx.Compilation
 		}
 
 		#endregion Globalization Methods
+
+		#region IResourceNameGenerator Members
+
+		private static string GetClassForJbst(string jbstName)
+		{
+			if (String.IsNullOrEmpty(jbstName))
+			{
+				throw new ArgumentNullException("jbstName");
+			}
+
+			return ResourceBuildProvider.RootNamespace+".JBST"+jbstName.Replace('$', '_');
+		}
+
+		string IResourceNameGenerator.GenerateResourceName(string virtualPath)
+		{
+			return JbstCodeProvider.GetClassForJbst(this.jbstWriter.JbstName);
+		}
+
+		public static IJbstBuildResult FindJbst(string jbstName)
+		{
+			string className = JbstCodeProvider.GetClassForJbst(jbstName);
+			return BuildCache.Instance.Create<IJbstBuildResult>(className);
+		}
+
+		#endregion IResourceNameGenerator Members
 	}
 }
