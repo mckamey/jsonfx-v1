@@ -291,7 +291,7 @@ namespace JsonFx.Compilation
 			if (jbst == null)
 			{
 				// use a simple value rather than code generated
-				jbst = new JbstBuildResult(jbstName, AutoMarkupType.None);
+				jbst = new JbstBuildResult(jbstName);
 			}
 
 			return jbst;

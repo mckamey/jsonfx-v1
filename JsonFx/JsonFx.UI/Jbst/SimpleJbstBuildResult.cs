@@ -40,12 +40,6 @@ namespace JsonFx.UI.Jbst
 		JbstBuildResult,
 		IOptimizedResult
 	{
-		#region Constants
-
-		public static readonly SimpleJbstBuildResult Empty = new SimpleJbstBuildResult();
-
-		#endregion Constants
-
 		#region Fields
 
 		private string source;
@@ -58,14 +52,6 @@ namespace JsonFx.UI.Jbst
 		#endregion Fields
 
 		#region Init
-
-		/// <summary>
-		/// Ctor
-		/// </summary>
-		private SimpleJbstBuildResult()
-			: this(null, AutoMarkupType.None)
-		{
-		}
 
 		/// <summary>
 		/// Ctor
