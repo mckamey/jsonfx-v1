@@ -43,7 +43,7 @@ namespace JsonFx.Compilation
 	{
 		#region Constants
 
-		public static readonly SimpleJbstBuildResult Empty = new SimpleJbstBuildResult(null);
+		public static readonly SimpleJbstBuildResult Empty = new SimpleJbstBuildResult();
 
 		#endregion Constants
 
@@ -66,19 +66,19 @@ namespace JsonFx.Compilation
 		/// <summary>
 		/// Ctor
 		/// </summary>
-		/// <param name="writer"></param>
-		public SimpleJbstBuildResult(JbstWriter writer)
+		private SimpleJbstBuildResult()
+			: this(null, AutoMarkupType.None)
 		{
-			if (writer != null)
-			{
-				this.jbstName = writer.JbstName;
-				this.autoMarkup = writer.AutoMarkup;
-			}
-			else
-			{
-				this.jbstName = new EcmaScriptIdentifier();
-				this.autoMarkup = AutoMarkupType.None;
-			}
+		}
+
+		/// <summary>
+		/// Ctor
+		/// </summary>
+		/// <param name="writer"></param>
+		public SimpleJbstBuildResult(EcmaScriptIdentifier jbstName, AutoMarkupType autoMarkup)
+		{
+			this.jbstName = jbstName;
+			this.autoMarkup = autoMarkup;
 		}
 
 		#endregion Init

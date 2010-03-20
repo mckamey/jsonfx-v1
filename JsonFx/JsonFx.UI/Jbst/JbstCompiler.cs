@@ -35,10 +35,8 @@ using System.IO;
 using JsonFx.BuildTools;
 using JsonFx.BuildTools.HtmlDistiller;
 using JsonFx.BuildTools.HtmlDistiller.Filters;
-using JsonFx.Client;
 using JsonFx.Compilation;
 using JsonFx.Handlers;
-using JsonFx.Json;
 
 namespace JsonFx.UI.Jbst
 {
@@ -93,7 +91,7 @@ namespace JsonFx.UI.Jbst
 				compilationErrors.Add(new ParseError(ex.Message, filename, 0, 0, ex));
 			}
 
-			SimpleJbstBuildResult result = new SimpleJbstBuildResult(writer);
+			SimpleJbstBuildResult result = new SimpleJbstBuildResult(writer.JbstName, writer.AutoMarkup);
 
 			result.Source = source;
 			result.PrettyPrinted = sw.GetStringBuilder().ToString();
