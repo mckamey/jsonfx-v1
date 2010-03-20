@@ -33,9 +33,8 @@ using System;
 using JsonFx.Client;
 using JsonFx.Handlers;
 using JsonFx.Json;
-using JsonFx.UI.Jbst;
 
-namespace JsonFx.Compilation
+namespace JsonFx.UI.Jbst
 {
 	internal class SimpleJbstBuildResult :
 		JbstBuildResult,
@@ -56,9 +55,6 @@ namespace JsonFx.Compilation
 		private string hash;
 		private string contentType;
 
-		private readonly EcmaScriptIdentifier jbstName;
-		private readonly AutoMarkupType autoMarkup;
-
 		#endregion Fields
 
 		#region Init
@@ -76,9 +72,8 @@ namespace JsonFx.Compilation
 		/// </summary>
 		/// <param name="writer"></param>
 		public SimpleJbstBuildResult(EcmaScriptIdentifier jbstName, AutoMarkupType autoMarkup)
+			: base(jbstName, autoMarkup)
 		{
-			this.jbstName = jbstName;
-			this.autoMarkup = autoMarkup;
 		}
 
 		#endregion Init
@@ -136,19 +131,5 @@ namespace JsonFx.Compilation
 		}
 
 		#endregion IOptimizedResult Members
-
-		#region JbstBuildResult Members
-
-		public override EcmaScriptIdentifier JbstName
-		{
-			get { return this.jbstName; }
-		}
-
-		public override AutoMarkupType AutoMarkup
-		{
-			get { return this.autoMarkup; }
-		}
-
-		#endregion JbstBuildResult Members
 	}
 }
