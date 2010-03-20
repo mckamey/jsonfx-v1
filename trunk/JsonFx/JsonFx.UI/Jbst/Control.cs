@@ -1,4 +1,4 @@
-#region License
+﻿#region License
 /*---------------------------------------------------------------------------------*\
 
 	Distributed under the terms of an MIT-style license:
@@ -31,7 +31,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Text;
+using System.IO;
 using System.Web.UI;
 
 using JsonFx.Client;
@@ -51,8 +51,7 @@ namespace JsonFx.UI.Jbst
 		private bool isDebug;
 		private AutoMarkupType autoMarkup = AutoMarkupType.Auto;
 		private EcmaScriptIdentifier name;
-		private string data;
-		private object inlineData;
+		private object data;
 		private int? index;
 		private int? count;
 		private ScriptDataBlock dataBlock;
@@ -89,20 +88,23 @@ namespace JsonFx.UI.Jbst
 		}
 
 		/// <summary>
-		/// Gets and sets data to be bound as JavaScript literal or variable reference.
+		/// Gets and sets data to be bound as JavaScript variable reference.
 		/// </summary>
 		[DefaultValue("")]
 		public virtual string Data
 		{
 			get
 			{
-				if (this.data == null)
+				if (this.data is EcmaScriptIdentifier)
+				{
+					return (EcmaScriptIdentifier)this.data;
+				}
+				else
 				{
 					return String.Empty;
 				}
-				return this.data;
 			}
-			set { this.data = value; }
+			set { this.data = new EcmaScriptIdentifier(value); }
 		}
 
 		/// <summary>
@@ -111,8 +113,8 @@ namespace JsonFx.UI.Jbst
 		[DefaultValue(null)]
 		public virtual object InlineData
 		{
-			get { return this.inlineData; }
-			set { this.inlineData = value; }
+			get { return this.data; }
+			set { this.data = value; }
 		}
 
 		/// <summary>
@@ -200,6 +202,19 @@ namespace JsonFx.UI.Jbst
 			set { this.autoMarkup = value; }
 		}
 
+		protected JbstBuildResult Jbst
+		{
+			get
+			{
+				if (this.jbst == null)
+				{
+					this.jbst = JbstCodeProvider.FindJbst(this.Name);
+				}
+
+				return this.jbst;
+			}
+		}
+
 		#endregion Properties
 
 		#region Page Event Handlers
@@ -220,123 +235,33 @@ namespace JsonFx.UI.Jbst
 					this.dataBlock.RenderControl(writer);
 				}
 
-				// generate an ID for controls which do not have explicit
+				// generate an ID for controls which do not have explicitly set
 				this.EnsureID();
-				if (String.IsNullOrEmpty(this.ClientID))
-				{
-					// happens with no parents
-					this.ID = "_"+Guid.NewGuid().ToString("n");
-				}
+				this.Jbst.ID = this.ClientID;
+				this.Jbst.IsDebug = this.IsDebug;
 
 				bool hasControls = this.HasControls();
-				string placeholder = hasControls ? "div" : "noscript";
 
-				// render the placeholder hook
-				writer.Write('<');
-				writer.Write(placeholder);
-				writer.Write(" id=\"");
-				writer.Write(this.ClientID);
-				writer.Write("\">");
-
-				// render any children as loading/error markup
-				base.RenderChildren(writer);
-
-				string inlineData = null;
-				if (this.InlineData != null && this.EnsureAutoMarkup() == AutoMarkupType.Data)
+				if (this.HasControls())
 				{
-					if (hasControls)
-					{
-						writer.Write("<noscript>");
-					}
-
-					// serialize InlineData as a JavaScript literal
-					StringBuilder builder = new StringBuilder();
-
-					JsonMarkupWriter jsWriter = new JsonMarkupWriter(builder, writer);
-					if (this.IsDebug)
-					{
-						jsWriter.Settings.PrettyPrint = true;
-						jsWriter.Settings.NewLine = Environment.NewLine;
-						jsWriter.Settings.Tab = "\t";
-					}
-					jsWriter.Write(this.InlineData);
-
-					if (hasControls)
-					{
-						writer.Write("</noscript>");
-					}
-
-					inlineData = builder.ToString();
-				}
-
-				writer.Write("</");
-				writer.Write(placeholder);
-				writer.Write('>');
-
-				// render the binding script
-				writer.Write("<script type=\"text/javascript\">");
-
-				if (!String.IsNullOrEmpty(this.Name))
-				{
-					writer.Write(this.Name);
+					this.Jbst.Render(writer, this.InlineData, this.Index, this.Count, this.RenderChildrenCallback);
 				}
 				else
 				{
-					throw new ArgumentNullException("jbst:Control Name must be specified.");
+					this.Jbst.Render(writer, this.InlineData, this.Index, this.Count);
 				}
-				writer.Write(".replace(\"");
-				writer.Write(this.ClientID);
-				writer.Write("\",");
-
-				if (!String.IsNullOrEmpty(inlineData))
-				{
-					writer.Write(inlineData);
-				}
-				else if (this.InlineData != null)
-				{
-					// serialize InlineData as a JavaScript literal
-					EcmaScriptWriter jsWriter = new EcmaScriptWriter(writer);
-					if (this.IsDebug)
-					{
-						jsWriter.Settings.PrettyPrint = true;
-						jsWriter.Settings.NewLine = Environment.NewLine;
-						jsWriter.Settings.Tab = "\t";
-					}
-					jsWriter.Write(this.InlineData);
-				}
-				else if (!String.IsNullOrEmpty(this.Data))
-				{
-					// assume Data is either a JavaScript literal or variable reference
-					writer.Write('(');
-					writer.Write(this.Data);
-					writer.Write(')');
-				}
-				else
-				{
-					// smallest most innocuous default data
-					writer.Write("{}");
-				}
-
-				if (this.Index >= 0)
-				{
-					writer.Write(",(");
-					writer.Write(this.Index);
-					writer.Write(')');
-
-					if (this.Count >= 0)
-					{
-						writer.Write(",(");
-						writer.Write(this.Count);
-						writer.Write(')');
-					}
-				}
-				writer.Write(");");
-
-				writer.Write("</script>");
 			}
 			finally
 			{
 				writer.EndRender();
+			}
+		}
+
+		private void RenderChildrenCallback(TextWriter writer)
+		{
+			if (writer is HtmlTextWriter)
+			{
+				this.RenderChildren((HtmlTextWriter)writer);
 			}
 		}
 
@@ -352,7 +277,7 @@ namespace JsonFx.UI.Jbst
 			}
 
 			// get AutoMarkup setting from JBST
-			if (this.EnsureJbst().AutoMarkup != AutoMarkupType.None)
+			if (this.Jbst.AutoMarkup != AutoMarkupType.None)
 			{
 				this.AutoMarkup = AutoMarkupType.Data;
 			}
@@ -362,24 +287,6 @@ namespace JsonFx.UI.Jbst
 			}
 
 			return this.AutoMarkup;
-		}
-
-		private JbstBuildResult EnsureJbst()
-		{
-			if (this.jbst != null)
-			{
-				return this.jbst;
-			}
-
-			this.jbst = JbstCodeProvider.FindJbst(this.Name);
-
-			if (this.jbst == null)
-			{
-				// sentinel value to avoid rechecking
-				this.jbst = SimpleJbstBuildResult.Empty;
-			}
-
-			return this.jbst;
 		}
 
 		#endregion Utility Methods

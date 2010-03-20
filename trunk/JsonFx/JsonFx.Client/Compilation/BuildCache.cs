@@ -175,7 +175,15 @@ namespace JsonFx.Compilation
 
 			// save the virtual path in cache for future lookup
 			virtualPath = BuildPathAttribute.GetVirtualPath(type);
-			if (!String.IsNullOrEmpty(virtualPath))
+			if (String.IsNullOrEmpty(virtualPath))
+			{
+				lock (this.Cache)
+				{
+					// mark as not found for future lookups
+					this.Cache[typeName] = virtualPath = String.Empty;
+				}
+			}
+			else
 			{
 				lock (this.Cache)
 				{

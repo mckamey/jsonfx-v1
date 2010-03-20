@@ -5,7 +5,7 @@
 
 	The MIT License
 
-	Copyright (c) 2006-2009 Stephen M. McKamey
+	Copyright (c) 2006-2010 Stephen M. McKamey
 
 	Permission is hereby granted, free of charge, to any person obtaining a copy
 	of this software and associated documentation files (the "Software"), to deal
@@ -33,7 +33,10 @@ using System.Collections.Generic;
 using System.IO;
 using System.Web.UI;
 
+using JsonFx.Client;
+using JsonFx.Compilation;
 using JsonFx.Json;
+using JsonFx.UI.Jbst;
 
 namespace JsonFx.Mvc
 {
@@ -44,68 +47,68 @@ namespace JsonFx.Mvc
 		/// <summary>
 		/// Bind the JBST to the provided data.
 		/// </summary>
-		/// <param name="helper"></param>
-		/// <param name="jbst"></param>
-		/// <param name="data">named data to bind</param>
+		/// <param name="jbstName"></param>
+		/// <param name="dataName">named data to bind</param>
 		/// <param name="dataItems">collection of data to emit</param>
 		/// <returns></returns>
-		public static string Bind(EcmaScriptIdentifier jbst, EcmaScriptIdentifier data, IDictionary<string, object> dataItems)
+		public static string Bind(EcmaScriptIdentifier jbstName, EcmaScriptIdentifier dataName, IDictionary<string, object> dataItems)
 		{
-			// build the control
-			JsonFx.UI.Jbst.Control control = new JsonFx.UI.Jbst.Control();
-			control.Name = jbst;
-			control.Data = data;
+			StringWriter writer = new StringWriter();
 
 			if (dataItems != null)
 			{
+				// build the control
+				JsonFx.Client.ScriptDataBlock dataBlock = new JsonFx.Client.ScriptDataBlock();
 				foreach (string key in dataItems.Keys)
 				{
-					control.DataItems[key] = dataItems[key];
+					dataBlock.DataItems[key] = dataItems[key];
 				}
+
+				// render the data block
+				Render(dataBlock, writer);
 			}
 
-			// render the control
-			return Render(control);
+			// render the JBST
+			JbstBuildResult jbst = JbstCodeProvider.FindJbst(jbstName);
+			jbst.Render(writer, dataName);
+
+			return writer.ToString();
 		}
 
 		/// <summary>
 		/// Bind the JBST to the provided data.
 		/// </summary>
-		/// <param name="helper"></param>
-		/// <param name="jbst"></param>
+		/// <param name="jbstName"></param>
 		/// <param name="data"></param>
 		/// <returns></returns>
-		public static string Bind(EcmaScriptIdentifier jbst, object data)
+		public static string Bind(EcmaScriptIdentifier jbstName, object data)
 		{
-			// build the control
-			JsonFx.UI.Jbst.Control control = new JsonFx.UI.Jbst.Control();
-			control.Name = jbst;
-			control.InlineData = data;
+			StringWriter writer = new StringWriter();
 
-			// render the control
-			return Render(control);
+			// render the JBST
+			JbstBuildResult jbst = JbstCodeProvider.FindJbst(jbstName);
+			jbst.Render(writer, data);
+
+			return writer.ToString();
 		}
 
 		/// <summary>
 		/// Bind the JBST to the provided data.
 		/// </summary>
-		/// <param name="helper"></param>
-		/// <param name="jbst"></param>
+		/// <param name="jbstName"></param>
 		/// <param name="data"></param>
 		/// <param name="index"></param>
 		/// <param name="count"></param>
 		/// <returns></returns>
-		public static string Bind(EcmaScriptIdentifier jbst, object data, int index, int count)
+		public static string Bind(EcmaScriptIdentifier jbstName, object data, int index, int count)
 		{
-			// build the control
-			JsonFx.UI.Jbst.Control control = new JsonFx.UI.Jbst.Control();
-			control.Name = jbst;
-			control.InlineData = data;
-			control.Index = index;
-			control.Count = count;
+			StringWriter writer = new StringWriter();
 
-			// render the control
-			return Render(control);
+			// render the JBST
+			JbstBuildResult jbst = JbstCodeProvider.FindJbst(jbstName);
+			jbst.Render(writer, data, index, count);
+
+			return writer.ToString();
 		}
 
 		#endregion JBST Helper Methods
@@ -115,9 +118,8 @@ namespace JsonFx.Mvc
 		/// <summary>
 		/// Emit the provided data as JavaScript variables.
 		/// </summary>
-		/// <param name="helper"></param>
-		/// <param name="name"></param>
-		/// <param name="data"></param>
+		/// <param name="name">name of the data</param>
+		/// <param name="data">data contents</param>
 		/// <returns></returns>
 		public static string ScriptData(string name, object data)
 		{
@@ -132,9 +134,7 @@ namespace JsonFx.Mvc
 		/// <summary>
 		/// Emit the provided data as JavaScript variables.
 		/// </summary>
-		/// <param name="helper"></param>
-		/// <param name="name"></param>
-		/// <param name="data"></param>
+		/// <param name="data">data contents</param>
 		/// <returns></returns>
 		public static string ScriptData(IDictionary<string, object> dataItems)
 		{
@@ -153,13 +153,18 @@ namespace JsonFx.Mvc
 
 		#region Utility Methods
 
-		internal static string Render(System.Web.UI.Control control)
+		private static TextWriter Render(System.Web.UI.Control control, TextWriter writer)
 		{
-			HtmlTextWriter writer = new XhtmlTextWriter(new StringWriter());
-			control.RenderControl(writer);
-			writer.Flush();
+			XhtmlTextWriter htmlWriter = new XhtmlTextWriter(writer);
+			control.RenderControl(htmlWriter);
+			htmlWriter.Flush();
 
-			return writer.InnerWriter.ToString();
+			return writer;
+		}
+
+		private static string Render(System.Web.UI.Control control)
+		{
+			return Render(control, new StringWriter()).ToString();
 		}
 
 		#endregion Utility Methods

@@ -163,7 +163,7 @@ namespace JsonFx.Compilation
 			#region private static readonly EcmaScriptIdentifier jbstName
 
 			CodeMemberField field = new CodeMemberField();
-			field.Name = "jbstName";
+			field.Name = "JbstName";
 			field.Type = new CodeTypeReference(typeof(EcmaScriptIdentifier));
 			field.Attributes = MemberAttributes.Private|MemberAttributes.Static|MemberAttributes.Final;
 
@@ -173,37 +173,19 @@ namespace JsonFx.Compilation
 
 			#endregion private static readonly EcmaScriptIdentifier jbstName
 
-			#region public override EcmaScriptIdentifier JbstName { get; }
+			#region public ResourceType() : base(ResourceType.JbstName, autoMarkup) {}
 
-			// add a readonly property returning the static data
-			CodeMemberProperty property = new CodeMemberProperty();
-			property.Name = "JbstName";
-			property.Type = new CodeTypeReference(typeof(EcmaScriptIdentifier));
-			property.Attributes = MemberAttributes.Public|MemberAttributes.Override;
-			property.HasGet = true;
-			// get { return jbstName; }
-			property.GetStatements.Add(new CodeMethodReturnStatement(
-				new CodeFieldReferenceExpression(
-					new CodeTypeReferenceExpression(resourceType.Name),
-					"jbstName")));
-			resourceType.Members.Add(property);
+			CodeConstructor ctor = new CodeConstructor();
+			ctor.Attributes = MemberAttributes.Public;
+			ctor.BaseConstructorArgs.Add(new CodeFieldReferenceExpression(
+				new CodeTypeReferenceExpression(resourceType.Name),
+				"JbstName"));
+			ctor.BaseConstructorArgs.Add(new CodeFieldReferenceExpression(
+				new CodeTypeReferenceExpression(typeof(AutoMarkupType)), autoMarkup.ToString()));
 
-			#endregion public override EcmaScriptIdentifier JbstName { get; }
+			resourceType.Members.Add(ctor);
 
-			#region public override AutoMarkupType AutoMarkup { get; }
-
-			// add a readonly property returning the static data
-			property = new CodeMemberProperty();
-			property.Name = "AutoMarkup";
-			property.Type = new CodeTypeReference(typeof(AutoMarkupType));
-			property.Attributes = MemberAttributes.Public|MemberAttributes.Override;
-			property.HasGet = true;
-			// get { return autoMarkup; }
-			property.GetStatements.Add(new CodeMethodReturnStatement(
-				new CodeFieldReferenceExpression(new CodeTypeReferenceExpression(typeof(AutoMarkupType)), autoMarkup.ToString())));
-			resourceType.Members.Add(property);
-
-			#endregion public override AutoMarkupType AutoMarkup { get; }
+			#endregion public ResourceType() : base(ResourceType.JbstName, ResourceType.AutoMarkup) {}
 		}
 
 		#endregion ResourceCodeProvider Methods
@@ -304,7 +286,15 @@ namespace JsonFx.Compilation
 		public static JbstBuildResult FindJbst(string jbstName)
 		{
 			string className = JbstCodeProvider.GetClassForJbst(jbstName);
-			return BuildCache.Instance.Create<JbstBuildResult>(className);
+
+			JbstBuildResult jbst = BuildCache.Instance.Create<JbstBuildResult>(className);
+			if (jbst == null)
+			{
+				// use a simple value rather than code generated
+				jbst = new JbstBuildResult(jbstName, AutoMarkupType.None);
+			}
+
+			return jbst;
 		}
 
 		#endregion IResourceNameGenerator Members
