@@ -62,7 +62,8 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Compilation\IJbstBuildResult.cs" />
+    <Compile Include="Compilation\JbstBuildResult.cs" />
+    <Compile Include="Compilation\SimpleJbstBuildResult.cs" />
     <Compile Include="Jbst\Control.cs" />
     <Compile Include="Jbst\Extensions\AppSettingsJbstExtension.cs" />
     <Compile Include="Jbst\Extensions\JbstExtension.cs" />
