@@ -143,19 +143,22 @@ namespace JsonFx.Compilation
 			base.ResetCodeProvider();
 		}
 
+		protected override void SetBaseClass(CodeTypeDeclaration resourceType)
+		{
+			resourceType.BaseTypes.Add(typeof(JbstBuildResult));
+		}
+
 		protected override void GenerateCodeExtensions(CodeTypeDeclaration resourceType)
 		{
-			base.GenerateCodeExtensions(resourceType);
-
 			if (this.jbstWriter == null)
 			{
 				throw new InvalidOperationException("JbstCodeProvider: JbstWriter is missing");
 			}
 
+			base.GenerateCodeExtensions(resourceType);
+
 			string jbstName = this.jbstWriter.JbstName;
 			AutoMarkupType autoMarkup = this.jbstWriter.AutoMarkup;
-
-			resourceType.BaseTypes.Add(typeof(IJbstBuildResult));
 
 			#region private static readonly EcmaScriptIdentifier jbstName
 
@@ -170,13 +173,13 @@ namespace JsonFx.Compilation
 
 			#endregion private static readonly EcmaScriptIdentifier jbstName
 
-			#region EcmaScriptIdentifier IJbstBuildResult.JbstName { get; }
+			#region public override EcmaScriptIdentifier JbstName { get; }
 
 			// add a readonly property returning the static data
 			CodeMemberProperty property = new CodeMemberProperty();
 			property.Name = "JbstName";
 			property.Type = new CodeTypeReference(typeof(EcmaScriptIdentifier));
-			property.PrivateImplementationType = new CodeTypeReference(typeof(IJbstBuildResult));
+			property.Attributes = MemberAttributes.Public|MemberAttributes.Override;
 			property.HasGet = true;
 			// get { return jbstName; }
 			property.GetStatements.Add(new CodeMethodReturnStatement(
@@ -185,22 +188,22 @@ namespace JsonFx.Compilation
 					"jbstName")));
 			resourceType.Members.Add(property);
 
-			#endregion EcmaScriptIdentifier IJbstBuildResult.JbstName { get; }
+			#endregion public override EcmaScriptIdentifier JbstName { get; }
 
-			#region AutoMarkupType IJbstBuildResult.AutoMarkup { get; }
+			#region public override AutoMarkupType AutoMarkup { get; }
 
 			// add a readonly property returning the static data
 			property = new CodeMemberProperty();
 			property.Name = "AutoMarkup";
 			property.Type = new CodeTypeReference(typeof(AutoMarkupType));
-			property.PrivateImplementationType = new CodeTypeReference(typeof(IJbstBuildResult));
+			property.Attributes = MemberAttributes.Public|MemberAttributes.Override;
 			property.HasGet = true;
 			// get { return autoMarkup; }
 			property.GetStatements.Add(new CodeMethodReturnStatement(
 				new CodeFieldReferenceExpression(new CodeTypeReferenceExpression(typeof(AutoMarkupType)), autoMarkup.ToString())));
 			resourceType.Members.Add(property);
 
-			#endregion AutoMarkupType IJbstBuildResult.AutoMarkup { get; }
+			#endregion public override AutoMarkupType AutoMarkup { get; }
 		}
 
 		#endregion ResourceCodeProvider Methods
@@ -298,10 +301,10 @@ namespace JsonFx.Compilation
 			return JbstCodeProvider.GetClassForJbst(this.jbstWriter.JbstName);
 		}
 
-		public static IJbstBuildResult FindJbst(string jbstName)
+		public static JbstBuildResult FindJbst(string jbstName)
 		{
 			string className = JbstCodeProvider.GetClassForJbst(jbstName);
-			return BuildCache.Instance.Create<IJbstBuildResult>(className);
+			return BuildCache.Instance.Create<JbstBuildResult>(className);
 		}
 
 		#endregion IResourceNameGenerator Members

@@ -222,6 +222,9 @@ namespace JsonFx.Compilation
 			resourceType.IsClass = true;
 			resourceType.Name = this.ResourceTypeName;
 			resourceType.Attributes = MemberAttributes.Public|MemberAttributes.Final;
+
+			provider.SetBaseClass(resourceType);
+
 			resourceType.BaseTypes.Add(typeof(IOptimizedResult));
 			ns.Types.Add(resourceType);
 

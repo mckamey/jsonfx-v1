@@ -50,8 +50,8 @@ namespace JsonFx.UI.Jbst
 		#region BuildResult
 
 		private class SimpleBuildResult :
-			IOptimizedResult,
-			IJbstBuildResult
+			JbstBuildResult,
+			IOptimizedResult
 		{
 			#region Fields
 
@@ -61,10 +61,33 @@ namespace JsonFx.UI.Jbst
 			private string fileExtension;
 			private string hash;
 			private string contentType;
-			private EcmaScriptIdentifier jbstName;
-			private AutoMarkupType autoMarkup;
+
+			private readonly EcmaScriptIdentifier jbstName;
+			private readonly AutoMarkupType autoMarkup;
 
 			#endregion Fields
+
+			#region Init
+
+			/// <summary>
+			/// Ctor
+			/// </summary>
+			/// <param name="writer"></param>
+			public SimpleBuildResult(JbstWriter writer)
+			{
+				if (writer != null)
+				{
+					this.jbstName = writer.JbstName;
+					this.autoMarkup = writer.AutoMarkup;
+				}
+				else
+				{
+					this.jbstName = new EcmaScriptIdentifier();
+					this.autoMarkup = AutoMarkupType.None;
+				}
+			}
+
+			#endregion Init
 
 			#region IBuildResult Members
 
@@ -122,16 +145,14 @@ namespace JsonFx.UI.Jbst
 
 			#region IJbstBuildResult Members
 
-			public EcmaScriptIdentifier JbstName
+			public override EcmaScriptIdentifier JbstName
 			{
 				get { return this.jbstName; }
-				set { this.jbstName = value; }
 			}
 
-			public AutoMarkupType AutoMarkup
+			public override AutoMarkupType AutoMarkup
 			{
 				get { return this.autoMarkup; }
-				set { this.autoMarkup = value; }
 			}
 
 			#endregion IJbstBuildResult Members
@@ -185,7 +206,7 @@ namespace JsonFx.UI.Jbst
 				compilationErrors.Add(new ParseError(ex.Message, filename, 0, 0, ex));
 			}
 
-			SimpleBuildResult result = new SimpleBuildResult();
+			SimpleBuildResult result = new SimpleBuildResult(writer);
 
 			result.Source = source;
 			result.PrettyPrinted = sw.GetStringBuilder().ToString();
@@ -193,8 +214,6 @@ namespace JsonFx.UI.Jbst
 			result.ContentType = "text/javascript";
 			result.FileExtension = ".jbst.js";
 			result.Hash = this.ComputeHash(result.Source);
-			result.JbstName = writer.JbstName;
-			result.AutoMarkup = writer.AutoMarkup;
 
 			// return any errors
 			return result;

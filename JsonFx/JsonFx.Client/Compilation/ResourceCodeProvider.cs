@@ -164,6 +164,10 @@ namespace JsonFx.Compilation
 
 		#region CodeDomProvider Methods
 
+		protected internal virtual void SetBaseClass(CodeTypeDeclaration resourceType)
+		{
+		}
+
 		protected internal virtual void GenerateCodeExtensions(CodeTypeDeclaration resourceType)
 		{
 			if (this.g11nKeys.Count <= 0)
