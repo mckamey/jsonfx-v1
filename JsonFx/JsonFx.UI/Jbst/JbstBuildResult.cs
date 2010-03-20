@@ -58,8 +58,8 @@ namespace JsonFx.UI.Jbst
 		/// </summary>
 		/// <param name="jbstName"></param>
 		public JbstBuildResult(EcmaScriptIdentifier jbstName)
+			: this(jbstName, AutoMarkupType.None)
 		{
-			this.jbstName = jbstName;
 		}
 
 		/// <summary>
@@ -88,7 +88,7 @@ namespace JsonFx.UI.Jbst
 		/// <summary>
 		/// Gets the AutoMarkup setting from the JBST
 		/// </summary>
-		public AutoMarkupType AutoMarkup
+		public virtual AutoMarkupType AutoMarkup
 		{
 			get { return this.autoMarkup; }
 			set { this.autoMarkup = value; }
@@ -97,7 +97,7 @@ namespace JsonFx.UI.Jbst
 		/// <summary>
 		/// Gets and sets the ID of the placeholder element
 		/// </summary>
-		public string ID
+		public virtual string ID
 		{
 			get
 			{
@@ -113,7 +113,7 @@ namespace JsonFx.UI.Jbst
 		/// <summary>
 		/// Gets and sets if should render "Pretty-Printed".
 		/// </summary>
-		public bool IsDebug
+		public virtual bool IsDebug
 		{
 			get { return this.isDebug; }
 			set { this.isDebug = value; }
@@ -123,26 +123,39 @@ namespace JsonFx.UI.Jbst
 
 		#region Render Methods
 
-		internal delegate void RenderCallback(TextWriter writer);
+		internal delegate void InnerCallback(TextWriter writer);
 
-		public void Render(TextWriter writer, object data)
+		/// <summary>
+		/// Renders the JBST control reference and any stored data to be used.
+		/// </summary>
+		/// <param name="writer">output</param>
+		/// <param name="data">data to be bound as an object which will be serialized</param>
+		public void Write(TextWriter writer, object data)
 		{
-			this.Render(writer, data, -1, -1, null);
-		}
-
-		public void Render(TextWriter writer, object data, int index, int count)
-		{
-			this.Render(writer, data, index, count, null);
+			this.Write(writer, data, -1, -1);
 		}
 
 		/// <summary>
 		/// Renders the JBST control reference and any stored data to be used.
 		/// </summary>
-		/// <param name="writer"></param>
+		/// <param name="writer">output</param>
 		/// <param name="data">data to be bound as an object which will be serialized</param>
 		/// <param name="index">the data index</param>
 		/// <param name="count">the total data count</param>
-		internal void Render(TextWriter writer, object data, int index, int count, RenderCallback inner)
+		public void Write(TextWriter writer, object data, int index, int count)
+		{
+			this.Write(writer, data, index, count, null);
+		}
+
+		/// <summary>
+		/// Renders the JBST control reference and any stored data to be used.
+		/// </summary>
+		/// <param name="writer">output</param>
+		/// <param name="data">data to be bound as an object which will be serialized</param>
+		/// <param name="index">the data index</param>
+		/// <param name="count">the total data count</param>
+		/// <param name="inner">a callback for writing inner placeholder content</param>
+		internal void Write(TextWriter writer, object data, int index, int count, InnerCallback inner)
 		{
 			if (String.IsNullOrEmpty(this.JbstName))
 			{
