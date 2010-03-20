@@ -4,7 +4,7 @@
 	JsonML builder
 
 	Created: 2006-11-09-0116
-	Modified: 2010-03-20-1344
+	Modified: 2010-03-09-2304
 
 	Copyright (c)2006-2010 Stephen M. McKamey
 	Distributed under an open-source license: http://jsonml.org/license
@@ -68,8 +68,6 @@ if ("undefined" === typeof JsonML) {
 
 	//attribute name mapping
 	var ATTRMAP = {
-			"for" : "htmlFor",
-			"class" : "className",
 			rowspan : "rowSpan",
 			colspan : "colSpan",
 			cellpadding : "cellPadding",
@@ -140,6 +138,8 @@ if ("undefined" === typeof JsonML) {
 						} else {
 							elem.style = value;
 						}
+					} else if (name === "class") {
+						elem.className = value;
 					} else if (EVTS[name]) {
 						addHandler(elem, name, value);
 
