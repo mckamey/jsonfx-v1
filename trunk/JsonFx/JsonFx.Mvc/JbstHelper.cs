@@ -31,7 +31,6 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Web.UI;
 
 using JsonFx.Client;
 using JsonFx.Compilation;
@@ -54,23 +53,16 @@ namespace JsonFx.Mvc
 		public static string Bind(EcmaScriptIdentifier jbstName, EcmaScriptIdentifier dataName, IDictionary<string, object> dataItems)
 		{
 			StringWriter writer = new StringWriter();
+			JbstBuildResult jbst = JbstCodeProvider.FindJbst(jbstName);
 
 			if (dataItems != null)
 			{
-				// build the control
-				JsonFx.Client.ScriptDataBlock dataBlock = new JsonFx.Client.ScriptDataBlock();
-				foreach (string key in dataItems.Keys)
-				{
-					dataBlock.DataItems[key] = dataItems[key];
-				}
-
-				// render the data block
-				Render(dataBlock, writer);
+				// render data block
+				new DataBlockWriter(jbst.AutoMarkup, jbst.IsDebug).Write(writer, dataItems);
 			}
 
 			// render the JBST
-			JbstBuildResult jbst = JbstCodeProvider.FindJbst(jbstName);
-			jbst.Render(writer, dataName);
+			jbst.Write(writer, dataName);
 
 			return writer.ToString();
 		}
@@ -87,7 +79,7 @@ namespace JsonFx.Mvc
 
 			// render the JBST
 			JbstBuildResult jbst = JbstCodeProvider.FindJbst(jbstName);
-			jbst.Render(writer, data);
+			jbst.Write(writer, data);
 
 			return writer.ToString();
 		}
@@ -106,7 +98,7 @@ namespace JsonFx.Mvc
 
 			// render the JBST
 			JbstBuildResult jbst = JbstCodeProvider.FindJbst(jbstName);
-			jbst.Render(writer, data, index, count);
+			jbst.Write(writer, data, index, count);
 
 			return writer.ToString();
 		}
@@ -123,12 +115,11 @@ namespace JsonFx.Mvc
 		/// <returns></returns>
 		public static string ScriptData(string name, object data)
 		{
-			// build the control
-			JsonFx.Client.ScriptDataBlock dataBlock = new JsonFx.Client.ScriptDataBlock();
-			dataBlock.DataItems[name] = dataBlock;
+			Dictionary<string, object> dataItems = new Dictionary<string, object>();
 
-			// render the control
-			return Render(dataBlock);
+			dataItems[name] = data;
+
+			return ScriptData(dataItems);
 		}
 
 		/// <summary>
@@ -138,35 +129,14 @@ namespace JsonFx.Mvc
 		/// <returns></returns>
 		public static string ScriptData(IDictionary<string, object> dataItems)
 		{
-			// build the control
-			JsonFx.Client.ScriptDataBlock dataBlock = new JsonFx.Client.ScriptDataBlock();
-			foreach (string key in dataItems.Keys)
-			{
-				dataBlock.DataItems[key] = dataItems[key];
-			}
+			StringWriter writer = new StringWriter();
 
-			// render the control
-			return Render(dataBlock);
+			// render data block
+			new DataBlockWriter().Write(writer, dataItems);
+
+			return writer.ToString();
 		}
 
 		#endregion Script Data Helper Methods
-
-		#region Utility Methods
-
-		private static TextWriter Render(System.Web.UI.Control control, TextWriter writer)
-		{
-			XhtmlTextWriter htmlWriter = new XhtmlTextWriter(writer);
-			control.RenderControl(htmlWriter);
-			htmlWriter.Flush();
-
-			return writer;
-		}
-
-		private static string Render(System.Web.UI.Control control)
-		{
-			return Render(control, new StringWriter()).ToString();
-		}
-
-		#endregion Utility Methods
 	}
 }

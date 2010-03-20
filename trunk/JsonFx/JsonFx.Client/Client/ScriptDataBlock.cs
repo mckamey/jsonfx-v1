@@ -1,4 +1,4 @@
-#region License
+﻿#region License
 /*---------------------------------------------------------------------------------*\
 
 	Distributed under the terms of an MIT-style license:
@@ -31,8 +31,6 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.IO;
-using System.Web;
 using System.Web.UI;
 
 using JsonFx.Json;
@@ -45,18 +43,6 @@ namespace JsonFx.Client
 	[ToolboxData("<{0}:ScriptDataBlock runat=\"server\"></{0}:ScriptDataBlock>")]
 	public class ScriptDataBlock : Control
 	{
-		#region Constants
-
-		private const string ScriptOpen = "<script type=\"text/javascript\">";
-		private const string ScriptClose = "</script>";
-		private const string NoScriptOpen = "<noscript>";
-		private const string NoScriptClose = "</noscript>";
-		private const string VarAssignmentDebug = "{0} = ";
-		private const string VarAssignment = "{0}=";
-		private const string VarAssignmentEnd = ";";
-
-		#endregion Constants
-
 		#region Fields
 
 		private bool isDebug;
@@ -140,101 +126,10 @@ namespace JsonFx.Client
 		/// <param name="writer"></param>
 		protected override void Render(HtmlTextWriter writer)
 		{
-			if (this.Data.Count < 1)
-			{
-				// emit nothing when empty
-				return;
-			}
-
 			writer.BeginRender();
 			try
 			{
-				List<string> namespaces = new List<string>();
-
-				StringWriter markup;
-				EcmaScriptWriter jsWriter;
-				if (this.AutoMarkup == AutoMarkupType.Data)
-				{
-					markup = new StringWriter();
-					jsWriter = new JsonMarkupWriter(writer, markup);
-				}
-				else
-				{
-					markup = null;
-					jsWriter = new EcmaScriptWriter(writer);
-				}
-
-				if (this.IsDebug)
-				{
-					jsWriter.Settings.PrettyPrint = true;
-					jsWriter.Settings.NewLine = Environment.NewLine;
-					jsWriter.Settings.Tab = "\t";
-				}
-
-				writer.Write(ScriptDataBlock.ScriptOpen);
-
-				foreach (string key in this.Data.Keys)
-				{
-					if (markup != null)
-					{
-						if (this.IsDebug)
-						{
-							markup.WriteLine();
-						}
-						markup.Write("<div title=\"");
-						HttpUtility.HtmlAttributeEncode(key, markup);
-						markup.Write("\">");
-					}
-
-					string declaration;
-					if (!EcmaScriptWriter.WriteNamespaceDeclaration(writer, key, namespaces, this.IsDebug))
-					{
-						declaration = "var "+key;
-					}
-					else
-					{
-						declaration = key;
-					}
-
-					if (this.IsDebug)
-					{
-						writer.Indent += 3;
-						writer.Write(ScriptDataBlock.VarAssignmentDebug, declaration);
-						writer.Indent -= 3;
-						if (this.Data[key] != null &&
-							this.Data[key].GetType().IsClass)
-						{
-							writer.WriteLine();
-						}
-					}
-					else
-					{
-						writer.Write(ScriptDataBlock.VarAssignment, declaration);
-					}
-
-					// emit the value as JSON
-					jsWriter.Write(this.Data[key]);
-					writer.Write(ScriptDataBlock.VarAssignmentEnd);
-
-					if (markup != null)
-					{
-						markup.Write("</div>");
-					}
-
-					if (this.IsDebug)
-					{
-						writer.WriteLine();
-					}
-				}
-
-				writer.Write(ScriptDataBlock.ScriptClose);
-
-				if (markup != null && this.Data.Count > 0)
-				{
-					writer.Write(ScriptDataBlock.NoScriptOpen);
-					writer.Write(markup.ToString());
-					writer.Write(ScriptDataBlock.NoScriptClose);
-				}
+				new DataBlockWriter(this.AutoMarkup, this.IsDebug).Write(writer, this.Data);
 			}
 			finally
 			{

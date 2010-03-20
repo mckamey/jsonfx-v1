@@ -54,7 +54,7 @@ namespace JsonFx.UI.Jbst
 		private object data;
 		private int? index;
 		private int? count;
-		private ScriptDataBlock dataBlock;
+		private IDictionary<string, object> dataItems;
 		private JbstBuildResult jbst;
 
 		#endregion Fields
@@ -174,11 +174,11 @@ namespace JsonFx.UI.Jbst
 		{
 			get
 			{
-				if (this.dataBlock == null)
+				if (this.dataItems == null)
 				{
-					this.dataBlock = new ScriptDataBlock();
+					this.dataItems = new Dictionary<string, object>();
 				}
-				return this.dataBlock.DataItems;
+				return this.dataItems;
 			}
 		}
 
@@ -229,10 +229,9 @@ namespace JsonFx.UI.Jbst
 			try
 			{
 				// render any named data items
-				if (this.dataBlock != null)
+				if (this.dataItems != null && this.dataItems.Count > 0)
 				{
-					this.dataBlock.AutoMarkup = this.EnsureAutoMarkup();
-					this.dataBlock.RenderControl(writer);
+					new DataBlockWriter(this.EnsureAutoMarkup()).Write(writer, this.dataItems);
 				}
 
 				// generate an ID for controls which do not have explicitly set
@@ -240,15 +239,14 @@ namespace JsonFx.UI.Jbst
 				this.Jbst.ID = this.ClientID;
 				this.Jbst.IsDebug = this.IsDebug;
 
-				bool hasControls = this.HasControls();
-
+				// render JBST
 				if (this.HasControls())
 				{
-					this.Jbst.Render(writer, this.InlineData, this.Index, this.Count, this.RenderChildrenCallback);
+					this.Jbst.Write(writer, this.InlineData, this.Index, this.Count, this.RenderChildrenCallback);
 				}
 				else
 				{
-					this.Jbst.Render(writer, this.InlineData, this.Index, this.Count);
+					this.Jbst.Write(writer, this.InlineData, this.Index, this.Count);
 				}
 			}
 			finally
@@ -259,9 +257,20 @@ namespace JsonFx.UI.Jbst
 
 		private void RenderChildrenCallback(TextWriter writer)
 		{
-			if (writer is HtmlTextWriter)
+			bool flush = false;
+			HtmlTextWriter htmlWriter = writer as HtmlTextWriter;
+			if (htmlWriter == null)
 			{
-				this.RenderChildren((HtmlTextWriter)writer);
+				htmlWriter = new XhtmlTextWriter(writer);
+				flush = true;
+			}
+
+			this.RenderChildren(htmlWriter);
+
+			if (flush)
+			{
+				htmlWriter = new HtmlTextWriter(writer);
+				htmlWriter.Flush();
 			}
 		}
 
