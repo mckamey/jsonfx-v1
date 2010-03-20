@@ -48,7 +48,7 @@ namespace JsonFx.UI.Jbst
 	{
 		#region EmptyJbst
 
-		private class EmptyJbst : IJbstBuildResult
+		private class EmptyJbst : JbstBuildResult
 		{
 			#region Constants
 
@@ -69,12 +69,12 @@ namespace JsonFx.UI.Jbst
 
 			#region IJbstBuildResult Members
 
-			EcmaScriptIdentifier IJbstBuildResult.JbstName
+			public override EcmaScriptIdentifier JbstName
 			{
 				get { return ""; }
 			}
 
-			AutoMarkupType IJbstBuildResult.AutoMarkup
+			public override AutoMarkupType AutoMarkup
 			{
 				get { return AutoMarkupType.None; }
 			}
@@ -94,7 +94,7 @@ namespace JsonFx.UI.Jbst
 		private int? index;
 		private int? count;
 		private ScriptDataBlock dataBlock;
-		private IJbstBuildResult jbst;
+		private JbstBuildResult jbst;
 
 		#endregion Fields
 
@@ -402,7 +402,7 @@ namespace JsonFx.UI.Jbst
 			return this.AutoMarkup;
 		}
 
-		private IJbstBuildResult EnsureJbst()
+		private JbstBuildResult EnsureJbst()
 		{
 			if (this.jbst != null)
 			{
