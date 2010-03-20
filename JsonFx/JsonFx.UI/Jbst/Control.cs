@@ -46,44 +46,6 @@ namespace JsonFx.UI.Jbst
 	[ToolboxData("<{0}:Control runat=\"server\" Name=\"\"></{0}:Control>")]
 	public class Control : AutoDataBindControl
 	{
-		#region EmptyJbst
-
-		private class EmptyJbst : JbstBuildResult
-		{
-			#region Constants
-
-			public static readonly EmptyJbst Empty = new EmptyJbst();
-
-			#endregion Constants
-
-			#region Constants
-
-			/// <summary>
-			/// Ctor
-			/// </summary>
-			private EmptyJbst()
-			{
-			}
-
-			#endregion Constants
-
-			#region IJbstBuildResult Members
-
-			public override EcmaScriptIdentifier JbstName
-			{
-				get { return ""; }
-			}
-
-			public override AutoMarkupType AutoMarkup
-			{
-				get { return AutoMarkupType.None; }
-			}
-
-			#endregion IJbstBuildResult Members
-		}
-
-		#endregion EmptyJbst
-
 		#region Fields
 
 		private bool isDebug;
@@ -414,7 +376,7 @@ namespace JsonFx.UI.Jbst
 			if (this.jbst == null)
 			{
 				// sentinel value to avoid rechecking
-				this.jbst = EmptyJbst.Empty;
+				this.jbst = SimpleJbstBuildResult.Empty;
 			}
 
 			return this.jbst;
