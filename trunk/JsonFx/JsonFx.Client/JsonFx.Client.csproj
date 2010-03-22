@@ -73,6 +73,7 @@
     <Compile Include="Client\AutoMarkupType.cs" />
     <Compile Include="Client\DataBlockWriter.cs" />
     <Compile Include="Client\JsonMarkupWriter.cs" />
+    <Compile Include="Client\ResourceBuildResult.cs" />
     <Compile Include="Client\ScriptDataBlock.cs" />
     <Compile Include="Compilation\BuildCache.cs" />
     <Compile Include="Compilation\BuildErrorReporter.cs" />

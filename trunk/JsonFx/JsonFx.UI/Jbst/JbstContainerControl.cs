@@ -46,7 +46,7 @@ namespace JsonFx.UI.Jbst
 
 		private string prefix;
 		private string tagName;
-		private Dictionary<String, Object> attributes;
+		private IDictionary<String, Object> attributes;
 		private JbstControlCollection childControls;
 
 		#endregion Fields
@@ -109,7 +109,7 @@ namespace JsonFx.UI.Jbst
 
 		[JsonName("attributes")]
 		[JsonSpecifiedProperty("AttributesSpecified")]
-		public Dictionary<String, Object> Attributes
+		public IDictionary<String, Object> Attributes
 		{
 			get
 			{

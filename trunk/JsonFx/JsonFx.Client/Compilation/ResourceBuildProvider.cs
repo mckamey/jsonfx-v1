@@ -1,4 +1,4 @@
-#region License
+﻿#region License
 /*---------------------------------------------------------------------------------*\
 
 	Distributed under the terms of an MIT-style license:
@@ -53,6 +53,7 @@ namespace JsonFx.Compilation
 
 	public interface IResourceBuildHelper
 	{
+		string VirtualPath { get; }
 		void AddVirtualPathDependency(string virtualPath);
 		void AddAssemblyDependency(Assembly assembly);
 		TextReader OpenReader(string virtualPath);
@@ -477,7 +478,7 @@ namespace JsonFx.Compilation
 			}
 
 			// allow the code provider to extend with additional properties
-			provider.GenerateCodeExtensions(resourceType);
+			provider.GenerateCodeExtensions(this, resourceType);
 
 			// Generate _ASP FastObjectFactory
 			assemblyBuilder.GenerateTypeFactory(this.ResourceFullName);
@@ -543,7 +544,22 @@ namespace JsonFx.Compilation
 
 		#endregion BuildProvider Methods
 
-		#region ResourceBuildHelper Members
+		#region IResourceBuildHelper Members
+
+		string IResourceBuildHelper.VirtualPath
+		{
+			get
+			{
+				string appDomainAppVirtualPath = HttpRuntime.AppDomainAppVirtualPath;
+				string virtualPath = base.VirtualPath;
+				if (appDomainAppVirtualPath.Length > 1)
+				{
+					virtualPath = virtualPath.Substring(appDomainAppVirtualPath.Length);
+				}
+				virtualPath = "~"+virtualPath;
+				return virtualPath;
+			}
+		}
 
 		void IResourceBuildHelper.AddVirtualPathDependency(string virtualPath)
 		{
@@ -649,7 +665,7 @@ namespace JsonFx.Compilation
 			return this.GetDefaultCompilerTypeForLanguage(language);
 		}
 
-		#endregion ResourceBuildHelper Members
+		#endregion IResourceBuildHelper Members
 
 		#region Utility Methods
 

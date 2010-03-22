@@ -1,4 +1,4 @@
-#region License
+﻿#region License
 /*---------------------------------------------------------------------------------*\
 
 	Distributed under the terms of an MIT-style license:
@@ -148,14 +148,14 @@ namespace JsonFx.Compilation
 			resourceType.BaseTypes.Add(typeof(JbstBuildResult));
 		}
 
-		protected override void GenerateCodeExtensions(CodeTypeDeclaration resourceType)
+		protected override void GenerateCodeExtensions(IResourceBuildHelper helper, CodeTypeDeclaration resourceType)
 		{
 			if (this.jbstWriter == null)
 			{
 				throw new InvalidOperationException("JbstCodeProvider: JbstWriter is missing");
 			}
 
-			base.GenerateCodeExtensions(resourceType);
+			base.GenerateCodeExtensions(helper, resourceType);
 
 			string jbstName = this.jbstWriter.JbstName;
 			AutoMarkupType autoMarkup = this.jbstWriter.AutoMarkup;
@@ -267,7 +267,7 @@ namespace JsonFx.Compilation
 
 		#region IResourceNameGenerator Members
 
-		private static string GetClassForJbst(string jbstName)
+		internal static string GetClassForJbst(string jbstName)
 		{
 			if (String.IsNullOrEmpty(jbstName))
 			{
@@ -281,20 +281,6 @@ namespace JsonFx.Compilation
 		string IResourceNameGenerator.GenerateResourceName(string virtualPath)
 		{
 			return JbstCodeProvider.GetClassForJbst(this.jbstWriter.JbstName);
-		}
-
-		public static JbstBuildResult FindJbst(string jbstName)
-		{
-			string className = JbstCodeProvider.GetClassForJbst(jbstName);
-
-			JbstBuildResult jbst = BuildCache.Instance.Create<JbstBuildResult>(className);
-			if (jbst == null)
-			{
-				// use a simple value rather than code generated
-				jbst = new JbstBuildResult(jbstName);
-			}
-
-			return jbst;
 		}
 
 		#endregion IResourceNameGenerator Members
