@@ -187,7 +187,7 @@ namespace JsonFx.UI.Jbst
 			}
 
 			string inlineData = null;
-			if (data != null && this.AutoMarkup == AutoMarkupType.Data)
+			if (data != null && !(data is EcmaScriptIdentifier) && this.AutoMarkup == AutoMarkupType.Data)
 			{
 				if (hasInner)
 				{
