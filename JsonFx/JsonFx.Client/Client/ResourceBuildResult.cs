@@ -246,7 +246,7 @@ namespace JsonFx.Client
 					string mimeType;
 					if (result == null)
 					{
-						mimeType = CssResourceCodeProvider.MimeType;
+						mimeType = ScriptResourceCodeProvider.MimeType;
 					}
 					else
 					{
