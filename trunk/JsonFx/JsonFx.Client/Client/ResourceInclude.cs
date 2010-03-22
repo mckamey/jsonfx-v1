@@ -146,7 +146,7 @@ namespace JsonFx.Client
 
 		protected override void Render(HtmlTextWriter writer)
 		{
-			ResourceBuildResult result = ResourceBuildResult.FindResource(this.SourceUrl);
+			ResourceBuildResult result = this.GetResource();
 
 			result.Attributes = this.attributes;
 			result.IsDebug = this.IsDebug;
@@ -162,6 +162,11 @@ namespace JsonFx.Client
 			}
 
 			result.Write(writer);
+		}
+
+		protected virtual ResourceBuildResult GetResource()
+		{
+			return ResourceBuildResult.FindResource(this.SourceUrl);
 		}
 
 		#endregion Page Event Handlers
