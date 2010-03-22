@@ -1,11 +1,11 @@
-#region License
+﻿#region License
 /*---------------------------------------------------------------------------------*\
 
 	Distributed under the terms of an MIT-style license:
 
 	The MIT License
 
-	Copyright (c) 2006-2009 Stephen M. McKamey
+	Copyright (c) 2006-2010 Stephen M. McKamey
 
 	Permission is hereby granted, free of charge, to any person obtaining a copy
 	of this software and associated documentation files (the "Software"), to deal
@@ -184,20 +184,16 @@ namespace JsonFx.Handlers
 
 		protected internal static string GetResourceUrl(IBuildResult info, string path, bool isDebug)
 		{
-			if ((path != null) && (path.IndexOf("://") > 0))
-			{
-				string alt;
-				MergeResourceCodeProvider.SplitAlternates(path, out path, out alt);
-				return isDebug ? path : alt;
-			}
-
 			if (info == null)
 			{
-				info = ResourceHandler.Create<IBuildResult>(path);
-				if (info == null)
+				if ((path == null) || (path.IndexOf("://") < 0))
 				{
 					return path;
 				}
+
+				string alt;
+				MergeResourceCodeProvider.SplitAlternates(path, out path, out alt);
+				return isDebug ? path : alt;
 			}
 
 			string cache;

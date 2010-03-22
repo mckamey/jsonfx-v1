@@ -31,16 +31,31 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Web;
 
 using JsonFx.Client;
-using JsonFx.Compilation;
 using JsonFx.Json;
 using JsonFx.UI.Jbst;
+using JsonFx.Compilation;
 
 namespace JsonFx.Mvc
 {
 	public static class Jbst
 	{
+		#region Properties
+
+		private static bool IsDebug
+		{
+			get
+			{
+				// TODO: find a better way to access this
+				HttpContext context = HttpContext.Current;
+				return context != null && context.IsDebuggingEnabled;
+			}
+		}
+
+		#endregion Properties
+
 		#region JBST Helper Methods
 
 		/// <summary>
@@ -53,7 +68,8 @@ namespace JsonFx.Mvc
 		public static string Bind(EcmaScriptIdentifier jbstName, EcmaScriptIdentifier dataName, IDictionary<string, object> dataItems)
 		{
 			StringWriter writer = new StringWriter();
-			JbstBuildResult jbst = JbstCodeProvider.FindJbst(jbstName);
+			JbstBuildResult jbst = JbstBuildResult.FindJbst(jbstName);
+			jbst.IsDebug = IsDebug;
 
 			if (dataItems != null)
 			{
@@ -78,7 +94,8 @@ namespace JsonFx.Mvc
 			StringWriter writer = new StringWriter();
 
 			// render the JBST
-			JbstBuildResult jbst = JbstCodeProvider.FindJbst(jbstName);
+			JbstBuildResult jbst = JbstBuildResult.FindJbst(jbstName);
+			jbst.IsDebug = IsDebug;
 			jbst.Write(writer, data);
 
 			return writer.ToString();
@@ -97,7 +114,8 @@ namespace JsonFx.Mvc
 			StringWriter writer = new StringWriter();
 
 			// render the JBST
-			JbstBuildResult jbst = JbstCodeProvider.FindJbst(jbstName);
+			JbstBuildResult jbst = JbstBuildResult.FindJbst(jbstName);
+			jbst.IsDebug = IsDebug;
 			jbst.Write(writer, data, index, count);
 
 			return writer.ToString();
@@ -132,11 +150,46 @@ namespace JsonFx.Mvc
 			StringWriter writer = new StringWriter();
 
 			// render data block
-			new DataBlockWriter().Write(writer, dataItems);
+			DataBlockWriter dataBlock = new DataBlockWriter();
+			dataBlock.IsDebug = IsDebug;
+			dataBlock.Write(writer, dataItems);
 
 			return writer.ToString();
 		}
 
 		#endregion Script Data Helper Methods
+
+		#region Resource HelperMethods
+
+		/// <summary>
+		/// Include optimized resources
+		/// </summary>
+		/// <param name="compactUrl"></param>
+		/// <param name="debugUrl"></param>
+		/// <returns></returns>
+		public static string ResourceInclude(string debugUrl, string compactUrl)
+		{
+			string url = MergeResourceCodeProvider.JoinAlternates(debugUrl, compactUrl);
+
+			return ResourceInclude(url);
+		}
+
+		/// <summary>
+		/// Include optimized resources
+		/// </summary>
+		/// <param name="url"></param>
+		/// <returns></returns>
+		public static string ResourceInclude(string url)
+		{
+			StringWriter writer = new StringWriter();
+
+			ResourceBuildResult result = ResourceBuildResult.FindResource(url);
+			result.IsDebug = IsDebug;
+			result.Write(writer);
+
+			return writer.ToString();
+		}
+
+		#endregion Resource HelperMethods
 	}
 }

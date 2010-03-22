@@ -208,7 +208,7 @@ namespace JsonFx.UI.Jbst
 			{
 				if (this.jbst == null)
 				{
-					this.jbst = JbstCodeProvider.FindJbst(this.Name);
+					this.jbst = JbstBuildResult.FindJbst(this.Name);
 				}
 
 				return this.jbst;

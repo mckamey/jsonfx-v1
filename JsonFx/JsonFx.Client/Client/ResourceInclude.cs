@@ -1,11 +1,11 @@
-#region License
+﻿#region License
 /*---------------------------------------------------------------------------------*\
 
 	Distributed under the terms of an MIT-style license:
 
 	The MIT License
 
-	Copyright (c) 2006-2009 Stephen M. McKamey
+	Copyright (c) 2006-2010 Stephen M. McKamey
 
 	Permission is hereby granted, free of charge, to any person obtaining a copy
 	of this software and associated documentation files (the "Software"), to deal
@@ -31,44 +31,24 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Text;
-using System.Threading;
-using System.Web;
 using System.Web.UI;
-
-using JsonFx.Compilation;
-using JsonFx.Handlers;
 
 namespace JsonFx.Client
 {
-	public enum StyleIncludeType
-	{
-		Link,
-		Import
-	}
-
 	/// <summary>
-	/// Base control for referencing a ResourceHandler
+	/// Control for referencing resources
 	/// </summary>
 	[ToolboxData("<{0}:ResourceInclude runat=\"server\"></{0}:ResourceInclude>")]
 	public class ResourceInclude : Control, IAttributeAccessor
 	{
-		#region Constants
-
-		private const string StyleLink = "<link type=\"{0}\" href=\"{1}\"{2} />";
-		private const string StyleImport = "<style type=\"{0}\"{2}>@import url({1});</style>";
-		private const string ScriptInclude = "<script type=\"{0}\" src=\"{1}\"{2}></script>";
-
-		#endregion Constants
-
 		#region Fields
 
 		private bool isDebug;
 		private string sourceUrl;
 		private bool usePageCulture = true;
 		private bool suppressLocalization;
-		private StyleIncludeType styleFormat = StyleIncludeType.Link;
-		private Dictionary<string, string> attributes;
+		private CssIncludeType styleFormat = CssIncludeType.Link;
+		private IDictionary<string, string> attributes;
 
 		#endregion Fields
 
@@ -138,8 +118,8 @@ namespace JsonFx.Client
 		/// Gets and sets if page determines the culture or
 		/// if uses CurrentUICulture
 		/// </summary>
-		[DefaultValue(StyleIncludeType.Link)]
-		public StyleIncludeType StyleFormat
+		[DefaultValue(CssIncludeType.Link)]
+		public CssIncludeType StyleFormat
 		{
 			get { return this.styleFormat; }
 			set { this.styleFormat = value; }
@@ -148,13 +128,13 @@ namespace JsonFx.Client
 		/// <summary>
 		/// Gets the collection of custom attributes
 		/// </summary>
-		public Dictionary<string, string> Attributes
+		public IDictionary<string, string> Attributes
 		{
 			get
 			{
 				if (this.attributes == null)
 				{
-					this.attributes = new Dictionary<string, string>(2, StringComparer.OrdinalIgnoreCase);
+					this.attributes = new Dictionary<string, string>(4, StringComparer.OrdinalIgnoreCase);
 				}
 				return this.attributes;
 			}
@@ -166,111 +146,25 @@ namespace JsonFx.Client
 
 		protected override void Render(HtmlTextWriter writer)
 		{
-			string url = this.SourceUrl;
+			ResourceBuildResult result = ResourceBuildResult.FindResource(this.SourceUrl);
 
-			bool isExternal = (url != null) && (url.IndexOf("://") > 0);
+			result.Attributes = this.attributes;
+			result.IsDebug = this.IsDebug;
 
-			IBuildResult info = isExternal ? null :
-				this.GetResourceInfo(url);
-
-			if (info == null && !isExternal)
+			if (result is ScriptBuildResult)
 			{
-				throw new ArgumentException(String.Format(
-					"Error loading resources for \"{0}\".\r\n"+
-					"This can be caused by an invalid path, build errors, or incorrect configuration.\r\n"+
-					"Check http://help.jsonfx.net/instructions for troubleshooting.",
-					url));
+				((ScriptBuildResult)result).SuppressLocalization = this.SuppressLocalization;
+				((ScriptBuildResult)result).UsePageCulture = this.UsePageCulture;
+			}
+			else if (result is CssBuildResult)
+			{
+				((CssBuildResult)result).StyleFormat = this.StyleFormat;
 			}
 
-			url = ResourceHandler.GetResourceUrl(info, url, this.isDebug);
-			url = this.ResolveUrl(url);
-
-			string type =
-				isExternal || String.IsNullOrEmpty(info.ContentType) ?
-				String.Empty :
-				info.ContentType.ToLowerInvariant();
-
-			string format;
-			switch (type)
-			{
-				case CssResourceCodeProvider.MimeType:
-				{
-					switch (this.StyleFormat)
-					{
-						case StyleIncludeType.Import:
-						{
-							format = ResourceInclude.StyleImport;
-							break;
-						}
-						default:
-						{
-							format = ResourceInclude.StyleLink;
-							if (!this.Attributes.ContainsKey("rel"))
-							{
-								this.Attributes["rel"] = "stylesheet";
-							}
-							break;
-						}
-					}
-					break;
-				}
-				case "":
-				{
-					type = ScriptResourceCodeProvider.MimeType;
-					goto default;
-				}
-				default:
-				{
-					format = ResourceInclude.ScriptInclude;
-					break;
-				}
-			}
-
-			string attrib = this.BuildCustomAttributes();
-			writer.Write(format, type, url, attrib);
-
-			if (!this.SuppressLocalization &&
-				info is IGlobalizedBuildResult)
-			{
-				string culture = this.UsePageCulture ?
-					Thread.CurrentThread.CurrentCulture.Name :
-					String.Empty;
-
-				url = ResourceHandler.GetLocalizationUrl(url, culture);
-				url = this.ResolveUrl(url);
-				writer.Write(ResourceInclude.ScriptInclude, ScriptResourceCodeProvider.MimeType, url, String.Empty);
-			}
-		}
-
-		protected virtual IBuildResult GetResourceInfo(string url)
-		{
-			return ResourceHandler.Create<IBuildResult>(url);
+			result.Write(writer);
 		}
 
 		#endregion Page Event Handlers
-
-		#region Attribute Methods
-
-		private string BuildCustomAttributes()
-		{
-			if (this.attributes == null || this.attributes.Count == 0)
-			{
-				return String.Empty;
-			}
-
-			StringBuilder builder = new StringBuilder();
-			foreach (string key in this.attributes.Keys)
-			{
-				builder.Append(' ');
-				builder.Append(HttpUtility.HtmlAttributeEncode(key.ToLowerInvariant()));
-				builder.Append("=\"");
-				builder.Append(HttpUtility.HtmlAttributeEncode(this.attributes[key]));
-				builder.Append('"');
-			}
-			return builder.ToString();
-		}
-
-		#endregion Attribute Methods
 
 		#region IAttributeAccessor Members
 

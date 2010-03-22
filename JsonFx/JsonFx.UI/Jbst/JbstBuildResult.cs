@@ -33,6 +33,7 @@ using System.IO;
 using System.Text;
 
 using JsonFx.Client;
+using JsonFx.Compilation;
 using JsonFx.Json;
 
 namespace JsonFx.UI.Jbst
@@ -266,5 +267,23 @@ namespace JsonFx.UI.Jbst
 		}
 
 		#endregion Render Methods
+
+		#region Factory Methods
+
+		public static JbstBuildResult FindJbst(string jbstName)
+		{
+			string className = JbstCodeProvider.GetClassForJbst(jbstName);
+
+			JbstBuildResult jbst = BuildCache.Instance.Create<JbstBuildResult>(className);
+			if (jbst == null)
+			{
+				// use a simple value rather than code generated
+				jbst = new JbstBuildResult(jbstName);
+			}
+
+			return jbst;
+		}
+
+		#endregion Factory Methods
 	}
 }
