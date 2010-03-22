@@ -162,9 +162,9 @@ namespace JsonFx.Client
 		private void WriteImport(TextWriter writer, string url)
 		{
 			writer.Write(CssBuildResult.ImportStart);
-			writer.Write(url);
-			writer.Write(CssBuildResult.ImportMiddle);
 			this.WriteAttributes(writer);
+			writer.Write(CssBuildResult.ImportMiddle);
+			writer.Write(url);
 			writer.Write(CssBuildResult.ImportEnd);
 		}
 
