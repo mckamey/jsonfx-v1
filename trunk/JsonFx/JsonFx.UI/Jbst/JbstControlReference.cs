@@ -29,6 +29,7 @@
 #endregion License
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 
 using JsonFx.Json;
@@ -44,7 +45,7 @@ namespace JsonFx.UI.Jbst
 
 		public const string ControlCommand = "control";
 
-		private const string ControlSimpleFormat =
+		private const string SimpleReferenceFormat =
 			@"function() {{
 				return JsonML.BST({0}).dataBind({1}, {2}, {3});
 			}}";
@@ -57,11 +58,11 @@ namespace JsonFx.UI.Jbst
 			@");
 			}";
 
-		private const string ControlInlineStart =
+		private const string InlineTemplateStart =
 			@"function() {
 				return JsonML.BST(";
 
-		private const string ControlInlineEndFormat =
+		private const string InlineTemplateEndFormat =
 			@").dataBind({0}, {1}, {2});
 			}}";
 
@@ -87,22 +88,25 @@ namespace JsonFx.UI.Jbst
 		/// <param name="writer"></param>
 		protected override void Render(JsonWriter writer)
 		{
-			if (String.IsNullOrEmpty(this.NameExpr) && !this.ChildControlsSpecified)
-			{
-				throw new InvalidOperationException("JBST Control requires either a named template or an anonymous inline template.");
-			}
-
 			if (!this.ChildControlsSpecified)
 			{
-				this.RenderSimpleCustomControl(writer);
+				if (String.IsNullOrEmpty(this.NameExpr))
+				{
+					throw new InvalidOperationException("jbst:Control requires either a named template or anonymous inline template.");
+				}
+
+				// name without child controls
+				this.RenderSimpleControlReference(writer);
 			}
 			else if (String.IsNullOrEmpty(this.NameExpr))
 			{
-				this.RenderInlineCustomControl(writer);
+				// anonymous with child controls
+				this.RenderAnonymousTemplate(writer);
 			}
 			else
 			{
-				this.RenderWrapperCustomControl(writer);
+				// both name and child controls
+				this.RenderWrapperControlReference(writer);
 			}
 		}
 
@@ -110,10 +114,10 @@ namespace JsonFx.UI.Jbst
 		/// Renders a simple data binding call to a named template.
 		/// </summary>
 		/// <param name="writer"></param>
-		private void RenderSimpleCustomControl(JsonWriter writer)
+		private void RenderSimpleControlReference(JsonWriter writer)
 		{
 			writer.TextWriter.Write(
-				JbstControlReference.ControlSimpleFormat,
+				JbstControlReference.SimpleReferenceFormat,
 				this.NameExpr,
 				this.DataExpr,
 				this.IndexExpr,
@@ -124,14 +128,14 @@ namespace JsonFx.UI.Jbst
 		/// Renders a data binding call to an inline anonymous template.
 		/// </summary>
 		/// <param name="writer"></param>
-		private void RenderInlineCustomControl(JsonWriter writer)
+		private void RenderAnonymousTemplate(JsonWriter writer)
 		{
-			writer.TextWriter.Write(ControlInlineStart);
+			writer.TextWriter.Write(JbstControlReference.InlineTemplateStart);
 
 			writer.Write(new EnumerableAdapter(this));
 
 			writer.TextWriter.Write(
-				JbstControlReference.ControlInlineEndFormat,
+				JbstControlReference.InlineTemplateEndFormat,
 				this.DataExpr,
 				this.IndexExpr,
 				this.CountExpr);
@@ -141,22 +145,64 @@ namespace JsonFx.UI.Jbst
 		/// Renders a data binding call to a named template with a nested inline anonymous placeholder template.
 		/// </summary>
 		/// <param name="writer"></param>
-		private void RenderWrapperCustomControl(JsonWriter writer)
+		private void RenderWrapperControlReference(JsonWriter writer)
 		{
 			writer.TextWriter.Write(
-				ControlWrapperStartFormat,
+				JbstControlReference.ControlWrapperStartFormat,
 				this.NameExpr,
 				this.DataExpr,
 				this.IndexExpr,
 				this.CountExpr);
 
 			Dictionary<string, object> options = new Dictionary<string, object>(1);
-			options["$"/*placholder name*/] = new EnumerableAdapter(this);
+			options[JbstPlaceholder.NamePrefix/*+ placholderName*/] = new EnumerableAdapter(this);
 			writer.Write(options);
 
 			writer.TextWriter.Write(JbstControlReference.ControlWrapperEnd);
 		}
 
 		#endregion Render Methods
+
+		#region Enumerable Adapter
+
+		/// <summary>
+		/// A simple adapter for exposing the IEnumerable interface without exposing the IJsonSerializable interface
+		/// </summary>
+		/// <remarks>
+		/// In order to wrap the output of the JbstControl IJsonSerializable was required, but this takes
+		/// precedent over the IEnumerable interface which is what should be rendered inside the wrapper.
+		/// </remarks>
+		private class EnumerableAdapter : IEnumerable
+		{
+			#region Fields
+
+			private readonly IEnumerable enumerable;
+
+			#endregion Fields
+
+			#region Init
+
+			/// <summary>
+			/// Ctor
+			/// </summary>
+			/// <param name="enumerable"></param>
+			public EnumerableAdapter(IEnumerable enumerable)
+			{
+				this.enumerable = enumerable;
+			}
+
+			#endregion Init
+
+			#region IEnumerable Members
+
+			IEnumerator IEnumerable.GetEnumerator()
+			{
+				return this.enumerable.GetEnumerator();
+			}
+
+			#endregion IEnumerable Members
+		}
+
+		#endregion Enumerable Adapter
 	}
 }

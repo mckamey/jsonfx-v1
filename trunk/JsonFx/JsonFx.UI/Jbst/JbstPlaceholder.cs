@@ -42,6 +42,7 @@ namespace JsonFx.UI.Jbst
 		#region Constants
 
 		public const string PlaceholderCommand = "placeholder";
+		public const string NamePrefix = "$";
 
 		private const string PlaceholderStatement =
 			@"function(options) {{
@@ -70,7 +71,7 @@ namespace JsonFx.UI.Jbst
 		{
 			writer.TextWriter.Write(
 				JbstPlaceholder.PlaceholderStatement,
-				"$"/* this.NameExpr */,
+				JbstPlaceholder.NamePrefix+this.NameExpr,
 				this.DataExpr,
 				this.IndexExpr,
 				this.CountExpr);
