@@ -3,7 +3,7 @@
 	JsonML + Browser-Side Templating (JBST)
 
 	Created: 2008-07-28-2337
-	Modified: 2010-03-09-2304
+	Modified: 2010-03-22-2016
 
 	Copyright (c)2006-2010 Stephen M. McKamey
 	Distributed under an open-source license: http://jsonml.org/license
@@ -16,7 +16,7 @@
 		// JBST + JSON => DOM
 		var dom = JsonML.BST(jbst).bind(data);
 
-		Implement filter to intercept and perform automatic filtering of the resulting DOM tree while binding:
+		// Implement filter to intercept and perform automatic filtering of the resulting DOM tree while binding
 		JsonML.BST.filter = function (element) {
 			if (condition) {
 				// this will remove from resulting DOM tree
@@ -25,8 +25,8 @@
 			return element;
 		};
 
-		Implement onerror to handle any runtime errors while binding:
-		JsonML.BST.onerror = function (ex, jbst, data, index, count, inner) {
+		// Implement onerror to handle any runtime errors while binding
+		JsonML.BST.onerror = function(ex, jbst, data, index, count, options) {
 			// display inline error message
 			return "["+ex+"]";
 		};
@@ -38,18 +38,9 @@ if ("undefined" === typeof JsonML) {
 	JsonML = {};
 }
 
-/* wrapper */
-JsonML.BST = function(/*JBST*/ jbst) {
-	if (jbst instanceof JsonML.BST.init) {
-		return jbst;
-	}
-	return new JsonML.BST.init(jbst);
-};
+JsonML.BST = (function(){
 
-/* ctor */
-JsonML.BST.init = function(/*JBST*/ jbst) {
-	var self = this,
-		SHOW = "jbst:visible",
+	var SHOW = "jbst:visible",
 		INIT = "jbst:oninit",
 		LOAD = "jbst:onload";
 
@@ -80,7 +71,7 @@ JsonML.BST.init = function(/*JBST*/ jbst) {
 	// appends a child tree to a parent
 	// elem: parent element
 	// child: child tree
-	/*void*/ function appendChild(/*Array*/ elem, /*array|object|string*/ child) {
+	/*void*/ function appendChild(/*JsonML*/ elem, /*array|object|string*/ child) {
 		if (child instanceof Array && child.length && child[0] === "") {
 			// result was multiple JsonML sub-trees (as documentFragment)
 			child.shift();// remove fragment ident
@@ -109,107 +100,8 @@ JsonML.BST.init = function(/*JBST*/ jbst) {
 
 	// default onerror handler
 	// ex: exception
-	/*JsonML*/ function onerror(/*Error*/ ex, /*JBST*/ node, /*object*/ data, /*int*/ index, /*int*/ count, /*JBST*/ inner) {
+	/*JsonML*/ function onerror(/*Error*/ ex, /*JsonML*/ node, /*object*/ data, /*int*/ index, /*int*/ count, /*object*/ options) {
 		return "["+ex+"]";
-	}
-
-	// recursively applies dataBind to all nodes of the template graph
-	// NOTE: it is very important to replace each node with a copy,
-	// otherwise it destroys the original template.
-	// node: current template node being data bound
-	// data: current data item being bound
-	// index: index of current data item
-	// count: count of current set of data items
-	// inner: nested JBST template
-	// returns: JsonML nodes
-	/*object*/ function dataBind(/*JBST*/ node, /*object*/ data, /*int*/ index, /*int*/ count, /*JBST*/ inner) {
-		try {
-			// process JBST node
-			if (node) {
-				// output
-				var output;
-
-				if ("function" === typeof node) {
-					try {
-						// setup context for code block
-						self.data = data;
-						self.index = isFinite(index) ? Number(index) : NaN;
-						self.count = isFinite(count) ? Number(count) : NaN;
-						// execute node in the context of self as "this"
-						output = node.call(self, inner);
-					} finally {
-						// cleanup contextual members
-						delete self.count;
-						delete self.index;
-						delete self.data;
-					}
-
-					if (output instanceof JsonML.BST.init) {
-						// allow returned JBSTs to recursively bind
-						// useful for creating "switcher" template methods
-						return output.dataBind(data, index, count, inner);
-					}
-					return output;
-				}
-
-				if (node instanceof Array) {
-					// output array
-					output = [];
-					for (var i=0; i<node.length; i++) {
-						// result
-						var result = dataBind(node[i], data, index, count, inner);
-						appendChild(output, result);
-					}
-
-					// if output has attributes, check for JBST commands
-					if (output.length > 1 && output[1] && ("object" === typeof output[1]) && !(output[1] instanceof Array)) {
-						// visibility JBST command
-						var child = output[1][SHOW];
-						if ("undefined" !== typeof child) {
-							// cull any false-y values
-							if (!child) {
-								// suppress rendering of entire subtree
-								return "";
-							}
-							// remove attribute
-							delete output[1][SHOW];
-						}
-
-						// jbst:oninit
-						ensureMethod(output[1], INIT);
-
-						// jbst:onload
-						ensureMethod(output[1], LOAD);
-					}
-					return output;
-				}
-
-				if ("object" === typeof node) {
-					output = {};
-					// process each property in template node
-					for (var property in node) {
-						if (node.hasOwnProperty(property)) {
-							// evaluate property's value
-							var value = dataBind(node[property], data, index, count, inner);
-							if ("undefined" !== typeof value && value !== null) {
-								output[property] = value;
-							}
-						}
-					}
-					return output;
-				}
-			}
-
-			// rest are value types, so return node directly
-			return node;
-		} catch (ex) {
-			try {
-				// handle error with complete context
-				return ("function" === typeof JsonML.BST.onerror ? JsonML.BST.onerror : onerror)(ex, node, data, index, count, inner);
-			} catch (ex2) {
-				return null;
-			}
-		}
 	}
 
 	// retrieve and remove method
@@ -259,52 +151,165 @@ JsonML.BST.init = function(/*JBST*/ jbst) {
 		return elem;
 	}
 
-	// the publicly exposed instance method
-	// combines JBST and JSON to produce JsonML
-	/*JsonML*/ self.dataBind = function(/*object*/ data, /*int*/ index, /*int*/ count, /*JBST*/ inner) {
-		if (data instanceof Array) {
-			// create a document fragment to hold list
-			var output = [""];
+	/* ctor */
+	function JBST(/*JsonML*/ jbst) {
+		if ("undefined" === typeof jbst) {
+			throw new Error("JBST tree is undefined");
+		}
 
-			count = data.length;
-			for (var i=0; i<count; i++) {
-				// apply template to each item in array
-				appendChild(output, dataBind(jbst, data[i], i, count, inner));
+		var self = this;
+
+		// recursively applies dataBind to all nodes of the template graph
+		// NOTE: it is very important to replace each node with a copy,
+		// otherwise it destroys the original template.
+		// node: current template node being data bound
+		// data: current data item being bound
+		// index: index of current data item
+		// count: count of current set of data items
+		// options: options object
+		// returns: JsonML nodes
+		/*object*/ function dataBind(/*JsonML*/ node, /*object*/ data, /*int*/ index, /*int*/ count, /*object*/ options) {
+			try {
+				// recursively process each node
+				if (node) {
+					// output
+					var output;
+
+					if ("function" === typeof node) {
+						try {
+							// setup context for code block
+							self.data = data;
+							self.index = isFinite(index) ? Number(index) : NaN;
+							self.count = isFinite(count) ? Number(count) : NaN;
+							// execute node in the context of self as "this"
+							output = node.call(self, options);
+						} finally {
+							// cleanup contextual members
+							delete self.count;
+							delete self.index;
+							delete self.data;
+						}
+
+						if (output instanceof JBST) {
+							// allow returned JBSTs to recursively bind
+							// useful for creating "switcher" template methods
+							return output.dataBind(data, index, count, options);
+						}
+						return output;
+					}
+
+					if (node instanceof Array) {
+						// output array
+						output = [];
+						for (var i=0; i<node.length; i++) {
+							// result
+							var result = dataBind(node[i], data, index, count, options);
+							appendChild(output, result);
+						}
+
+						// if output has attributes, check for JBST commands
+						if (output.length > 1 && output[1] && ("object" === typeof output[1]) && !(output[1] instanceof Array)) {
+							// visibility JBST command
+							var child = output[1][SHOW];
+							if ("undefined" !== typeof child) {
+								// cull any false-y values
+								if (!child) {
+									// suppress rendering of entire subtree
+									return "";
+								}
+								// remove attribute
+								delete output[1][SHOW];
+							}
+
+							// jbst:oninit
+							ensureMethod(output[1], INIT);
+
+							// jbst:onload
+							ensureMethod(output[1], LOAD);
+						}
+						return output;
+					}
+
+					if ("object" === typeof node) {
+						output = {};
+						// process each property in template node
+						for (var property in node) {
+							if (node.hasOwnProperty(property)) {
+								// evaluate property's value
+								var value = dataBind(node[property], data, index, count, options);
+								if ("undefined" !== typeof value && value !== null) {
+									output[property] = value;
+								}
+							}
+						}
+						return output;
+					}
+				}
+
+				// rest are value types, so return node directly
+				return node;
+			} catch (ex) {
+				try {
+					// handle error with complete context
+					return ("function" === typeof JsonML.BST.onerror ? JsonML.BST.onerror : onerror)(ex, node, data, index, count, options);
+				} catch (ex2) {
+					return null;
+				}
 			}
-			return output;
-		} else {
-			// data is singular so apply template once
-			return dataBind(jbst, data, index, count, inner);
-		}
-	};
-
-	/* JBST + JSON => JsonML => DOM */
-	/*DOM*/ self.bind = function(/*object*/ data, /*int*/ index, /*int*/ count, /*JBST*/ inner) {
-
-		// databind JSON data to a JBST template, resulting in a JsonML representation
-		var jml = self.dataBind(data, index, count, inner);
-
-		// hydrate the resulting JsonML, executing callbacks, and user-filter
-		return JsonML.parse(jml, filter);
-	};
-
-	// replaces a DOM element with element result from binding
-	/*void*/ self.replace = function(/*DOM*/ elem, /*object*/ data, /*int*/ index, /*int*/ count, /*JBST*/ inner) {
-		if ("string" === typeof elem) {
-			elem = document.getElementById(elem);
 		}
 
-		if (elem && elem.parentNode) {
-			var jml = self.bind(data, index, count, inner);
-			if (jml) {
-				elem.parentNode.replaceChild(jml, elem);
+		// the publicly exposed instance method
+		// combines JBST and JSON to produce JsonML
+		/*JsonML*/ self.dataBind = function(/*object*/ data, /*int*/ index, /*int*/ count, /*object*/ options) {
+			if (data instanceof Array) {
+				// create a document fragment to hold list
+				var output = [""];
+
+				count = data.length;
+				for (var i=0; i<count; i++) {
+					// apply template to each item in array
+					appendChild(output, dataBind(jbst, data[i], i, count, options));
+				}
+				return output;
+			} else {
+				// data is singular so apply template once
+				return dataBind(jbst, data, index, count, options);
 			}
-		}
+		};
+
+		/* JBST + JSON => JsonML => DOM */
+		/*DOM*/ self.bind = function(/*object*/ data, /*int*/ index, /*int*/ count, /*object*/ options) {
+
+			// databind JSON data to a JBST template, resulting in a JsonML representation
+			var jml = self.dataBind(data, index, count, options);
+
+			// hydrate the resulting JsonML, executing callbacks, and user-filter
+			return JsonML.parse(jml, filter);
+		};
+
+		// replaces a DOM element with element result from binding
+		/*void*/ self.replace = function(/*DOM*/ elem, /*object*/ data, /*int*/ index, /*int*/ count, /*object*/ options) {
+			if ("string" === typeof elem) {
+				elem = document.getElementById(elem);
+			}
+
+			if (elem && elem.parentNode) {
+				var jml = self.bind(data, index, count, options);
+				if (jml) {
+					elem.parentNode.replaceChild(jml, elem);
+				}
+			}
+		};
+	}
+
+	/* factory method */
+	return function(/*JBST*/ jbst) {
+		return (jbst instanceof JBST) ? jbst : new JBST(jbst);
 	};
-};
+})();
 
-/* override this to perform default filtering of the resulting DOM tree */
-/*DOM function(DOM)*/ JsonML.BST.filter = null;
+/* override to perform default filtering of the resulting DOM tree */
+/*function*/ JsonML.BST.filter = null;
 
-/* override this to perform custom error handling during binding */
-/*DOM function(DOM)*/ JsonML.BST.onerror = null;
+/* override to perform custom error handling during binding */
+/*function*/ JsonML.BST.onerror = null;
