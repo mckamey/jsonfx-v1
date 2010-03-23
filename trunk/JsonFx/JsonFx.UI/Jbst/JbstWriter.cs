@@ -210,7 +210,18 @@ namespace JsonFx.UI.Jbst
 			JbstContainerControl control;
 			if (JbstCustomControl.JbstPrefix.Equals(prefix, StringComparison.OrdinalIgnoreCase))
 			{
-				control = new JbstCustomControl(tagName);
+				if (StringComparer.OrdinalIgnoreCase.Equals(JbstCustomControl.ControlCommand, tagName))
+				{
+					control = new JbstCustomControl();
+				}
+				else if (StringComparer.OrdinalIgnoreCase.Equals(JbstPlaceholderControl.PlaceholderCommand, tagName))
+				{
+					control = new JbstPlaceholderControl();
+				}
+				else
+				{
+					control = new JbstContainerControl(prefix, tagName);
+				}
 			}
 			else
 			{
