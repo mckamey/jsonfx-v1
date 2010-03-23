@@ -73,10 +73,12 @@
     <Compile Include="Jbst\JbstContainerControl.cs" />
     <Compile Include="Jbst\JbstControlCollection.cs" />
     <Compile Include="Jbst\JbstCustomControl.cs" />
+    <Compile Include="Jbst\JbstCustomControlBase.cs" />
     <Compile Include="Jbst\JbstLiteral.cs" />
     <Compile Include="Compilation\JbstCodeProvider.cs">
       <SubType>Component</SubType>
     </Compile>
+    <Compile Include="Jbst\JbstPlaceholderControl.cs" />
     <Compile Include="Jbst\JbstWriter.cs" />
     <Compile Include="Jbst\SimpleJbstBuildResult.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

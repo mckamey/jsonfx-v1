@@ -35,25 +35,47 @@ using JsonFx.Json;
 namespace JsonFx.UI.Jbst
 {
 	/// <summary>
-	/// Common base for all JBST nodes.
+	/// Internal representation of a JBST placholder control.
 	/// </summary>
-	internal abstract class JbstControl
+	internal class JbstPlaceholderControl : JbstCustomControlBase
 	{
-		#region Fields
+		#region Constants
 
-		private JbstContainerControl parent = null;
+		public const string PlaceholderCommand = "placeholder";
 
-		#endregion Fields
+		private const string PlaceholderStatement =
+			@"function(options) {{
+				if (options && options.{0}) {{
+					return JsonML.BST(options.{0}).dataBind({1}, {2}, {3}, options);
+				}}
+			}}";
 
-		#region Properties
+		#endregion Constants
 
-		[JsonIgnore]
-		public JbstContainerControl Parent
+		#region Init
+
+		/// <summary>
+		/// Ctor
+		/// </summary>
+		public JbstPlaceholderControl()
+			: base(JbstPlaceholderControl.PlaceholderCommand)
 		{
-			get { return this.parent; }
-			set { this.parent = value; }
 		}
 
-		#endregion Properties
+		#endregion Init
+
+		#region Render Methods
+
+		protected override void Render(JsonWriter writer)
+		{
+			writer.TextWriter.Write(
+				JbstPlaceholderControl.PlaceholderStatement,
+				"$"/* this.NameExpr */,
+				this.DataExpr,
+				this.IndexExpr,
+				this.CountExpr);
+		}
+
+		#endregion Render Methods
 	}
 }
