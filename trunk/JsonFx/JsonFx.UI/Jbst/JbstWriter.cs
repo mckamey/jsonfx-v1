@@ -208,19 +208,19 @@ namespace JsonFx.UI.Jbst
 			string prefix = JbstWriter.SplitPrefix(rawName, out tagName);
 
 			JbstContainerControl control;
-			if (JbstCustomControl.JbstPrefix.Equals(prefix, StringComparison.OrdinalIgnoreCase))
+			if (JbstCommandBase.JbstPrefix.Equals(prefix, StringComparison.OrdinalIgnoreCase))
 			{
-				if (StringComparer.OrdinalIgnoreCase.Equals(JbstCustomControl.ControlCommand, tagName))
+				if (StringComparer.OrdinalIgnoreCase.Equals(JbstControlReference.ControlCommand, tagName))
 				{
-					control = new JbstCustomControl();
+					control = new JbstControlReference();
 				}
-				else if (StringComparer.OrdinalIgnoreCase.Equals(JbstPlaceholderControl.PlaceholderCommand, tagName))
+				else if (StringComparer.OrdinalIgnoreCase.Equals(JbstPlaceholder.PlaceholderCommand, tagName))
 				{
-					control = new JbstPlaceholderControl();
+					control = new JbstPlaceholder();
 				}
 				else
 				{
-					control = new JbstContainerControl(prefix, tagName);
+					throw new InvalidOperationException("Unknown JBST command ('"+rawName+"')");
 				}
 			}
 			else
@@ -515,7 +515,7 @@ namespace JsonFx.UI.Jbst
 			foreach (KeyValuePair<string, object> attrib in tag.FilteredAttributes)
 			{
 				// normalize JBST command names
-				string key = attrib.Key.StartsWith(JbstCustomControl.JbstPrefix, StringComparison.OrdinalIgnoreCase) ?
+				string key = attrib.Key.StartsWith(JbstCommandBase.JbstPrefix, StringComparison.OrdinalIgnoreCase) ?
 					attrib.Key.ToLowerInvariant() : attrib.Key;
 
 				if (attrib.Value is string)

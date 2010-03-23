@@ -67,18 +67,18 @@
     <Compile Include="Jbst\Extensions\JbstExtension.cs" />
     <Compile Include="Jbst\Extensions\ResourceJbstExtension.cs" />
     <Compile Include="Jbst\JbstBuildResult.cs" />
+    <Compile Include="Jbst\JbstCommandBase.cs" />
     <Compile Include="Jbst\JbstCompiler.cs" />
     <Compile Include="Jbst\JbstControl.cs" />
     <Compile Include="Jbst\JbstCodeBlock.cs" />
     <Compile Include="Jbst\JbstContainerControl.cs" />
     <Compile Include="Jbst\JbstControlCollection.cs" />
-    <Compile Include="Jbst\JbstCustomControl.cs" />
-    <Compile Include="Jbst\JbstCustomControlBase.cs" />
+    <Compile Include="Jbst\JbstControlReference.cs" />
     <Compile Include="Jbst\JbstLiteral.cs" />
     <Compile Include="Compilation\JbstCodeProvider.cs">
       <SubType>Component</SubType>
     </Compile>
-    <Compile Include="Jbst\JbstPlaceholderControl.cs" />
+    <Compile Include="Jbst\JbstPlaceholder.cs" />
     <Compile Include="Jbst\JbstWriter.cs" />
     <Compile Include="Jbst\SimpleJbstBuildResult.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

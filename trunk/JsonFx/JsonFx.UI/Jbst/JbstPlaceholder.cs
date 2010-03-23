@@ -35,9 +35,9 @@ using JsonFx.Json;
 namespace JsonFx.UI.Jbst
 {
 	/// <summary>
-	/// Internal representation of a JBST placholder control.
+	/// Internal representation of a JBST placholder
 	/// </summary>
-	internal class JbstPlaceholderControl : JbstCustomControlBase
+	internal class JbstPlaceholder : JbstCommandBase
 	{
 		#region Constants
 
@@ -57,8 +57,8 @@ namespace JsonFx.UI.Jbst
 		/// <summary>
 		/// Ctor
 		/// </summary>
-		public JbstPlaceholderControl()
-			: base(JbstPlaceholderControl.PlaceholderCommand)
+		public JbstPlaceholder()
+			: base(JbstPlaceholder.PlaceholderCommand)
 		{
 		}
 
@@ -69,7 +69,7 @@ namespace JsonFx.UI.Jbst
 		protected override void Render(JsonWriter writer)
 		{
 			writer.TextWriter.Write(
-				JbstPlaceholderControl.PlaceholderStatement,
+				JbstPlaceholder.PlaceholderStatement,
 				"$"/* this.NameExpr */,
 				this.DataExpr,
 				this.IndexExpr,
