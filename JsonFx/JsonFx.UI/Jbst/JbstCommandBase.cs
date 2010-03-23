@@ -36,9 +36,9 @@ using JsonFx.Json;
 namespace JsonFx.UI.Jbst
 {
 	/// <summary>
-	/// Internal base representation of a JBST control.
+	/// Internal base representation of JBST commands
 	/// </summary>
-	internal abstract class JbstCustomControlBase : JbstContainerControl, IJsonSerializable
+	internal abstract class JbstCommandBase : JbstContainerControl, IJsonSerializable
 	{
 		#region Constants
 
@@ -79,7 +79,7 @@ namespace JsonFx.UI.Jbst
 		/// Ctor
 		/// </summary>
 		/// <param name="commandName"></param>
-		public JbstCustomControlBase(string commandName)
+		public JbstCommandBase(string commandName)
 		{
 			this.commandType = (commandName == null) ?
 				String.Empty :
@@ -93,7 +93,7 @@ namespace JsonFx.UI.Jbst
 		[JsonName("rawName")]
 		public override string RawName
 		{
-			get { return JbstCustomControlBase.JbstPrefix + this.commandType; }
+			get { return JbstCommandBase.JbstPrefix + this.commandType; }
 		}
 
 		protected string NameExpr

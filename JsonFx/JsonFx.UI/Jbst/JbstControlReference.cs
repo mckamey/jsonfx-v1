@@ -36,9 +36,9 @@ using JsonFx.Json;
 namespace JsonFx.UI.Jbst
 {
 	/// <summary>
-	/// Internal representation of a JBST custom control
+	/// Internal representation of a JBST control reference
 	/// </summary>
-	internal class JbstCustomControl : JbstCustomControlBase
+	internal class JbstControlReference : JbstCommandBase
 	{
 		#region Constants
 
@@ -72,8 +72,8 @@ namespace JsonFx.UI.Jbst
 		/// <summary>
 		/// Ctor
 		/// </summary>
-		public JbstCustomControl()
-			: base(JbstCustomControl.ControlCommand)
+		public JbstControlReference()
+			: base(JbstControlReference.ControlCommand)
 		{
 		}
 
@@ -113,7 +113,7 @@ namespace JsonFx.UI.Jbst
 		private void RenderSimpleCustomControl(JsonWriter writer)
 		{
 			writer.TextWriter.Write(
-				JbstCustomControl.ControlSimpleFormat,
+				JbstControlReference.ControlSimpleFormat,
 				this.NameExpr,
 				this.DataExpr,
 				this.IndexExpr,
@@ -131,7 +131,7 @@ namespace JsonFx.UI.Jbst
 			writer.Write(new EnumerableAdapter(this));
 
 			writer.TextWriter.Write(
-				JbstCustomControl.ControlInlineEndFormat,
+				JbstControlReference.ControlInlineEndFormat,
 				this.DataExpr,
 				this.IndexExpr,
 				this.CountExpr);
@@ -154,7 +154,7 @@ namespace JsonFx.UI.Jbst
 			options["$"/*placholder name*/] = new EnumerableAdapter(this);
 			writer.Write(options);
 
-			writer.TextWriter.Write(JbstCustomControl.ControlWrapperEnd);
+			writer.TextWriter.Write(JbstControlReference.ControlWrapperEnd);
 		}
 
 		#endregion Render Methods

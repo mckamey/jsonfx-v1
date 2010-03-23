@@ -1104,7 +1104,7 @@ namespace JsonFx.BuildTools.HtmlDistiller
 			}
 			catch (Exception ex)
 			{
-				try { this.WriteLiteral("Error writing HtmlTag: "+ex.Message); }
+				try { this.WriteLiteral("[ERROR: "+ex.Message+"]"); }
 				catch { }
 			}
 		}
