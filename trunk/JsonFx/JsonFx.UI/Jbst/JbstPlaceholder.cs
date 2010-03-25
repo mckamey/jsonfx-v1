@@ -42,12 +42,15 @@ namespace JsonFx.UI.Jbst
 		#region Constants
 
 		public const string PlaceholderCommand = "placeholder";
-		public const string NamePrefix = "$";
 
-		private const string PlaceholderStatement =
-			@"function(options) {{
-				if (options && options.{0}) {{
-					return JsonML.BST(options.{0}).dataBind({1}, {2}, {3}, options);
+		private const string PlaceholderStatementStart =
+			@"function(options) {
+				var inline = ";
+
+		private const string PlaceholderStatementEndFormat =
+			@";
+				if (options && options[inline]) {{
+					return JsonML.BST(options[inline]).dataBind({0}, {1}, {2}, options);
 				}}
 			}}";
 
@@ -69,9 +72,12 @@ namespace JsonFx.UI.Jbst
 
 		protected override void Render(JsonWriter writer)
 		{
+			writer.TextWriter.Write(JbstPlaceholder.PlaceholderStatementStart);
+
+			writer.Write(JbstInline.InlinePrefix+this.NameExpr);
+
 			writer.TextWriter.Write(
-				JbstPlaceholder.PlaceholderStatement,
-				JbstPlaceholder.NamePrefix+this.NameExpr,
+				JbstPlaceholder.PlaceholderStatementEndFormat,
 				this.DataExpr,
 				this.IndexExpr,
 				this.CountExpr);

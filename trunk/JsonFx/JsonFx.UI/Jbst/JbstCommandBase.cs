@@ -29,6 +29,7 @@
 #endregion License
 
 using System;
+using System.Collections;
 
 using JsonFx.Json;
 
@@ -95,24 +96,44 @@ namespace JsonFx.UI.Jbst
 			get { return JbstCommandBase.JbstPrefix + this.commandType; }
 		}
 
-		protected string NameExpr
+		protected internal string NameExpr
 		{
-			get { return this.nameExpr; }
+			get
+			{
+				this.EnsureControl();
+
+				return this.nameExpr;
+			}
 		}
 
 		protected string DataExpr
 		{
-			get { return this.dataExpr; }
+			get
+			{
+				this.EnsureControl();
+
+				return this.dataExpr;
+			}
 		}
 
 		protected string IndexExpr
 		{
-			get { return this.indexExpr; }
+			get
+			{
+				this.EnsureControl();
+
+				return this.indexExpr;
+			}
 		}
 
 		protected string CountExpr
 		{
-			get { return this.countExpr; }
+			get
+			{
+				this.EnsureControl();
+
+				return this.countExpr;
+			}
 		}
 
 		#endregion Properties
@@ -205,5 +226,47 @@ namespace JsonFx.UI.Jbst
 		}
 
 		#endregion IJsonSerializable Members
+
+		#region Enumerable Adapter
+
+		/// <summary>
+		/// A simple adapter for exposing the IEnumerable interface without exposing the IJsonSerializable interface
+		/// </summary>
+		/// <remarks>
+		/// In order to wrap the output of the JbstControl IJsonSerializable was required, but this takes
+		/// precedent over the IEnumerable interface which is what should be rendered inside the wrapper.
+		/// </remarks>
+		protected class EnumerableAdapter : IEnumerable
+		{
+			#region Fields
+
+			private readonly IEnumerable enumerable;
+
+			#endregion Fields
+
+			#region Init
+
+			/// <summary>
+			/// Ctor
+			/// </summary>
+			/// <param name="enumerable"></param>
+			public EnumerableAdapter(IEnumerable enumerable)
+			{
+				this.enumerable = enumerable;
+			}
+
+			#endregion Init
+
+			#region IEnumerable Members
+
+			IEnumerator IEnumerable.GetEnumerator()
+			{
+				return this.enumerable.GetEnumerator();
+			}
+
+			#endregion IEnumerable Members
+		}
+
+		#endregion Enumerable Adapter
 	}
 }

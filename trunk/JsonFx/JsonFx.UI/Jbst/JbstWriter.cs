@@ -1,4 +1,4 @@
-#region License
+﻿#region License
 /*---------------------------------------------------------------------------------*\
 
 	Distributed under the terms of an MIT-style license:
@@ -164,15 +164,7 @@ namespace JsonFx.UI.Jbst
 			// this allows HTML entities to be encoded as unicode
 			text = HtmlDistiller.DecodeHtmlEntities(text);
 
-			JbstLiteral literal = this.current.ChildControls.Last as JbstLiteral;
-			if (literal != null)
-			{
-				// combine contiguous literals into single for reduced space and processing
-				literal.Text += text;
-				return;
-			}
-
-			literal = new JbstLiteral(text, true);
+			JbstLiteral literal = new JbstLiteral(text, true);
 			this.current.ChildControls.Add(literal);
 		}
 
@@ -186,17 +178,6 @@ namespace JsonFx.UI.Jbst
 			if (this.current == null)
 			{
 				this.current = this.document;
-			}
-
-			if (child is JbstLiteral)
-			{
-				// combine contiguous literals into single for reduced space and processing
-				JbstLiteral literal = this.current.ChildControls.Last as JbstLiteral;
-				if (literal != null)
-				{
-					literal.Text += ((JbstLiteral)child).Text;
-					return;
-				}
 			}
 
 			this.current.ChildControls.Add(child);
@@ -217,6 +198,10 @@ namespace JsonFx.UI.Jbst
 				else if (StringComparer.OrdinalIgnoreCase.Equals(JbstPlaceholder.PlaceholderCommand, tagName))
 				{
 					control = new JbstPlaceholder();
+				}
+				else if (StringComparer.OrdinalIgnoreCase.Equals(JbstInline.InlineCommand, tagName))
+				{
+					control = new JbstInline();
 				}
 				else
 				{
@@ -246,7 +231,7 @@ namespace JsonFx.UI.Jbst
 
 			if (this.current == null)
 			{
-				throw new InvalidOperationException("Push/Pop mismatch? (Current is null)");
+				throw new InvalidOperationException("Push/Pop mismatch? (current tag is null)");
 			}
 
 			if (!String.IsNullOrEmpty(tagName) &&
@@ -256,18 +241,25 @@ namespace JsonFx.UI.Jbst
 				return;
 			}
 
-			if (this.current == null)
-			{
-				throw new InvalidOperationException("Push/Pop mismatch? (Current.Parent is null)");
-			}
-
 			if (JbstWriter.ScriptTagName.Equals(this.current.RawName, StringComparison.OrdinalIgnoreCase))
 			{
 				// script tags get converted once fully parsed
 				this.Declarations.Append(this.current);
 			}
 
+			JbstInline inline = this.current as JbstInline;
+
 			this.current = this.current.Parent;
+
+			if (inline != null && inline.IsAnonymous)
+			{
+				// consolidate anonymous inline templates directly into body
+				this.current.ChildControls.Remove(inline);
+				if (inline.ChildControlsSpecified)
+				{
+					this.current.ChildControls.AddRange(inline.ChildControls);
+				}
+			}
 		}
 
 		private void AddAttribute(string name, string value)

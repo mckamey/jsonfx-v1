@@ -1,11 +1,11 @@
-#region License
+﻿#region License
 /*---------------------------------------------------------------------------------*\
 
 	Distributed under the terms of an MIT-style license:
 
 	The MIT License
 
-	Copyright (c) 2006-2009 Stephen M. McKamey
+	Copyright (c) 2006-2010 Stephen M. McKamey
 
 	Permission is hereby granted, free of charge, to any person obtaining a copy
 	of this software and associated documentation files (the "Software"), to deal
@@ -29,6 +29,7 @@
 #endregion License
 
 using System;
+using System.Collections;
 using System.Collections.Generic;
 
 namespace JsonFx.UI.Jbst
@@ -40,13 +41,18 @@ namespace JsonFx.UI.Jbst
 	{
 		#region Fields
 
-		private List<JbstControl> controls = new List<JbstControl>();
 		private JbstContainerControl owner;
+		private List<JbstControl> controls = new List<JbstControl>();
+		private List<JbstInline> inlineTemplates;
 
 		#endregion Fields
 
 		#region Init
 
+		/// <summary>
+		/// Ctor
+		/// </summary>
+		/// <param name="owner"></param>
 		public JbstControlCollection(JbstContainerControl owner)
 		{
 			this.owner = owner;
@@ -67,12 +73,31 @@ namespace JsonFx.UI.Jbst
 			set { this.controls[index] = value; }
 		}
 
-		public JbstControl Last
+		public IList<JbstInline> InlineTemplates
+		{
+			get
+			{
+				if (this.inlineTemplates == null)
+				{
+					this.inlineTemplates = new List<JbstInline>();
+				}
+				return this.inlineTemplates;
+			}
+		}
+
+		public bool InlineTemplatesSpecified
+		{
+			get { return (this.inlineTemplates != null && this.inlineTemplates.Count > 0); }
+		}
+
+		protected JbstControl Last
 		{
 			get
 			{
 				if (this.controls.Count < 1)
+				{
 					return null;
+				}
 
 				return this.controls[this.controls.Count-1];
 			}
@@ -84,17 +109,56 @@ namespace JsonFx.UI.Jbst
 
 		public void Add(JbstControl item)
 		{
-			this.controls.Add(item);
+			if (item is JbstLiteral)
+			{
+				// combine contiguous literals into single for reduced space and processing
+				JbstLiteral literal = this.Last as JbstLiteral;
+				if (literal != null)
+				{
+					literal.Text += ((JbstLiteral)item).Text;
+				}
+				else
+				{
+					this.controls.Add(item);
+				}
+			}
+			else if (item is JbstInline)
+			{
+				this.InlineTemplates.Add((JbstInline)item);
+			}
+			else
+			{
+				this.controls.Add(item);
+			}
+
 			item.Parent = this.Owner;
+		}
+
+		public void AddRange(IEnumerable<JbstControl> collection)
+		{
+			foreach (JbstControl item in collection)
+			{
+				this.Add(item);
+			}
 		}
 
 		public void Clear()
 		{
+			if (this.InlineTemplatesSpecified)
+			{
+				this.inlineTemplates.Clear();
+			}
+
 			this.controls.Clear();
 		}
 
 		bool ICollection<JbstControl>.Contains(JbstControl item)
 		{
+			if (this.InlineTemplatesSpecified && item is JbstInline)
+			{
+				return this.InlineTemplates.Contains((JbstInline)item);
+			}
+
 			return this.controls.Contains(item);
 		}
 
@@ -115,11 +179,16 @@ namespace JsonFx.UI.Jbst
 
 		bool ICollection<JbstControl>.Remove(JbstControl item)
 		{
-			return this.controls.Remove(item);
+			return this.Remove(item);
 		}
 
 		internal bool Remove(JbstControl item)
 		{
+			if (this.InlineTemplatesSpecified && item is JbstInline)
+			{
+				return this.InlineTemplates.Remove((JbstInline)item);
+			}
+
 			return this.controls.Remove(item);
 		}
 
@@ -136,7 +205,7 @@ namespace JsonFx.UI.Jbst
 
 		#region IEnumerable Members
 
-		System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
+		IEnumerator IEnumerable.GetEnumerator()
 		{
 			return this.controls.GetEnumerator();
 		}

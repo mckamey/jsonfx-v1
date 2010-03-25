@@ -35,25 +35,62 @@ using JsonFx.Json;
 namespace JsonFx.UI.Jbst
 {
 	/// <summary>
-	/// Common base for all JBST nodes.
+	/// Internal representation of named JBST placholder inline content
 	/// </summary>
-	internal abstract class JbstControl
+	internal class JbstInline : JbstCommandBase
 	{
-		#region Fields
+		#region Constants
 
-		private JbstContainerControl parent = null;
+		public const string InlineCommand = "inline";
+		public const string InlinePrefix = "inline$";
 
-		#endregion Fields
+		#endregion Constants
+
+		#region Init
+
+		/// <summary>
+		/// Ctor
+		/// </summary>
+		public JbstInline()
+			: base(JbstInline.InlineCommand)
+		{
+		}
+
+		#endregion Init
 
 		#region Properties
 
-		[JsonIgnore]
-		public virtual JbstContainerControl Parent
+		public override JbstContainerControl Parent
 		{
-			get { return this.parent; }
-			set { this.parent = value; }
+			get { return base.Parent; }
+			set
+			{
+				if (value == null ||
+					value is JbstControlReference)
+				{
+					base.Parent = value;
+				}
+				else
+				{
+					throw new InvalidOperationException("jbst:inline may only be a direct child of jbst:control");
+				}
+			}
+		}
+
+		public bool IsAnonymous
+		{
+			get { return String.IsNullOrEmpty(this.NameExpr); }
 		}
 
 		#endregion Properties
+
+		#region Render Methods
+
+		protected override void Render(JsonWriter writer)
+		{
+			writer.Write(new EnumerableAdapter(this));
+		}
+
+		#endregion Render Methods
 	}
 }

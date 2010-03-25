@@ -74,6 +74,7 @@
     <Compile Include="Jbst\JbstContainerControl.cs" />
     <Compile Include="Jbst\JbstControlCollection.cs" />
     <Compile Include="Jbst\JbstControlReference.cs" />
+    <Compile Include="Jbst\JbstInline.cs" />
     <Compile Include="Jbst\JbstLiteral.cs" />
     <Compile Include="Compilation\JbstCodeProvider.cs">
       <SubType>Component</SubType>
