@@ -726,6 +726,14 @@
             Keeps running tally of the plain text length
             </summary>
         </member>
+        <member name="M:JsonFx.BuildTools.HtmlDistiller.HtmlDistiller.HtmlAttributeEncode(System.String,System.IO.TextWriter)">
+            <summary>
+            Encodes characters which cannot be inside HTML attributes into safe representation
+            </summary>
+            <param name="value"></param>
+            <param name="writer"></param>
+            <returns></returns>
+        </member>
         <member name="M:JsonFx.BuildTools.HtmlDistiller.HtmlDistiller.EncodeHtmlEntity(System.Char)">
             <summary>
             Encodes special characters into safe representation
