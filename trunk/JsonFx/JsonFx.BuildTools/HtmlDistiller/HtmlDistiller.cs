@@ -1341,6 +1341,60 @@ namespace JsonFx.BuildTools.HtmlDistiller
 		}
 
 		/// <summary>
+		/// Encodes characters which cannot be inside HTML attributes into safe representation
+		/// </summary>
+		/// <param name="value"></param>
+		/// <param name="writer"></param>
+		/// <returns></returns>
+		public static void HtmlAttributeEncode(string value, TextWriter writer)
+		{
+			if (String.IsNullOrEmpty(value))
+			{
+				return;
+			}
+
+			int index = 0,
+				last = 0,
+				length = value.Length;
+
+			for (; index < length; index++)
+			{
+				string replacement;
+				switch (value[index])
+				{
+					case '"':
+					{
+						replacement = "&quot;";
+						break;
+					}
+					case '&':
+					{
+						replacement = "&amp;";
+						break;
+					}
+					case '<':
+					{
+						replacement = "&lt;";
+						break;
+					}
+					default:
+					{
+						continue;
+					}
+				}
+
+				writer.Write(value.Substring(last, index-last));
+				writer.Write(replacement);
+				last = index+1;
+			}
+
+			if (last < length)
+			{
+				writer.Write(value.Substring(last));
+			}
+		}
+
+		/// <summary>
 		/// Encodes special characters into safe representation
 		/// </summary>
 		/// <param name="ch"></param>

@@ -187,17 +187,17 @@ namespace JsonFx.BuildTools.HtmlDistiller.Writers
 				this.writer.Write(' ');
 				if (String.IsNullOrEmpty(value))
 				{
-					this.writer.Write(HtmlAttributeEncode(attribute.Key));
+					HtmlDistiller.HtmlAttributeEncode(attribute.Key, this.writer);
 				}
 				else if (String.IsNullOrEmpty(attribute.Key))
 				{
-					this.writer.Write(HtmlAttributeEncode(value));
+					HtmlDistiller.HtmlAttributeEncode(value, this.writer);
 				}
 				else
 				{
-					this.writer.Write(HtmlAttributeEncode(attribute.Key));
+					HtmlDistiller.HtmlAttributeEncode(attribute.Key, this.writer);
 					this.writer.Write("=\"");
-					this.writer.Write(HtmlAttributeEncode(value));
+					HtmlDistiller.HtmlAttributeEncode(value, this.writer);
 					this.writer.Write("\"");
 				}
 			}
@@ -213,28 +213,13 @@ namespace JsonFx.BuildTools.HtmlDistiller.Writers
 
 			foreach (KeyValuePair<string, string> style in tag.FilteredStyles)
 			{
-				this.writer.Write(HtmlAttributeEncode(style.Key));
+				HtmlDistiller.HtmlAttributeEncode(style.Key, this.writer);
 				this.writer.Write(':');
-				this.writer.Write(HtmlAttributeEncode(style.Value));
+				HtmlDistiller.HtmlAttributeEncode(style.Value, this.writer);
 				this.writer.Write(';');
 			}
 
 			this.writer.Write('\"');
-		}
-
-		private string HtmlAttributeEncode(string value)
-		{
-			if (value == null)
-			{
-				return String.Empty;
-			}
-
-			if (value.IndexOf('"') < 0)
-			{
-				return value;
-			}
-
-			return value.Replace("\"", "&quot;");
 		}
 
 		#endregion Methods
