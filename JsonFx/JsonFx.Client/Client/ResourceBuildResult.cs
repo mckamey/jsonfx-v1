@@ -379,9 +379,9 @@ namespace JsonFx.Client
 			foreach (string key in this.attributes.Keys)
 			{
 				writer.Write(' ');
-				writer.Write(HttpUtility.HtmlAttributeEncode(key.ToLowerInvariant()));
+				HttpUtility.HtmlAttributeEncode(key.ToLowerInvariant(), writer);
 				writer.Write("=\"");
-				writer.Write(HttpUtility.HtmlAttributeEncode(this.attributes[key]));
+				HttpUtility.HtmlAttributeEncode(this.attributes[key], writer);
 				writer.Write('"');
 			}
 		}
