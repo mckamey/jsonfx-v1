@@ -109,11 +109,13 @@ namespace JsonFx.UI.Jbst
 			{
 				if (this.controls.Count == 1)
 				{
+					// exclude templates which are entirely whitespace
+					// this happens with just whitespace between named templates
 					JbstLiteral literal = this.controls[0] as JbstLiteral;
 					return (literal == null) || !literal.IsWhitespace;
 				}
 
-				return (this.controls.Count > 1);
+				return (this.controls.Count > 0);
 			}
 		}
 
@@ -196,7 +198,7 @@ namespace JsonFx.UI.Jbst
 			return this.Remove(item);
 		}
 
-		internal bool Remove(JbstControl item)
+		public bool Remove(JbstControl item)
 		{
 			if (this.InlineTemplatesSpecified && item is JbstInline)
 			{
