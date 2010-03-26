@@ -359,7 +359,10 @@ namespace JsonFx.UI.Jbst
 				writer.WriteLine("/*global {0} */", globals);
 			}
 
-			EcmaScriptWriter.WriteNamespaceDeclaration(writer, this.JbstName, null, true);
+			if (!EcmaScriptWriter.WriteNamespaceDeclaration(writer, this.JbstName, null, true))
+			{
+				writer.Write("var ");
+			}
 
 			// wrap with ctor and assign
 			writer.Write(this.JbstName);
