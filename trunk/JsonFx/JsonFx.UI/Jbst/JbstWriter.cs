@@ -54,7 +54,7 @@ namespace JsonFx.UI.Jbst
 
 		private const string ScriptTagName = "script";
 
-		private const string AnonymousPrefix = "anonymous_";
+		private const string AnonymousPrefix = "$";
 
 		#endregion Constants
 

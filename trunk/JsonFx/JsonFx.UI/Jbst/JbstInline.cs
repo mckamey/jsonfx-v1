@@ -42,7 +42,7 @@ namespace JsonFx.UI.Jbst
 		#region Constants
 
 		public const string InlineCommand = "inline";
-		public const string InlinePrefix = "inline$";
+		public const string InlinePrefix = "$";
 
 		#endregion Constants
 
