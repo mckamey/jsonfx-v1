@@ -3,7 +3,7 @@
 	JsonML + Browser-Side Templating (JBST)
 
 	Created: 2008-07-28-2337
-	Modified: 2010-03-22-2016
+	Modified: 2010-03-25-2359
 
 	Copyright (c)2006-2010 Stephen M. McKamey
 	Distributed under an open-source license: http://jsonml.org/license
@@ -65,36 +65,6 @@ JsonML.BST = (function(){
 				attr[key.split(':').join('$')] = method;
 			}
 			delete attr[key];
-		}
-	}
-
-	// appends a child tree to a parent
-	// elem: parent element
-	// child: child tree
-	/*void*/ function appendChild(/*JsonML*/ elem, /*array|object|string*/ child) {
-		if (child instanceof Array && child.length && child[0] === "") {
-			// result was multiple JsonML sub-trees (as documentFragment)
-			child.shift();// remove fragment ident
-
-			// directly append children
-			while (child.length) {
-				appendChild(elem, child.shift());
-			}
-		} else if ("object" === typeof child) {
-			// result was a JsonML node (attributes or children)
-			elem.push(child);
-		} else if ("undefined" !== typeof child && child !== null) {
-			// must convert to string or JsonML will discard
-			child = String(child);
-
-			// skip processing empty string literals
-			if (child && elem.length > 1 && "string" === typeof elem[elem.length-1]) {
-				// combine strings
-				elem[elem.length-1] += child;
-			} else if (child || !elem.length) {
-				// append
-				elem.push(child);
-			}
 		}
 	}
 
@@ -204,7 +174,7 @@ JsonML.BST = (function(){
 						for (var i=0; i<node.length; i++) {
 							// result
 							var result = dataBind(node[i], data, index, count, options);
-							appendChild(output, result);
+							JsonML.appendChild(output, result);
 						}
 
 						// if output has attributes, check for JBST commands
@@ -268,7 +238,7 @@ JsonML.BST = (function(){
 				count = data.length;
 				for (var i=0; i<count; i++) {
 					// apply template to each item in array
-					appendChild(output, dataBind(jbst, data[i], i, count, options));
+					JsonML.appendChild(output, dataBind(jbst, data[i], i, count, options));
 				}
 				return output;
 			} else {

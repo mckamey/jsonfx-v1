@@ -4,7 +4,7 @@
 	JsonML builder
 
 	Created: 2006-11-09-0116
-	Modified: 2010-03-09-2304
+	Modified: 2010-03-25-2359
 
 	Copyright (c)2006-2010 Stephen M. McKamey
 	Distributed under an open-source license: http://jsonml.org/license
@@ -256,6 +256,10 @@ if ("undefined" === typeof JsonML) {
 		this.value = value;
 	}
 
+	JsonML.raw = function(/*string*/ value) {
+		return new Unparsed(value);
+	};
+
 	// default onerror handler
 	// ex: exception
 	// jml: JsonML
@@ -265,9 +269,9 @@ if ("undefined" === typeof JsonML) {
 	}
 
 	/* override this to perform custom error handling during binding */
-	JsonML.onerror = null;	
+	JsonML.onerror = null;
 
-	/*DOM*/ function parse(/*JsonML*/ jml, /*function*/ filter) {
+	/*DOM*/ JsonML.parse = function(/*JsonML*/ jml, /*function*/ filter) {
 		try {
 			if (!jml) {
 				return null;
@@ -278,8 +282,8 @@ if ("undefined" === typeof JsonML) {
 			if (jml instanceof Unparsed) {
 				return hydrate(jml.value);
 			}
-			if (!(jml instanceof Array) || !jml.length || "string" !== typeof jml[0]) {
-				throw new Error("JsonML.parse: invalid JsonML tree");
+			if (!JsonML.isElement(jml)) {
+				throw new SyntaxError("invalid JsonML");
 			}
 
 			var i;
@@ -291,7 +295,7 @@ if ("undefined" === typeof JsonML) {
 					document.createDocumentFragment() :
 					document.createElement("");
 				for (i=1; i<jml.length; i++) {
-					appendChild(frag, parse(jml[i], filter));
+					appendChild(frag, JsonML.parse(jml[i], filter));
 				}
 
 				// trim extraneous whitespace
@@ -317,7 +321,7 @@ if ("undefined" === typeof JsonML) {
 						elem.cssText = jml[i];
 					} else {
 						// append children
-						appendChild(elem, parse(jml[i], filter));
+						appendChild(elem, JsonML.parse(jml[i], filter));
 					}
 				} else if (jml[i] instanceof Unparsed) {
 					appendChild(elem, hydrate(jml[i].value));
@@ -343,26 +347,103 @@ if ("undefined" === typeof JsonML) {
 				return null;
 			}
 		}
-	}
-
-	JsonML.parse = function(/*JsonML*/ jml, /*DOM function(DOM)*/ filter) {
-		if ("string" === typeof jml) {
-			if ("undefined" === typeof JSON) {
-				throw new Error("JSON is required to parse JsonML strings");
-			}
-			try {
-				jml = JSON.parse(jml);
-			} catch (ex) {
-				return null;
-			}
-		}
-		if (jml instanceof Array) {
-			return parse(jml, filter);
-		}
-		return null;
 	};
 
-	JsonML.raw = function(/*string*/ value) {
-		return new Unparsed(value);
+	/* Utility Methods -------------------------*/
+
+	/*bool*/ JsonML.isElement = function(/*JsonML*/ jml) {
+		return (jml instanceof Array) && ("string" === typeof jml[0]);
 	};
+
+	/*string*/ JsonML.getTagName = function(/*JsonML*/ jml) {
+		return jml[0] || "";
+	};
+
+	/*bool*/ JsonML.isAttributes = function(/*JsonML*/ jml) {
+		return !!jml && ("object" === typeof jml) && !(jml instanceof Array);
+	};
+
+	/*bool*/ JsonML.hasAttributes = function(/*JsonML*/ jml) {
+		return JsonML.isElement(jml) && JsonML.isAttributes(jml[1]);
+	};
+
+	/*object*/ JsonML.getAttributes = function(/*JsonML*/ jml) {
+		if (JsonML.hasAttributes(jml)) {
+			return jml[1];
+		}
+
+		// need to add an attribute object
+		var name = jml.shift();
+		var attr = {};
+		jml.unshift(attr);
+		jml.unshift(name||"");
+		return attr;
+	};
+
+	/*void*/ JsonML.addAttributes = function(/*JsonML*/ jml, /*object*/ attr) {
+		if (!JsonML.isElement(jml) || !JsonML.isAttributes(attr)) {
+			return;
+		}
+
+		if (!JsonML.isAttributes(jml[1])) {
+			// just insert attributes
+			var name = jml.shift();
+			jml.unshift(attr);
+			jml.unshift(name||"");
+			return;
+		}
+
+		// merge attribute objects
+		var old = jml[1];
+		for (var key in attr) {
+			if (attr.hasOwnProperty(key)) {
+				old[key] = attr[key];
+			}
+		}
+	};
+
+	/*object*/ JsonML.getAttribute = function(/*JsonML*/ jml, /*string*/ key) {
+		if (!JsonML.hasAttributes(jml)) {
+			return undefined;
+		}
+		return jml[1][key];
+	};
+
+	/*void*/ JsonML.setAttribute = function(/*JsonML*/ jml, /*string*/ key, /*string*/ value) {
+		JsonML.getAttributes(jml)[key] = value;
+	};
+
+	// appends a JsonML child to a parent JsonML element
+	/*void*/ JsonML.appendChild = function(/*JsonML*/ parent, /*array|object|string*/ child) {
+		if (child instanceof Array && child.length && child[0] === "") {
+			// result was multiple JsonML sub-trees (i.e. documentFragment)
+			child.shift();// remove fragment ident
+
+			// directly append children
+			while (child.length) {
+				JsonML.appendChild(parent, child.shift());
+			}
+		} else if (child && "object" === typeof child) {
+			if (!(child instanceof Array)) {
+				// result was JsonML attributes
+				JsonML.addAttributes(parent, child);
+			} else {
+				// result was a JsonML node
+				parent.push(child);
+			}
+		} else if ("undefined" !== typeof child && child !== null) {
+			// must convert to string or JsonML will discard
+			child = String(child);
+
+			// skip processing empty string literals
+			if (child && parent.length > 1 && "string" === typeof parent[parent.length-1]) {
+				// combine strings
+				parent[parent.length-1] += child;
+			} else if (child || !parent.length) {
+				// append
+				parent.push(child);
+			}
+		}
+	};
+
 })();
