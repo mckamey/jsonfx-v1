@@ -155,8 +155,11 @@ namespace JsonFx.UI.Jbst
 
 			Dictionary<string, object> options = new Dictionary<string, object>();
 
-			// anonymous inline template
-			options[JbstInline.InlinePrefix] = new EnumerableAdapter(this);
+			if (this.ChildControls.HasAnonymousInlineTemplate)
+			{
+				// anonymous inline template
+				options[JbstInline.InlinePrefix] = new EnumerableAdapter(this);
+			}
 
 			if (this.ChildControls.InlineTemplatesSpecified)
 			{

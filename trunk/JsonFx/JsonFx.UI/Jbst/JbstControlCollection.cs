@@ -103,6 +103,20 @@ namespace JsonFx.UI.Jbst
 			}
 		}
 
+		public bool HasAnonymousInlineTemplate
+		{
+			get
+			{
+				if (this.controls.Count == 1)
+				{
+					JbstLiteral literal = this.controls[0] as JbstLiteral;
+					return (literal == null) || !literal.IsWhitespace;
+				}
+
+				return (this.controls.Count > 1);
+			}
+		}
+
 		#endregion Properties
 
 		#region ICollection<JbstControlBase> Members
