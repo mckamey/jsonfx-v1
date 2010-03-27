@@ -54,10 +54,10 @@ JsonML.BST = (function(){
 
 	// ensures attribute key contains method or is removed
 	// attr: attribute object
-	// key: property key
-	/*void*/ function ensureMethod(/*object*/ attr, /*string*/ key) {
-		var method = attr[key];
-		if ("undefined" !== typeof method) {
+	// key: method name
+	/*function*/ function ensureMethod(/*object*/ attr, /*string*/ key) {
+		var method = attr[key] || null;
+		if (method) {
 			// ensure is method
 			if ("function" !== typeof method) {
 				try {
@@ -65,6 +65,7 @@ JsonML.BST = (function(){
 					method = new Function(String(method));
 					/*jslint evil:false */
 				} catch (ex) {
+					// filter
 					method = null;
 				}
 			}
@@ -74,6 +75,7 @@ JsonML.BST = (function(){
 			}
 			delete attr[key];
 		}
+		return method;
 	}
 
 	// default onerror handler, override JsonML.BST.onerror to change
@@ -86,15 +88,13 @@ JsonML.BST = (function(){
 		// IE doesn't like colon in property names
 		key = key.split(':').join('$');
 
-		var undef, // intentionally left undefined
-			method = elem[key];
-
+		var method = elem[key];
 		if (method) {
 			try {
 				delete elem[key];
 			} catch (ex) {
 				// sometimes IE doesn't like deleting from DOM
-				elem[key] = undef;
+				elem[key] = undefined;
 			}
 		}
 		return method;
@@ -190,10 +190,10 @@ JsonML.BST = (function(){
 						// if output has attributes, check for JBST commands
 						if (JsonML.hasAttributes(output)) {
 							// visibility JBST command
-							var child = output[1][SHOW];
-							if ("undefined" !== typeof child) {
+							var visible = output[1][SHOW];
+							if ("undefined" !== typeof visible) {
 								// cull any false-y values
-								if (!child) {
+								if (!visible) {
 									// suppress rendering of entire subtree
 									return "";
 								}
