@@ -3,32 +3,40 @@
 	JsonML + Browser-Side Templating (JBST)
 
 	Created: 2008-07-28-2337
-	Modified: 2010-03-25-2359
+	Modified: 2010-03-27-0853
 
 	Copyright (c)2006-2010 Stephen M. McKamey
 	Distributed under an open-source license: http://jsonml.org/license
 
     This file creates a JsonML.BST type containing these methods:
 
-		// JBST + JSON => JsonML
-		var jsonml = JsonML.BST(jbst).dataBind(data);
-
 		// JBST + JSON => DOM
 		var dom = JsonML.BST(jbst).bind(data);
 
-		// Implement filter to intercept and perform automatic filtering of the resulting DOM tree while binding
+		// JBST + JSON => JsonML
+		var jsonml = JsonML.BST(jbst).dataBind(data);
+
+		// Implement filter to intercept and perform custom filtering of resulting DOM elements
 		JsonML.BST.filter = function (element) {
 			if (condition) {
-				// this will remove from resulting DOM tree
+				// this will prevent insertion into resulting DOM tree
 				return null;
 			}
 			return element;
 		};
 
-		// Implement onerror to handle any runtime errors while binding
-		JsonML.BST.onerror = function(ex, jbst, data, index, count, options) {
-			// display inline error message
+		// Implement onerror event to handle any runtime errors while binding
+		JsonML.BST.onerror = function(ex, node, data, index, count, options) {
+			// display custom inline error messages
 			return "["+ex+"]";
+		};
+
+		// Implement onbound event to perform custom processing of elements after binding
+		JsonML.BST.onbound = function(node, data, index, count, options) {
+			// watch elements as they are constructed
+			if (window.console) {
+				console.log(JSON.stringify(output));
+			}
 		};
 */
 
@@ -68,9 +76,8 @@ JsonML.BST = (function(){
 		}
 	}
 
-	// default onerror handler
-	// ex: exception
-	/*JsonML*/ function onerror(/*Error*/ ex, /*JsonML*/ node, /*object*/ data, /*int*/ index, /*int*/ count, /*object*/ options) {
+	// default onerror handler, override JsonML.BST.onerror to change
+	/*JsonML*/ function onError(/*Error*/ ex, /*JsonML*/ node, /*object*/ data, /*int*/ index, /*int*/ count, /*object*/ options) {
 		return "["+ex+"]";
 	}
 
@@ -169,16 +176,19 @@ JsonML.BST = (function(){
 					}
 
 					if (node instanceof Array) {
-						// output array
+						// JsonML output
 						output = [];
 						for (var i=0; i<node.length; i++) {
-							// result
 							var result = dataBind(node[i], data, index, count, options);
 							JsonML.appendChild(output, result);
 						}
 
+						if ("function" === typeof JsonML.BST.onbound) {
+							JsonML.BST.onbound.call(self, output, data, index, count, options);
+						}
+
 						// if output has attributes, check for JBST commands
-						if (output.length > 1 && output[1] && ("object" === typeof output[1]) && !(output[1] instanceof Array)) {
+						if (JsonML.hasAttributes(output)) {
 							// visibility JBST command
 							var child = output[1][SHOW];
 							if ("undefined" !== typeof child) {
@@ -197,6 +207,8 @@ JsonML.BST = (function(){
 							// jbst:onload
 							ensureMethod(output[1], LOAD);
 						}
+
+						// element
 						return output;
 					}
 
@@ -212,18 +224,19 @@ JsonML.BST = (function(){
 								}
 							}
 						}
+						// attributes object
 						return output;
 					}
 				}
 
-				// rest are value types, so return node directly
+				// rest are simple value types, so return node directly
 				return node;
 			} catch (ex) {
 				try {
 					// handle error with complete context
-					return ("function" === typeof JsonML.BST.onerror ? JsonML.BST.onerror : onerror)(ex, node, data, index, count, options);
+					return ("function" === typeof JsonML.BST.onerror ? JsonML.BST.onerror : onError).call(self, ex, node, data, index, count, options);
 				} catch (ex2) {
-					return null;
+					return "["+ex2+"]";
 				}
 			}
 		}
@@ -240,6 +253,7 @@ JsonML.BST = (function(){
 					// apply template to each item in array
 					JsonML.appendChild(output, dataBind(jbst, data[i], i, count, options));
 				}
+				// document fragment
 				return output;
 			} else {
 				// data is singular so apply template once
@@ -283,3 +297,6 @@ JsonML.BST = (function(){
 
 /* override to perform custom error handling during binding */
 /*function*/ JsonML.BST.onerror = null;
+
+/* override to perform custom processing of each element after binding */
+/*function*/ JsonML.BST.onbound = null;
