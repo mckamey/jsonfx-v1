@@ -4,12 +4,12 @@
 	JsonML builder
 
 	Created: 2006-11-09-0116
-	Modified: 2010-03-25-2359
+	Modified: 2010-03-27-0722
 
 	Copyright (c)2006-2010 Stephen M. McKamey
 	Distributed under an open-source license: http://jsonml.org/license
 
-    This file creates a global JsonML object containing this method:
+    This file creates a global JsonML object containing these methods:
 
         JsonML.parse(string|array, filter)
 
@@ -51,12 +51,43 @@
 				return elem;
 			});
 
-		Implement onerror to handle any runtime errors while binding:
-		JsonML.onerror = function (ex, jml, filter) {
-			// display inline error message
-			return document.createTextNode("["+ex+"]");
-		};
+			// Implement onerror to handle any runtime errors while binding:
+			JsonML.onerror = function (ex, jml, filter) {
+				// display inline error message
+				return document.createTextNode("["+ex+"]");
+			};
 
+		Utility methods for manipulating JsonML elements:
+
+			// tests if a given object is a valid JsonML element
+			bool JsonML.isElement(jml);
+
+			// gets the name of a JsonML element
+			string JsonML.getTagName(jml);
+
+			// tests if a given object is a JsonML attributes collection
+			bool JsonML.isAttributes(jml);
+
+			// tests if a JsonML element has a JsonML attributes collection
+			bool JsonML.hasAttributes(jml);
+
+			// gets the attributes collection for a JsonML element
+			object JsonML.getAttributes(jml);
+
+			// sets multiple attributes for a JsonML element
+			void JsonML.addAttributes(jml, attr);
+
+			// gets a single attribute for a JsonML element
+			object JsonML.getAttribute(jml, key);
+
+			// sets a single attribute for a JsonML element
+			void JsonML.setAttribute(jml, key, value);
+
+			// appends a JsonML child node to a parent JsonML element
+			void JsonML.appendChild(parent, child);
+
+			// gets an array of the child nodes of a JsonML element
+			array JsonML.getChildren(jml);
 */
 
 var JsonML;
@@ -261,9 +292,6 @@ if ("undefined" === typeof JsonML) {
 	};
 
 	// default onerror handler
-	// ex: exception
-	// jml: JsonML
-	// filter: function
 	/*DOM*/ function onerror(/*Error*/ ex, /*JsonML*/ jml, /*function*/ filter) {
 		return document.createTextNode("["+ex+"]");
 	}
@@ -364,7 +392,11 @@ if ("undefined" === typeof JsonML) {
 	};
 
 	/*bool*/ JsonML.hasAttributes = function(/*JsonML*/ jml) {
-		return JsonML.isElement(jml) && JsonML.isAttributes(jml[1]);
+		if (!JsonML.isElement(jml)) {
+			throw new SyntaxError("invalid JsonML");
+		}
+
+		return JsonML.isAttributes(jml[1]);
 	};
 
 	/*object*/ JsonML.getAttributes = function(/*JsonML*/ jml) {
@@ -382,7 +414,7 @@ if ("undefined" === typeof JsonML) {
 
 	/*void*/ JsonML.addAttributes = function(/*JsonML*/ jml, /*object*/ attr) {
 		if (!JsonML.isElement(jml) || !JsonML.isAttributes(attr)) {
-			return;
+			throw new SyntaxError("invalid JsonML");
 		}
 
 		if (!JsonML.isAttributes(jml[1])) {
@@ -402,18 +434,17 @@ if ("undefined" === typeof JsonML) {
 		}
 	};
 
-	/*object*/ JsonML.getAttribute = function(/*JsonML*/ jml, /*string*/ key) {
+	/*string|number|bool*/ JsonML.getAttribute = function(/*JsonML*/ jml, /*string*/ key) {
 		if (!JsonML.hasAttributes(jml)) {
 			return undefined;
 		}
 		return jml[1][key];
 	};
 
-	/*void*/ JsonML.setAttribute = function(/*JsonML*/ jml, /*string*/ key, /*string*/ value) {
+	/*void*/ JsonML.setAttribute = function(/*JsonML*/ jml, /*string*/ key, /*string|number|bool*/ value) {
 		JsonML.getAttributes(jml)[key] = value;
 	};
 
-	// appends a JsonML child to a parent JsonML element
 	/*void*/ JsonML.appendChild = function(/*JsonML*/ parent, /*array|object|string*/ child) {
 		if (child instanceof Array && child.length && child[0] === "") {
 			// result was multiple JsonML sub-trees (i.e. documentFragment)
@@ -428,10 +459,18 @@ if ("undefined" === typeof JsonML) {
 				// result was JsonML attributes
 				JsonML.addAttributes(parent, child);
 			} else {
+				if (!JsonML.isElement(parent)) {
+					throw new SyntaxError("invalid JsonML");
+				}
+
 				// result was a JsonML node
 				parent.push(child);
 			}
 		} else if ("undefined" !== typeof child && child !== null) {
+			if (!JsonML.isElement(parent)) {
+				throw new SyntaxError("invalid JsonML");
+			}
+
 			// must convert to string or JsonML will discard
 			child = String(child);
 
@@ -444,6 +483,14 @@ if ("undefined" === typeof JsonML) {
 				parent.push(child);
 			}
 		}
+	};
+
+	/*array*/ JsonML.getChildren = function(/*JsonML*/ jml) {
+		if (JsonML.hasAttributes(jml)) {
+			jml.slice(2);
+		}
+
+		jml.slice(1);
 	};
 
 })();
