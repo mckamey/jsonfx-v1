@@ -44,13 +44,15 @@ namespace JsonFx.UI.Jbst
 		public const string PlaceholderCommand = "placeholder";
 
 		private const string PlaceholderStatementStart =
-			@"function(options) {
+			@"function() {
 				var inline = ";
 
 		private const string PlaceholderStatementEndFormat =
-			@";
-				if (options && options[inline]) {{
-					return JsonML.BST(options[inline]).dataBind({0}, {1}, {2}, options);
+			@",
+					parts = this.args;
+
+				if (parts && parts[inline]) {{
+					return JsonML.BST(parts[inline]).dataBind({0}, {1}, {2}, parts);
 				}}
 			}}";
 
