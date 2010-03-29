@@ -400,9 +400,13 @@ if ("undefined" === typeof JsonML) {
 		return JsonML.isAttributes(jml[1]);
 	};
 
-	/*object*/ JsonML.getAttributes = function(/*JsonML*/ jml) {
+	/*object*/ JsonML.getAttributes = function(/*JsonML*/ jml, /*bool*/ addIfMissing) {
 		if (JsonML.hasAttributes(jml)) {
 			return jml[1];
+		}
+
+		if (!addIfMissing) {
+			return undefined;
 		}
 
 		// need to add an attribute object
@@ -443,7 +447,7 @@ if ("undefined" === typeof JsonML) {
 	};
 
 	/*void*/ JsonML.setAttribute = function(/*JsonML*/ jml, /*string*/ key, /*string|number|bool*/ value) {
-		JsonML.getAttributes(jml)[key] = value;
+		JsonML.getAttributes(jml, true)[key] = value;
 	};
 
 	/*void*/ JsonML.appendChild = function(/*JsonML*/ parent, /*array|object|string*/ child) {
