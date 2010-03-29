@@ -153,12 +153,12 @@ namespace JsonFx.UI.Jbst
 				this.IndexExpr,
 				this.CountExpr);
 
-			Dictionary<string, object> options = new Dictionary<string, object>();
+			Dictionary<string, object> args = new Dictionary<string, object>();
 
 			if (this.ChildControls.HasAnonymousInlineTemplate)
 			{
 				// anonymous inline template
-				options[JbstInline.InlinePrefix] = new EnumerableAdapter(this);
+				args[JbstInline.InlinePrefix] = new EnumerableAdapter(this);
 			}
 
 			if (this.ChildControls.InlineTemplatesSpecified)
@@ -166,11 +166,11 @@ namespace JsonFx.UI.Jbst
 				// named inline templates
 				foreach (JbstInline inline in this.ChildControls.InlineTemplates)
 				{
-					options[JbstInline.InlinePrefix+inline.NameExpr] = new EnumerableAdapter(inline);
+					args[JbstInline.InlinePrefix+inline.NameExpr] = new EnumerableAdapter(inline);
 				}
 			}
 
-			writer.Write(options);
+			writer.Write(args);
 
 			writer.TextWriter.Write(JbstControlReference.ControlWrapperEnd);
 		}
