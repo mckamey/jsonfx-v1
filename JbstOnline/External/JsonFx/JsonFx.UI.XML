@@ -26,6 +26,76 @@
             Gets the virtual path
             </summary>
         </member>
+        <member name="T:JsonFx.UI.Jbst.JbstBuildResult">
+            <summary>
+            Encapsulates the binding logic for instantiating a JBST on a page.
+            </summary>
+        </member>
+        <member name="M:JsonFx.UI.Jbst.JbstBuildResult.#ctor(JsonFx.Json.EcmaScriptIdentifier)">
+            <summary>
+            Ctor
+            </summary>
+            <param name="jbstName"></param>
+        </member>
+        <member name="M:JsonFx.UI.Jbst.JbstBuildResult.#ctor(JsonFx.Json.EcmaScriptIdentifier,JsonFx.Client.AutoMarkupType)">
+            <summary>
+            Ctor
+            </summary>
+            <param name="jbstName"></param>
+            <param name="autoMarkup"></param>
+        </member>
+        <member name="M:JsonFx.UI.Jbst.JbstBuildResult.Write(System.IO.TextWriter,System.Object)">
+            <summary>
+            Renders the JBST control reference and any stored data to be used.
+            </summary>
+            <param name="writer">output</param>
+            <param name="data">data to be bound as an object which will be serialized</param>
+        </member>
+        <member name="M:JsonFx.UI.Jbst.JbstBuildResult.Write(System.IO.TextWriter,System.Object,System.Int32,System.Int32)">
+            <summary>
+            Renders the JBST control reference and any stored data to be used.
+            </summary>
+            <param name="writer">output</param>
+            <param name="data">data to be bound as an object which will be serialized</param>
+            <param name="index">the data index</param>
+            <param name="count">the total data count</param>
+        </member>
+        <member name="M:JsonFx.UI.Jbst.JbstBuildResult.Write(System.IO.TextWriter,System.Object,System.Int32,System.Int32,JsonFx.UI.Jbst.JbstBuildResult.InnerCallback)">
+            <summary>
+            Renders the JBST control reference and any stored data to be used.
+            </summary>
+            <param name="writer">output</param>
+            <param name="data">data to be bound as an object which will be serialized</param>
+            <param name="index">the data index</param>
+            <param name="count">the total data count</param>
+            <param name="inner">a callback for writing inner placeholder content</param>
+        </member>
+        <member name="P:JsonFx.UI.Jbst.JbstBuildResult.JbstName">
+            <summary>
+            Gets the name of the JBST
+            </summary>
+        </member>
+        <member name="P:JsonFx.UI.Jbst.JbstBuildResult.AutoMarkup">
+            <summary>
+            Gets the AutoMarkup setting from the JBST
+            </summary>
+        </member>
+        <member name="P:JsonFx.UI.Jbst.JbstBuildResult.ID">
+            <summary>
+            Gets and sets the ID of the placeholder element
+            </summary>
+        </member>
+        <member name="P:JsonFx.UI.Jbst.JbstBuildResult.IsDebug">
+            <summary>
+            Gets and sets if should render "Pretty-Printed".
+            </summary>
+        </member>
+        <member name="M:JsonFx.UI.Jbst.SimpleJbstBuildResult.#ctor(JsonFx.Json.EcmaScriptIdentifier,JsonFx.Client.AutoMarkupType)">
+            <summary>
+            Ctor
+            </summary>
+            <param name="writer"></param>
+        </member>
         <member name="T:JsonFx.UI.Jbst.Control">
             <summary>
             Convenience control for combining JBST controls and JSON data on an ASP.NET page.
@@ -49,7 +119,7 @@
         </member>
         <member name="P:JsonFx.UI.Jbst.Control.Data">
             <summary>
-            Gets and sets data to be bound as JavaScript literal or variable reference.
+            Gets and sets data to be bound as JavaScript variable reference.
             </summary>
         </member>
         <member name="P:JsonFx.UI.Jbst.Control.InlineData">
@@ -91,6 +161,12 @@
             <summary>
             Control collection for JBST nodes.
             </summary>
+        </member>
+        <member name="M:JsonFx.UI.Jbst.JbstControlCollection.#ctor(JsonFx.UI.Jbst.JbstContainerControl)">
+            <summary>
+            Ctor
+            </summary>
+            <param name="owner"></param>
         </member>
         <member name="T:JsonFx.UI.Jbst.JbstContainerControl">
             <summary>
@@ -161,25 +237,18 @@
             Gets the internal parse tree representation
             </summary>
         </member>
-        <member name="M:JsonFx.UI.Jbst.Extensions.AppSettingsJbstExtension.#ctor(System.String,System.String)">
+        <member name="T:JsonFx.UI.Jbst.JbstCommandBase">
             <summary>
-            Ctor
-            </summary>
-            <param name="value"></param>
-            <param name="path"></param>
-        </member>
-        <member name="T:JsonFx.UI.Jbst.JbstCustomControl">
-            <summary>
-            Internal representation of a nested JBST control.
+            Internal base representation of JBST commands
             </summary>
         </member>
-        <member name="M:JsonFx.UI.Jbst.JbstCustomControl.#ctor(System.String)">
+        <member name="M:JsonFx.UI.Jbst.JbstCommandBase.#ctor(System.String)">
             <summary>
             Ctor
             </summary>
             <param name="commandName"></param>
         </member>
-        <member name="M:JsonFx.UI.Jbst.JbstCustomControl.ProcessArgument(System.String,System.String[])">
+        <member name="M:JsonFx.UI.Jbst.JbstCommandBase.ProcessArgument(System.String,System.String[])">
             <summary>
             Processes each argument allowing string literals to code expressions to function calls.
             </summary>
@@ -187,31 +256,7 @@
             <param name="keys">an ordered list of keys to check</param>
             <returns>the resulting expression</returns>
         </member>
-        <member name="M:JsonFx.UI.Jbst.JbstCustomControl.RenderCustomControl(JsonFx.Json.JsonWriter)">
-            <summary>
-            Controls the control rendering style
-            </summary>
-            <param name="writer"></param>
-        </member>
-        <member name="M:JsonFx.UI.Jbst.JbstCustomControl.RenderSimpleCustomControl(JsonFx.Json.JsonWriter)">
-            <summary>
-            Renders a simple data binding call to a named template.
-            </summary>
-            <param name="writer"></param>
-        </member>
-        <member name="M:JsonFx.UI.Jbst.JbstCustomControl.RenderInlineCustomControl(JsonFx.Json.JsonWriter)">
-            <summary>
-            Renders a data binding call to an inline anonymous template.
-            </summary>
-            <param name="writer"></param>
-        </member>
-        <member name="M:JsonFx.UI.Jbst.JbstCustomControl.RenderNestedCustomControl(JsonFx.Json.JsonWriter)">
-            <summary>
-            Renders a data binding call to a named template with a nested inline anonymous template.
-            </summary>
-            <param name="writer"></param>
-        </member>
-        <member name="T:JsonFx.UI.Jbst.JbstCustomControl.EnumerableAdapter">
+        <member name="T:JsonFx.UI.Jbst.JbstCommandBase.EnumerableAdapter">
             <summary>
             A simple adapter for exposing the IEnumerable interface without exposing the IJsonSerializable interface
             </summary>
@@ -220,11 +265,18 @@
             precedent over the IEnumerable interface which is what should be rendered inside the wrapper.
             </remarks>
         </member>
-        <member name="M:JsonFx.UI.Jbst.JbstCustomControl.EnumerableAdapter.#ctor(System.Collections.IEnumerable)">
+        <member name="M:JsonFx.UI.Jbst.JbstCommandBase.EnumerableAdapter.#ctor(System.Collections.IEnumerable)">
             <summary>
             Ctor
             </summary>
             <param name="enumerable"></param>
+        </member>
+        <member name="M:JsonFx.UI.Jbst.Extensions.AppSettingsJbstExtension.#ctor(System.String,System.String)">
+            <summary>
+            Ctor
+            </summary>
+            <param name="value"></param>
+            <param name="path"></param>
         </member>
         <member name="T:JsonFx.UI.Jbst.JbstLiteral">
             <summary>
@@ -248,11 +300,6 @@
             Gets the original text for this literal
             </summary>
         </member>
-        <member name="P:JsonFx.UI.Jbst.JbstLiteral.NormalizeWhitespace">
-            <summary>
-            Gets and sets if literal output should have whitespace normalized
-            </summary>
-        </member>
         <member name="T:JsonFx.UI.Jbst.JbstCompiler">
             <summary>
             Simple wrapper for compiling JBSTs
@@ -267,6 +314,60 @@
             <param name="compilationErrors"></param>
             <param name="compactionErrors"></param>
             <returns></returns>
+        </member>
+        <member name="T:JsonFx.UI.Jbst.JbstPlaceholder">
+            <summary>
+            Internal representation of a JBST placholder
+            </summary>
+        </member>
+        <member name="M:JsonFx.UI.Jbst.JbstPlaceholder.#ctor">
+            <summary>
+            Ctor
+            </summary>
+        </member>
+        <member name="T:JsonFx.UI.Jbst.JbstControlReference">
+            <summary>
+            Internal representation of a JBST control reference
+            </summary>
+        </member>
+        <member name="M:JsonFx.UI.Jbst.JbstControlReference.#ctor">
+            <summary>
+            Ctor
+            </summary>
+        </member>
+        <member name="M:JsonFx.UI.Jbst.JbstControlReference.Render(JsonFx.Json.JsonWriter)">
+            <summary>
+            Controls the control rendering style
+            </summary>
+            <param name="writer"></param>
+        </member>
+        <member name="M:JsonFx.UI.Jbst.JbstControlReference.RenderSimpleControlReference(JsonFx.Json.JsonWriter)">
+            <summary>
+            Renders a simple data binding call to a named template.
+            </summary>
+            <param name="writer"></param>
+        </member>
+        <member name="M:JsonFx.UI.Jbst.JbstControlReference.RenderAnonymousTemplate(JsonFx.Json.JsonWriter)">
+            <summary>
+            Renders a data binding call to an inline anonymous template.
+            </summary>
+            <param name="writer"></param>
+        </member>
+        <member name="M:JsonFx.UI.Jbst.JbstControlReference.RenderWrapperControlReference(JsonFx.Json.JsonWriter)">
+            <summary>
+            Renders a data binding call to a named template with a nested inline anonymous placeholder template.
+            </summary>
+            <param name="writer"></param>
+        </member>
+        <member name="T:JsonFx.UI.Jbst.JbstInline">
+            <summary>
+            Internal representation of named JBST placholder inline content
+            </summary>
+        </member>
+        <member name="M:JsonFx.UI.Jbst.JbstInline.#ctor">
+            <summary>
+            Ctor
+            </summary>
         </member>
         <member name="T:JsonFx.UI.Jbst.JbstCodeBlock">
             <summary>

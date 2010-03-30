@@ -14,7 +14,7 @@
 	<p>SHA1: <%= this.data.key %></p>
 
 	<h4 style="margin-top:1em">Full script - <%= (this.data.pretty.length/1024).toFixed(1) %> KB</h4>
-	<p>This is your full template after it has been compiled to 100% JavaScript.</p>
+	<p>This is your full template after it has been compiled to 100% pure JavaScript.</p>
 	<p style="margin-top:1em"><pre class="brush:js;toolbar:true;collapse:true;"><%= this.data.pretty %></pre></p>
 
 	<h4 style="margin-top:1em">Compacted - <%= (this.data.compacted.length/1024).toFixed(1) %> KB</h4>

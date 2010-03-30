@@ -127,6 +127,11 @@
             Gets the list of globalization keys used by this resource
             </summary>
         </member>
+        <member name="T:JsonFx.Client.AutoMarkupType">
+            <summary>
+            Determines if markup should be generated for JBST data
+            </summary>
+        </member>
         <member name="T:JsonFx.Handlers.ETag">
             <summary>
             Generates an HTTP/1.1 Cache header Entity Tag (ETag)
@@ -374,6 +379,42 @@
             Gets and sets the TextWriter used for markup
             </summary>
         </member>
+        <member name="T:JsonFx.Client.DataBlockWriter">
+            <summary>
+            Specifically for emitting runtime data to the page as JavaScript variables.
+            </summary>
+        </member>
+        <member name="M:JsonFx.Client.DataBlockWriter.#ctor">
+            <summary>
+            Ctor
+            </summary>
+        </member>
+        <member name="M:JsonFx.Client.DataBlockWriter.#ctor(JsonFx.Client.AutoMarkupType)">
+            <summary>
+            Ctor
+            </summary>
+        </member>
+        <member name="M:JsonFx.Client.DataBlockWriter.#ctor(JsonFx.Client.AutoMarkupType,System.Boolean)">
+            <summary>
+            Ctor
+            </summary>
+        </member>
+        <member name="M:JsonFx.Client.DataBlockWriter.Write(System.IO.TextWriter,System.Collections.Generic.IDictionary{System.String,System.Object})">
+            <summary>
+            Renders the data items as a block of JavaScript
+            </summary>
+            <param name="writer"></param>
+        </member>
+        <member name="P:JsonFx.Client.DataBlockWriter.AutoMarkup">
+            <summary>
+            Gets and sets if should also render the data as markup for noscript clients.
+            </summary>
+        </member>
+        <member name="P:JsonFx.Client.DataBlockWriter.IsDebug">
+            <summary>
+            Gets and sets if should render as a debuggable ("Pretty-Print") block.
+            </summary>
+        </member>
         <member name="T:JsonFx.Compilation.IGlobalizedBuildResult">
             <summary>
             A globalized compilation result which specifies the resource keys it needs.
@@ -397,7 +438,7 @@
             to both resources.
             </summary>
         </member>
-        <member name="M:JsonFx.Compilation.ResourceBuildProvider.GenerateTypeName(System.String)">
+        <member name="M:JsonFx.Compilation.ResourceBuildProvider.GenerateTypeNameFromPath(System.String)">
             <summary>
             Generates a Type name for the compiled resource
             </summary>
@@ -445,7 +486,7 @@
         </member>
         <member name="T:JsonFx.Client.ResourceInclude">
             <summary>
-            Base control for referencing a ResourceHandler
+            Control for referencing resources
             </summary>
         </member>
         <member name="M:JsonFx.Client.ResourceInclude.#ctor">
@@ -516,6 +557,14 @@
             <param name="isDebug"></param>
             <returns>CompiledBuildResult</returns>
         </member>
+        <member name="M:JsonFx.Handlers.ResourceHandler.WriteResponse(System.Web.HttpContext,JsonFx.Handlers.IOptimizedResult,System.Boolean)">
+            <summary>
+            Writes the infor object to the HttpResult stream
+            </summary>
+            <param name="context"></param>
+            <param name="info"></param>
+            <param name="isDebug"></param>
+        </member>
         <member name="M:JsonFx.Handlers.ResourceHandler.EnableStreamCompression(System.Web.HttpContext)">
             <summary>
             If supported, adds a runtime compression filter to the response output.
@@ -580,6 +629,44 @@
             <param name="attribs"></param>
             <returns>directive name</returns>
         </member>
+        <member name="M:JsonFx.Compilation.BuildPathAttribute.#ctor(System.String)">
+            <summary>
+            Ctor
+            </summary>
+        </member>
+        <member name="M:JsonFx.Compilation.BuildPathAttribute.GetVirtualPath(System.Type)">
+            <summary>
+            Gets the corresponding virtual path for the source of the given generated type.
+            </summary>
+            <param name="type">the Type marked with VirtualPathAttribute</param>
+            <returns>virtual path of the source</returns>
+        </member>
+        <member name="M:JsonFx.Compilation.BuildCache.#ctor">
+            <summary>
+            Ctor
+            </summary>
+        </member>
+        <member name="M:JsonFx.Compilation.BuildCache.Create``1(System.String)">
+            <summary>
+            Creates an instance from the simple type name
+            </summary>
+            <param name="type"></param>
+            <returns></returns>
+        </member>
+        <member name="M:JsonFx.Compilation.BuildCache.GetType(System.String)">
+            <summary>
+            Gets the type from the simple type name
+            </summary>
+            <param name="type"></param>
+            <returns></returns>
+        </member>
+        <member name="M:JsonFx.Compilation.BuildCache.GetVirtualPath(System.String)">
+            <summary>
+            Gets the virtual path of the source of the generated type
+            </summary>
+            <param name="typeName"></param>
+            <returns></returns>
+        </member>
         <member name="T:JsonFx.Client.ScriptDataBlock">
             <summary>
             Specifically for emitting runtime data to the page as JavaScript variables.
@@ -629,6 +716,73 @@
         <member name="M:JsonFx.Client.AutoDataBindControl.#cctor">
             <summary>
             CCtor
+            </summary>
+        </member>
+        <member name="M:JsonFx.Client.ResourceBuildResult.#ctor(System.String,JsonFx.Handlers.IBuildResult)">
+            <summary>
+            Ctor
+            </summary>
+            <param name="sourceUrl"></param>
+        </member>
+        <member name="P:JsonFx.Client.ResourceBuildResult.SourceUrl">
+            <summary>
+            Gets the resource url
+            </summary>
+        </member>
+        <member name="P:JsonFx.Client.ResourceBuildResult.Attributes">
+            <summary>
+            Gets the collection of custom attributes
+            </summary>
+        </member>
+        <member name="P:JsonFx.Client.ResourceBuildResult.IsDebug">
+            <summary>
+            Gets and sets if should render a debuggable ("Pretty-Print") reference.
+            </summary>
+        </member>
+        <member name="P:JsonFx.Client.ResourceBuildResult.BuildResult">
+            <summary>
+            Gets the referenced build result
+            </summary>
+        </member>
+        <member name="M:JsonFx.Client.CssBuildResult.#ctor(System.String)">
+            <summary>
+            Ctor
+            </summary>
+            <param name="sourceUrl"></param>
+        </member>
+        <member name="M:JsonFx.Client.CssBuildResult.#ctor(System.String,JsonFx.Handlers.IBuildResult)">
+            <summary>
+            Ctor
+            </summary>
+            <param name="sourceUrl"></param>
+        </member>
+        <member name="P:JsonFx.Client.CssBuildResult.StyleFormat">
+            <summary>
+            Gets and sets if page determines the culture or
+            if uses CurrentUICulture
+            </summary>
+        </member>
+        <member name="M:JsonFx.Client.ScriptBuildResult.#ctor(System.String)">
+            <summary>
+            Ctor
+            </summary>
+            <param name="sourceUrl"></param>
+        </member>
+        <member name="M:JsonFx.Client.ScriptBuildResult.#ctor(System.String,JsonFx.Handlers.IBuildResult)">
+            <summary>
+            Ctor
+            </summary>
+            <param name="sourceUrl"></param>
+        </member>
+        <member name="P:JsonFx.Client.ScriptBuildResult.SuppressLocalization">
+            <summary>
+            Gets and sets if will be manually emitting localization values
+            </summary>
+        </member>
+        <member name="P:JsonFx.Client.ScriptBuildResult.UsePageCulture">
+            <summary>
+            Gets and sets if page determines the culture or
+            if uses CurrentUICulture
             </summary>
         </member>
         <member name="M:JsonFx.Handlers.GlobalizedResourceHandler.#ctor(System.Boolean,System.String)">

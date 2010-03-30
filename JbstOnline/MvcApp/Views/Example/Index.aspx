@@ -31,7 +31,7 @@
 		<p class="instructions"></p>
 		<div class="code-example">
 			<pre class="brush:html;tab-size:4">
-				&lt;script type="text/javascript" src="/scripts/jbst-runtime.js"&gt;&lt;/script&gt;
+				&lt;script type="text/javascript" src="/scripts/jbst.js"&gt;&lt;/script&gt;
 				&lt;script type="text/javascript" src="/scripts/Foo.MyZebraList.js"&gt;&lt;/script&gt;
 			</pre>
 		</div>
