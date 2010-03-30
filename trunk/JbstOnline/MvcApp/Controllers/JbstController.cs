@@ -5,8 +5,8 @@ using System.Net;
 using System.Web.Mvc;
 
 using JbstOnline.Models;
+using JbstOnline.Mvc.ActionResults;
 using JsonFx.BuildTools;
-using JsonFx.Compilation;
 using JsonFx.Handlers;
 using JsonFx.UI.Jbst;
 
@@ -29,8 +29,8 @@ namespace JbstOnline.Controllers
 
 			IOptimizedResult result = new JbstCompiler().Compile(source, null, compilationErrors, compactionErrors);
 
-			string jbstName = (result is IJbstBuildResult) ?
-				(string)((IJbstBuildResult)result).JbstName : String.Empty;
+			string jbstName = (result is JbstBuildResult) ?
+				(string)((JbstBuildResult)result).JbstName : String.Empty;
 
 			HttpStatusCode statusCode = HttpStatusCode.OK;
 			object data;
@@ -99,22 +99,20 @@ namespace JbstOnline.Controllers
 
 		public ActionResult SupportScripts()
 		{
-			IOptimizedResult result = ResourceHandler.Create<IOptimizedResult>(JbstController.SupportScriptPath);
-
-			return new JavaScriptResult()
-			{
-				Script = result.PrettyPrinted
-			};
+			ResourceResult result = new ResourceResult(JbstController.SupportScriptPath);
+			result.Filename = "jbst.js";
+			result.IsAttachment = true;
+			result.IsDebug = true;
+			return result;
 		}
 
 		public ActionResult ScriptsCompacted()
 		{
-			IOptimizedResult result = ResourceHandler.Create<IOptimizedResult>(JbstController.SupportScriptPath);
-
-			return new JavaScriptResult()
-			{
-				Script = result.Compacted
-			};
+			ResourceResult result = new ResourceResult(JbstController.SupportScriptPath);
+			result.Filename = "jbst.min.js";
+			result.IsAttachment = true;
+			result.IsDebug = false;
+			return result;
 		}
 
 		#endregion Controller Actions

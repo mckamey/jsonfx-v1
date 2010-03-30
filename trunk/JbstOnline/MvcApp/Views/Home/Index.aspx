@@ -24,8 +24,8 @@
 	<p class="instructions">This is the only additional script needed to dynamically bind your control in the browser. It is only needed once, no matter how many different JBST controls you create.</p>
 
 	<div class="buttons">
-		<a href="/compiler/scripts" class="button button-large" target="_blank">Full Source - <%= this.Model.FullSize %></a>
-		<a href="/compiler/compacted" class="button button-large" target="_blank">Compacted - <%= this.Model.CompactSize %></a>
+		<a href="/compiler/scripts" class="button button-large">Full Source - <%= this.Model.FullSize %></a>
+		<a href="/compiler/compacted" class="button button-large">Compacted - <%= this.Model.CompactSize %></a>
 		<b>[ GZip - <%= this.Model.GzipSize %> ] [ Deflate - <%= this.Model.DeflateSize %> ]</b>
 	</div>
 </div>
