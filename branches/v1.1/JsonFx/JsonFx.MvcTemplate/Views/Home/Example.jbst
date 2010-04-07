@@ -1,0 +1,21 @@
+<%@ Control Name="Example.congrats" Language="JavaScript" %>
+
+<script type="text/javascript">
+
+	/* format integers to have at least two digits */
+	/*int*/ this.format = function(/*int*/ n) {
+        return (n < 10) ? '0' + n : n;
+    };
+
+</script>
+
+<div>
+	<%-- If your configuration is not correct then this message will not show. --%>
+	<p class="ReadMe">
+		Congratulations!
+		As of <%= this.data.renderTime.getHours()+":"+this.format(this.data.renderTime.getMinutes()) %>,
+		setup appears to be configured correctly on <strong><%= document.location.host %> (<%= this.data.serverName %>)</strong>.
+	</p>
+	<p class="ReadMe">See <a href="http://starterkit.jsonfx.net/jbst">http://starterkit.jsonfx.net/jbst</a> for JBST syntax examples.</p>
+	<p class="ReadMe js-ServiceTest"><input type="button" value="Try Service" onclick="Example.tryService(this);" /></p>
+</div>
