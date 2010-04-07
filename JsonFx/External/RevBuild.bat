@@ -2,7 +2,7 @@
 
 SET AutoVer=AutoVersioning\AutoVersioning.exe
 SET SolnDir=..\
-SET BaseVersion=1 4
+SET BaseVersion=1 3
 
 IF NOT EXIST %AutoVer% (
 	ECHO ERROR %AutoVer% not found.

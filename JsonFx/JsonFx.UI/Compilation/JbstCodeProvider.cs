@@ -1,11 +1,11 @@
-﻿#region License
+#region License
 /*---------------------------------------------------------------------------------*\
 
 	Distributed under the terms of an MIT-style license:
 
 	The MIT License
 
-	Copyright (c) 2006-2010 Stephen M. McKamey
+	Copyright (c) 2006-2009 Stephen M. McKamey
 
 	Permission is hereby granted, free of charge, to any person obtaining a copy
 	of this software and associated documentation files (the "Software"), to deal
@@ -29,31 +29,23 @@
 #endregion License
 
 using System;
-using System.CodeDom;
-using System.Collections.Generic;
 using System.IO;
+using System.Collections.Generic;
+using System.Web.Compilation;
+using System.CodeDom;
 
 using JsonFx.BuildTools;
 using JsonFx.BuildTools.HtmlDistiller;
 using JsonFx.BuildTools.HtmlDistiller.Filters;
-using JsonFx.Client;
+using JsonFx.Compilation;
 using JsonFx.Handlers;
-using JsonFx.Json;
 using JsonFx.UI.Jbst;
 using JsonFx.UI.Jbst.Extensions;
 
 namespace JsonFx.Compilation
 {
-	public class JbstCodeProvider :
-		ResourceCodeProvider,
-		IResourceNameGenerator
+	public class JbstCodeProvider : JsonFx.Compilation.ResourceCodeProvider
 	{
-		#region Fields
-
-		private JbstWriter jbstWriter;
-
-		#endregion Fields
-
 		#region ResourceCodeProvider Properties
 
 		public override string ContentType
@@ -79,7 +71,7 @@ namespace JsonFx.Compilation
 			List<ParseException> errors)
 		{
 			// parse JBST markup
-			this.jbstWriter = new JbstWriter(virtualPath);
+			JbstWriter writer = new JbstWriter(virtualPath);
 
 			try
 			{
@@ -87,12 +79,12 @@ namespace JsonFx.Compilation
 				parser.EncodeNonAscii = false;
 				parser.BalanceTags = false;
 				parser.NormalizeWhitespace = false;
-				parser.HtmlWriter = this.jbstWriter;
+				parser.HtmlWriter = writer;
 				parser.HtmlFilter = new NullHtmlFilter();
 				parser.Parse(sourceText);
 
 				// determine which globalization keys were used
-				JbstCodeProvider.ExtractGlobalizationKeys(this.jbstWriter.JbstParseTree, this.GlobalizationKeys);
+				JbstCodeProvider.ExtractGlobalizationKeys(writer.JbstParseTree, this.GlobalizationKeys);
 			}
 			catch (ParseException ex)
 			{
@@ -107,7 +99,7 @@ namespace JsonFx.Compilation
 			using (StringWriter sw = new StringWriter())
 			{
 				// render the pretty-printed version
-				this.jbstWriter.Render(sw);
+				writer.Render(sw);
 				sw.Flush();
 				renderedTemplate = sw.ToString();
 
@@ -133,62 +125,6 @@ namespace JsonFx.Compilation
 		}
 
 		#endregion Compilation Methods
-
-		#region ResourceCodeProvider Methods
-
-		protected override void ResetCodeProvider()
-		{
-			this.jbstWriter = null;
-
-			base.ResetCodeProvider();
-		}
-
-		protected override void SetBaseClass(CodeTypeDeclaration resourceType)
-		{
-			resourceType.BaseTypes.Add(typeof(JbstBuildResult));
-		}
-
-		protected override void GenerateCodeExtensions(IResourceBuildHelper helper, CodeTypeDeclaration resourceType)
-		{
-			if (this.jbstWriter == null)
-			{
-				throw new InvalidOperationException("JbstCodeProvider: JbstWriter is missing");
-			}
-
-			base.GenerateCodeExtensions(helper, resourceType);
-
-			string jbstName = this.jbstWriter.JbstName;
-			AutoMarkupType autoMarkup = this.jbstWriter.AutoMarkup;
-
-			#region private static readonly EcmaScriptIdentifier jbstName
-
-			CodeMemberField field = new CodeMemberField();
-			field.Name = "JbstName";
-			field.Type = new CodeTypeReference(typeof(EcmaScriptIdentifier));
-			field.Attributes = MemberAttributes.Private|MemberAttributes.Static|MemberAttributes.Final;
-
-			field.InitExpression = new CodePrimitiveExpression(jbstName);
-
-			resourceType.Members.Add(field);
-
-			#endregion private static readonly EcmaScriptIdentifier jbstName
-
-			#region public ResourceType() : base(ResourceType.JbstName, autoMarkup) {}
-
-			CodeConstructor ctor = new CodeConstructor();
-			ctor.Attributes = MemberAttributes.Public;
-			ctor.BaseConstructorArgs.Add(new CodeFieldReferenceExpression(
-				new CodeTypeReferenceExpression(resourceType.Name),
-				"JbstName"));
-			ctor.BaseConstructorArgs.Add(new CodeFieldReferenceExpression(
-				new CodeTypeReferenceExpression(typeof(AutoMarkupType)), autoMarkup.ToString()));
-
-			resourceType.Members.Add(ctor);
-
-			#endregion public ResourceType() : base(ResourceType.JbstName, ResourceType.AutoMarkup) {}
-		}
-
-		#endregion ResourceCodeProvider Methods
 
 		#region Globalization Methods
 
@@ -264,25 +200,5 @@ namespace JsonFx.Compilation
 		}
 
 		#endregion Globalization Methods
-
-		#region IResourceNameGenerator Members
-
-		internal static string GetClassForJbst(string jbstName)
-		{
-			if (String.IsNullOrEmpty(jbstName))
-			{
-				throw new ArgumentNullException("jbstName");
-			}
-
-			// this needs a different namespace since isn't generated from virtual path
-			return "_JBST."+jbstName.Replace('$', '_');
-		}
-
-		string IResourceNameGenerator.GenerateResourceName(string virtualPath)
-		{
-			return JbstCodeProvider.GetClassForJbst(this.jbstWriter.JbstName);
-		}
-
-		#endregion IResourceNameGenerator Members
 	}
 }

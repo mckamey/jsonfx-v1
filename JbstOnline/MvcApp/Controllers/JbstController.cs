@@ -5,7 +5,6 @@ using System.Net;
 using System.Web.Mvc;
 
 using JbstOnline.Models;
-using JbstOnline.Mvc.ActionResults;
 using JsonFx.BuildTools;
 using JsonFx.Handlers;
 using JsonFx.UI.Jbst;
@@ -23,14 +22,11 @@ namespace JbstOnline.Controllers
 		#region Controller Actions
 
 		public ActionResult Compile(TextReader source)
-		{
+        {
 			List<ParseException> compilationErrors = new List<ParseException>();
 			List<ParseException> compactionErrors = new List<ParseException>();
 
 			IOptimizedResult result = new JbstCompiler().Compile(source, null, compilationErrors, compactionErrors);
-
-			string jbstName = (result is JbstBuildResult) ?
-				(string)((JbstBuildResult)result).JbstName : String.Empty;
 
 			HttpStatusCode statusCode = HttpStatusCode.OK;
 			object data;
@@ -49,8 +45,7 @@ namespace JbstOnline.Controllers
 				}
 				data = new
 				{
-					name = jbstName,
-					key = result.Hash,
+					key = result.Hash+result.FileExtension,
 					source = result.Source,
 					errors = foo
 				};
@@ -70,7 +65,6 @@ namespace JbstOnline.Controllers
 				}
 				data = new CompilationResult
 				{
-					name = jbstName,
 					key = result.Hash,
 					source = result.PrettyPrinted,
 					errors = foo
@@ -80,7 +74,6 @@ namespace JbstOnline.Controllers
 			{
 				data = new CompilationResult
 				{
-					name = jbstName,
 					key = result.Hash,
 					pretty = result.PrettyPrinted,
 					compacted = result.Compacted
@@ -88,7 +81,7 @@ namespace JbstOnline.Controllers
 			}
 
 			return this.DataResult(data, statusCode);
-		}
+        }
 
 #if DEBUG
 		public ActionResult Test(CompilationResult result)
@@ -99,20 +92,22 @@ namespace JbstOnline.Controllers
 
 		public ActionResult SupportScripts()
 		{
-			ResourceResult result = new ResourceResult(JbstController.SupportScriptPath);
-			result.Filename = "jbst.js";
-			result.IsAttachment = true;
-			result.IsDebug = true;
-			return result;
+			IOptimizedResult result = ResourceHandler.Create<IOptimizedResult>(JbstController.SupportScriptPath);
+
+			return new JavaScriptResult()
+			{
+				Script = result.PrettyPrinted
+			};
 		}
 
 		public ActionResult ScriptsCompacted()
 		{
-			ResourceResult result = new ResourceResult(JbstController.SupportScriptPath);
-			result.Filename = "jbst.min.js";
-			result.IsAttachment = true;
-			result.IsDebug = false;
-			return result;
+			IOptimizedResult result = ResourceHandler.Create<IOptimizedResult>(JbstController.SupportScriptPath);
+
+			return new JavaScriptResult()
+			{
+				Script = result.Compacted
+			};
 		}
 
 		#endregion Controller Actions

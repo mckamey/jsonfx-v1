@@ -68,7 +68,7 @@
     <None Include="Scripts\Scripts.merge" />
     <None Include="Services\MyService.jrpc" />
     <None Include="Styles\Styles.merge" />
-    <Content Include="Scripts\jquery.js" />
+    <Content Include="Scripts\jquery-1.3.2.js" />
     <Content Include="Views\Home\Example.jbst" />
     <Content Include="Views\Home\Results.jbst" />
   </ItemGroup>

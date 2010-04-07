@@ -4,7 +4,7 @@
 	user-agent specific CSS support
 
 	Created: 2006-06-10-1635
-	Modified: 2010-03-08-0824
+	Modified: 2010-01-06-0814
 
 	Copyright (c)2006-2009 Stephen M. McKamey
 	Distributed under an open-source license: http://jsonfx.net/license
@@ -93,10 +93,10 @@ JsonFx.UA = {
 		/*string*/ function format(/*string*/ b, /*string*/ v) {
 			/*const string*/ var PREFIX = " ua-";
 
-			b = b.split('.').join('-');
+			b = b.replace(/\./g, '-');
 			/*string*/ var css = PREFIX+b;
 			if (v) {
-				v = v.split('.').join('-');
+				v = v.replace(/\./g, '-');
 				var i = v.indexOf('-');
 				while (i > 0) {
 					// loop through chopping last '-' to end off

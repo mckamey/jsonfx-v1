@@ -1,11 +1,11 @@
-﻿#region License
+#region License
 /*---------------------------------------------------------------------------------*\
 
 	Distributed under the terms of an MIT-style license:
 
 	The MIT License
 
-	Copyright (c) 2006-2010 Stephen M. McKamey
+	Copyright (c) 2006-2009 Stephen M. McKamey
 
 	Permission is hereby granted, free of charge, to any person obtaining a copy
 	of this software and associated documentation files (the "Software"), to deal
@@ -29,16 +29,16 @@
 #endregion License
 
 using System;
-using System.CodeDom;
+using System.IO;
 using System.Collections;
 using System.Collections.Generic;
-using System.IO;
+using System.Web.Compilation;
+using System.CodeDom;
+using System.CodeDom.Compiler;
 using System.Reflection;
 using System.Text;
-using System.Web.Compilation;
 
 using JsonFx.BuildTools;
-using JsonFx.Client;
 using JsonFx.Handlers;
 
 namespace JsonFx.Compilation
@@ -76,33 +76,6 @@ namespace JsonFx.Compilation
 		#endregion ResourceCodeProvider Properties
 
 		#region ResourceCodeProvider Methods
-
-		protected internal override void SetBaseClass(CodeTypeDeclaration resourceType)
-		{
-			if (StringComparer.OrdinalIgnoreCase.Equals(this.contentType, CssResourceCodeProvider.MimeType))
-			{
-				resourceType.BaseTypes.Add(typeof(CssBuildResult));
-			}
-			else
-			{
-				resourceType.BaseTypes.Add(typeof(ScriptBuildResult));
-			}
-		}
-
-		protected internal override void GenerateCodeExtensions(IResourceBuildHelper helper, CodeTypeDeclaration resourceType)
-		{
-			base.GenerateCodeExtensions(helper, resourceType);
-
-			#region public ResourceType() : base(virtualPath) {}
-
-			CodeConstructor ctor = new CodeConstructor();
-			ctor.Attributes = MemberAttributes.Public;
-			ctor.BaseConstructorArgs.Add(new CodePrimitiveExpression(helper.VirtualPath));
-			resourceType.Members.Add(ctor);
-
-			#endregion public ResourceType() : base(virtualPath) {}
-		}
-
 
 		protected override void ResetCodeProvider()
 		{
@@ -257,21 +230,6 @@ namespace JsonFx.Compilation
 
 			resource = resources.ToString();
 			compacted = compacts.ToString();
-		}
-
-		public static string JoinAlternates(string full, string compact)
-		{
-			if (String.IsNullOrEmpty(compact))
-			{
-				return full;
-			}
-
-			if (String.IsNullOrEmpty(full))
-			{
-				return compact;
-			}
-
-			return full + MergeResourceCodeProvider.AltDelims[0] + compact;
 		}
 
 		public static void SplitAlternates(string original, out string full, out string compact)

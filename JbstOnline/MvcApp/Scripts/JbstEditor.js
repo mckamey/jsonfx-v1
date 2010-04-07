@@ -81,11 +81,11 @@ JbstEditor.allowTabs = function(evt) {
 };
 
 JbstEditor.generate = function() {
-	var editor = document.getElementById("jbst-editor"),
-		val = (editor.innerText || editor.value);
+	var editor = document.getElementById("jbst-editor");
+	var val = (editor.innerText || editor.value);
 
-	var btn = this,
-		url = "/compiler";
+	var btn = this;
+	var url = "/compiler";
 	JsonFx.IO.sendJsonRequest(
 		url,
 		{
@@ -126,9 +126,6 @@ JbstEditor.generate = function() {
 				} else {
 					$(btn).after( results );
 				}
-			},
-			onComplete: function() {
-				// TODO: focus attention on the results panel
 			}
 		});
 };
@@ -136,10 +133,12 @@ JbstEditor.generate = function() {
 JsonFx.Bindings.add(
 	"textarea#jbst-editor",
 	function(elem) {
-		$(elem)
-			.autogrow()
-			.bind("change", JbstEditor.refresh(elem, 0))
-			.bind("keydown", JbstEditor.allowTabs)
-			.bind("focus", function() { $(document.body).addClass("editing"); })
-			.bind("blur", function() { $(document.body).removeClass("editing"); });
+		$(elem).autogrow();
+		
+		$(elem).bind("change", JbstEditor.refresh(elem, 0));
+
+		$(elem).bind("keydown", JbstEditor.allowTabs);
+
+		$(elem).bind("focus", function() { $(document.body).addClass("editing"); });
+		$(elem).bind("blur", function() { $(document.body).removeClass("editing"); });
 	});

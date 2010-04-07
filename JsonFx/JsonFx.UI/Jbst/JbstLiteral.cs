@@ -51,7 +51,7 @@ namespace JsonFx.UI.Jbst
 
 		private string text;
 		private string normalizedText;
-		private readonly bool NormalizeWhitespace;
+		private bool normalizeWhitespace;
 
 		#endregion Fields
 		
@@ -92,13 +92,22 @@ namespace JsonFx.UI.Jbst
 		{
 			get
 			{
-				if (this.normalizedText == null && !String.IsNullOrEmpty(this.text))
+				if (this.normalizedText == null && this.text != null)
 				{
 					// normalize whitespaces
 					this.normalizedText = RegexWhitespace.Replace(this.text, JbstLiteral.Whitespace);
 				}
 				return this.normalizedText;
 			}
+		}
+
+		/// <summary>
+		/// Gets and sets if literal output should have whitespace normalized
+		/// </summary>
+		public bool NormalizeWhitespace
+		{
+			get { return this.normalizeWhitespace; }
+			set { this.normalizeWhitespace = value; }
 		}
 
 		public bool IsWhitespace

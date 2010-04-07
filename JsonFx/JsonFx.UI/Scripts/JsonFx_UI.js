@@ -24,6 +24,9 @@ if ("undefined" === typeof JsonFx.UI) {
 if ("undefined" === typeof JsonML) {
 	throw new Error("JsonFx.UI requires JsonML");
 }
+if ("undefined" === typeof JsonFx.Bindings) {
+	throw new Error("JsonFx.UI requires JsonFx.Bindings");
+}
 
 /* DOM utilities ------------------------------------------------*/
 
@@ -99,9 +102,7 @@ if ("undefined" === typeof JsonML) {
 	}
 
 	// unbind to prevent memory leaks
-	if ("undefined" !== typeof JsonFx.Bindings) {
-		JsonFx.Bindings.unbind(elem);
-	}
+	JsonFx.Bindings.unbind(elem);
 
 	while (elem.lastChild) {
 		elem.removeChild(elem.lastChild);

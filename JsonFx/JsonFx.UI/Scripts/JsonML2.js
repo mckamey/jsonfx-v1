@@ -4,12 +4,12 @@
 	JsonML builder
 
 	Created: 2006-11-09-0116
-	Modified: 2010-03-28-2253
+	Modified: 2010-01-16-0819
 
-	Copyright (c)2006-2010 Stephen M. McKamey
+	Copyright (c)2006-2009 Stephen M. McKamey
 	Distributed under an open-source license: http://jsonml.org/license
 
-    This file creates a global JsonML object containing these methods:
+    This file creates a global JsonML object containing this method:
 
         JsonML.parse(string|array, filter)
 
@@ -51,43 +51,6 @@
 				return elem;
 			});
 
-			// Implement onerror to handle any runtime errors while binding:
-			JsonML.onerror = function (ex, jml, filter) {
-				// display inline error message
-				return document.createTextNode("["+ex+"]");
-			};
-
-		Utility methods for manipulating JsonML elements:
-
-			// tests if a given object is a valid JsonML element
-			bool JsonML.isElement(jml);
-
-			// gets the name of a JsonML element
-			string JsonML.getTagName(jml);
-
-			// tests if a given object is a JsonML attributes collection
-			bool JsonML.isAttributes(jml);
-
-			// tests if a JsonML element has a JsonML attributes collection
-			bool JsonML.hasAttributes(jml);
-
-			// gets the attributes collection for a JsonML element
-			object JsonML.getAttributes(jml);
-
-			// sets multiple attributes for a JsonML element
-			void JsonML.addAttributes(jml, attr);
-
-			// gets a single attribute for a JsonML element
-			object JsonML.getAttribute(jml, key);
-
-			// sets a single attribute for a JsonML element
-			void JsonML.setAttribute(jml, key, value);
-
-			// appends a JsonML child node to a parent JsonML element
-			void JsonML.appendChild(parent, child);
-
-			// gets an array of the child nodes of a JsonML element
-			array JsonML.getChildren(jml);
 */
 
 var JsonML;
@@ -98,7 +61,7 @@ if ("undefined" === typeof JsonML) {
 (function() {
 
 	//attribute name mapping
-	var ATTRMAP = {
+	var am = {
 			rowspan : "rowSpan",
 			colspan : "colSpan",
 			cellpadding : "cellPadding",
@@ -114,404 +77,286 @@ if ("undefined" === typeof JsonML) {
 		},
 
 		// attribute duplicates
-		ATTRDUP = {
+		ad = {
 			enctype : "encoding",
 			onscroll : "DOMMouseScroll"
 			// can add more attributes here as needed
 		},
 
 		// event names
-		EVTS = (function(/*string[]*/ names) {
-			var evts = {};
-			while (names.length) {
-				var evt = names.shift();
-				evts["on"+evt.toLowerCase()] = evt;
+		evts = (function(/*string[]*/ en) {
+			var ev = {};
+			while (en.length) {
+				var e = en.shift();
+				ev["on"+e.toLowerCase()] = e;
 			}
-			return evts;
+			return ev;
 		})("blur,change,click,dblclick,error,focus,keydown,keypress,keyup,load,mousedown,mouseenter,mouseleave,mousemove,mouseout,mouseover,mouseup,resize,scroll,select,submit,unload".split(','));
 
-	/*void*/ function addHandler(/*DOM*/ elem, /*string*/ name, /*function*/ handler) {
-		if ("string" === typeof handler) {
+	// addHandler
+	/*void*/ function ah(/*DOM*/ el, /*string*/ en, /*function*/ fn) {
+		if ("string" === typeof fn) {
 			/*jslint evil:true */
-			handler = new Function("event", handler);
+			fn = new Function("event", fn);
 			/*jslint evil:false */
 		}
 
-		if ("function" !== typeof handler) {
+		if ("function" !== typeof fn) {
 			return;
 		}
 
-		elem[name] = handler;
+		el[en] = fn;
 	}
 
-	/*DOM*/ function addAttributes(/*DOM*/ elem, /*object*/ attr) {
-		if (attr.name && document.attachEvent) {
+	//addAttributes
+	/*DOM*/ function aa(/*DOM*/ el, /*object*/ a) {
+		if (a.name && document.attachEvent) {
 			try {
 				// IE fix for not being able to programatically change the name attribute
-				var alt = document.createElement("<"+elem.tagName+" name='"+attr.name+"'>");
+				var el2 = document.createElement("<"+el.tagName+" name='"+a.name+"'>");
 				// fix for Opera 8.5 and Netscape 7.1 creating malformed elements
-				if (elem.tagName === alt.tagName) {
-					elem = alt;
+				if (el.tagName === el2.tagName) {
+					el = el2;
 				}
 			} catch (ex) { }
 		}
 
 		// for each attributeName
-		for (var name in attr) {
-			if (attr.hasOwnProperty(name)) {
+		for (var an in a) {
+			if (a.hasOwnProperty(an)) {
 				// attributeValue
-				var value = attr[name];
-				if (name && value) {
-					name = ATTRMAP[name.toLowerCase()] || name;
-					if (name === "style") {
-						if ("undefined" !== typeof elem.style.cssText) {
-							elem.style.cssText = value;
+				var av = a[an];
+				if (an && av) {
+					an = am[an.toLowerCase()] || an;
+					if (an === "style") {
+						if ("undefined" !== typeof el.style.cssText) {
+							el.style.cssText = av;
 						} else {
-							elem.style = value;
+							el.style = av;
 						}
-					} else if (name === "class") {
-						elem.className = value;
-					} else if (EVTS[name]) {
-						addHandler(elem, name, value);
+					} else if (an === "class") {
+						el.className = av;
+					} else if (evts[an]) {
+						ah(el, an, av);
 
 						// also set duplicated events
-						if (ATTRDUP[name]) {
-							addHandler(elem, ATTRDUP[name], value);
+						if (ad[an]) {
+							ah(el, ad[an], av);
 						}
-					} else if ("string" === typeof value || "number" === typeof value || "boolean" === typeof value) {
-						elem.setAttribute(name, value);
+					} else if ("string" === typeof av || "number" === typeof av || "boolean" === typeof av) {
+						el.setAttribute(an, av);
 
 						// also set duplicated attributes
-						if (ATTRDUP[name]) {
-							elem.setAttribute(ATTRDUP[name], value);
+						if (ad[an]) {
+							el.setAttribute(ad[an], av);
 						}
 					} else {
 
 						// allow direct setting of complex properties
-						elem[name] = value;
+						el[an] = av;
 
 						// also set duplicated attributes
-						if (ATTRDUP[name]) {
-							elem[ATTRDUP[name]] = value;
+						if (ad[an]) {
+							el[ad[an]] = av;
 						}
 					}
 				}
 			}
 		}
-		return elem;
+		return el;
 	}
 
-	/*void*/ function appendChild(/*DOM*/ elem, /*DOM*/ child) {
-		if (child) {
-			if (elem.tagName && elem.tagName.toLowerCase() === "table" && elem.tBodies) {
-				if (!child.tagName) {
+	//appendChild
+	/*void*/ function ac(/*DOM*/ el, /*DOM*/ c) {
+		var ct, tb;
+		if (c) {
+			if (el.tagName && el.tagName.toLowerCase() === "table" && el.tBodies) {
+				if (!c.tagName) {
 					// must unwrap documentFragment for tables
-					if (child.nodeType === 11) {
-						while (child.firstChild) {
-							appendChild(elem, child.removeChild(child.firstChild));
+					if (c.nodeType === 11) {
+						while (c.firstChild) {
+							ac(el, c.removeChild(c.firstChild));
 						}
 					}
 					return;
 				}
 				// in IE must explicitly nest TRs in TBODY
-				var childTag = child.tagName.toLowerCase();// child tagName
-				if (childTag && childTag !== "tbody" && childTag !== "thead") {
+				ct = c.tagName.toLowerCase();// child tagName
+				if (ct && ct !== "tbody" && ct !== "thead") {
 					// insert in last tbody
-					var tBody = elem.tBodies.length > 0 ? elem.tBodies[elem.tBodies.length-1] : null;
-					if (!tBody) {
-						tBody = document.createElement(childTag === "th" ? "thead" : "tbody");
-						elem.appendChild(tBody);
+					tb = el.tBodies.length > 0 ? el.tBodies[el.tBodies.length-1] : null;// tBody
+					if (!tb) {
+						tb = document.createElement(ct==="th" ? "thead" : "tbody");
+						el.appendChild(tb);
 					}
-					tBody.appendChild(child);
-				} else if (elem.canHaveChildren !== false) {
-					elem.appendChild(child);
+					tb.appendChild(c);
+				} else if (el.canHaveChildren !== false) {
+					el.appendChild(c);
 				}
-			} else if (elem.canHaveChildren !== false) {
-				elem.appendChild(child);
-			} else if (elem.tagName && elem.tagName.toLowerCase() === "object" &&
-				child.tagName && child.tagName.toLowerCase() === "param") {
+			} else if (el.canHaveChildren !== false) {
+				el.appendChild(c);
+			} else if (el.tagName && el.tagName.toLowerCase() === "object" &&
+				c.tagName && c.tagName.toLowerCase() === "param") {
 					// IE-only path
 					try {
-						elem.appendChild(child);
+						el.appendChild(c);
 					} catch (ex1) {}
 					try {
-						if (elem.object) {
-							elem.object[child.name] = child.value;
+						if (el.object) {
+							el.object[c.name] = c.value;
 						}
 					} catch (ex2) {}
 			}
 		}
 	}
 
-	/*bool*/ function isWhitespace(/*DOM*/ node) {
-		return node && (node.nodeType === 3) && (!node.nodeValue || !/\S/.exec(node.nodeValue));
+	// isWhitespace
+	/*bool*/ function ws(/*DOM*/ n) {
+		return n && (n.nodeType === 3) && (!n.nodeValue || !/\S/.exec(n.nodeValue));
 	}
 
-	/*void*/ function trimWhitespace(/*DOM*/ elem) {
-		if (elem) {
-			while (isWhitespace(elem.firstChild)) {
+	// trimWhitespace
+	/*void*/ function tw(/*DOM*/ el) {
+		if (el) {
+			while (ws(el.firstChild)) {
 				// trim leading whitespace text nodes
-				elem.removeChild(elem.firstChild);
+				el.removeChild(el.firstChild);
 			}
-			while (isWhitespace(elem.lastChild)) {
+			while (ws(el.lastChild)) {
 				// trim trailing whitespace text nodes
-				elem.removeChild(elem.lastChild);
+				el.removeChild(el.lastChild);
 			}
 		}
 	}
 
-	/*DOM*/ function hydrate(/*string*/ value) {
-		var wrapper = document.createElement("div");
-		wrapper.innerHTML = value;
+	//unparsed
+	/*DOM*/ function u(/*string*/ s) {
+		// wrapper
+		var w = document.createElement("div");
+		w.innerHTML = s;
 
 		// trim extraneous whitespace
-		trimWhitespace(wrapper);
+		tw(w);
 
 		// eliminate wrapper for single nodes
-		if (wrapper.childNodes.length === 1) {
-			return wrapper.firstChild;
+		if (w.childNodes.length === 1) {
+			return w.firstChild;
 		}
 
 		// create a document fragment to hold elements
-		var frag = document.createDocumentFragment ?
+		var f = document.createDocumentFragment ?
 			document.createDocumentFragment() :
 			document.createElement("");
 
-		while (wrapper.firstChild) {
-			frag.appendChild(wrapper.firstChild);
+		while (w.firstChild) {
+			f.appendChild(w.firstChild);
 		}
-		return frag;
+		return f;
 	}
 
 	function Unparsed(/*string*/ value) {
 		this.value = value;
 	}
 
-	JsonML.raw = function(/*string*/ value) {
-		return new Unparsed(value);
-	};
+	//JsonML.parse
+	/*DOM*/ function p(/*JsonML*/ jml, /*function*/ filter) {
+		if (!jml) {
+			return null;
+		}
+		if ("string" === typeof jml) {
+			return document.createTextNode(jml);
+		}
+		if (jml instanceof Unparsed) {
+			return u(jml.value);
+		}
+		if (!(jml instanceof Array) || !jml.length || "string" !== typeof jml[0]) {
+			throw new Error("JsonML.parse: invalid JsonML tree");
+		}
 
-	// default error handler
-	/*DOM*/ function onError(/*Error*/ ex, /*JsonML*/ jml, /*function*/ filter) {
-		return document.createTextNode("["+ex+"]");
-	}
-
-	/* override this to perform custom error handling during binding */
-	JsonML.onerror = null;
-
-	/*DOM*/ JsonML.parse = function(/*JsonML*/ jml, /*function*/ filter) {
-		try {
-			if (!jml) {
-				return null;
-			}
-			if ("string" === typeof jml) {
-				return document.createTextNode(jml);
-			}
-			if (jml instanceof Unparsed) {
-				return hydrate(jml.value);
-			}
-			if (!JsonML.isElement(jml)) {
-				throw new SyntaxError("invalid JsonML");
-			}
-
-			var i;
-			var tagName = jml[0]; // tagName
-			if (!tagName) {
-				// correctly handle a list of JsonML trees
-				// create a document fragment to hold elements
-				var frag = document.createDocumentFragment ?
-					document.createDocumentFragment() :
-					document.createElement("");
-				for (i=1; i<jml.length; i++) {
-					appendChild(frag, JsonML.parse(jml[i], filter));
-				}
-
-				// trim extraneous whitespace
-				trimWhitespace(frag);
-
-				// eliminate wrapper for single nodes
-				if (frag.childNodes.length === 1) {
-					return frag.firstChild;
-				}
-				return frag;
-			}
-
-			var css = (tagName.toLowerCase() === "style" && document.createStyleSheet);
-			var elem = css ?
-				// IE requires this interface for styles
-				document.createStyleSheet() :
-				document.createElement(tagName);
-
+		var i;
+		var t = jml[0]; // tagName
+		if (!t) {
+			// correctly handle a list of JsonML trees
+			// create a document fragment to hold elements
+			var f = document.createDocumentFragment ?
+				document.createDocumentFragment() :
+				document.createElement("");
 			for (i=1; i<jml.length; i++) {
-				if (jml[i] instanceof Array || "string" === typeof jml[i]) {
-					if (css) {
-						// IE requires this interface for styles
-						elem.cssText = jml[i];
-					} else {
-						// append children
-						appendChild(elem, JsonML.parse(jml[i], filter));
-					}
-				} else if (jml[i] instanceof Unparsed) {
-					appendChild(elem, hydrate(jml[i].value));
-				} else if ("object" === typeof jml[i] && jml[i] !== null && elem.nodeType === 1) {
-					// add attributes
-					elem = addAttributes(elem, jml[i]);
-				}
-			}
-
-			if (css) {
-				// in IE styles are effective immediately
-				return null;
+				ac(f, p(jml[i], filter));
 			}
 
 			// trim extraneous whitespace
-			trimWhitespace(elem);
-			return (elem && "function" === typeof filter) ? filter(elem) : elem;
-		} catch (ex) {
+			tw(f);
+
+			// eliminate wrapper for single nodes
+			if (f.childNodes.length === 1) {
+				return f.firstChild;
+			}
+			return f;
+		}
+
+		var x = (t.toLowerCase() === "script"); // check for scripts
+		var css = (t.toLowerCase() === "style" && document.createStyleSheet);
+		var el;
+		if (css) {
+			// IE requires this interface for styles
+			el = document.createStyleSheet();
+		} else {
+			el = x ? null : document.createElement(t);
+		}
+
+		for (i=1; i<jml.length; i++) {
+			if (!x) {
+				if (jml[i] instanceof Array || "string" === typeof jml[i]) {
+					if (css) {
+						// IE requires this interface for styles
+						el.cssText = jml[i];
+					} else {
+						// append children
+						ac(el, p(jml[i], filter));
+					}
+				} else if (jml[i] instanceof Unparsed) {
+					ac(el, u(jml[i].value));
+				} else if ("object" === typeof jml[i] && jml[i] !== null && el.nodeType === 1) {
+					// add attributes
+					el = aa(el, jml[i]);
+				}
+			//} else if (typeof(jml[i]) === "string") {
+				/*	JSLint: "eval is evil"
+					uncomment at your own risk, executes script elements immediately */
+				//eval( "(" + jml[i] + ")" );
+			}
+		}
+
+		if (css) {
+			// in IE styles are effective immediately
+			return null;
+		}
+
+		// trim extraneous whitespace
+		tw(el);
+		return (el && "function" === typeof filter) ? filter(el) : el;
+	}
+
+	JsonML.parse = function(/*JsonML*/ jml, /*DOM function(DOM)*/ filter) {
+
+		if (jml instanceof Array) {
+			return p(jml, filter);
+		}
+		if ("string" === typeof jml) {
 			try {
-				// handle error with complete context
-				var err = ("function" === typeof JsonML.onerror) ? JsonML.onerror : onError;
-				return err(ex, jml, filter);
-			} catch (ex2) {
-				return document.createTextNode("["+ex2+"]");
+				jml = JSON.parse(jml);
+			} catch (ex) {
+				return null;
+			}
+			if (jml instanceof Array) {
+				return p(jml, filter);
 			}
 		}
+		return null;
 	};
 
-	/* Utility Methods -------------------------*/
-
-	/*bool*/ JsonML.isElement = function(/*JsonML*/ jml) {
-		return (jml instanceof Array) && ("string" === typeof jml[0]);
+	JsonML.raw = function(/*string*/ value) {
+		return new Unparsed(value);
 	};
-
-	/*bool*/ JsonML.isFragment = function(/*JsonML*/ jml) {
-		return (jml instanceof Array) && (jml[0] === "");
-	};
-
-	/*string*/ JsonML.getTagName = function(/*JsonML*/ jml) {
-		return jml[0] || "";
-	};
-
-	/*bool*/ JsonML.isAttributes = function(/*JsonML*/ jml) {
-		return !!jml && ("object" === typeof jml) && !(jml instanceof Array);
-	};
-
-	/*bool*/ JsonML.hasAttributes = function(/*JsonML*/ jml) {
-		if (!JsonML.isElement(jml)) {
-			throw new SyntaxError("invalid JsonML");
-		}
-
-		return JsonML.isAttributes(jml[1]);
-	};
-
-	/*object*/ JsonML.getAttributes = function(/*JsonML*/ jml, /*bool*/ addIfMissing) {
-		if (JsonML.hasAttributes(jml)) {
-			return jml[1];
-		}
-
-		if (!addIfMissing) {
-			return undefined;
-		}
-
-		// need to add an attribute object
-		var name = jml.shift();
-		var attr = {};
-		jml.unshift(attr);
-		jml.unshift(name||"");
-		return attr;
-	};
-
-	/*void*/ JsonML.addAttributes = function(/*JsonML*/ jml, /*object*/ attr) {
-		if (!JsonML.isElement(jml) || !JsonML.isAttributes(attr)) {
-			throw new SyntaxError("invalid JsonML");
-		}
-
-		if (!JsonML.isAttributes(jml[1])) {
-			// just insert attributes
-			var name = jml.shift();
-			jml.unshift(attr);
-			jml.unshift(name||"");
-			return;
-		}
-
-		// merge attribute objects
-		var old = jml[1];
-		for (var key in attr) {
-			if (attr.hasOwnProperty(key)) {
-				old[key] = attr[key];
-			}
-		}
-	};
-
-	/*string|number|bool*/ JsonML.getAttribute = function(/*JsonML*/ jml, /*string*/ key) {
-		if (!JsonML.hasAttributes(jml)) {
-			return undefined;
-		}
-		return jml[1][key];
-	};
-
-	/*void*/ JsonML.setAttribute = function(/*JsonML*/ jml, /*string*/ key, /*string|number|bool*/ value) {
-		JsonML.getAttributes(jml, true)[key] = value;
-	};
-
-	/*void*/ JsonML.appendChild = function(/*JsonML*/ parent, /*array|object|string*/ child) {
-		if (child instanceof Array && child[0] === "") {
-			// result was multiple JsonML sub-trees (i.e. documentFragment)
-			child.shift();// remove fragment ident
-
-			// directly append children
-			while (child.length) {
-				JsonML.appendChild(parent, child.shift(), arguments[2]);
-			}
-		} else if (child && "object" === typeof child) {
-			if (child instanceof Array) {
-				if (!JsonML.isElement(parent) || !JsonML.isElement(child)) {
-					throw new SyntaxError("invalid JsonML");
-				}
-
-				if ("function" === typeof arguments[2]) {
-					// onAppend callback for JBST use
-					arguments[2](parent, child);
-				}
-
-				// result was a JsonML node
-				parent.push(child);
-			} else if (child instanceof Unparsed) {
-				if (!JsonML.isElement(parent)) {
-					throw new SyntaxError("invalid JsonML");
-				}
-
-				// result was a JsonML node
-				parent.push(child);
-			} else {
-				// result was JsonML attributes
-				JsonML.addAttributes(parent, child);
-			}
-		} else if ("undefined" !== typeof child && child !== null) {
-			if (!(parent instanceof Array)) {
-				throw new SyntaxError("invalid JsonML");
-			}
-
-			// must convert to string or JsonML will discard
-			child = String(child);
-
-			// skip processing empty string literals
-			if (child && parent.length > 1 && "string" === typeof parent[parent.length-1]) {
-				// combine strings
-				parent[parent.length-1] += child;
-			} else if (child || !parent.length) {
-				// append
-				parent.push(child);
-			}
-		}
-	};
-
-	/*array*/ JsonML.getChildren = function(/*JsonML*/ jml) {
-		if (JsonML.hasAttributes(jml)) {
-			jml.slice(2);
-		}
-
-		jml.slice(1);
-	};
-
 })();

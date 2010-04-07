@@ -1,4 +1,4 @@
-/* !
+/*!
  * jQuery JavaScript Library v1.3.2
  * http://jquery.com/
  *
@@ -1410,7 +1410,7 @@ jQuery.fn.extend({
 			jQuery.dequeue( this, type );
 		});
 	}
-});/* !
+});/*!
  * Sizzle CSS Selector Engine - v0.9.3
  *  Copyright 2009, The Dojo Foundation
  *  Released under the MIT, BSD, and GPL Licenses.

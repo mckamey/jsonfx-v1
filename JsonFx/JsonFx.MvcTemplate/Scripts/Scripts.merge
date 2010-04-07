@@ -12,7 +12,7 @@
 JsonFx.Scripts.JsonFx_Core.merge, JsonFx.Client
 
 # add jQuery into template
-~/Scripts/jQuery.js
+~/Scripts/jQuery-1.3.2.js
 
 # JavaScript service proxies
 ~/Services/MyService.jrpc

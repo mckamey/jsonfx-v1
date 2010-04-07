@@ -7,8 +7,6 @@ namespace JbstOnline.Models
 	{
 		public string key { get; set; }
 
-		public string name { get; set; }
-
 		public string source { get; set; }
 
 		public string pretty { get; set; }
