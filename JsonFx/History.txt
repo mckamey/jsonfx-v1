@@ -1,6 +1,62 @@
 Release History
 
-v1.2.0911.2217
+v1.4.1003.3007
+- added helper methods for manipulating JsonML structures
+- added event callbacks during JBST bindings for added structure manipulation
+- finished unifying & simplifying output rendering of server controls / MVC helpers
+- changed names of generated build result classes
+
+v1.4.1003.1321
+- improving readability: de-obfuscating all the identifiers in JsonML & JBST scripts
+- extra checking around JsonML error handling
+- no longer filtering JsonML script tags
+- added JsonMarkupWriter for building up markup representation of JSON data during serialization
+- changed internal structure of generated build result classes
+- began unifying & simplifying output rendering of server controls / MVC helpers
+- changed ResourceInclude default StyleIncludeType from Import to Link
+
+v1.3.1003.0906
+- added error handling callbacks to JsonML & JBST
+- made dependency between JsonFx_UI.js and JsonFx_Bindings.js optional
+
+v1.3.1003.0808
+- drastically sped up initial JBST page binding by simplifying most common path
+- fixed CSS class removal when multiple exist
+- updated jQuery in MvcTemplate to v1.4.2
+
+v1.3.1001.2320
+- added ability to serialize unquoted object property names
+- reverted regex fixes for older Opera Browsers (they are causing issues in valid situations)
+
+v1.3.1001.1608
+- added ability to include full external URLs in ResourceInclude references
+- added ability to include full external URLs in merge files
+- fixed JSBT event handlers in W3C-compliant (non-IE) browsers
+
+v1.3.1001.1206
+- JsonML Builder fixes:
+- updated events to avoid false positives
+- restructured to avoid duplication of method building
+- better leverage DOM event management
+
+v1.3.1001.0608
+- improved mobile support in CssUserAgent
+- defaulted AllowNullValueTypes to true
+- improved error messaging in RESTful MVC
+
+v1.3.0912.0620
+- fixed a bug where the AllowNullValueTypes usage was reversed
+- added some RESTful ActionResults
+- improved REST headers
+
+v1.3.0911.2815
+- added IDataReader (counterpart to IDataWriter) an abstraction for deserializers which allows easily switching between XML & JSON (or other formats)
+- added an ASP.NET MVC ModelBinder which allows switching input via Dependency Injection
+- added provider layer between reader/writer and MVC binder/result
+- cleaned up MVC template
+- IIS 6 & 7 fixes
+
+v1.2.0911.2218
 - added an abstraction for serializers which allows easily switching between XML & JSON
 - added a ASP.NET MVC ActionResult which allows switching output via Dependency Injection
 - moved all MVC classes into JsonFx.Mvc
@@ -271,7 +327,7 @@ v1.0.0901.2513
 - added "JSLINT" conditional compilation symbols to enable/disable JSLint compilation.
 - removed jsonfx:options attribute auto-parsing
 
-v1.0.0901.1919:
+v1.0.0901.1919
 - begining to better leverage jQuery if present
 - added ability to programmatically suppress JBST output with jbst:visible="<%= false %>"
 - improving resource compilation error reporting (css, js, jbst, merge)
@@ -281,130 +337,130 @@ v1.0.0901.1919:
 - added switch to control how stylesheets are attached (link, style import)
 - added pass-through for any attributes added to ResourceInclude (e.g. media="print" rel="alternate")
 
-v1.0.0901.1017:
+v1.0.0901.1017
 - improved JBST compilation to support <script type="text/javascript">...</script> as equivalent to <%! ... %>
 - allows JavaScript syntax highlighting in JBST init scripts
 
-v1.0.0901.0318:
+v1.0.0901.0318
 - improved deserialization of numeric flags enums
 - improved type inference of JsonReader interface in C# 3.0
 - improved deserialization of typed generic dictionaries
 
-v1.0.0812.2115:
+v1.0.0812.2115
 - fixed Opera bug in json2.js (Opera doesn't like escaped unicode chars in RegExp literals)
 - added workaround for Opera bug in JsonFx_History.js
 
-v1.0.0812.1208:
+v1.0.0812.1208
 - cleaned up the project examples & templates
 - improved the JSON-RPC templates
 
-v1.0.0812.0717:
+v1.0.0812.0717
 - added ability to add custom headers to service requests on a global or per-service request via callback
 - disabled Ajax request timeout when is a debug build
 - fixed a typo in the JSON-RPC Visual Studio Template
 - updated to latest json2.js (2008-11-19)
 
-v1.0.0812.0612:
+v1.0.0812.0612
 - made maximum depth of JSON serialization configurable
 - added string to char type coercion
 - improved type coercion of JSON-RPC params
 
-v1.0.0812.0116:
+v1.0.0812.0116
 - Redeployment of v1.0.0812.0114 (change wasn't properly picked up)
 
-v1.0.0812.0114:
+v1.0.0812.0114
 - Rolled back a breaking change in serializer which caused JSON-RPC param list to incorrectly deserialize
 
-v1.0.0811.2910:
+v1.0.0811.2910
 - Enabled serialization of Anonymous Types
 - Improved efficiency of serialization
 - Added improved CoerceType syntax
 
-v1.0.0811.1622:
+v1.0.0811.1622
 - Added ScriptDateBlock control for easily emitting JavaScript data into page
 - Added ability to arbitrarily serialize DateTime objects
 
-v1.0.0811.1512:
+v1.0.0811.1512
 - Fixed bug where ResourceCodeProviders were bleeding data when reused by ASP.NET BuildManager
 
-v1.0.0811.1220:
+v1.0.0811.1220
 - Fixed JsonReader.CoerceType when converting from number to enum
 
-v1.0.0811.0112:
+v1.0.0811.0112
 - Improved debugging mode
 
-v1.0.0810.2617:
+v1.0.0810.2617
 - Improved error messaging
 
-v1.0.0810.2611:
+v1.0.0810.2611
 - Strongly-typed some JSON-RPC parameters
 - Improved setup documentation around MSScriptControl
 - Made build-time continue even when JScript COM Interop not registered
 
-v1.0.0810.2108:
+v1.0.0810.2108
 - Made build-time JScript COM Interop more robust on Win2K8 x64
 
-v1.0.0810.1810:
+v1.0.0810.1810
 - Fixed breaking change in C# 3.0 access modifiers
 - Fixed typo in Visual Studio templates description
 
-v1.0.0810.1508:
+v1.0.0810.1508
 - Made script errors warnings until expose a mechanism to choose
 
 v1.0.0810.0513:
 - Added source for JsonFx.BuildTools (rather than including as assembly)
 - Renamed JsonMLBrowserModule to JsonFxBrowserModule and removed from Template web.config
 
-v1.0.0808.0316:
+v1.0.0808.0316
 - Added full JBST support
 
-v1.0.0801.2409:
+v1.0.0801.2409
 - Made number parsing more efficient (no try-catching)
 - Number parsing better obeys expected types
 
-v1.0.0712.1623:
+v1.0.0712.1623
 - Simplified object serialization to include any IDictionary with String keys
 - Made DateTime serialization conform to ISO-8601
 
-v1.0.0710.2409:
+v1.0.0710.2409
 - Fixed strong-type bug
 
-v1.0.0710.2305:
+v1.0.0710.2305
 - Fixed "-Infinity" causing "Unterminated Number" exception
 
 v1.0.0710.2017:
 - Improved literal parsing to not use Substring()
 
-v1.0.0710.2012:
+v1.0.0710.2012
 - Fixed bug in array auto-typing
 - Fixed bug with reading empty objects
 - Improved specificity of error messages
 - Added line/col numbers to errors
 
-v1.0.0710.2009:
+v1.0.0710.2009
 - Renaming namespace JsonFx.Serialization -> JsonFx.Json
 - Rename namespace JsonFx.Services -> JsonFx.JsonRpc
 
-v1.0.0710.1908:
+v1.0.0710.1908
 - Now encoding '<' as it can cause issues in script tags
 
-v1.0.0706.0000:
+v1.0.0706.0000
 - Fixed bugs where if new compacted resource was shorter would leave remnants of old content
 - Improved CssUserAgent for Safari 3 betas
 - Added ETag support
 
-v1.0.0705.1916:
+v1.0.0705.1916
 - Fixed bug where ResourceCodeProvider was being reused and resources were experiencing collisions
 
-v1.0.0705.1608:
+v1.0.0705.1608
 - Fixed bug where BuildManager fails when resources aren't prebuilt
 - Added "X-JsonFx-Version" response header
 
-v1.0.0705.1501:
+v1.0.0705.1501
 - Fixed bug in JsonMLTextWriter, where was outputting HTML comments
 - Suppressed error where BuildManager fails when resources aren't prebuilt
 
-v1.0.0705.0801:
+v1.0.0705.0801
 - Added basic History example
 - Now supports full error reporting and compaction of CSS & JavaScript
 - Cleaned up scripts based upon latest JSLint restrictions
@@ -412,17 +468,17 @@ v1.0.0705.0801:
 - Trapping x64 exceptions in BuildTools (MSScriptControl requires x86)
 - Made JsonFx strongly signed enabling placement in the GAC
 
-v1.0.0704.2321:
+v1.0.0704.2321
 - Fixed bug in JsonMLTextWriter, where wouldn't write attributes of an empty element
 
-v1.0.0704.2320:
+v1.0.0704.2320
 - Removed need for .browser files by adding HttpModule:
 - Produces more consistent async request behavior across platforms
 - Simplifies integration by reducing feature to a single line in web.config
 - Moved ASP.NET .browser "fixes" into single Other.browser file
 - Pruned some obsolete/dormant classes
 
-v1.0.0704.2210:
+v1.0.0704.2210
 - Cleaned up display of JSON-RPC Service test
 - Added ability to specify the javascript proxy namespace on a JSON-RPC service
 - Made service proxy a true singleton, rather than an instance in a static field
@@ -431,16 +487,16 @@ v1.0.0704.2210:
 - Fixed some minor bugs in edge case service errors
 - Added ~/Download/LatestBuild.ashx so download URL doesn't need to change
 
-v1.0.0704.1900:
+v1.0.0704.1900
 - Added bare bones example but shows most concepts
 - Added Example pages ~/Services/ and ~/Effects/ with some light instructions on them
 - CSS compaction isn't quite finished
 
-v1.0.0703.1808:
+v1.0.0703.1808
 - Added auto-versioning to assembly and scripts
 - Update of script compactor to produce custom timestamps
 
-v1.0.0703.0319:
+v1.0.0703.0319
 - Fixed empty array deserialization bug
 - Fixed crash when bad JSON in ServiceTest
 - Beginning better exception messaging
