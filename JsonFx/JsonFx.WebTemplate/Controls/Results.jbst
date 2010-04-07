@@ -32,14 +32,14 @@
 
 </script>
 
-This is the data that the server returned:
+This is the data that the service returned:
 <dl style="text-align:left;width:50%;margin:auto;">
 	<dt>TimeStamp:</dt>
-	<dd><%= this.data.TimeStamp.toString() %></dd>
+	<dd><%= this.data.timestamp.toString() %></dd>
 
 	<dt>Machine:</dt>
-	<dd><%= this.data.Machine %></dd>
+	<dd><%= this.data.machine %></dd>
 
-	<dt>Number (sent up and back):</dt>
-	<dd><%= this.data.Number %></dd>
+	<dt>Number:</dt>
+	<dd><%= this.data.number %></dd>
 </dl>

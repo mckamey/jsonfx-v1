@@ -5,24 +5,24 @@
 	/* NOTE: the template name is an object which can be added to; equivalent to "this" */
 
 	/* this method is used as a callback in a service method */
-	/*void*/ Example.results.success = function(/*object*/ data, /*elem*/ cx) {
+	/*void*/ Example.results.success = function(/*object*/ data, /*object*/ cx) {
 
 		// this databinds the data to the template and rehydrates to DOM
 		var jbst = Example.results.bind(data);
 
-		jQuery(cx.elem).replaceWith(jbst);
+		jQuery(".js-ServiceTest").replaceWith(jbst);
 	};
 
 </script>
 
-This is the data that the server returned:
+This is the data that the service returned:
 <dl style="margin-left:2em;">
 	<dt>TimeStamp:</dt>
-	<dd><%= this.data.TimeStamp.toString() %></dd>
+	<dd><%= this.data.timestamp.toString() %></dd>
 
 	<dt>Machine:</dt>
-	<dd><%= this.data.Machine %></dd>
+	<dd><%= this.data.machine %></dd>
 
-	<dt>Number (sent up and back):</dt>
-	<dd><%= this.data.Number %></dd>
+	<dt>Number:</dt>
+	<dd><%= this.data.number %></dd>
 </dl>

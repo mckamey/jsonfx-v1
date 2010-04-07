@@ -5,7 +5,7 @@
 
 	The MIT License
 
-	Copyright (c) 2006-2010 Stephen M. McKamey
+	Copyright (c) 2006-2009 Stephen M. McKamey
 
 	Permission is hereby granted, free of charge, to any person obtaining a copy
 	of this software and associated documentation files (the "Software"), to deal
@@ -45,17 +45,81 @@ namespace JsonFx.UI.Jbst
 	/// </summary>
 	public class JbstCompiler
 	{
+		#region BuildResult
+
+		private class SimpleBuildResult : IOptimizedResult
+		{
+			#region Fields
+
+			private string source;
+			private string prettyPrinted;
+			private string compacted;
+			private string fileExtension;
+			private string hash;
+			private string contentType;
+
+			#endregion Fields
+
+			#region IBuildResult Members
+
+			public string ContentType
+			{
+				get { return this.contentType; }
+				set { this.contentType = value; }
+			}
+
+			public string FileExtension
+			{
+				get { return this.fileExtension; }
+				set { this.fileExtension = value; }
+			}
+
+			public string Hash
+			{
+				get { return this.hash; }
+				set { this.hash = value; }
+			}
+
+			#endregion IBuildResult Members
+
+			#region IOptimizedResult Members
+
+			public string Source
+			{
+				get { return this.source; }
+				set { this.source = value; }
+			}
+
+			public string PrettyPrinted
+			{
+				get { return this.prettyPrinted; }
+				set { this.prettyPrinted = value; }
+			}
+
+			public string Compacted
+			{
+				get { return this.compacted; }
+				set { this.compacted = value; }
+			}
+
+			public byte[] Gzipped
+			{
+				get { throw new NotImplementedException(); }
+			}
+
+			public byte[] Deflated
+			{
+				get { throw new NotImplementedException(); }
+			}
+
+			#endregion IOptimizedResult Members
+		}
+
+		#endregion BuildResult
+
 		#region Compiler Methods
 
-		/// <summary>
-		/// Compiles the provided input
-		/// </summary>
-		/// <param name="input"></param>
-		/// <param name="filename"></param>
-		/// <param name="compilationErrors"></param>
-		/// <param name="compactionErrors"></param>
-		/// <returns></returns>
-		public IOptimizedResult Compile(TextReader input, string filename, List<ParseException> compilationErrors, List<ParseException> compactionErrors)
+		public IOptimizedResult Compile(string input, string filename, List<ParseException> compilationErrors, List<ParseException> compactionErrors)
 		{
 			if (input == null)
 			{
@@ -66,9 +130,6 @@ namespace JsonFx.UI.Jbst
 			// parse JBST markup
 			JbstWriter writer = new JbstWriter(filename);
 
-			StringWriter sw = new StringWriter();
-
-			string source = input.ReadToEnd();
 			try
 			{
 				HtmlDistiller parser = new HtmlDistiller();
@@ -77,10 +138,7 @@ namespace JsonFx.UI.Jbst
 				parser.NormalizeWhitespace = false;
 				parser.HtmlWriter = writer;
 				parser.HtmlFilter = new NullHtmlFilter();
-				parser.Parse(source);
-
-				// render the pretty-printed version
-				writer.Render(sw);
+				parser.Parse(input);
 			}
 			catch (ParseException ex)
 			{
@@ -91,9 +149,14 @@ namespace JsonFx.UI.Jbst
 				compilationErrors.Add(new ParseError(ex.Message, filename, 0, 0, ex));
 			}
 
-			SimpleJbstBuildResult result = new SimpleJbstBuildResult(writer.JbstName, writer.AutoMarkup);
+			StringWriter sw = new StringWriter();
 
-			result.Source = source;
+			// render the pretty-printed version
+			writer.Render(sw);
+
+			SimpleBuildResult result = new SimpleBuildResult();
+
+			result.Source = input;
 			result.PrettyPrinted = sw.GetStringBuilder().ToString();
 			result.Compacted = this.Compact(result.PrettyPrinted, filename, compactionErrors);
 			result.ContentType = "text/javascript";

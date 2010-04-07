@@ -1,11 +1,11 @@
-﻿#region License
+#region License
 /*---------------------------------------------------------------------------------*\
 
 	Distributed under the terms of an MIT-style license:
 
 	The MIT License
 
-	Copyright (c) 2006-2010 Stephen M. McKamey
+	Copyright (c) 2006-2009 Stephen M. McKamey
 
 	Permission is hereby granted, free of charge, to any person obtaining a copy
 	of this software and associated documentation files (the "Software"), to deal
@@ -29,13 +29,14 @@
 #endregion License
 
 using System;
-using System.CodeDom;
-using System.Collections.Generic;
 using System.IO;
+using System.Collections.Generic;
+using System.Text.RegularExpressions;
 
 using JsonFx.BuildTools;
-using JsonFx.Client;
+using JsonFx.Compilation;
 using JsonFx.Configuration;
+using JsonFx.Json;
 using JsonFx.Handlers;
 
 namespace JsonFx.Compilation
@@ -59,8 +60,6 @@ namespace JsonFx.Compilation
 }";
 		private const string CatchCompact = "}catch(ex){}";
 
-		public const string ExternalImport = @"document.write('<scr'+'ipt type=""text\/javascript"" src=""{0}""><\/'+'script>');";
-
 		#endregion Constants
 
 		#region ResourceCodeProvider Properties
@@ -78,25 +77,6 @@ namespace JsonFx.Compilation
 		#endregion ResourceCodeProvider Properties
 
 		#region ResourceCodeProvider Methods
-
-		protected internal override void SetBaseClass(CodeTypeDeclaration resourceType)
-		{
-			resourceType.BaseTypes.Add(typeof(ScriptBuildResult));
-		}
-
-		protected internal override void GenerateCodeExtensions(IResourceBuildHelper helper, CodeTypeDeclaration resourceType)
-		{
-			base.GenerateCodeExtensions(helper, resourceType);
-
-			#region public ResourceType() : base(virtualPath) {}
-
-			CodeConstructor ctor = new CodeConstructor();
-			ctor.Attributes = MemberAttributes.Public;
-			ctor.BaseConstructorArgs.Add(new CodePrimitiveExpression(helper.VirtualPath));
-			resourceType.Members.Add(ctor);
-
-			#endregion public ResourceType() : base(virtualPath) {}
-		}
 
 		protected internal override void ProcessResource(
 			IResourceBuildHelper helper,
@@ -139,19 +119,6 @@ namespace JsonFx.Compilation
 
 				this.ExtractGlobalizationKeys(compacted);
 			}
-		}
-
-		protected internal override void ProcessExternalResource(
-			IResourceBuildHelper helper,
-			string url,
-			out string preProcessed,
-			out string compacted,
-			List<ParseException> errors)
-		{
-			compacted = preProcessed = String.Format(ScriptResourceCodeProvider.ExternalImport, url);
-
-			preProcessed = ScriptResourceCodeProvider.FirewallScript(url, preProcessed, true);
-			compacted = ScriptResourceCodeProvider.FirewallScript(url, compacted, true);
 		}
 
 		public static string FirewallScript(string virtualPath, string source, bool compacted)

@@ -1,8 +1,8 @@
 using System;
 using System.Web;
 
+using JsonFx.Json;
 using JsonFx.JsonRpc;
-using MyApp.Models;
 
 namespace MyApp.Services
 {
@@ -11,26 +11,22 @@ namespace MyApp.Services
 	{
 		#region Service Methods
 
-		/* methods included in the JavaScript proxy */
+		/* these are the methods that are included in the JavaScript proxy */
 
 		/// <summary>
 		/// proxy function will be Example.Service.getInfo
 		/// </summary>
-		/// <param name="info">a TestInfo object</param>
-		/// <returns>TestInfo</returns>
+		/// <param name="number">a number</param>
+		/// <returns>MyServiceResult</returns>
 		[JsonMethod(Name="getInfo")]
-		public TestInfo GetInfo(TestInfo info)
+		public object GetInfo(double number)
 		{
-			if (info == null)
+			return new
 			{
-				throw new ArgumentNullException("info");
-			}
-
-			// populate data to be bound to a JBST
-			info.TimeStamp = this.GetTimeStamp();
-			info.Machine = this.GetMachine();
-
-			return info;
+				number = number,
+				timestamp = this.GetTimeStamp(),
+				machine = this.GetMachine()
+			};
 		}
 
 		#endregion Service Methods

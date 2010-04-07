@@ -5,7 +5,7 @@
 
 	The MIT License
 
-	Copyright (c) 2006-2010 Stephen M. McKamey
+	Copyright (c) 2006-2009 Stephen M. McKamey
 
 	Permission is hereby granted, free of charge, to any person obtaining a copy
 	of this software and associated documentation files (the "Software"), to deal
@@ -228,14 +228,6 @@ namespace JsonFx.Json
 		{
 			get { return this.settings.NewLine; }
 			set { this.Writer.NewLine = this.settings.NewLine = value; }
-		}
-
-		/// <summary>
-		/// Gets the current nesting depth
-		/// </summary>
-		protected int Depth
-		{
-			get { return this.depth; }
 		}
 
 		/// <summary>
@@ -921,7 +913,7 @@ namespace JsonFx.Json
 				{
 					if (appendDelim)
 					{
-						this.WriteArrayItemDelim();
+						this.Writer.Write(JsonReader.OperatorValueDelim);
 					}
 					else
 					{
@@ -929,7 +921,7 @@ namespace JsonFx.Json
 					}
 
 					this.WriteLine();
-					this.WriteArrayItem(item);
+					this.Write(item, false);
 				}
 			}
 			finally
@@ -942,11 +934,6 @@ namespace JsonFx.Json
 				this.WriteLine();
 			}
 			this.Writer.Write(JsonReader.OperatorArrayEnd);
-		}
-
-		protected virtual void WriteArrayItem(object item)
-		{
-			this.Write(item, false);
 		}
 
 		protected virtual void WriteObject(IDictionary value)
@@ -978,14 +965,14 @@ namespace JsonFx.Json
 				{
 					if (appendDelim)
 					{
-						this.WriteObjectPropertyDelim();
+						this.Writer.Write(JsonReader.OperatorValueDelim);
 					}
 					else
 					{
 						appendDelim = true;
 					}
 
-					this.WriteObjectProperty(Convert.ToString(enumerator.Entry.Key), enumerator.Entry.Value);
+					this.WriteObjectProperty(enumerator.Entry);
 				}
 			}
 			finally
@@ -1000,22 +987,22 @@ namespace JsonFx.Json
 			this.Writer.Write(JsonReader.OperatorObjectEnd);
 		}
 
+		private void WriteObjectProperty(DictionaryEntry entry)
+		{
+			this.WriteObjectProperty(Convert.ToString(entry.Key), entry.Value);
+		}
+
 		private void WriteObjectProperty(string key, object value)
 		{
 			this.WriteLine();
 			this.WriteObjectPropertyName(key);
 			this.Writer.Write(JsonReader.OperatorNameDelim);
-			this.WriteObjectPropertyValue(value);
+			this.Write(value, true);
 		}
 
 		protected virtual void WriteObjectPropertyName(string name)
 		{
 			this.Write(name);
-		}
-
-		protected virtual void WriteObjectPropertyValue(object value)
-		{
-			this.Write(value, true);
 		}
 
 		protected virtual void WriteObject(object value, Type type)
@@ -1035,7 +1022,7 @@ namespace JsonFx.Json
 				{
 					if (appendDelim)
 					{
-						this.WriteObjectPropertyDelim();
+						this.Writer.Write(JsonReader.OperatorValueDelim);
 					}
 					else
 					{
@@ -1074,7 +1061,7 @@ namespace JsonFx.Json
 
 					if (appendDelim)
 					{
-						this.WriteObjectPropertyDelim();
+						this.Writer.Write(JsonReader.OperatorValueDelim);
 					}
 					else
 					{
@@ -1113,7 +1100,7 @@ namespace JsonFx.Json
 
 					if (appendDelim)
 					{
-						this.WriteObjectPropertyDelim();
+						this.Writer.Write(JsonReader.OperatorValueDelim);
 						this.WriteLine();
 					}
 					else
@@ -1141,16 +1128,6 @@ namespace JsonFx.Json
 				this.WriteLine();
 			}
 			this.Writer.Write(JsonReader.OperatorObjectEnd);
-		}
-
-		protected virtual void WriteArrayItemDelim()
-		{
-			this.Writer.Write(JsonReader.OperatorValueDelim);
-		}
-
-		protected virtual void WriteObjectPropertyDelim()
-		{
-			this.Writer.Write(JsonReader.OperatorValueDelim);
 		}
 
 		protected virtual void WriteLine()
@@ -1269,7 +1246,10 @@ namespace JsonFx.Json
 			if (longVal == 0L)
 			{
 				// Return the value of empty, or zero if none exists
-				enums.Add((Enum)Convert.ChangeType(value, enumType));
+				if (Convert.ToUInt64(enumValues.GetValue(0)) == 0L)
+					enums.Add(enumValues.GetValue(0) as Enum);
+				else
+					enums.Add(null);
 				return enums.ToArray();
 			}
 
@@ -1278,9 +1258,7 @@ namespace JsonFx.Json
 				ulong enumValue = Convert.ToUInt64(enumValues.GetValue(i));
 
 				if ((i == 0) && (enumValue == 0L))
-				{
 					continue;
-				}
 
 				// matches a value in enumeration
 				if ((longVal & enumValue) == enumValue)
@@ -1294,9 +1272,7 @@ namespace JsonFx.Json
 			}
 
 			if (longVal != 0x0L)
-			{
 				enums.Add(Enum.ToObject(enumType, longVal) as Enum);
-			}
 
 			return enums.ToArray();
 		}

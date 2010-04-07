@@ -52,7 +52,6 @@ namespace JsonFx.Json
 		ObjectStart,
 		ObjectEnd,
 		NameDelim,
-		ValueDelim,
-		UnquotedName
+		ValueDelim
 	}
 }

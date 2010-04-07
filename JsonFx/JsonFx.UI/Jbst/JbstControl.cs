@@ -5,7 +5,7 @@
 
 	The MIT License
 
-	Copyright (c) 2006-2010 Stephen M. McKamey
+	Copyright (c) 2006-2009 Stephen M. McKamey
 
 	Permission is hereby granted, free of charge, to any person obtaining a copy
 	of this software and associated documentation files (the "Software"), to deal
@@ -29,7 +29,6 @@
 #endregion License
 
 using System;
-
 using JsonFx.Json;
 
 namespace JsonFx.UI.Jbst
@@ -48,7 +47,7 @@ namespace JsonFx.UI.Jbst
 		#region Properties
 
 		[JsonIgnore]
-		public virtual JbstContainerControl Parent
+		public JbstContainerControl Parent
 		{
 			get { return this.parent; }
 			set { this.parent = value; }

@@ -5,7 +5,7 @@
 
 	The MIT License
 
-	Copyright (c) 2006-2010 Stephen M. McKamey
+	Copyright (c) 2006-2009 Stephen M. McKamey
 
 	Permission is hereby granted, free of charge, to any person obtaining a copy
 	of this software and associated documentation files (the "Software"), to deal
@@ -31,94 +31,84 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Web;
+using System.Web.UI;
 
-using JsonFx.Client;
 using JsonFx.Json;
-using JsonFx.UI.Jbst;
-using JsonFx.Compilation;
 
 namespace JsonFx.Mvc
 {
 	public static class Jbst
 	{
-		#region Properties
-
-		private static bool IsDebug
-		{
-			get
-			{
-				// TODO: find a better way to access this
-				HttpContext context = HttpContext.Current;
-				return context != null && context.IsDebuggingEnabled;
-			}
-		}
-
-		#endregion Properties
-
 		#region JBST Helper Methods
 
 		/// <summary>
 		/// Bind the JBST to the provided data.
 		/// </summary>
-		/// <param name="jbstName"></param>
-		/// <param name="dataName">named data to bind</param>
+		/// <param name="helper"></param>
+		/// <param name="jbst"></param>
+		/// <param name="data">named data to bind</param>
 		/// <param name="dataItems">collection of data to emit</param>
 		/// <returns></returns>
-		public static string Bind(EcmaScriptIdentifier jbstName, EcmaScriptIdentifier dataName, IDictionary<string, object> dataItems)
+		public static string Bind(EcmaScriptIdentifier jbst, EcmaScriptIdentifier data, IDictionary<string, object> dataItems)
 		{
-			StringWriter writer = new StringWriter();
-			JbstBuildResult jbst = JbstBuildResult.FindJbst(jbstName);
-			jbst.IsDebug = IsDebug;
+			// build the control
+			JsonFx.UI.Jbst.Control control = new JsonFx.UI.Jbst.Control();
+			control.ID = Guid.NewGuid().ToString("n");
+			control.Name = jbst;
+			control.Data = data;
 
 			if (dataItems != null)
 			{
-				// render data block
-				new DataBlockWriter(jbst.AutoMarkup, jbst.IsDebug).Write(writer, dataItems);
+				foreach (string key in dataItems.Keys)
+				{
+					control.DataItems[key] = dataItems[key];
+				}
 			}
 
-			// render the JBST
-			jbst.Write(writer, dataName);
-
-			return writer.ToString();
+			// render the control
+			return Render(control);
 		}
 
 		/// <summary>
 		/// Bind the JBST to the provided data.
 		/// </summary>
-		/// <param name="jbstName"></param>
+		/// <param name="helper"></param>
+		/// <param name="jbst"></param>
 		/// <param name="data"></param>
 		/// <returns></returns>
-		public static string Bind(EcmaScriptIdentifier jbstName, object data)
+		public static string Bind(EcmaScriptIdentifier jbst, object data)
 		{
-			StringWriter writer = new StringWriter();
+			// build the control
+			JsonFx.UI.Jbst.Control control = new JsonFx.UI.Jbst.Control();
+			control.ID = Guid.NewGuid().ToString("n");
+			control.Name = jbst;
+			control.InlineData = data;
 
-			// render the JBST
-			JbstBuildResult jbst = JbstBuildResult.FindJbst(jbstName);
-			jbst.IsDebug = IsDebug;
-			jbst.Write(writer, data);
-
-			return writer.ToString();
+			// render the control
+			return Render(control);
 		}
 
 		/// <summary>
 		/// Bind the JBST to the provided data.
 		/// </summary>
-		/// <param name="jbstName"></param>
+		/// <param name="helper"></param>
+		/// <param name="jbst"></param>
 		/// <param name="data"></param>
 		/// <param name="index"></param>
 		/// <param name="count"></param>
 		/// <returns></returns>
-		public static string Bind(EcmaScriptIdentifier jbstName, object data, int index, int count)
+		public static string Bind(EcmaScriptIdentifier jbst, object data, int index, int count)
 		{
-			StringWriter writer = new StringWriter();
+			// build the control
+			JsonFx.UI.Jbst.Control control = new JsonFx.UI.Jbst.Control();
+			control.ID = Guid.NewGuid().ToString("n");
+			control.Name = jbst;
+			control.InlineData = data;
+			control.Index = index;
+			control.Count = count;
 
-			// render the JBST
-			JbstBuildResult jbst = JbstBuildResult.FindJbst(jbstName);
-			jbst.IsDebug = IsDebug;
-			jbst.Write(writer, data, index, count);
-
-			return writer.ToString();
+			// render the control
+			return Render(control);
 		}
 
 		#endregion JBST Helper Methods
@@ -128,68 +118,53 @@ namespace JsonFx.Mvc
 		/// <summary>
 		/// Emit the provided data as JavaScript variables.
 		/// </summary>
-		/// <param name="name">name of the data</param>
-		/// <param name="data">data contents</param>
+		/// <param name="helper"></param>
+		/// <param name="name"></param>
+		/// <param name="data"></param>
 		/// <returns></returns>
 		public static string ScriptData(string name, object data)
 		{
-			Dictionary<string, object> dataItems = new Dictionary<string, object>();
+			// build the control
+			JsonFx.Client.ScriptDataBlock dataBlock = new JsonFx.Client.ScriptDataBlock();
+			dataBlock.DataItems[name] = dataBlock;
 
-			dataItems[name] = data;
-
-			return ScriptData(dataItems);
+			// render the control
+			return Render(dataBlock);
 		}
 
 		/// <summary>
 		/// Emit the provided data as JavaScript variables.
 		/// </summary>
-		/// <param name="data">data contents</param>
+		/// <param name="helper"></param>
+		/// <param name="name"></param>
+		/// <param name="data"></param>
 		/// <returns></returns>
 		public static string ScriptData(IDictionary<string, object> dataItems)
 		{
-			StringWriter writer = new StringWriter();
+			// build the control
+			JsonFx.Client.ScriptDataBlock dataBlock = new JsonFx.Client.ScriptDataBlock();
+			foreach (string key in dataItems.Keys)
+			{
+				dataBlock.DataItems[key] = dataItems[key];
+			}
 
-			// render data block
-			DataBlockWriter dataBlock = new DataBlockWriter();
-			dataBlock.IsDebug = IsDebug;
-			dataBlock.Write(writer, dataItems);
-
-			return writer.ToString();
+			// render the control
+			return Render(dataBlock);
 		}
 
 		#endregion Script Data Helper Methods
 
-		#region Resource HelperMethods
+		#region Utility Methods
 
-		/// <summary>
-		/// Include optimized resources
-		/// </summary>
-		/// <param name="compactUrl"></param>
-		/// <param name="debugUrl"></param>
-		/// <returns></returns>
-		public static string ResourceInclude(string debugUrl, string compactUrl)
+		internal static string Render(System.Web.UI.Control control)
 		{
-			string url = MergeResourceCodeProvider.JoinAlternates(debugUrl, compactUrl);
+			HtmlTextWriter writer = new XhtmlTextWriter(new StringWriter());
+			control.RenderControl(writer);
+			writer.Flush();
 
-			return ResourceInclude(url);
+			return writer.InnerWriter.ToString();
 		}
 
-		/// <summary>
-		/// Include optimized resources
-		/// </summary>
-		/// <param name="url"></param>
-		/// <returns></returns>
-		public static string ResourceInclude(string url)
-		{
-			StringWriter writer = new StringWriter();
-
-			ResourceBuildResult result = ResourceBuildResult.FindResource(url);
-			result.IsDebug = IsDebug;
-			result.Write(writer);
-
-			return writer.ToString();
-		}
-
-		#endregion Resource HelperMethods
+		#endregion Utility Methods
 	}
 }

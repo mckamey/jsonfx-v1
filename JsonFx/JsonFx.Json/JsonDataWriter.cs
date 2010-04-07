@@ -35,7 +35,7 @@ using System.Text;
 namespace JsonFx.Json
 {
 	/// <summary>
-	/// An <see cref="IDataWriter"/> adapter for <see cref="JsonWriter"/>
+	/// An IDataWriter adapter for <see cref="JsonWriter"/>
 	/// </summary>
 	public class JsonDataWriter : IDataWriter
 	{

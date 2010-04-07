@@ -39,7 +39,7 @@ using JsonFx.Json;
 namespace JsonFx.Xml
 {
 	/// <summary>
-	/// An <see cref="IDataWriter"/> adapter for <see cref="XmlWriter"/>
+	/// An IDataWriter adapter for <see cref="XmlWriter"/>
 	/// </summary>
 	public class XmlDataWriter : IDataWriter
 	{
@@ -146,9 +146,8 @@ namespace JsonFx.Xml
 			XmlWriterSettings settings = new XmlWriterSettings();
 			settings.CheckCharacters = true;
 			settings.CloseOutput = false;
-			settings.ConformanceLevel = ConformanceLevel.Auto;
+			settings.ConformanceLevel = ConformanceLevel.Document;
 			settings.Encoding = encoding;
-			settings.OmitXmlDeclaration = true;
 
 			if (prettyPrint)
 			{

@@ -29,19 +29,22 @@
 #endregion License
 
 using System;
-using System.CodeDom;
-using System.CodeDom.Compiler;
 using System.Collections;
 using System.Collections.Generic;
 using System.Reflection;
-using System.Security.Permissions;
 using System.Web;
+using System.Web.Hosting;
 using System.Web.Compilation;
+using System.CodeDom;
+using System.CodeDom.Compiler;
+using System.Security.Permissions;
+using System.Text.RegularExpressions;
+using System.IO;
 
-using JsonFx.Handlers;
 using JsonFx.JsonRpc;
 using JsonFx.JsonRpc.Discovery;
 using JsonFx.JsonRpc.Proxy;
+using JsonFx.Handlers;
 
 namespace JsonFx.Compilation
 {
@@ -133,16 +136,6 @@ namespace JsonFx.Compilation
 
 		private void GenerateServiceProxyCode(AssemblyBuilder assemblyBuilder, Type serviceType)
 		{
-			IResourceNameGenerator nameGenerator = assemblyBuilder.CodeDomProvider as IResourceNameGenerator;
-			if (nameGenerator != null)
-			{
-				this.ResourceFullName = nameGenerator.GenerateResourceName(base.VirtualPath);
-			}
-			else
-			{
-				this.ResourceFullName = ResourceBuildProvider.GenerateTypeNameFromPath(base.VirtualPath);
-			}
-
 			// TODO: consolidate app relative path conversion
 			// calculate the service end-point path
 			string proxyPath = ResourceHandler.EnsureAppRelative(base.VirtualPath).TrimStart('~');
@@ -182,22 +175,6 @@ namespace JsonFx.Compilation
 			ns.Types.Add(resourceType);
 
 			#endregion public sealed class ResourceTypeName : CompiledBuildResult
-
-			#region [BuildPath(virtualPath)]
-
-			string virtualPath = base.VirtualPath;
-			if (HttpRuntime.AppDomainAppVirtualPath.Length > 1)
-			{
-				virtualPath = virtualPath.Substring(HttpRuntime.AppDomainAppVirtualPath.Length);
-			}
-			virtualPath = "~"+virtualPath;
-
-			CodeAttributeDeclaration attribute = new CodeAttributeDeclaration(
-				new CodeTypeReference(typeof(BuildPathAttribute)),
-				new CodeAttributeArgument(new CodePrimitiveExpression(virtualPath)));
-			resourceType.CustomAttributes.Add(attribute);
-
-			#endregion [BuildPath(virtualPath)]
 
 			#region private static readonly byte[] GzippedBytes
 
@@ -513,9 +490,6 @@ namespace JsonFx.Compilation
 
 				#endregion IEnumerable<string> IDependentResult.VirtualPathDependencies { get; }
 			}
-
-			// Generate _ASP FastObjectFactory
-			assemblyBuilder.GenerateTypeFactory(this.ResourceFullName);
 
 			assemblyBuilder.AddCodeCompileUnit(this, generatedUnit);
 		}

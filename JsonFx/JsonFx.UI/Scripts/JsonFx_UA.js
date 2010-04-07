@@ -4,7 +4,7 @@
 	user-agent specific CSS support
 
 	Created: 2006-06-10-1635
-	Modified: 2010-03-08-0824
+	Modified: 2009-09-24-2055
 
 	Copyright (c)2006-2009 Stephen M. McKamey
 	Distributed under an open-source license: http://jsonfx.net/license
@@ -33,16 +33,13 @@ JsonFx.UA = {
 		// http://www.useragentstring.com/pages/useragentstring.php
 		// http://www.user-agents.org
 		// http://en.wikipedia.org/wiki/User_agent
-		// http://www.zytrax.com/tech/web/mobile_ids.html
-		var R_All = /[\w\-\.]+[\/][v]?\d+(\.\d+)*/g;
+		var R_All = /\S+[\/][v]?\d+(\.\d+)*/g;
 		var R_AOL = /\b(america online browser|aol)[\s\/]*(\d+(\.\d+)*)/;
 		var R_MSIE = /(\bmsie|microsoft internet explorer)[\s\/]*(\d+(\.\d+)*)/;
 		var R_Gecko = /rv[:](\d+(\.\d+)*).*?gecko[\/]\d+/;
 		var R_Opera = /\bopera[\s\/]*(\d+(\.\d+)*)/;
 		var R_MSPIE = /\b(mspie|microsoft pocket internet explorer)[\s\/]*(\d+(\.\d+)*)/;
 		var R_iCab = /\bicab[\s\/]*(\d+(\.\d+)*)/;
-		var R_BlackBerry = /\bblackberry\w+[\s\/]+(\d+(\.\d+)*)/;
-		var R_mobile = /(\w*mobile\w*|\w*phone\w*|\bpda\b|\bchtml\b|\bmidp\b|\bcldc\b|blackberry\w*|windows ce\b|palm\w*\b|symbian\w*\b)/;
 
 		// do this first for all (covers most browser types)
 		var i, s, b, raw = ua.match(R_All);
@@ -77,27 +74,17 @@ JsonFx.UA = {
 		} else if (R_Gecko.exec(ua)) {
 			fxua.gecko = RegExp.$1;
 		}
-
-		// ensure that mobile devices have indication
-		if (!fxua.blackberry && R_BlackBerry.exec(ua)) {
-			fxua.blackberry = RegExp.$1;
-		}
-		if (!fxua.mobile && R_mobile.exec(ua)) {
-			fxua.mobile = RegExp.$1;
-		}
-		
 		return fxua;
 	},
 
 	/*string*/ formatCssUserAgent: function (/*Dictionary<string,string>*/ fxua) {
 		/*string*/ function format(/*string*/ b, /*string*/ v) {
-			/*const string*/ var PREFIX = " ua-";
+			/*const string*/ var PREFIX = " ua-", i;
 
-			b = b.split('.').join('-');
 			/*string*/ var css = PREFIX+b;
 			if (v) {
-				v = v.split('.').join('-');
-				var i = v.indexOf('-');
+				v = v.replace(/\./g, '-');
+				i = v.indexOf('-');
 				while (i > 0) {
 					// loop through chopping last '-' to end off
 					// concat result onto return string

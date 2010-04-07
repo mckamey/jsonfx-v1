@@ -34,7 +34,7 @@
 	<%-- example showing how to directly add to the page a JBST control bound to example data --%>
 	<jbst:Control runat="server" name="Example.congrats" data="Example.myData" />
 
-	<p class="content">See <a href="http://help.jsonfx.net/instructions">http://help.jsonfx.net/instructions</a> for JsonFx customizations to Visual Studio.</p>
+	<p class="ReadMe">See <a href="http://help.jsonfx.net/instructions">http://help.jsonfx.net/instructions</a> for JsonFx customizations to Visual Studio.</p>
 
 </form>
 

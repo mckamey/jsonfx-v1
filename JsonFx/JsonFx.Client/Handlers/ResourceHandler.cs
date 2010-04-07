@@ -1,11 +1,11 @@
-﻿#region License
+#region License
 /*---------------------------------------------------------------------------------*\
 
 	Distributed under the terms of an MIT-style license:
 
 	The MIT License
 
-	Copyright (c) 2006-2010 Stephen M. McKamey
+	Copyright (c) 2006-2009 Stephen M. McKamey
 
 	Permission is hereby granted, free of charge, to any person obtaining a copy
 	of this software and associated documentation files (the "Software"), to deal
@@ -31,13 +31,11 @@
 using System;
 using System.IO;
 using System.IO.Compression;
-using System.Net.Mime;
-using System.Text;
 using System.Web;
-using System.Web.Compilation;
+using System.Reflection;
+using System.Text;
 using System.Web.Hosting;
-
-using JsonFx.Compilation;
+using System.Web.Compilation;
 
 namespace JsonFx.Handlers
 {
@@ -66,6 +64,7 @@ namespace JsonFx.Handlers
 
 		private const string HeaderAcceptEncoding = "Accept-Encoding";
 		private const string HeaderContentEncoding = "Content-Encoding";
+		private const string HeaderContentDisposition= "Content-Disposition";
 
 		#endregion Constants
 
@@ -104,17 +103,8 @@ namespace JsonFx.Handlers
 
 		void IHttpHandler.ProcessRequest(HttpContext context)
 		{
-			HttpResponse response = context.Response;
-
-			try
-			{
-				response.ClearHeaders();
-				response.ClearContent();
-			}
-			catch { }
-
-			response.TrySkipIisCustomErrors = true;
-			response.BufferOutput = true;
+			context.Response.ClearHeaders();
+			context.Response.BufferOutput = true;
 
 			// specifying "DEBUG" in the query string gets the non-compacted form
 			IOptimizedResult info = this.GetResourceInfo(context, this.IsDebug);
@@ -129,23 +119,43 @@ namespace JsonFx.Handlers
 			{
 				// if the content changes then so will the hash
 				// so we can effectively cache this forever
-				response.ExpiresAbsolute = DateTime.UtcNow.AddYears(1);
+				context.Response.ExpiresAbsolute = DateTime.UtcNow.AddYears(1);
 			}
 
-			response.ContentType = info.ContentType;
+			context.Response.ContentType = info.ContentType;
 
-			string filename = Path.GetFileNameWithoutExtension(context.Request.FilePath)+'.'+info.FileExtension;
+			context.Response.AppendHeader(
+				ResourceHandler.HeaderContentDisposition,
+				"inline;filename="+Path.GetFileNameWithoutExtension(context.Request.FilePath)+'.'+info.FileExtension);
 
-			// this helps IE determine the Content-Type
-			// http://tools.ietf.org/html/rfc2183#section-2.3
-			ContentDisposition disposition = new ContentDisposition
+			switch (ResourceHandler.GetOutputEncoding(info, context, this.IsDebug))
 			{
-				Inline = true,
-				FileName = filename
-			};
-			response.AddHeader("Content-Disposition", disposition.ToString());
-
-			ResourceHandler.WriteResponse(context, info, this.IsDebug);
+				case BuildResultType.PrettyPrint:
+				{
+					context.Response.ContentEncoding = System.Text.Encoding.UTF8;
+					context.Response.Output.Write(info.PrettyPrinted);
+					break;
+				}
+				case BuildResultType.Gzip:
+				{
+					context.Response.AppendHeader(ResourceHandler.HeaderContentEncoding, ResourceHandler.GzipContentEncoding);
+					context.Response.OutputStream.Write(info.Gzipped, 0, info.Gzipped.Length);
+					break;
+				}
+				case BuildResultType.Deflate:
+				{
+					context.Response.AppendHeader(ResourceHandler.HeaderContentEncoding, ResourceHandler.DeflateContentEncoding);
+					context.Response.OutputStream.Write(info.Deflated, 0, info.Deflated.Length);
+					break;
+				}
+				case BuildResultType.Compact:
+				default:
+				{
+					context.Response.ContentEncoding = System.Text.Encoding.UTF8;
+					context.Response.Output.Write(info.Compacted);
+					break;
+				}
+			}
 		}
 
 		bool IHttpHandler.IsReusable
@@ -176,14 +186,11 @@ namespace JsonFx.Handlers
 		{
 			if (info == null)
 			{
-				if ((path == null) || (path.IndexOf("://") < 0))
+				info = ResourceHandler.Create<IBuildResult>(path);
+				if (info == null)
 				{
 					return path;
 				}
-
-				string alt;
-				MergeResourceCodeProvider.SplitAlternates(path, out path, out alt);
-				return isDebug ? path : alt;
 			}
 
 			string cache;
@@ -237,46 +244,6 @@ namespace JsonFx.Handlers
 		#endregion ResourceHandler Members
 
 		#region Utility Methods
-
-		/// <summary>
-		/// Writes the infor object to the HttpResult stream
-		/// </summary>
-		/// <param name="context"></param>
-		/// <param name="info"></param>
-		/// <param name="isDebug"></param>
-		public static void WriteResponse(HttpContext context, IOptimizedResult info, bool isDebug)
-		{
-			HttpResponse response = context.Response;
-
-			switch (ResourceHandler.GetOutputEncoding(info, context, isDebug))
-			{
-				case BuildResultType.PrettyPrint:
-				{
-					response.ContentEncoding = Encoding.UTF8;
-					response.Output.Write(info.PrettyPrinted);
-					break;
-				}
-				case BuildResultType.Gzip:
-				{
-					response.AppendHeader(ResourceHandler.HeaderContentEncoding, ResourceHandler.GzipContentEncoding);
-					response.OutputStream.Write(info.Gzipped, 0, info.Gzipped.Length);
-					break;
-				}
-				case BuildResultType.Deflate:
-				{
-					response.AppendHeader(ResourceHandler.HeaderContentEncoding, ResourceHandler.DeflateContentEncoding);
-					response.OutputStream.Write(info.Deflated, 0, info.Deflated.Length);
-					break;
-				}
-				case BuildResultType.Compact:
-				default:
-				{
-					response.ContentEncoding = Encoding.UTF8;
-					response.Output.Write(info.Compacted);
-					break;
-				}
-			}
-		}
 
 		/// <summary>
 		/// If supported, adds a runtime compression filter to the response output.

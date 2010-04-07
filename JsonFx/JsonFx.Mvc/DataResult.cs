@@ -29,9 +29,8 @@
 #endregion License
 
 using System;
+using System.Collections.Generic;
 using System.Net;
-using System.Net.Mime;
-using System.Text;
 using System.Web;
 using System.Web.Mvc;
 
@@ -40,7 +39,7 @@ using JsonFx.Json;
 namespace JsonFx.Mvc
 {
 	/// <summary>
-	/// Serializes data according to a specified format
+	/// Serializes the data according to the specified format
 	/// </summary>
 	public class DataResult : ActionResult
 	{
@@ -52,7 +51,7 @@ namespace JsonFx.Mvc
 
 		#region Fields
 
-		private readonly IDataWriterProvider Provider;
+		private readonly IDataWriter Writer;
 
 		#endregion Fields
 
@@ -61,15 +60,15 @@ namespace JsonFx.Mvc
 		/// <summary>
 		/// Ctor
 		/// </summary>
-		/// <param name="provider"></param>
-		public DataResult(IDataWriterProvider provider)
+		/// <param name="serializer">the serialization implementation</param>
+		public DataResult(IDataWriter writer)
 		{
-			if (provider == null)
+			if (writer == null)
 			{
-				throw new ArgumentNullException("provider");
+				throw new ArgumentNullException("writer");
 			}
 
-			this.Provider = provider;
+			this.Writer = writer;
 		}
 
 		#endregion Init
@@ -95,23 +94,11 @@ namespace JsonFx.Mvc
 		}
 
 		/// <summary>
-		/// Gets and sets a filename hint
-		/// </summary>
-		/// <remarks>
-		/// Used in Content-Disposition header
-		/// </remarks>
-		public string Filename
-		{
-			get;
-			set;
-		}
-
-		/// <summary>
 		/// Gets the underlying IDataWriter
 		/// </summary>
-		public IDataWriterProvider DataWriterProvider
+		public IDataWriter DataWriter
 		{
-			get { return this.Provider; }
+			get { return this.Writer; }
 		}
 
 		#endregion Properties
@@ -119,7 +106,7 @@ namespace JsonFx.Mvc
 		#region ActionResult Members
 
 		/// <summary>
-		/// Serializes the data using the specified IDataWriter
+		/// Executes the result
 		/// </summary>
 		/// <param name="context">ControllerContext</param>
 		public override void ExecuteResult(ControllerContext context)
@@ -129,32 +116,14 @@ namespace JsonFx.Mvc
 				throw new ArgumentNullException("context");
 			}
 
-			HttpRequestBase request = context.HttpContext.Request;
 			HttpResponseBase response = context.HttpContext.Response;
-
-			IDataWriter writer = this.Provider.Find(request.Headers["Accept"], request.Headers["Content-Type"]);
-			if (writer == null)
-			{
-				writer = this.Provider.Find(request.RawUrl);
-			}
-			if (writer == null)
-			{
-				writer = this.Provider.DefaultDataWriter;
-			}
-			if (writer == null)
-			{
-				throw new InvalidOperationException("No available IDataWriter implementations");
-			}
-
-			// need this to write out custom error objects
-			response.TrySkipIisCustomErrors = true;
 
 			if (this.HttpStatusCode != default(HttpStatusCode))
 			{
 				response.StatusCode = (int)this.HttpStatusCode;
 			}
 
-			if (String.IsNullOrEmpty(writer.ContentType))
+			if (String.IsNullOrEmpty(this.Writer.ContentType))
 			{
 				// use the default content type
 				response.ContentType = DataResult.DefaultContentType;
@@ -162,100 +131,104 @@ namespace JsonFx.Mvc
 			else
 			{
 				// set the response content type
-				response.ContentType = writer.ContentType;
+				response.ContentType = this.Writer.ContentType;
 			}
 
-			if (writer.ContentEncoding != null)
+			if (this.Writer.ContentEncoding != null)
 			{
 				// set the response content encoding
-				response.ContentEncoding = writer.ContentEncoding;
+				response.ContentEncoding = this.Writer.ContentEncoding;
 			}
 
-			string ext = writer.FileExtension;
-			string filename = this.Filename;
-			if (!String.IsNullOrEmpty(ext) ||
-				!String.IsNullOrEmpty(filename))
+			string ext = this.Writer.FileExtension;
+			if (!String.IsNullOrEmpty(ext))
 			{
-				if (String.IsNullOrEmpty(filename))
+				if (!ext.StartsWith("."))
 				{
-					filename = request.RawUrl;
+					ext = '.'+ext;
 				}
-				filename = this.ScrubFilename(filename, ext??String.Empty);
 
 				// this helps IE determine the Content-Type
-				// http://tools.ietf.org/html/rfc2183#section-2.3
-				ContentDisposition disposition = new ContentDisposition
-				{
-					Inline = true,
-					FileName = filename
-				};
-				response.AddHeader("Content-Disposition", disposition.ToString());
+				response.Headers["Content-Disposition"] = "inline;filename=data"+ext;
 			}
 
 			if (this.Data != null)
 			{
-				writer.Serialize(response.Output, this.Data);
+				this.Writer.Serialize(response.Output, this.Data);
 			}
 		}
 
 		#endregion ActionResult Members
 
-		#region Utility Methods
+		#region Header Methods
 
 		/// <summary>
-		/// Produces a header friendly name which ends in the given extension
+		/// Parses HTTP headers for Media-Types
 		/// </summary>
-		/// <param name="url"></param>
-		/// <param name="ext"></param>
-		/// <returns></returns>
-		private string ScrubFilename(string url, string ext)
+		/// <param name="accept">HTTP Accept header</param>
+		/// <param name="contentType">HTTP Content-Type header</param>
+		/// <returns>sequence of Media-Types</returns>
+		/// <remarks>
+		/// http://www.w3.org/Protocols/rfc2616/rfc2616-sec14.html
+		/// </remarks>
+		public static IEnumerable<string> ParseHeaders(string accept, string contentType)
 		{
-			int last = 0,
-				length = url.Length;
+			string mime;
 
-			StringBuilder builder = new StringBuilder(length + ext.Length);
-			for (int i=0; i<length; i++)
+			// check for a matching accept type
+			foreach (string type in DataResult.SplitTrim(accept, ','))
 			{
-				char ch = url[i];
-				if (Char.IsLetterOrDigit(ch) || ch == '_' || ch == '-' || ch == '.')
+				mime = DataResult.ParseMediaType(type);
+				if (!String.IsNullOrEmpty(mime))
 				{
-					// skip safe chars
-					continue;
+					yield return mime;
 				}
-				if (ch == '?')
-				{
-					// effectively terminate string
-					length = i;
-				}
-
-				if (last < i)
-				{
-					// write out any unwritten safe chars
-					builder.Append(url, last, i-last);
-				}
-				// effectively skip char
-				last = i+1;
-			}
-			if (last < length)
-			{
-				// write out any trailing safe chars
-				builder.Append(url, last, length-last);
-			}
-			if (builder.Length == 0)
-			{
-				// no safe chars, just use simple name
-				builder.Append("data");
 			}
 
-			if (ext.Length > 0 && ext[0] != '.')
+			// fallback on content-type
+			mime = DataResult.ParseMediaType(contentType);
+			if (!String.IsNullOrEmpty(mime))
 			{
-				builder.Append('.');
+				yield return mime;
 			}
-			builder.Append(ext);
-
-			return builder.ToString();
 		}
 
-		#endregion Utility Methods
+		private static string ParseMediaType(string type)
+		{
+			foreach (string mime in DataResult.SplitTrim(type, ';'))
+			{
+				// only return first part
+				return mime;
+			}
+
+			// if no parts was empty
+			return String.Empty;
+		}
+
+		private static IEnumerable<string> SplitTrim(string source, char ch)
+		{
+			if (String.IsNullOrEmpty(source))
+			{
+				yield break;
+			}
+
+			int length = source.Length;
+			for (int prev=0, next=0; prev<length && next>=0; prev=next+1)
+			{
+				next = source.IndexOf(ch, prev);
+				if (next < 0)
+				{
+					next = length;
+				}
+
+				string part = source.Substring(prev, next-prev).Trim();
+				if (part.Length > 0)
+				{
+					yield return part;
+				}
+			}
+		}
+
+		#endregion Methods
 	}
 }

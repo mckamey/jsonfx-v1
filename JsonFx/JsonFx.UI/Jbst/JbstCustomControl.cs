@@ -1,11 +1,11 @@
-﻿#region License
+#region License
 /*---------------------------------------------------------------------------------*\
 
 	Distributed under the terms of an MIT-style license:
 
 	The MIT License
 
-	Copyright (c) 2006-2010 Stephen M. McKamey
+	Copyright (c) 2006-2009 Stephen M. McKamey
 
 	Permission is hereby granted, free of charge, to any person obtaining a copy
 	of this software and associated documentation files (the "Software"), to deal
@@ -36,36 +36,67 @@ using JsonFx.Json;
 namespace JsonFx.UI.Jbst
 {
 	/// <summary>
-	/// Internal base representation of JBST commands
+	/// Internal representation of a nested JBST control.
 	/// </summary>
-	internal abstract class JbstCommandBase : JbstContainerControl, IJsonSerializable
+	internal class JbstCustomControl : JbstContainerControl, IJsonSerializable
 	{
 		#region Constants
 
 		public const string JbstPrefix = "jbst"+JbstWriter.PrefixDelim;
+		private const string PlaceholderCommand = "placeholder";
 
+		private const string PlaceholderStatement =
+			@"function(t) {{
+				if (t) {{
+					return JsonML.BST(t).dataBind({0}, {1}, {2});
+				}}
+			}}";
+
+		private const string ControlCommand = "control";
 		private const string ControlNameKey = "name";
-		private const string ControlNameKeyAlt = JbstPrefix+ControlNameKey;
+		private const string ControlNameKeyAlt = JbstCustomControl.JbstPrefix+JbstCustomControl.ControlNameKey;
 		private const string ControlDataKey = "data";
-		private const string ControlDataKeyAlt = JbstPrefix+ControlDataKey;
+		private const string ControlDataKeyAlt = JbstCustomControl.JbstPrefix+JbstCustomControl.ControlDataKey;
 		private const string ControlIndexKey = "index";
-		private const string ControlIndexKeyAlt = JbstPrefix+ControlIndexKey;
+		private const string ControlIndexKeyAlt = JbstCustomControl.JbstPrefix+JbstCustomControl.ControlIndexKey;
 		private const string ControlCountKey = "count";
-		private const string ControlCountKeyAlt = JbstPrefix+ControlIndexKey;
+		private const string ControlCountKeyAlt = JbstCustomControl.JbstPrefix+JbstCustomControl.ControlIndexKey;
 
-		private const string DefaultDataExpression = "this."+ControlDataKey;
-		private const string DefaultIndexExpression = "this."+ControlIndexKey;
-		private const string DefaultCountExpression = "this."+ControlCountKey;
+		private const string ControlSimpleFormat =
+			@"function() {{
+				return JsonML.BST({0}).dataBind({1}, {2}, {3});
+			}}";
+
+		private const string ControlStart =
+			@"function() {
+				var t = JsonML.BST(";
+
+		private const string ControlEndFormat =
+			@");
+				t.prototype = this;
+				return JsonML.BST({0}).dataBind({1}, {2}, {3}, t);
+			}}";
+
+		private const string ControlInlineStart =
+			@"function() {
+				return JsonML.BST(";
+
+		private const string ControlInlineEndFormat =
+			@").dataBind({0}, {1}, {2});
+			}}";
 
 		private const string FunctionEvalExpression = "({0}).call(this)";
+
+		private const string DefaultDataExpression = "this.data";
+		private const string DefaultIndexExpression = "this.index";
+		private const string DefaultCountExpression = "this.count";
 
 		#endregion Constants
 
 		#region Fields
 
-		private readonly string commandType;
-
 		private bool isProcessed;
+		private readonly string commandType;
 		private string nameExpr;
 		private string dataExpr;
 		private string indexExpr;
@@ -79,7 +110,7 @@ namespace JsonFx.UI.Jbst
 		/// Ctor
 		/// </summary>
 		/// <param name="commandName"></param>
-		public JbstCommandBase(string commandName)
+		public JbstCustomControl(string commandName)
 		{
 			this.commandType = (commandName == null) ?
 				String.Empty :
@@ -93,54 +124,12 @@ namespace JsonFx.UI.Jbst
 		[JsonName("rawName")]
 		public override string RawName
 		{
-			get { return JbstCommandBase.JbstPrefix + this.commandType; }
-		}
-
-		protected internal string NameExpr
-		{
-			get
-			{
-				this.EnsureControl();
-
-				return this.nameExpr;
-			}
-		}
-
-		protected string DataExpr
-		{
-			get
-			{
-				this.EnsureControl();
-
-				return this.dataExpr;
-			}
-		}
-
-		protected string IndexExpr
-		{
-			get
-			{
-				this.EnsureControl();
-
-				return this.indexExpr;
-			}
-		}
-
-		protected string CountExpr
-		{
-			get
-			{
-				this.EnsureControl();
-
-				return this.countExpr;
-			}
+			get { return JbstCustomControl.JbstPrefix + this.commandType; }
 		}
 
 		#endregion Properties
 
-		#region Methods
-
-		protected abstract void Render(JsonWriter writer);
+		#region Render Methods
 
 		private void EnsureControl()
 		{
@@ -149,8 +138,17 @@ namespace JsonFx.UI.Jbst
 				return;
 			}
 
-			this.nameExpr = this.ProcessArgument(String.Empty, ControlNameKey, ControlNameKeyAlt);
-			//this.nameExpr = EcmaScriptIdentifier.EnsureValidIdentifier(this.nameExpr, true, false);
+			// placeholder does not need a named JBST
+			if (JbstCustomControl.ControlCommand.Equals(this.commandType, StringComparison.OrdinalIgnoreCase))
+			{
+				this.nameExpr = this.ProcessArgument(String.Empty, ControlNameKey, ControlNameKeyAlt);
+				//this.nameExpr = EcmaScriptIdentifier.EnsureValidIdentifier(this.nameExpr, true, false);
+
+				if (String.IsNullOrEmpty(this.nameExpr) && !this.ChildControlsSpecified)
+				{
+					throw new InvalidOperationException("JBST Control requires either a named template or an anonymous inline template.");
+				}
+			}
 
 			this.dataExpr = this.ProcessArgument(DefaultDataExpression, ControlDataKey, ControlDataKeyAlt);
 			this.indexExpr = this.ProcessArgument(DefaultIndexExpression, ControlIndexKey, ControlIndexKeyAlt);
@@ -166,7 +164,7 @@ namespace JsonFx.UI.Jbst
 		/// <param name="defaultValue">the default value if none was supplied</param>
 		/// <param name="keys">an ordered list of keys to check</param>
 		/// <returns>the resulting expression</returns>
-		protected string ProcessArgument(string defaultValue, params string[] keys)
+		private string ProcessArgument(string defaultValue, params string[] keys)
 		{
 			object argument = null;
 			foreach (string key in keys)
@@ -209,7 +207,85 @@ namespace JsonFx.UI.Jbst
 			return (value ?? String.Empty).Trim();
 		}
 
-		#endregion Methods
+		/// <summary>
+		/// Controls the control rendering style
+		/// </summary>
+		/// <param name="writer"></param>
+		private void RenderCustomControl(JsonWriter writer)
+		{
+			if (!this.ChildControlsSpecified)
+			{
+				this.RenderSimpleCustomControl(writer);
+			}
+			else if (String.IsNullOrEmpty(this.nameExpr))
+			{
+				this.RenderInlineCustomControl(writer);
+			}
+			else
+			{
+				this.RenderNestedCustomControl(writer);
+			}
+		}
+
+		/// <summary>
+		/// Renders a simple data binding call to a named template.
+		/// </summary>
+		/// <param name="writer"></param>
+		private void RenderSimpleCustomControl(JsonWriter writer)
+		{
+			writer.TextWriter.Write(
+				JbstCustomControl.ControlSimpleFormat,
+				this.nameExpr,
+				this.dataExpr,
+				this.indexExpr,
+				this.countExpr);
+		}
+
+		/// <summary>
+		/// Renders a data binding call to an inline anonymous template.
+		/// </summary>
+		/// <param name="writer"></param>
+		private void RenderInlineCustomControl(JsonWriter writer)
+		{
+			writer.TextWriter.Write(ControlInlineStart);
+
+			writer.Write(new EnumerableAdapter(this));
+
+			writer.TextWriter.Write(
+				JbstCustomControl.ControlInlineEndFormat,
+				this.dataExpr,
+				this.indexExpr,
+				this.countExpr);
+		}
+
+		/// <summary>
+		/// Renders a data binding call to a named template with a nested inline anonymous template.
+		/// </summary>
+		/// <param name="writer"></param>
+		private void RenderNestedCustomControl(JsonWriter writer)
+		{
+			writer.TextWriter.Write(ControlStart);
+
+			writer.Write(new EnumerableAdapter(this));
+
+			writer.TextWriter.Write(
+				JbstCustomControl.ControlEndFormat,
+				this.nameExpr,
+				this.dataExpr,
+				this.indexExpr,
+				this.countExpr);
+		}
+
+		private void RenderPlaceholder(JsonWriter writer)
+		{
+			writer.TextWriter.Write(
+				JbstCustomControl.PlaceholderStatement,
+				this.dataExpr,
+				this.indexExpr,
+				this.countExpr);
+		}
+
+		#endregion Render Methods
 
 		#region IJsonSerializable Members
 
@@ -217,12 +293,28 @@ namespace JsonFx.UI.Jbst
 		{
 			this.EnsureControl();
 
-			this.Render(writer);
+			switch (this.commandType)
+			{
+				case JbstCustomControl.ControlCommand:
+				{
+					this.RenderCustomControl(writer);
+					break;
+				}
+				case JbstCustomControl.PlaceholderCommand:
+				{
+					this.RenderPlaceholder(writer);
+					break;
+				}
+				default:
+				{
+					throw new NotSupportedException("Unknown JBST command: "+this.RawName);
+				}
+			}
 		}
 
 		void IJsonSerializable.ReadJson(JsonReader reader)
 		{
-			throw new NotImplementedException("JBST deserialization is not implemented.");
+			throw new NotImplementedException("JbstCustomControl deserialization is not implemented.");
 		}
 
 		#endregion IJsonSerializable Members
@@ -236,7 +328,7 @@ namespace JsonFx.UI.Jbst
 		/// In order to wrap the output of the JbstControl IJsonSerializable was required, but this takes
 		/// precedent over the IEnumerable interface which is what should be rendered inside the wrapper.
 		/// </remarks>
-		protected class EnumerableAdapter : IEnumerable
+		private class EnumerableAdapter : IEnumerable
 		{
 			#region Fields
 
