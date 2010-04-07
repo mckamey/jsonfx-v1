@@ -428,7 +428,7 @@ v1.0.0710.2409
 v1.0.0710.2305
 - Fixed "-Infinity" causing "Unterminated Number" exception
 
-v1.0.0710.2017:
+v1.0.0710.2017
 - Improved literal parsing to not use Substring()
 
 v1.0.0710.2012
