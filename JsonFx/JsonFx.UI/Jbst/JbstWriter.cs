@@ -1,11 +1,11 @@
-﻿#region License
+#region License
 /*---------------------------------------------------------------------------------*\
 
 	Distributed under the terms of an MIT-style license:
 
 	The MIT License
 
-	Copyright (c) 2006-2010 Stephen M. McKamey
+	Copyright (c) 2006-2009 Stephen M. McKamey
 
 	Permission is hereby granted, free of charge, to any person obtaining a copy
 	of this software and associated documentation files (the "Software"), to deal
@@ -31,13 +31,13 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Web;
 using System.Text;
 
 using JsonFx.BuildTools.HtmlDistiller;
 using JsonFx.BuildTools.HtmlDistiller.Writers;
-using JsonFx.Client;
-using JsonFx.Compilation;
 using JsonFx.Json;
+using JsonFx.Compilation;
 
 namespace JsonFx.UI.Jbst
 {
@@ -54,7 +54,7 @@ namespace JsonFx.UI.Jbst
 
 		private const string ScriptTagName = "script";
 
-		private const string AnonymousPrefix = "$";
+		private const string AnonymousPrefix = "anonymous_";
 
 		#endregion Constants
 
@@ -66,9 +66,8 @@ namespace JsonFx.UI.Jbst
 		private readonly List<string> Imports = new List<string>();
 		private readonly JbstContainerControl document = new JbstContainerControl();
 
-		private JbstContainerControl current;
-		private string jbstName;
-		private AutoMarkupType autoMarkup;
+		private JbstContainerControl current = null;
+		private string name = null;
 
 		#endregion Fields
 
@@ -95,23 +94,17 @@ namespace JsonFx.UI.Jbst
 
 		#region Properties
 
-		public string JbstName
+		public string Name
 		{
 			get
 			{
-				if (String.IsNullOrEmpty(this.jbstName))
+				if (String.IsNullOrEmpty(this.name))
 				{
-					this.jbstName = AnonymousPrefix+Guid.NewGuid().ToString("n");
+					this.name = AnonymousPrefix+Guid.NewGuid().ToString("n");
 				}
-				return this.jbstName;
+				return this.name;
 			}
-			set { this.jbstName = value; }
-		}
-
-		public AutoMarkupType AutoMarkup
-		{
-			get { return this.autoMarkup; }
-			set { this.autoMarkup = value; }
+			set { this.name = value; }
 		}
 
 		/// <summary>
@@ -164,7 +157,15 @@ namespace JsonFx.UI.Jbst
 			// this allows HTML entities to be encoded as unicode
 			text = HtmlDistiller.DecodeHtmlEntities(text);
 
-			JbstLiteral literal = new JbstLiteral(text, true);
+			JbstLiteral literal = this.current.ChildControls.Last as JbstLiteral;
+			if (literal != null)
+			{
+				// combine contiguous literals into single for reduced space and processing
+				literal.Text += text;
+				return;
+			}
+
+			literal = new JbstLiteral(text, true);
 			this.current.ChildControls.Add(literal);
 		}
 
@@ -180,6 +181,17 @@ namespace JsonFx.UI.Jbst
 				this.current = this.document;
 			}
 
+			if (child is JbstLiteral)
+			{
+				// combine contiguous literals into single for reduced space and processing
+				JbstLiteral literal = this.current.ChildControls.Last as JbstLiteral;
+				if (literal != null)
+				{
+					literal.Text += ((JbstLiteral)child).Text;
+					return;
+				}
+			}
+
 			this.current.ChildControls.Add(child);
 		}
 
@@ -189,24 +201,9 @@ namespace JsonFx.UI.Jbst
 			string prefix = JbstWriter.SplitPrefix(rawName, out tagName);
 
 			JbstContainerControl control;
-			if (JbstCommandBase.JbstPrefix.Equals(prefix, StringComparison.OrdinalIgnoreCase))
+			if (JbstCustomControl.JbstPrefix.Equals(prefix, StringComparison.OrdinalIgnoreCase))
 			{
-				if (StringComparer.OrdinalIgnoreCase.Equals(JbstControlReference.ControlCommand, tagName))
-				{
-					control = new JbstControlReference();
-				}
-				else if (StringComparer.OrdinalIgnoreCase.Equals(JbstPlaceholder.PlaceholderCommand, tagName))
-				{
-					control = new JbstPlaceholder();
-				}
-				else if (StringComparer.OrdinalIgnoreCase.Equals(JbstInline.InlineCommand, tagName))
-				{
-					control = new JbstInline();
-				}
-				else
-				{
-					throw new InvalidOperationException("Unknown JBST command ('"+rawName+"')");
-				}
+				control = new JbstCustomControl(tagName);
 			}
 			else
 			{
@@ -231,7 +228,7 @@ namespace JsonFx.UI.Jbst
 
 			if (this.current == null)
 			{
-				throw new InvalidOperationException("Push/Pop mismatch? (current tag is null)");
+				throw new InvalidOperationException("Push/Pop mismatch? (Current is null)");
 			}
 
 			if (!String.IsNullOrEmpty(tagName) &&
@@ -241,25 +238,18 @@ namespace JsonFx.UI.Jbst
 				return;
 			}
 
+			if (this.current == null)
+			{
+				throw new InvalidOperationException("Push/Pop mismatch? (Current.Parent is null)");
+			}
+
 			if (JbstWriter.ScriptTagName.Equals(this.current.RawName, StringComparison.OrdinalIgnoreCase))
 			{
 				// script tags get converted once fully parsed
 				this.Declarations.Append(this.current);
 			}
 
-			JbstInline inline = this.current as JbstInline;
-
 			this.current = this.current.Parent;
-
-			if (inline != null && inline.IsAnonymous)
-			{
-				// consolidate anonymous inline templates directly into body
-				this.current.ChildControls.Remove(inline);
-				if (inline.ChildControlsSpecified)
-				{
-					this.current.ChildControls.AddRange(inline.ChildControls);
-				}
-			}
 		}
 
 		private void AddAttribute(string name, string value)
@@ -359,18 +349,15 @@ namespace JsonFx.UI.Jbst
 				writer.WriteLine("/*global {0} */", globals);
 			}
 
-			if (!EcmaScriptWriter.WriteNamespaceDeclaration(writer, this.JbstName, null, true))
-			{
-				writer.Write("var ");
-			}
+			EcmaScriptWriter.WriteNamespaceDeclaration(writer, this.Name, null, true);
 
 			// wrap with ctor and assign
-			writer.Write(this.JbstName);
+			writer.Write(this.Name);
 			writer.WriteLine(" = JsonML.BST(");
 
 			// render root node of content (null is OK)
 			EcmaScriptWriter jsWriter = new EcmaScriptWriter(writer);
-			jsWriter.Settings.PrettyPrint = true;
+			jsWriter.PrettyPrint = true;
 			jsWriter.Write(this.JbstParseTree);
 
 			writer.WriteLine(");");
@@ -378,7 +365,7 @@ namespace JsonFx.UI.Jbst
 			// render any declarations
 			if (this.Declarations.HasCode)
 			{
-				this.Declarations.OwnerName = this.JbstName;
+				this.Declarations.OwnerName = this.Name;
 				jsWriter.Write(this.Declarations);
 			}
 		}
@@ -510,7 +497,7 @@ namespace JsonFx.UI.Jbst
 			foreach (KeyValuePair<string, object> attrib in tag.FilteredAttributes)
 			{
 				// normalize JBST command names
-				string key = attrib.Key.StartsWith(JbstCommandBase.JbstPrefix, StringComparison.OrdinalIgnoreCase) ?
+				string key = attrib.Key.StartsWith(JbstCustomControl.JbstPrefix, StringComparison.OrdinalIgnoreCase) ?
 					attrib.Key.ToLowerInvariant() : attrib.Key;
 
 				if (attrib.Value is string)
@@ -613,25 +600,9 @@ namespace JsonFx.UI.Jbst
 				case "page":
 				case "control":
 				{
-					this.JbstName = attribs.ContainsKey("name") ?
+					this.Name = attribs.ContainsKey("name") ?
 						EcmaScriptIdentifier.EnsureValidIdentifier(attribs["name"], true) :
 						null;
-
-					if (attribs.ContainsKey("AutoMarkup"))
-					{
-						try
-						{
-							this.AutoMarkup = (AutoMarkupType)Enum.Parse(typeof(AutoMarkupType), attribs["AutoMarkup"], true);
-						}
-						catch
-						{
-							throw new ArgumentException("\""+attribs["AutoMarkup"]+"\" is an invalid value for AutoMarkup.");
-						}
-					}
-					else
-					{
-						this.AutoMarkup = AutoMarkupType.None;
-					}
 
 					string package = attribs.ContainsKey("import") ? attribs["import"] : null;
 					if (!String.IsNullOrEmpty(package))

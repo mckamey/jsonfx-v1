@@ -6,7 +6,7 @@ using JsonFx.JsonRpc;
 
 namespace MyApp.Services
 {
-	[JsonService(Namespace="Example", Name="Service")]
+	[JsonService(Namespace="Example", Name="MyServiceProxy")]
 	public class MyJsonService
 	{
 		#region Service Methods
@@ -17,20 +17,17 @@ namespace MyApp.Services
 		/// proxy function will be Example.MyServiceProxy.getInfo
 		/// </summary>
 		/// <param name="number">a number</param>
-		/// <returns>TestInfo</returns>
+		/// <returns>MyServiceResult</returns>
 		[JsonMethod(Name="getInfo")]
-		public TestInfo GetInfo(TestInfo info)
+		public MyServiceResult GetInfo(double number)
 		{
-			if (info == null)
-			{
-				throw new ArgumentNullException("info");
-			}
+			MyServiceResult result;
 
-			// populate data to be bound to a JBST
-			info.TimeStamp = this.GetTimeStamp();
-			info.Machine = this.GetMachine();
+			result.Number = number;
+			result.TimeStamp = this.GetTimeStamp();
+			result.MachineName = this.GetMachine();
 
-			return info;
+			return result;
 		}
 
 		#endregion Service Methods
@@ -52,12 +49,15 @@ namespace MyApp.Services
 		#endregion Utility Methods
 	}
 
-	public class TestInfo
+	public struct MyServiceResult
 	{
+		[JsonName("timestamp")]
 		public DateTime TimeStamp;
 
+		[JsonName("number")]
 		public double Number;
 
-		public string Machine;
+		[JsonName("machine")]
+		public string MachineName;
 	}
 }

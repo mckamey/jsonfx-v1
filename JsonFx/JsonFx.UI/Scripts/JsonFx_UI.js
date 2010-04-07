@@ -1,4 +1,4 @@
-/*global JsonML, jQuery, window */
+/*global JsonML, jQuery */
 /*
 	JsonFx_UI.js
 	DOM utilities
@@ -24,11 +24,14 @@ if ("undefined" === typeof JsonFx.UI) {
 if ("undefined" === typeof JsonML) {
 	throw new Error("JsonFx.UI requires JsonML");
 }
+if ("undefined" === typeof JsonFx.Bindings) {
+	throw new Error("JsonFx.UI requires JsonFx.Bindings");
+}
 
 /* DOM utilities ------------------------------------------------*/
 
 /*bool*/ JsonFx.UI.cancelEvent = function(/*Event*/ evt) {
-	evt = evt || window.event;
+	evt = evt || event;
 	if (evt) {
 		if (evt.stopPropagation) {
 			evt.stopPropagation();
@@ -46,19 +49,9 @@ if ("undefined" === typeof JsonML) {
 };
 
 /*void*/ JsonFx.UI.addHandler = function(/*DOM*/ target, /*string*/ name, /*function*/ handler) {
-	if ("string" === typeof handler) {
-		/*jslint evil:true */
-		handler = new Function(handler);
-		/*jslint evil:false */
-	}
-
-	if ("function" !== typeof handler) {
-		return;
-	}
-
-	if ("undefined" !== typeof jQuery) {
+	if (typeof jQuery !== "undefined") {
 		jQuery(target).bind(name, handler);
-	} else if (target.addEventListener) {
+	} if (target.addEventListener) {
 		// DOM Level 2 model for binding events
 		target.addEventListener(name, handler, false);
 	} else if (target.attachEvent) {
@@ -67,29 +60,9 @@ if ("undefined" === typeof JsonML) {
 	} else {
 		// DOM Level 0 model for binding events
 		var old = target["on"+name];
-		target["on"+name] = ("function" !== typeof old) ? handler :
-			function(/*Event*/ e) { return (old.call(this, e) !== false) && (handler.call(this, e) !== false); };
-	}
-};
-
-/*void*/ JsonFx.UI.removeHandler = function(/*DOM*/ target, /*string*/ name, /*function*/ handler) {
-	if ("function" !== typeof handler) {
-		// DOM Level 0 model for binding events
-		target["on"+name] = null;
-		return;
-	}
-
-	if ("undefined" !== typeof jQuery) {
-		jQuery(target).unbind(name, handler);
-	} else if (target.addEventListener) {
-		// DOM Level 2 model for binding events
-		target.removeEventListener(name, handler, false);
-	} else if (target.attachEvent) {
-		// IE model for binding events
-		target.detachEvent("on"+name, handler);
-	} else {
-		// DOM Level 0 model for binding events
-		target["on"+name] = null;
+		target["on"+name] = ("function" === typeof old) ?
+			function(/*Event*/ evt) { handler(evt); return old(evt); } :
+			handler;
 	}
 };
 
@@ -99,9 +72,7 @@ if ("undefined" === typeof JsonML) {
 	}
 
 	// unbind to prevent memory leaks
-	if ("undefined" !== typeof JsonFx.Bindings) {
-		JsonFx.Bindings.unbind(elem);
-	}
+	JsonFx.Bindings.unbind(elem);
 
 	while (elem.lastChild) {
 		elem.removeChild(elem.lastChild);
@@ -109,18 +80,8 @@ if ("undefined" === typeof JsonML) {
 };
 
 /*bool*/ JsonFx.UI.hasClass = function(/*DOM*/ elem, /*string*/ cssClass) {
-	if (!elem || !elem.className || !cssClass) {
-		return false;
-	}
-	
-	var css = elem.className.split(' ');
-	for (var i=0; i < css.length; i++) {
-		if (css[i] === cssClass) {
-			return true;
-		}
-	}
-
-	return false;
+	return elem && elem.className && cssClass &&
+		!!elem.className.match(new RegExp("(^|\\s)"+cssClass+"(\\s|$)"));
 };
 
 /*void*/ JsonFx.UI.addClass = function(/*DOM*/ elem, /*string*/ cssClass) {
@@ -136,15 +97,7 @@ if ("undefined" === typeof JsonML) {
 		return;
 	}
 
-	var css = elem.className.split(' ');
-	for (var i=0; i < css.length; i++) {
-		if (!css[i] || css[i] === cssClass) {
-			css.splice(i, 1);
-			i--;
-		}
-	}
-
-	elem.className = css.join(" ");
+	elem.className = elem.className.replace(new RegExp("(^|\\s+)"+cssClass+"(\\s+|$)"), " ");
 };
 
 /*DOM*/ JsonFx.UI.findParent = function(/*DOM*/ elem, /*string*/ cssClass, /*bool*/ skipRoot) {

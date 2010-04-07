@@ -36,20 +36,17 @@
       <RequiredTargetFramework>3.5</RequiredTargetFramework>
     </Reference>
     <Reference Include="System.Web" />
+    <Reference Include="System.Web.Extensions, Version=3.5.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL" />
     <Reference Include="System.Web.Abstractions" />
     <Reference Include="System.Web.Mvc, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL" />
     <Reference Include="System.Web.Routing" />
     <Reference Include="System.Configuration" />
-    <Reference Include="System.XML" />
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Controllers\HomeController.cs" />
-    <Compile Include="Controllers\TestController.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
     </Compile>
-    <Compile Include="Models\HomeViewModel.cs" />
-    <Compile Include="Models\TestInfo.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Services\MyService.jrpc.cs" />
   </ItemGroup>
@@ -68,7 +65,7 @@
     <None Include="Scripts\Scripts.merge" />
     <None Include="Services\MyService.jrpc" />
     <None Include="Styles\Styles.merge" />
-    <Content Include="Scripts\jquery.js" />
+    <Content Include="Scripts\jquery-1.3.2.js" />
     <Content Include="Views\Home\Example.jbst" />
     <Content Include="Views\Home\Results.jbst" />
   </ItemGroup>
@@ -80,6 +77,10 @@
     <ProjectReference Include="..\JsonFx.Client\JsonFx.Client.csproj">
       <Project>{5A84EB39-D30B-4085-8365-E1C05590F3BF}</Project>
       <Name>JsonFx.Client</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\JsonFx.History\JsonFx.History.csproj">
+      <Project>{241E7122-64CA-43B8-B3F0-5BC776FC37BC}</Project>
+      <Name>JsonFx.History</Name>
     </ProjectReference>
     <ProjectReference Include="..\JsonFx.IO\JsonFx.IO.csproj">
       <Project>{6DC125A3-2C11-4FEA-B948-1C563B0FAE52}</Project>
@@ -97,6 +98,9 @@
       <Project>{17417DF0-B12F-4D5B-A9E7-8B7D894F93B4}</Project>
       <Name>JsonFx.UI</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Models\" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <Import Project="$(MSBuildExtensionsPath)\Microsoft\VisualStudio\v9.0\WebApplications\Microsoft.WebApplication.targets" />

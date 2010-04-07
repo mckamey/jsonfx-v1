@@ -1,11 +1,11 @@
-﻿#region License
+#region License
 /*---------------------------------------------------------------------------------*\
 
 	Distributed under the terms of an MIT-style license:
 
 	The MIT License
 
-	Copyright (c) 2006-2010 Stephen M. McKamey
+	Copyright (c) 2006-2009 Stephen M. McKamey
 
 	Permission is hereby granted, free of charge, to any person obtaining a copy
 	of this software and associated documentation files (the "Software"), to deal
@@ -29,16 +29,16 @@
 #endregion License
 
 using System;
-using System.CodeDom;
+using System.IO;
 using System.Collections;
 using System.Collections.Generic;
-using System.IO;
+using System.Web.Compilation;
+using System.CodeDom;
+using System.CodeDom.Compiler;
 using System.Reflection;
 using System.Text;
-using System.Web.Compilation;
 
 using JsonFx.BuildTools;
-using JsonFx.Client;
 using JsonFx.Handlers;
 
 namespace JsonFx.Compilation
@@ -77,33 +77,6 @@ namespace JsonFx.Compilation
 
 		#region ResourceCodeProvider Methods
 
-		protected internal override void SetBaseClass(CodeTypeDeclaration resourceType)
-		{
-			if (StringComparer.OrdinalIgnoreCase.Equals(this.contentType, CssResourceCodeProvider.MimeType))
-			{
-				resourceType.BaseTypes.Add(typeof(CssBuildResult));
-			}
-			else
-			{
-				resourceType.BaseTypes.Add(typeof(ScriptBuildResult));
-			}
-		}
-
-		protected internal override void GenerateCodeExtensions(IResourceBuildHelper helper, CodeTypeDeclaration resourceType)
-		{
-			base.GenerateCodeExtensions(helper, resourceType);
-
-			#region public ResourceType() : base(virtualPath) {}
-
-			CodeConstructor ctor = new CodeConstructor();
-			ctor.Attributes = MemberAttributes.Public;
-			ctor.BaseConstructorArgs.Add(new CodePrimitiveExpression(helper.VirtualPath));
-			resourceType.Members.Add(ctor);
-
-			#endregion public ResourceType() : base(virtualPath) {}
-		}
-
-
 		protected override void ResetCodeProvider()
 		{
 			base.ResetCodeProvider();
@@ -137,7 +110,7 @@ namespace JsonFx.Compilation
 				try
 				{
 					string file = files[i],
-						compactAlt = null;
+							compactAlt = null;
 
 					if (file != null)
 					{
@@ -152,26 +125,15 @@ namespace JsonFx.Compilation
 						continue;
 					}
 
-					MergeResourceCodeProvider.SplitAlternates(file, out file, out compactAlt);
-
-					if (file.IndexOf("://") >= 0)
+					string[] alts = file.Split(AltDelims, 2, StringSplitOptions.RemoveEmptyEntries);
+					if (alts.Length > 1)
 					{
-						string preProcessed, compact;
-
-						this.ProcessExternalResource(helper, file, out preProcessed, out compact, errors);
-
-						if (!String.IsNullOrEmpty(compactAlt))
-						{
-							this.ProcessExternalResource(helper, compactAlt, out compactAlt, out compact, errors);
-						}
-
-						compacts.Append(compact);
-						resources.Append(preProcessed);
-						continue;
+						file = alts[0].Trim();
+						compactAlt = alts[1].Trim();
 					}
 
 					// process embedded resource
-					if (file.IndexOf(',') >= 0)
+					if (files[i].IndexOf(',') >= 0)
 					{
 						string preProcessed, compact;
 
@@ -259,43 +221,14 @@ namespace JsonFx.Compilation
 			compacted = compacts.ToString();
 		}
 
-		public static string JoinAlternates(string full, string compact)
-		{
-			if (String.IsNullOrEmpty(compact))
-			{
-				return full;
-			}
-
-			if (String.IsNullOrEmpty(full))
-			{
-				return compact;
-			}
-
-			return full + MergeResourceCodeProvider.AltDelims[0] + compact;
-		}
-
-		public static void SplitAlternates(string original, out string full, out string compact)
-		{
-			string[] alts = original.Split(MergeResourceCodeProvider.AltDelims, 2, StringSplitOptions.RemoveEmptyEntries);
-			if (alts.Length > 1)
-			{
-				full = alts[0].Trim();
-				compact = alts[1].Trim();
-			}
-			else
-			{
-				full = compact = original;
-			}
-		}
-
 		private IOptimizedResult ProcessPrecompiled(IResourceBuildHelper helper, string file)
 		{
 			IOptimizedResult result = ResourceHandler.Create<IOptimizedResult>(file);
 			if (result != null)
 			{
 				if (!this.isMimeSet &&
-					!String.IsNullOrEmpty(result.ContentType) &&
-					!String.IsNullOrEmpty(result.FileExtension))
+				!String.IsNullOrEmpty(result.ContentType) &&
+				!String.IsNullOrEmpty(result.FileExtension))
 				{
 					this.contentType = result.ContentType;
 					this.fileExtension = result.FileExtension;
@@ -399,60 +332,6 @@ namespace JsonFx.Compilation
 			catch (Exception ex)
 			{
 				errors.Add(new ParseError(ex.Message, parts[0], 0, 0, ex));
-			}
-
-			if (!this.isMimeSet &&
-				!String.IsNullOrEmpty(provider.ContentType) &&
-				!String.IsNullOrEmpty(provider.FileExtension))
-			{
-				this.contentType = provider.ContentType;
-				this.fileExtension = provider.FileExtension;
-				this.isMimeSet = true;
-			}
-		}
-
-		protected internal override void ProcessExternalResource(
-			IResourceBuildHelper helper,
-			string url,
-			out string preProcessed,
-			out string compacted,
-			List<ParseException> errors)
-		{
-			compacted = preProcessed = String.Empty;
-
-			Uri uri;
-			if (!Uri.TryCreate(url, UriKind.Absolute, out uri))
-			{
-				throw new ArgumentException("Invalid external URL");
-			}
-
-			string ext = Path.GetExtension(uri.AbsolutePath).Trim('.');
-			CompilerType compiler = helper.GetDefaultCompilerTypeForLanguage(ext);
-			if (!typeof(ResourceCodeProvider).IsAssignableFrom(compiler.CodeDomProviderType))
-			{
-				// don't know how to process any further
-				return;
-			}
-
-			ResourceCodeProvider provider = (ResourceCodeProvider)Activator.CreateInstance(compiler.CodeDomProviderType);
-
-			try
-			{
-				// concatenate the preprocessed source for current merge phase
-				provider.ProcessExternalResource(
-					helper,
-					url,
-					out preProcessed,
-					out compacted,
-					errors);
-			}
-			catch (ParseException ex)
-			{
-				errors.Add(ex);
-			}
-			catch (Exception ex)
-			{
-				errors.Add(new ParseError(ex.Message, url, 0, 0, ex));
 			}
 
 			if (!this.isMimeSet &&

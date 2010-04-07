@@ -5,7 +5,7 @@
 
 	The MIT License
 
-	Copyright (c) 2006-2010 Stephen M. McKamey
+	Copyright (c) 2006-2009 Stephen M. McKamey
 
 	Permission is hereby granted, free of charge, to any person obtaining a copy
 	of this software and associated documentation files (the "Software"), to deal
@@ -40,14 +40,21 @@ using System.Xml;
 namespace JsonFx.Json
 {
 	/// <summary>
-	/// Writer for producing JSON data
+	/// Represents a proxy method for serialization of types which do not implement IJsonSerializable.
+	/// </summary>
+	/// <typeparam name="T">the type for this proxy</typeparam>
+	/// <param name="writer">the JsonWriter to serialize to</param>
+	/// <param name="value">the value to serialize</param>
+	public delegate void WriteDelegate<T>(JsonWriter writer, T value);
+
+	/// <summary>
+	/// Writer for producing JSON data.
 	/// </summary>
 	public class JsonWriter : IDisposable
 	{
 		#region Constants
 
 		public const string JsonMimeType = "application/json";
-		public const string JsonFileExtension = ".json";
 
 		private const string AnonymousTypePrefix = "<>f__AnonymousType";
 		private const string ErrorMaxDepth = "The maxiumum depth of {0} was exceeded. Check for cycles in object graph.";
@@ -57,133 +64,55 @@ namespace JsonFx.Json
 
 		#region Fields
 
-		private readonly TextWriter Writer;
-		private JsonWriterSettings settings;
-		private int depth;
+		private readonly TextWriter writer = null;
+		private string typeHintName = null;
+
+		private bool prettyPrint = false;
+		private bool useXmlSerializationAttributes = false;
+		private int depth = 0;
+		private int maxDepth = 25;
+		private string tab = "\t";
+		private WriteDelegate<DateTime> dateTimeSerializer = null;
 
 		#endregion Fields
 
 		#region Init
 
 		/// <summary>
-		/// Ctor
+		/// Ctor.
 		/// </summary>
 		/// <param name="output">TextWriter for writing</param>
 		public JsonWriter(TextWriter output)
-			: this(output, new JsonWriterSettings())
 		{
+			this.writer = output;
 		}
 
 		/// <summary>
-		/// Ctor
-		/// </summary>
-		/// <param name="output">TextWriter for writing</param>
-		/// <param name="settings">JsonWriterSettings</param>
-		public JsonWriter(TextWriter output, JsonWriterSettings settings)
-		{
-			if (output == null)
-			{
-				throw new ArgumentNullException("output");
-			}
-			if (settings == null)
-			{
-				throw new ArgumentNullException("settings");
-			}
-
-			this.Writer = output;
-			this.settings = settings;
-			this.Writer.NewLine = this.settings.NewLine;
-		}
-
-		/// <summary>
-		/// Ctor
+		/// Ctor.
 		/// </summary>
 		/// <param name="output">Stream for writing</param>
 		public JsonWriter(Stream output)
-			: this(output, new JsonWriterSettings())
 		{
+			this.writer = new StreamWriter(output, Encoding.UTF8);
 		}
 
 		/// <summary>
-		/// Ctor
+		/// Ctor.
 		/// </summary>
-		/// <param name="output">Stream for writing</param>
-		/// <param name="settings">JsonWriterSettings</param>
-		public JsonWriter(Stream output, JsonWriterSettings settings)
-		{
-			if (output == null)
-			{
-				throw new ArgumentNullException("output");
-			}
-			if (settings == null)
-			{
-				throw new ArgumentNullException("settings");
-			}
-
-			this.Writer = new StreamWriter(output, Encoding.UTF8);
-			this.settings = settings;
-			this.Writer.NewLine = this.settings.NewLine;
-		}
-
-		/// <summary>
-		/// Ctor
-		/// </summary>
-		/// <param name="output">file name for writing</param>
+		/// <param name="output">File name for writing</param>
 		public JsonWriter(string outputFileName)
-			: this(outputFileName, new JsonWriterSettings())
 		{
-		}
-
-		/// <summary>
-		/// Ctor
-		/// </summary>
-		/// <param name="output">file name for writing</param>
-		/// <param name="settings">JsonWriterSettings</param>
-		public JsonWriter(string outputFileName, JsonWriterSettings settings)
-		{
-			if (outputFileName == null)
-			{
-				throw new ArgumentNullException("outputFileName");
-			}
-			if (settings == null)
-			{
-				throw new ArgumentNullException("settings");
-			}
-
 			Stream stream = new FileStream(outputFileName, FileMode.Create, FileAccess.Write, FileShare.Read);
-			this.Writer = new StreamWriter(stream, Encoding.UTF8);
-			this.settings = settings;
-			this.Writer.NewLine = this.settings.NewLine;
+			this.writer = new StreamWriter(stream, Encoding.UTF8);
 		}
 
 		/// <summary>
-		/// Ctor
+		/// Ctor.
 		/// </summary>
 		/// <param name="output">StringBuilder for appending</param>
 		public JsonWriter(StringBuilder output)
-			: this(output, new JsonWriterSettings())
 		{
-		}
-
-		/// <summary>
-		/// Ctor
-		/// </summary>
-		/// <param name="output">StringBuilder for appending</param>
-		/// <param name="settings">JsonWriterSettings</param>
-		public JsonWriter(StringBuilder output, JsonWriterSettings settings)
-		{
-			if (output == null)
-			{
-				throw new ArgumentNullException("output");
-			}
-			if (settings == null)
-			{
-				throw new ArgumentNullException("settings");
-			}
-
-			this.Writer = new StringWriter(output, System.Globalization.CultureInfo.InvariantCulture);
-			this.settings = settings;
-			this.Writer.NewLine = this.settings.NewLine;
+			this.writer = new StringWriter(output, System.Globalization.CultureInfo.InvariantCulture);
 		}
 
 		#endregion Init
@@ -191,108 +120,84 @@ namespace JsonFx.Json
 		#region Properties
 
 		/// <summary>
-		/// Gets and sets the property name used for type hinting
+		/// Gets and sets the property name used for type hinting.
 		/// </summary>
-		[Obsolete("This has been deprecated in favor of JsonWriterSettings object")]
 		public string TypeHintName
 		{
-			get { return this.settings.TypeHintName; }
-			set { this.settings.TypeHintName = value; }
+			get { return this.typeHintName; }
+			set { this.typeHintName = value; }
 		}
 
 		/// <summary>
-		/// Gets and sets if JSON will be formatted for human reading
+		/// Gets and sets if JSON will be formatted for human reading.
 		/// </summary>
-		[Obsolete("This has been deprecated in favor of JsonWriterSettings object")]
 		public bool PrettyPrint
 		{
-			get { return this.settings.PrettyPrint; }
-			set { this.settings.PrettyPrint = value; }
+			get { return this.prettyPrint; }
+			set { this.prettyPrint = value; }
 		}
 
 		/// <summary>
 		/// Gets and sets the string to use for indentation
 		/// </summary>
-		[Obsolete("This has been deprecated in favor of JsonWriterSettings object")]
 		public string Tab
 		{
-			get { return this.settings.Tab; }
-			set { this.settings.Tab = value; }
+			get { return this.tab; }
+			set { this.tab = value; }
 		}
 
 		/// <summary>
 		/// Gets and sets the line terminator string
 		/// </summary>
-		[Obsolete("This has been deprecated in favor of JsonWriterSettings object")]
 		public string NewLine
 		{
-			get { return this.settings.NewLine; }
-			set { this.Writer.NewLine = this.settings.NewLine = value; }
+			get { return this.writer.NewLine; }
+			set { this.writer.NewLine = value; }
 		}
 
 		/// <summary>
-		/// Gets the current nesting depth
+		/// Gets and sets the maximum depth to be serialized.
 		/// </summary>
-		protected int Depth
-		{
-			get { return this.depth; }
-		}
-
-		/// <summary>
-		/// Gets and sets the maximum depth to be serialized
-		/// </summary>
-		[Obsolete("This has been deprecated in favor of JsonWriterSettings object")]
 		public int MaxDepth
 		{
-			get { return this.settings.MaxDepth; }
-			set { this.settings.MaxDepth = value; }
+			get { return this.maxDepth; }
+			set
+			{
+				if (value < 1)
+				{
+					throw new ArgumentOutOfRangeException("MaxDepth must be a positive integer as it controls the maximum nesting level of serialized objects.");
+				}
+				this.maxDepth = value;
+			}
 		}
 
 		/// <summary>
-		/// Gets and sets if should use XmlSerialization Attributes
+		/// Gets and sets if should use XmlSerialization Attributes.
 		/// </summary>
 		/// <remarks>
 		/// Respects XmlIgnoreAttribute, ...
 		/// </remarks>
-		[Obsolete("This has been deprecated in favor of JsonWriterSettings object")]
 		public bool UseXmlSerializationAttributes
 		{
-			get { return this.settings.UseXmlSerializationAttributes; }
-			set { this.settings.UseXmlSerializationAttributes = value; }
+			get { return this.useXmlSerializationAttributes; }
+			set { this.useXmlSerializationAttributes = value; }
 		}
 
 		/// <summary>
 		/// Gets and sets a proxy formatter to use for DateTime serialization
 		/// </summary>
-		[Obsolete("This has been deprecated in favor of JsonWriterSettings object")]
 		public WriteDelegate<DateTime> DateTimeSerializer
 		{
-			get { return this.settings.DateTimeSerializer; }
-			set { this.settings.DateTimeSerializer = value; }
+			get { return this.dateTimeSerializer; }
+			set { this.dateTimeSerializer = value; }
 		}
 
 		/// <summary>
-		/// Gets the underlying TextWriter
+		/// Gets the underlying TextWriter.
 		/// </summary>
 		public TextWriter TextWriter
 		{
-			get { return this.Writer; }
-		}
-
-		/// <summary>
-		/// Gets and sets the JsonWriterSettings
-		/// </summary>
-		public JsonWriterSettings Settings
-		{
-			get { return this.settings; }
-			set
-			{
-				if (value == null)
-				{
-					value = new JsonWriterSettings();
-				}
-				this.settings = value;
-			}
+			get { return this.writer; }
 		}
 
 		#endregion Properties
@@ -327,14 +232,14 @@ namespace JsonFx.Json
 
 		protected virtual void Write(object value, bool isProperty)
 		{
-			if (isProperty && this.settings.PrettyPrint)
+			if (isProperty && this.prettyPrint)
 			{
-				this.Writer.Write(' ');
+				this.writer.Write(' ');
 			}
 
 			if (value == null)
 			{
-				this.Writer.Write(JsonReader.LiteralNull);
+				this.writer.Write(JsonReader.LiteralNull);
 				return;
 			}
 
@@ -345,9 +250,9 @@ namespace JsonFx.Json
 					if (isProperty)
 					{
 						this.depth++;
-						if (this.depth > this.settings.MaxDepth)
+						if (this.depth > this.maxDepth)
 						{
-							throw new JsonSerializationException(String.Format(JsonWriter.ErrorMaxDepth, this.settings.MaxDepth));
+							throw new JsonSerializationException(String.Format(JsonWriter.ErrorMaxDepth, this.maxDepth));
 						}
 						this.WriteLine();
 					}
@@ -398,7 +303,7 @@ namespace JsonFx.Json
 				case TypeCode.DBNull:
 				case TypeCode.Empty:
 				{
-					this.Writer.Write(JsonReader.LiteralNull);
+					this.writer.Write(JsonReader.LiteralNull);
 					return;
 				}
 				case TypeCode.Decimal:
@@ -502,9 +407,9 @@ namespace JsonFx.Json
 					if (isProperty)
 					{
 						this.depth++;
-						if (this.depth > this.settings.MaxDepth)
+						if (this.depth > this.maxDepth)
 						{
-							throw new JsonSerializationException(String.Format(JsonWriter.ErrorMaxDepth, this.settings.MaxDepth));
+							throw new JsonSerializationException(String.Format(JsonWriter.ErrorMaxDepth, this.maxDepth));
 						}
 						this.WriteLine();
 					}
@@ -527,9 +432,9 @@ namespace JsonFx.Json
 					if (isProperty)
 					{
 						this.depth++;
-						if (this.depth > this.settings.MaxDepth)
+						if (this.depth > this.maxDepth)
 						{
-							throw new JsonSerializationException(String.Format(JsonWriter.ErrorMaxDepth, this.settings.MaxDepth));
+							throw new JsonSerializationException(String.Format(JsonWriter.ErrorMaxDepth, this.maxDepth));
 						}
 						this.WriteLine();
 					}
@@ -561,9 +466,9 @@ namespace JsonFx.Json
 					if (isProperty)
 					{
 						this.depth++;
-						if (this.depth > this.settings.MaxDepth)
+						if (this.depth > this.maxDepth)
 						{
-							throw new JsonSerializationException(String.Format(JsonWriter.ErrorMaxDepth, this.settings.MaxDepth));
+							throw new JsonSerializationException(String.Format(JsonWriter.ErrorMaxDepth, this.maxDepth));
 						}
 						this.WriteLine();
 					}
@@ -585,9 +490,9 @@ namespace JsonFx.Json
 				if (isProperty)
 				{
 					this.depth++;
-					if (this.depth > this.settings.MaxDepth)
+					if (this.depth > this.maxDepth)
 					{
-						throw new JsonSerializationException(String.Format(JsonWriter.ErrorMaxDepth, this.settings.MaxDepth));
+						throw new JsonSerializationException(String.Format(JsonWriter.ErrorMaxDepth, this.maxDepth));
 					}
 					this.WriteLine();
 				}
@@ -630,9 +535,9 @@ namespace JsonFx.Json
 
 		public virtual void Write(DateTime value)
 		{
-			if (this.settings.DateTimeSerializer != null)
+			if (this.dateTimeSerializer != null)
 			{
-				this.settings.DateTimeSerializer(this, value);
+				this.dateTimeSerializer(this, value);
 				return;
 			}
 
@@ -699,14 +604,14 @@ namespace JsonFx.Json
 		{
 			if (value == null)
 			{
-				this.Writer.Write(JsonReader.LiteralNull);
+				this.writer.Write(JsonReader.LiteralNull);
 				return;
 			}
 
 			int length = value.Length;
 			int start = 0;
 
-			this.Writer.Write(JsonReader.OperatorStringDelim);
+			this.writer.Write(JsonReader.OperatorStringDelim);
 
 			for (int i = start; i < length; i++)
 			{
@@ -717,7 +622,7 @@ namespace JsonFx.Json
 					value[i] == JsonReader.OperatorStringDelim ||
 					value[i] == JsonReader.OperatorCharEscape)
 				{
-					this.Writer.Write(value.Substring(start, i-start));
+					this.writer.Write(value.Substring(start, i-start));
 					start = i+1;
 
 					switch (value[i])
@@ -725,47 +630,47 @@ namespace JsonFx.Json
 						case JsonReader.OperatorStringDelim:
 						case JsonReader.OperatorCharEscape:
 						{
-							this.Writer.Write(JsonReader.OperatorCharEscape);
-							this.Writer.Write(value[i]);
+							this.writer.Write(JsonReader.OperatorCharEscape);
+							this.writer.Write(value[i]);
 							continue;
 						}
 						case '\b':
 						{
-							this.Writer.Write("\\b");
+							this.writer.Write("\\b");
 							continue;
 						}
 						case '\f':
 						{
-							this.Writer.Write("\\f");
+							this.writer.Write("\\f");
 							continue;
 						}
 						case '\n':
 						{
-							this.Writer.Write("\\n");
+							this.writer.Write("\\n");
 							continue;
 						}
 						case '\r':
 						{
-							this.Writer.Write("\\r");
+							this.writer.Write("\\r");
 							continue;
 						}
 						case '\t':
 						{
-							this.Writer.Write("\\t");
+							this.writer.Write("\\t");
 							continue;
 						}
 						default:
 						{
-							this.Writer.Write("\\u{0:X4}", Char.ConvertToUtf32(value, i));
+							this.writer.Write("\\u{0:X4}", Char.ConvertToUtf32(value, i));
 							continue;
 						}
 					}
 				}
 			}
 
-			this.Writer.Write(value.Substring(start, length-start));
+			this.writer.Write(value.Substring(start, length-start));
 
-			this.Writer.Write(JsonReader.OperatorStringDelim);
+			this.writer.Write(JsonReader.OperatorStringDelim);
 		}
 
 		#endregion Public Methods
@@ -774,32 +679,32 @@ namespace JsonFx.Json
 
 		public virtual void Write(bool value)
 		{
-			this.Writer.Write(value ? JsonReader.LiteralTrue : JsonReader.LiteralFalse);
+			this.writer.Write(value ? JsonReader.LiteralTrue : JsonReader.LiteralFalse);
 		}
 
 		public virtual void Write(byte value)
 		{
-			this.Writer.Write("{0:g}", value);
+			this.writer.Write("{0:g}", value);
 		}
 
 		public virtual void Write(sbyte value)
 		{
-			this.Writer.Write("{0:g}", value);
+			this.writer.Write("{0:g}", value);
 		}
 
 		public virtual void Write(short value)
 		{
-			this.Writer.Write("{0:g}", value);
+			this.writer.Write("{0:g}", value);
 		}
 
 		public virtual void Write(ushort value)
 		{
-			this.Writer.Write("{0:g}", value);
+			this.writer.Write("{0:g}", value);
 		}
 
 		public virtual void Write(int value)
 		{
-			this.Writer.Write("{0:g}", value);
+			this.writer.Write("{0:g}", value);
 		}
 
 		public virtual void Write(uint value)
@@ -811,7 +716,7 @@ namespace JsonFx.Json
 				return;
 			}
 
-			this.Writer.Write("{0:g}", value);
+			this.writer.Write("{0:g}", value);
 		}
 
 		public virtual void Write(long value)
@@ -823,7 +728,7 @@ namespace JsonFx.Json
 				return;
 			}
 
-			this.Writer.Write("{0:g}", value);
+			this.writer.Write("{0:g}", value);
 		}
 
 		public virtual void Write(ulong value)
@@ -835,18 +740,18 @@ namespace JsonFx.Json
 				return;
 			}
 
-			this.Writer.Write("{0:g}", value);
+			this.writer.Write("{0:g}", value);
 		}
 
 		public virtual void Write(float value)
 		{
 			if (Single.IsNaN(value) || Single.IsInfinity(value))
 			{
-				this.Writer.Write(JsonReader.LiteralNull);
+				this.writer.Write(JsonReader.LiteralNull);
 			}
 			else
 			{
-				this.Writer.Write("{0:r}", value);
+				this.writer.Write("{0:r}", value);
 			}
 		}
 
@@ -854,11 +759,11 @@ namespace JsonFx.Json
 		{
 			if (Double.IsNaN(value) || Double.IsInfinity(value))
 			{
-				this.Writer.Write(JsonReader.LiteralNull);
+				this.writer.Write(JsonReader.LiteralNull);
 			}
 			else
 			{
-				this.Writer.Write("{0:r}", value);
+				this.writer.Write("{0:r}", value);
 			}
 		}
 
@@ -871,7 +776,7 @@ namespace JsonFx.Json
 				return;
 			}
 
-			this.Writer.Write("{0:g}", value);
+			this.writer.Write("{0:g}", value);
 		}
 
 		public virtual void Write(char value)
@@ -908,12 +813,12 @@ namespace JsonFx.Json
 		{
 			bool appendDelim = false;
 
-			this.Writer.Write(JsonReader.OperatorArrayStart);
+			this.writer.Write(JsonReader.OperatorArrayStart);
 
 			this.depth++;
-			if (this.depth > this.settings.MaxDepth)
+			if (this.depth > this.maxDepth)
 			{
-				throw new JsonSerializationException(String.Format(JsonWriter.ErrorMaxDepth, this.settings.MaxDepth));
+				throw new JsonSerializationException(String.Format(JsonWriter.ErrorMaxDepth, this.maxDepth));
 			}
 			try
 			{
@@ -921,7 +826,7 @@ namespace JsonFx.Json
 				{
 					if (appendDelim)
 					{
-						this.WriteArrayItemDelim();
+						this.writer.Write(JsonReader.OperatorValueDelim);
 					}
 					else
 					{
@@ -929,7 +834,7 @@ namespace JsonFx.Json
 					}
 
 					this.WriteLine();
-					this.WriteArrayItem(item);
+					this.Write(item, false);
 				}
 			}
 			finally
@@ -941,12 +846,7 @@ namespace JsonFx.Json
 			{
 				this.WriteLine();
 			}
-			this.Writer.Write(JsonReader.OperatorArrayEnd);
-		}
-
-		protected virtual void WriteArrayItem(object item)
-		{
-			this.Write(item, false);
+			this.writer.Write(JsonReader.OperatorArrayEnd);
 		}
 
 		protected virtual void WriteObject(IDictionary value)
@@ -964,12 +864,12 @@ namespace JsonFx.Json
 
 			bool appendDelim = false;
 
-			this.Writer.Write(JsonReader.OperatorObjectStart);
+			this.writer.Write(JsonReader.OperatorObjectStart);
 
 			this.depth++;
-			if (this.depth > this.settings.MaxDepth)
+			if (this.depth > this.maxDepth)
 			{
-				throw new JsonSerializationException(String.Format(JsonWriter.ErrorMaxDepth, this.settings.MaxDepth));
+				throw new JsonSerializationException(String.Format(JsonWriter.ErrorMaxDepth, this.maxDepth));
 			}
 
 			try
@@ -978,14 +878,14 @@ namespace JsonFx.Json
 				{
 					if (appendDelim)
 					{
-						this.WriteObjectPropertyDelim();
+						this.writer.Write(JsonReader.OperatorValueDelim);
 					}
 					else
 					{
 						appendDelim = true;
 					}
 
-					this.WriteObjectProperty(Convert.ToString(enumerator.Entry.Key), enumerator.Entry.Value);
+					this.WriteObjectProperty(enumerator.Entry);
 				}
 			}
 			finally
@@ -997,15 +897,20 @@ namespace JsonFx.Json
 			{
 				this.WriteLine();
 			}
-			this.Writer.Write(JsonReader.OperatorObjectEnd);
+			this.writer.Write(JsonReader.OperatorObjectEnd);
+		}
+
+		private void WriteObjectProperty(DictionaryEntry entry)
+		{
+			this.WriteObjectProperty(Convert.ToString(entry.Key), entry.Value);
 		}
 
 		private void WriteObjectProperty(string key, object value)
 		{
 			this.WriteLine();
 			this.WriteObjectPropertyName(key);
-			this.Writer.Write(JsonReader.OperatorNameDelim);
-			this.WriteObjectPropertyValue(value);
+			this.writer.Write(JsonReader.OperatorNameDelim);
+			this.Write(value, true);
 		}
 
 		protected virtual void WriteObjectPropertyName(string name)
@@ -1013,36 +918,31 @@ namespace JsonFx.Json
 			this.Write(name);
 		}
 
-		protected virtual void WriteObjectPropertyValue(object value)
-		{
-			this.Write(value, true);
-		}
-
 		protected virtual void WriteObject(object value, Type type)
 		{
 			bool appendDelim = false;
 
-			this.Writer.Write(JsonReader.OperatorObjectStart);
+			this.writer.Write(JsonReader.OperatorObjectStart);
 
 			this.depth++;
-			if (this.depth > this.settings.MaxDepth)
+			if (this.depth > this.maxDepth)
 			{
-				throw new JsonSerializationException(String.Format(JsonWriter.ErrorMaxDepth, this.settings.MaxDepth));
+				throw new JsonSerializationException(String.Format(JsonWriter.ErrorMaxDepth, this.maxDepth));
 			}
 			try
 			{
-				if (!String.IsNullOrEmpty(this.settings.TypeHintName))
+				if (!String.IsNullOrEmpty(this.TypeHintName))
 				{
 					if (appendDelim)
 					{
-						this.WriteObjectPropertyDelim();
+						this.writer.Write(JsonReader.OperatorValueDelim);
 					}
 					else
 					{
 						appendDelim = true;
 					}
 
-					this.WriteObjectProperty(this.settings.TypeHintName, type.FullName+", "+type.Assembly.GetName().Name);
+					this.WriteObjectProperty(this.TypeHintName, type.FullName+", "+type.Assembly.GetName().Name);
 				}
 
 				bool anonymousType = type.IsGenericType && type.Name.StartsWith(JsonWriter.AnonymousTypePrefix);
@@ -1074,7 +974,7 @@ namespace JsonFx.Json
 
 					if (appendDelim)
 					{
-						this.WriteObjectPropertyDelim();
+						this.writer.Write(JsonReader.OperatorValueDelim);
 					}
 					else
 					{
@@ -1113,7 +1013,7 @@ namespace JsonFx.Json
 
 					if (appendDelim)
 					{
-						this.WriteObjectPropertyDelim();
+						this.writer.Write(JsonReader.OperatorValueDelim);
 						this.WriteLine();
 					}
 					else
@@ -1140,30 +1040,20 @@ namespace JsonFx.Json
 			{
 				this.WriteLine();
 			}
-			this.Writer.Write(JsonReader.OperatorObjectEnd);
-		}
-
-		protected virtual void WriteArrayItemDelim()
-		{
-			this.Writer.Write(JsonReader.OperatorValueDelim);
-		}
-
-		protected virtual void WriteObjectPropertyDelim()
-		{
-			this.Writer.Write(JsonReader.OperatorValueDelim);
+			this.writer.Write(JsonReader.OperatorObjectEnd);
 		}
 
 		protected virtual void WriteLine()
 		{
-			if (!this.settings.PrettyPrint)
+			if (!this.prettyPrint)
 			{
 				return;
 			}
 
-			this.Writer.WriteLine();
+			this.writer.WriteLine();
 			for (int i=0; i<this.depth; i++)
 			{
-				this.Writer.Write(this.settings.Tab);
+				this.writer.Write(this.tab);
 			}
 		}
 
@@ -1204,7 +1094,7 @@ namespace JsonFx.Json
 				}
 			}
 
-			if (this.settings.UseXmlSerializationAttributes)
+			if (this.UseXmlSerializationAttributes)
 			{
 				if (JsonIgnoreAttribute.IsXmlIgnore(member))
 				{
@@ -1269,7 +1159,10 @@ namespace JsonFx.Json
 			if (longVal == 0L)
 			{
 				// Return the value of empty, or zero if none exists
-				enums.Add((Enum)Convert.ChangeType(value, enumType));
+				if (Convert.ToUInt64(enumValues.GetValue(0)) == 0L)
+					enums.Add(enumValues.GetValue(0) as Enum);
+				else
+					enums.Add(null);
 				return enums.ToArray();
 			}
 
@@ -1278,9 +1171,7 @@ namespace JsonFx.Json
 				ulong enumValue = Convert.ToUInt64(enumValues.GetValue(i));
 
 				if ((i == 0) && (enumValue == 0L))
-				{
 					continue;
-				}
 
 				// matches a value in enumeration
 				if ((longVal & enumValue) == enumValue)
@@ -1294,9 +1185,7 @@ namespace JsonFx.Json
 			}
 
 			if (longVal != 0x0L)
-			{
 				enums.Add(Enum.ToObject(enumType, longVal) as Enum);
-			}
 
 			return enums.ToArray();
 		}
@@ -1326,9 +1215,9 @@ namespace JsonFx.Json
 
 		void IDisposable.Dispose()
 		{
-			if (this.Writer != null)
+			if (this.writer != null)
 			{
-				this.Writer.Dispose();
+				this.writer.Dispose();
 			}
 		}
 

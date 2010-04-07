@@ -5,7 +5,7 @@
 
 	The MIT License
 
-	Copyright (c) 2006-2010 Stephen M. McKamey
+	Copyright (c) 2006-2009 Stephen M. McKamey
 
 	Permission is hereby granted, free of charge, to any person obtaining a copy
 	of this software and associated documentation files (the "Software"), to deal
@@ -86,7 +86,7 @@ if (""undefined"" === typeof {0}) {{
 		#region Init
 
 		/// <summary>
-		/// Ctor
+		/// Ctor.
 		/// </summary>
 		/// <param name="output">TextWriter for writing</param>
 		public EcmaScriptWriter(TextWriter output)
@@ -95,7 +95,7 @@ if (""undefined"" === typeof {0}) {{
 		}
 
 		/// <summary>
-		/// Ctor
+		/// Ctor.
 		/// </summary>
 		/// <param name="output">Stream for writing</param>
 		public EcmaScriptWriter(Stream output)
@@ -104,7 +104,7 @@ if (""undefined"" === typeof {0}) {{
 		}
 
 		/// <summary>
-		/// Ctor
+		/// Ctor.
 		/// </summary>
 		/// <param name="output">File name for writing</param>
 		public EcmaScriptWriter(string outputFileName)
@@ -113,7 +113,7 @@ if (""undefined"" === typeof {0}) {{
 		}
 
 		/// <summary>
-		/// Ctor
+		/// Ctor.
 		/// </summary>
 		/// <param name="output">StringBuilder for appending</param>
 		public EcmaScriptWriter(StringBuilder output)
@@ -252,7 +252,7 @@ if (""undefined"" === typeof {0}) {{
 		{
 			if (value is Regex)
 			{
-				if (isProperty && this.Settings.PrettyPrint)
+				if (isProperty && this.PrettyPrint)
 				{
 					this.TextWriter.Write(' ');
 				}
@@ -265,16 +265,15 @@ if (""undefined"" === typeof {0}) {{
 
 		protected override void WriteObjectPropertyName(string name)
 		{
-			if (EcmaScriptIdentifier.IsValidIdentifier(name, false))
+			if (!EcmaScriptIdentifier.IsValidIdentifier(name, false))
 			{
-				// write out without quoting
-				this.TextWriter.Write(name);
-			}
-			else
-			{
-				// write out as an escaped string
+				// write out as a string
 				base.WriteObjectPropertyName(name);
+				return;
 			}
+
+			// write out without quoting
+			this.TextWriter.Write(name);
 		}
 
 		public static void WriteEcmaScriptDate(JsonWriter writer, DateTime value)

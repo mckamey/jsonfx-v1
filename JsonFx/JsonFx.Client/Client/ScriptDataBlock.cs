@@ -1,11 +1,11 @@
-﻿#region License
+#region License
 /*---------------------------------------------------------------------------------*\
 
 	Distributed under the terms of an MIT-style license:
 
 	The MIT License
 
-	Copyright (c) 2006-2010 Stephen M. McKamey
+	Copyright (c) 2006-2009 Stephen M. McKamey
 
 	Permission is hereby granted, free of charge, to any person obtaining a copy
 	of this software and associated documentation files (the "Software"), to deal
@@ -29,8 +29,9 @@
 #endregion License
 
 using System;
-using System.Collections.Generic;
 using System.ComponentModel;
+using System.Collections.Generic;
+using System.Web;
 using System.Web.UI;
 
 using JsonFx.Json;
@@ -43,10 +44,19 @@ namespace JsonFx.Client
 	[ToolboxData("<{0}:ScriptDataBlock runat=\"server\"></{0}:ScriptDataBlock>")]
 	public class ScriptDataBlock : Control
 	{
+		#region Constants
+
+		private const string ScriptOpen = "<script type=\"text/javascript\">";
+		private const string ScriptClose = "</script>";
+		private const string VarAssignmentDebug = "{0} = ";
+		private const string VarAssignment = "{0}=";
+		private const string VarAssignmentEnd = ";";
+
+		#endregion Constants
+
 		#region Fields
 
 		private bool isDebug;
-		private AutoMarkupType autoMarkup = AutoMarkupType.Auto;
 		private readonly Dictionary<string, object> Data = new Dictionary<string, object>(StringComparer.Ordinal);
 
 		#endregion Fields
@@ -89,7 +99,7 @@ namespace JsonFx.Client
 		}
 
 		/// <summary>
-		/// Gets access to data items as dictionary
+		/// Gets access to 
 		/// </summary>
 		public IDictionary<string, object> DataItems
 		{
@@ -106,16 +116,6 @@ namespace JsonFx.Client
 			set { this.isDebug = value; }
 		}
 
-		/// <summary>
-		/// Gets and sets if should also render the data as markup for noscript clients.
-		/// </summary>
-		[DefaultValue(AutoMarkupType.Auto)]
-		public AutoMarkupType AutoMarkup
-		{
-			get { return this.autoMarkup; }
-			set { this.autoMarkup = value; }
-		}
-
 		#endregion Properties
 
 		#region Page Event Handlers
@@ -126,10 +126,63 @@ namespace JsonFx.Client
 		/// <param name="writer"></param>
 		protected override void Render(HtmlTextWriter writer)
 		{
+			if (this.Data.Count < 1)
+			{
+				// emit nothing if empty
+				return;
+			}
+
 			writer.BeginRender();
 			try
 			{
-				new DataBlockWriter(this.AutoMarkup, this.IsDebug).Write(writer, this.Data);
+				List<string> namespaces = new List<string>();
+
+				EcmaScriptWriter jsWriter = new EcmaScriptWriter(writer);
+				jsWriter.PrettyPrint = this.IsDebug;
+				jsWriter.NewLine = Environment.NewLine;
+				jsWriter.Tab = "\t";
+
+				writer.Write(ScriptOpen);
+
+				foreach (string key in this.Data.Keys)
+				{
+					string declaration;
+					if (!EcmaScriptWriter.WriteNamespaceDeclaration(writer, key, namespaces, this.IsDebug))
+					{
+						declaration = "var "+key;
+					}
+					else
+					{
+						declaration = key;
+					}
+
+					if (this.IsDebug)
+					{
+						writer.Indent += 3;
+						writer.Write(VarAssignmentDebug, declaration);
+						writer.Indent -= 3;
+						if (this.Data[key] != null &&
+							this.Data[key].GetType().IsClass)
+						{
+							writer.WriteLine();
+						}
+					}
+					else
+					{
+						writer.Write(VarAssignment, declaration);
+					}
+
+					// emit the value as JSON
+					jsWriter.Write(this.Data[key]);
+					writer.Write(VarAssignmentEnd);
+
+					if (this.IsDebug)
+					{
+						writer.WriteLine();
+					}
+				}
+
+				writer.Write(ScriptClose);
 			}
 			finally
 			{

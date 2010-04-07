@@ -3,11 +3,6 @@ using System.Web.Mvc;
 using System.Web.Routing;
 using System.Web.UI;
 
-using JsonFx.Mvc;
-using JsonFx.Json;
-using JsonFx.Xml;
-using System.Xml.Serialization;
-
 namespace MyApp
 {
 	// Note: For instructions on enabling IIS6 or IIS7 classic mode, 
@@ -15,9 +10,9 @@ namespace MyApp
 
 	public class MvcApplication : System.Web.HttpApplication
 	{
-		private void RegisterRoutes(RouteCollection routes)
+		public static void RegisterRoutes(RouteCollection routes)
 		{
-			//routes.IgnoreRoute("{resource}.axd/{*pathInfo}");
+			routes.IgnoreRoute("{resource}.axd/{*pathInfo}");
 
 			routes.MapRoute(
 				"Default",                                              // Route name
@@ -26,27 +21,9 @@ namespace MyApp
 			);
 		}
 
-		private void RegisterBinders()
-		{
-			// TODO: this should be constructed via IoC container
-			DataModelBinder binder = new DataModelBinder(new DataReaderProvider(new IDataReader[] {
-					new JsonDataReader(JsonDataReader.CreateSettings(this.Context.IsDebuggingEnabled)),
-					new XmlDataReader(XmlDataReader.CreateSettings(), new XmlSerializerNamespaces())
-				}));
-
-			binder.DefaultBinder = ModelBinders.Binders.DefaultBinder;
-
-			// set as the new default
-			ModelBinders.Binders.DefaultBinder = binder;
-		}
-
 		protected void Application_Start()
 		{
-			this.RegisterRoutes(RouteTable.Routes);
-
-			this.RegisterBinders();
-
-			MvcHandler.DisableMvcResponseHeader = true;
+			RegisterRoutes(RouteTable.Routes);
 		}
 
 		#region Stream Compression

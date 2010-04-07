@@ -1,15 +1,5 @@
 Release History
 
-v1.2.0911.2217
-- added an abstraction for serializers which allows easily switching between XML & JSON
-- added a ASP.NET MVC ActionResult which allows switching output via Dependency Injection
-- moved all MVC classes into JsonFx.Mvc
-
-v1.1.0911.0718
-- added additional script configurations (JBST-only, JsonFx-Core)
-- added a JBST compiler helper
-- added VS2008 solution ease maintenance
-
 v1.1.0910.3107
 - added JsonFx-enabled ASP.NET MVC project template
 - using EcmaScriptIdentifier to enforce JBST names

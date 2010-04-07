@@ -57,35 +57,18 @@ namespace JsonFx.Json.Test.UnitTests
 			string[] unitTests = Directory.GetFiles(unitTestsFolder, UnitTestsFiles, SearchOption.AllDirectories);
 			if (unitTests.Length > 0)
 			{
-				JsonReaderSettings readerSettings = new JsonReaderSettings();
-				readerSettings.TypeHintName = StronglyTyped.MyTypeHintName;
-				readerSettings.AllowNullValueTypes = true;
-				readerSettings.AllowUnquotedObjectKeys = true;
-
-				JsonWriterSettings writerSettings = new JsonWriterSettings();
-				writerSettings.TypeHintName = StronglyTyped.MyTypeHintName;
-				writerSettings.PrettyPrint = false;
-				writerSettings.MaxDepth = 100;
-
-				writer.WriteLine(JsonText.Seperator);
-				writer.WriteLine("JsonReaderSettings:");
-				new JsonWriter(writer).Write(readerSettings);
-
-				writer.WriteLine(JsonText.Seperator);
-				writer.WriteLine("JsonWriterSettings:");
-				new JsonWriter(writer).Write(writerSettings);
-
 				foreach (string unitTest in unitTests)
 				{
 					string source = String.Empty;
 
 					try
 					{
-						writer.WriteLine(JsonText.Seperator);
+						writer.WriteLine(Seperator);
 
 						source = File.ReadAllText(unitTest);
-						JsonReader jsonReader = new JsonReader(source, readerSettings);
+						JsonReader jsonReader = new JsonReader(source);
 
+						jsonReader.TypeHintName = StronglyTyped.MyTypeHintName;
 						object obj, obj2;
 						obj2 = obj = jsonReader.Deserialize();
 
@@ -103,8 +86,10 @@ namespace JsonFx.Json.Test.UnitTests
 						{
 							Directory.CreateDirectory(outputDir);
 						}
-						using (JsonWriter jsonWriter = new JsonWriter(outputFile, writerSettings))
+						using (JsonWriter jsonWriter = new JsonWriter(outputFile))
 						{
+							jsonWriter.TypeHintName = StronglyTyped.MyTypeHintName;
+							//jsonWriter.PrettyPrint = true;
 							jsonWriter.Write(obj2);
 						}
 					}

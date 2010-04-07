@@ -26,7 +26,6 @@ Project("{E24C65DC-7377-472B-9ABA-BC803B73C61A}") = "JsonFx.WebTemplate", "JsonF
 		SccLocalPath = ""
 		SccProvider = ""
 		TargetFramework = "2.0"
-		ProjectReferences = "{7E5F1250-473C-494F-BFBD-835A1CE9CC13}|JsonFx.BuildTools.dll;{5A84EB39-D30B-4085-8365-E1C05590F3BF}|JsonFx.Client.dll;{241E7122-64CA-43B8-B3F0-5BC776FC37BC}|JsonFx.History.dll;{6DC125A3-2C11-4FEA-B948-1C563B0FAE52}|JsonFx.IO.dll;{ABA23F14-7E47-43FE-A3E7-1FF97840C3FB}|JsonFx.Json.dll;{17417DF0-B12F-4D5B-A9E7-8B7D894F93B4}|JsonFx.UI.dll;"
 		Debug.AspNetCompiler.VirtualPath = "/JsonFx.WebTemplate"
 		Debug.AspNetCompiler.PhysicalPath = "JsonFx.WebTemplate\"
 		Debug.AspNetCompiler.TargetPath = "PrecompiledWeb\JsonFx.WebTemplate\"

@@ -1,11 +1,11 @@
-﻿#region License
+#region License
 /*---------------------------------------------------------------------------------*\
 
 	Distributed under the terms of an MIT-style license:
 
 	The MIT License
 
-	Copyright (c) 2006-2010 Stephen M. McKamey
+	Copyright (c) 2006-2009 Stephen M. McKamey
 
 	Permission is hereby granted, free of charge, to any person obtaining a copy
 	of this software and associated documentation files (the "Software"), to deal
@@ -29,12 +29,20 @@
 #endregion License
 
 using System;
+using System.IO;
+using System.Collections;
+using System.Collections.Generic;
+using System.Text;
+using System.Reflection;
+using System.Web;
+using System.Web.Hosting;
+using System.Web.Compilation;
 using System.CodeDom;
 using System.CodeDom.Compiler;
-using System.Collections.Generic;
-using System.IO;
+using System.Security.Permissions;
 
 using JsonFx.BuildTools;
+using JsonFx.Handlers;
 
 namespace JsonFx.Compilation
 {
@@ -156,11 +164,7 @@ namespace JsonFx.Compilation
 
 		#region CodeDomProvider Methods
 
-		protected internal virtual void SetBaseClass(CodeTypeDeclaration resourceType)
-		{
-		}
-
-		protected internal virtual void GenerateCodeExtensions(IResourceBuildHelper helper, CodeTypeDeclaration resourceType)
+		protected internal virtual void GenerateCodeExtensions(CodeTypeDeclaration resourceType)
 		{
 			if (this.g11nKeys.Count <= 0)
 			{
@@ -251,21 +255,6 @@ namespace JsonFx.Compilation
 			string virtualPath,
 			string source,
 			out string resource,
-			out string compacted,
-			List<ParseException> errors);
-
-		/// <summary>
-		/// Process as external resources
-		/// </summary>
-		/// <param name="helper"></param>
-		/// <param name="url"></param>
-		/// <param name="preProcessed"></param>
-		/// <param name="compacted"></param>
-		/// <param name="errors"></param>
-		protected internal abstract void ProcessExternalResource(
-			IResourceBuildHelper helper,
-			string url,
-			out string preProcessed,
 			out string compacted,
 			List<ParseException> errors);
 

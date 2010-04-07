@@ -54,35 +54,22 @@ namespace JsonFx.Json.Test.UnitTests
 
 		public static void RunTest(TextWriter writer, string unitTestsFolder, string outputFolder)
 		{
-			JsonReaderSettings readerSettings = new JsonReaderSettings();
-			readerSettings.TypeHintName = StronglyTyped.MyTypeHintName;
-			readerSettings.AllowNullValueTypes = true;
-			readerSettings.AllowUnquotedObjectKeys = false;
-
-			JsonWriterSettings writerSettings = new JsonWriterSettings();
-			writerSettings.TypeHintName = StronglyTyped.MyTypeHintName;
-			writerSettings.PrettyPrint = true;
-			writerSettings.MaxDepth = 100;
-
-			writer.WriteLine(JsonText.Seperator);
-			writer.WriteLine("JsonReaderSettings:");
-			new JsonWriter(writer).Write(readerSettings);
-
-			writer.WriteLine(JsonText.Seperator);
-			writer.WriteLine("JsonWriterSettings:");
-			new JsonWriter(writer).Write(writerSettings);
-
 			#region Simple Root Types
 
-			SerializeDeserialize(writer, unitTestsFolder, "RootEnum.json", BlahBlah.Three, readerSettings, writerSettings);
+			writer.WriteLine(UnitTests.JsonText.Seperator);
+			SerializeDeserialize(writer, unitTestsFolder, "RootEnum.json", BlahBlah.Three);
 
-			SerializeDeserialize(writer, unitTestsFolder, "RootInt64.json", 42678L, readerSettings, writerSettings);
+			writer.WriteLine(UnitTests.JsonText.Seperator);
+			SerializeDeserialize(writer, unitTestsFolder, "RootInt64.json", 42678L);
 
-			SerializeDeserialize(writer, unitTestsFolder, "RootDateTime.json", DateTime.Now, readerSettings, writerSettings);
+			writer.WriteLine(UnitTests.JsonText.Seperator);
+			SerializeDeserialize(writer, unitTestsFolder, "RootDateTime.json", DateTime.Now);
 
 			#endregion Simple Root Types
 
 			#region Strongly Typed Object Graph Test
+
+			writer.WriteLine(UnitTests.JsonText.Seperator);
 
 			ComplexObject collectionTest = new ComplexObject();
 
@@ -125,36 +112,40 @@ namespace JsonFx.Json.Test.UnitTests
 			// duplicate for Queue<T>
 			collectionTest.MyQueue = new Queue<SimpleObject>(collectionTest.MyArray);
 
-			SerializeDeserialize(writer, unitTestsFolder, "StronglyTyped.json", collectionTest, readerSettings, writerSettings);
+			SerializeDeserialize(writer, unitTestsFolder, "StronglyTyped.json", collectionTest);
 
 			#endregion Strongly Typed Object Graph Test
 
 			#region Non-IDictionary, IDictionary<TKey, TValue> Test
 
+			writer.WriteLine(UnitTests.JsonText.Seperator);
+
 			NotIDictionary notIDictionary = new NotIDictionary();
 			notIDictionary["This Collection"] = "is not an IDictionary";
 			notIDictionary["But It is"] = "an IDictionary<string, object>";
 
-			SerializeDeserialize(writer, unitTestsFolder, "NotIDictionary.json", notIDictionary, readerSettings, writerSettings);
+			SerializeDeserialize(writer, unitTestsFolder, "NotIDictionary.json", notIDictionary);
 
 			#endregion Non-IDictionary ,IDictionary<TKey, TValue> Test
 		}
 
-		private static void SerializeDeserialize(TextWriter writer, string unitTestsFolder, string unitTestFile, object obj, JsonReaderSettings readerSettings, JsonWriterSettings writerSettings)
+		private static void SerializeDeserialize(TextWriter writer, string unitTestsFolder, string unitTestFile, object obj)
 		{
-			writer.WriteLine(JsonText.Seperator);
-
 			string source = String.Empty;
 			try
 			{
-				using (JsonWriter jsonWriter = new JsonWriter(unitTestsFolder+unitTestFile, writerSettings))
+				using (JsonWriter jsonWriter = new JsonWriter(unitTestsFolder+unitTestFile))
 				{
+					jsonWriter.TypeHintName = MyTypeHintName;
+					jsonWriter.PrettyPrint = true;
 					jsonWriter.Write(obj);
 				}
 
 				source = File.ReadAllText(unitTestsFolder+unitTestFile);
+				JsonReader jsonReader = new JsonReader(source);
 
-				obj = new JsonReader(source, readerSettings).Deserialize((obj == null) ? null : obj.GetType());
+				jsonReader.TypeHintName = MyTypeHintName;
+				obj = jsonReader.Deserialize((obj == null) ? null : obj.GetType());
 				writer.WriteLine("READ: "+unitTestFile);
 				writer.WriteLine("Result: {0}", (obj == null) ? "null" : obj.GetType().FullName);
 			}
