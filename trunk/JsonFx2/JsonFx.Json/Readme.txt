@@ -11,7 +11,7 @@ Improvements over v1.x:
 - even more flexible automatic type coercion
 
 TODO:
-- check for cycles in JsonWriter
+- check for cycles in JsonWriter (using a stack?)
 
 Same as v1.x
 - fast
