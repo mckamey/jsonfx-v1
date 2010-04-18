@@ -16,7 +16,7 @@ Improvements over v1.x
 
 TODO:
 - split DataReaderSettings into type coercion and settings
-- extract JsonParser from JsonReader?
+- evaluate ctor vs. property dependency injection
 - check for cycles in JsonWriter (using a stack?)
 
 Same as v1.x
