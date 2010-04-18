@@ -6,18 +6,19 @@ Improvements over v1.x
 	- IDataWriter =(objects)=> IGenerator<TokenType> =(tokens)=> IFormatter<TokenType> =(chars)=> TextWriter
 - stream based
 - cleaner / simpler interface for JsonReader/JsonWriter
+- JsonTokenizer is essentially a SAX-like generator for JSON
 - more modular (separate tokenizer, parser, coercion, settings)
-- JsonFx.Json.JsonReader is threadsafe
-- supports unbounded nested objects
-- interfaces extensible to other serialization formats for REST
 - even more flexible automatic type coercion
 	- can deserialize common collection interfaces
 	- IEnumerable, IList, ICollection, IDictionary, IEnumerable<T>, IList<T>, ICollection<T>, IDictionary<TKey, TVal>
+- supports unbounded nested objects
+- interfaces extensible to other serialization formats for REST
 
 TODO:
 - split DataReaderSettings into type coercion and settings
 - evaluate ctor vs. property dependency injection
 - check for cycles in JsonWriter (using a stack?)
+- ensure JsonFx.Json.JsonReader is threadsafe
 
 Same as v1.x
 - fast
