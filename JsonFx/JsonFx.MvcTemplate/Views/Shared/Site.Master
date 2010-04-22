@@ -18,10 +18,10 @@
     <div class="page">
 
         <div id="header">
+		    <div>&nbsp;</div>
             <div id="title">
                 <h1>Sample JsonFx/MVC Application </h1>
             </div>
-	    <div id="loginPlaceholder">&nbsp;</div>
 
             <div id="menucontainer">
             
@@ -34,9 +34,12 @@
 
         <div id="main">
             <asp:ContentPlaceHolder ID="Content" runat="server" />
+        </div>
 
-            <div id="footer">
-            </div>
+        <div id="footer">
+            <asp:ContentPlaceHolder ID="Footer" runat="server">
+				<p>Footer goes here.</p>
+            </asp:ContentPlaceHolder>
         </div>
     </div>
 </body>
