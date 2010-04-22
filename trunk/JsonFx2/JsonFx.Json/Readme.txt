@@ -12,12 +12,13 @@ Improvements over v1.x
 	- can deserialize common collection interfaces
 	- IEnumerable, IList, ICollection, IDictionary, IEnumerable<T>, IList<T>, ICollection<T>, IDictionary<TKey, TVal>
 - supports unbounded nested objects
-- interfaces extensible to other serialization formats for REST
+- interfaces extensible to other serialization formats for building RESTful services
 
 TODO:
+- find best intermediate format to be able to cross-serialize between formats
 - split DataReaderSettings into type coercion and settings
-- evaluate ctor vs. property dependency injection
-- check for cycles in JsonWriter (using a stack?)
+- evaluate ctor vs. property dependency injection for each class
+- check for graph cycles in JsonWriter using a stack while walking: [check stack, push, visit children, pop]
 - ensure JsonFx.Json.JsonReader is threadsafe
 
 Same as v1.x
