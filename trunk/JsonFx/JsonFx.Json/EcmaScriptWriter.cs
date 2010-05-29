@@ -236,7 +236,7 @@ if (""undefined"" === typeof {0}) {{
 		/// <param name="value">Single</param>
 		public override void Write(float value)
 		{
-			this.TextWriter.Write("{0:r}", value);
+			this.TextWriter.Write(value.ToString("r"));
 		}
 
 		/// <summary>
@@ -245,7 +245,7 @@ if (""undefined"" === typeof {0}) {{
 		/// <param name="value">Double</param>
 		public override void Write(double value)
 		{
-			this.TextWriter.Write("{0:r}", value);
+			this.TextWriter.Write(value.ToString("r"));
 		}
 
 		protected override void Write(object value, bool isProperty)
@@ -339,7 +339,7 @@ if (""undefined"" === typeof {0}) {{
 		{
 			if (regex == null)
 			{
-				writer.TextWriter.Write("null");
+				writer.TextWriter.Write(JsonReader.LiteralNull);
 				return;
 			}
 
