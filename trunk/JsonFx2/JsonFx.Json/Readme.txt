@@ -1,7 +1,7 @@
 JsonFx.Json v2.0
 
 Improvements over v1.x
-- ground up rewrite for better flexibiliy, performance, memory consumption, code clarity
+- ground up rewrite for better flexibiliy, performance?, memory consumption, code clarity
 	- TextReader =(chars)=> ITokenizer<TokenType> =(tokens)=> IParser<TokenType> =(objects)=> IDataReader
 	- IDataWriter =(objects)=> IGenerator<TokenType> =(tokens)=> IFormatter<TokenType> =(chars)=> TextWriter
 - stream based
@@ -11,8 +11,8 @@ Improvements over v1.x
 - even more flexible automatic type coercion
 	- can deserialize common collection interfaces
 	- IEnumerable, IList, ICollection, IDictionary, IEnumerable<T>, IList<T>, ICollection<T>, IDictionary<TKey, TVal>
-- supports unbounded nested objects
-- interfaces extensible to other serialization formats for building RESTful services
+- optionally supports unbounded nested objects
+- interfaces extensible to other serialization formats/engines for building RESTful services
 
 TODO:
 - find best intermediate format to be able to cross-serialize between formats
