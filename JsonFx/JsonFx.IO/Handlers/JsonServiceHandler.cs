@@ -133,7 +133,12 @@ namespace JsonFx.Handlers
 
 		private JsonRequest BuildRequestFromPost(HttpContext context)
 		{
+#if NET_40
+			// circumvents the internal buffering which waits until entire request is received before reading
+			return Settings.Deserialize(context.Request.GetBufferlessInputStream());
+#else
 			return Settings.Deserialize(context.Request.InputStream);
+#endif
 		}
 
 		private void HandleRequest(HttpContext context, JsonRequest request, ref JsonResponse response)
