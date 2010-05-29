@@ -32,6 +32,7 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Globalization;
 using System.IO;
 using System.Reflection;
 using System.Text;
@@ -703,30 +704,34 @@ namespace JsonFx.Json
 				return;
 			}
 
-			int length = value.Length;
-			int start = 0;
+			int start = 0,
+				length = value.Length;
 
 			this.Writer.Write(JsonReader.OperatorStringDelim);
 
-			for (int i = start; i < length; i++)
+			for (int i=start; i<length; i++)
 			{
-				if (value[i] <= '\u001F' ||
-					value[i] >= '\u007F' ||
-					value[i] == '<' ||
-					value[i] == '\t' ||
-					value[i] == JsonReader.OperatorStringDelim ||
-					value[i] == JsonReader.OperatorCharEscape)
+				char ch = value[i];
+
+				if (ch <= '\u001F' ||
+					ch >= '\u007F' ||
+					ch == '<' || // improves compatibility within script blocks
+					ch == JsonReader.OperatorStringDelim ||
+					ch == JsonReader.OperatorCharEscape)
 				{
-					this.Writer.Write(value.Substring(start, i-start));
+					if (i > start)
+					{
+						this.Writer.Write(value.Substring(start, i-start));
+					}
 					start = i+1;
 
-					switch (value[i])
+					switch (ch)
 					{
 						case JsonReader.OperatorStringDelim:
 						case JsonReader.OperatorCharEscape:
 						{
 							this.Writer.Write(JsonReader.OperatorCharEscape);
-							this.Writer.Write(value[i]);
+							this.Writer.Write(ch);
 							continue;
 						}
 						case '\b':
@@ -756,14 +761,18 @@ namespace JsonFx.Json
 						}
 						default:
 						{
-							this.Writer.Write("\\u{0:X4}", Char.ConvertToUtf32(value, i));
+							this.Writer.Write("\\u");
+							this.Writer.Write(Char.ConvertToUtf32(value, i).ToString("X4"));
 							continue;
 						}
 					}
 				}
 			}
 
-			this.Writer.Write(value.Substring(start, length-start));
+			if (length > start)
+			{
+				this.Writer.Write(value.Substring(start, length-start));
+			}
 
 			this.Writer.Write(JsonReader.OperatorStringDelim);
 		}
@@ -779,27 +788,27 @@ namespace JsonFx.Json
 
 		public virtual void Write(byte value)
 		{
-			this.Writer.Write("{0:g}", value);
+			this.Writer.Write(value.ToString("g", CultureInfo.InvariantCulture));
 		}
 
 		public virtual void Write(sbyte value)
 		{
-			this.Writer.Write("{0:g}", value);
+			this.Writer.Write(value.ToString("g", CultureInfo.InvariantCulture));
 		}
 
 		public virtual void Write(short value)
 		{
-			this.Writer.Write("{0:g}", value);
+			this.Writer.Write(value.ToString("g", CultureInfo.InvariantCulture));
 		}
 
 		public virtual void Write(ushort value)
 		{
-			this.Writer.Write("{0:g}", value);
+			this.Writer.Write(value.ToString("g", CultureInfo.InvariantCulture));
 		}
 
 		public virtual void Write(int value)
 		{
-			this.Writer.Write("{0:g}", value);
+			this.Writer.Write(value.ToString("g", CultureInfo.InvariantCulture));
 		}
 
 		public virtual void Write(uint value)
@@ -807,11 +816,11 @@ namespace JsonFx.Json
 			if (this.InvalidIeee754(value))
 			{
 				// emit as string since Number cannot represent
-				this.Write(value.ToString("g"));
+				this.Write(value.ToString("g", CultureInfo.InvariantCulture));
 				return;
 			}
 
-			this.Writer.Write("{0:g}", value);
+			this.Writer.Write(value.ToString("g", CultureInfo.InvariantCulture));
 		}
 
 		public virtual void Write(long value)
@@ -819,11 +828,11 @@ namespace JsonFx.Json
 			if (this.InvalidIeee754(value))
 			{
 				// emit as string since Number cannot represent
-				this.Write(value.ToString("g"));
+				this.Write(value.ToString("g", CultureInfo.InvariantCulture));
 				return;
 			}
 
-			this.Writer.Write("{0:g}", value);
+			this.Writer.Write(value.ToString("g", CultureInfo.InvariantCulture));
 		}
 
 		public virtual void Write(ulong value)
@@ -831,11 +840,11 @@ namespace JsonFx.Json
 			if (this.InvalidIeee754(value))
 			{
 				// emit as string since Number cannot represent
-				this.Write(value.ToString("g"));
+				this.Write(value.ToString("g", CultureInfo.InvariantCulture));
 				return;
 			}
 
-			this.Writer.Write("{0:g}", value);
+			this.Writer.Write(value.ToString("g", CultureInfo.InvariantCulture));
 		}
 
 		public virtual void Write(float value)
@@ -846,7 +855,7 @@ namespace JsonFx.Json
 			}
 			else
 			{
-				this.Writer.Write("{0:r}", value);
+				this.Writer.Write(value.ToString("r", CultureInfo.InvariantCulture));
 			}
 		}
 
@@ -858,7 +867,7 @@ namespace JsonFx.Json
 			}
 			else
 			{
-				this.Writer.Write("{0:r}", value);
+				this.Writer.Write(value.ToString("r", CultureInfo.InvariantCulture));
 			}
 		}
 
@@ -867,11 +876,11 @@ namespace JsonFx.Json
 			if (this.InvalidIeee754(value))
 			{
 				// emit as string since Number cannot represent
-				this.Write(value.ToString("g"));
+				this.Write(value.ToString("g", CultureInfo.InvariantCulture));
 				return;
 			}
 
-			this.Writer.Write("{0:g}", value);
+			this.Writer.Write(value.ToString("g", CultureInfo.InvariantCulture));
 		}
 
 		public virtual void Write(char value)
