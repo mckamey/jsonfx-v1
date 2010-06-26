@@ -1870,6 +1870,20 @@
             <param name="service">The service in question.</param>
             <returns>The series of matching bindings.</returns>
         </member>
+        <member name="T:Ninject.Planning.Bindings.Resolvers.IMissingBindingResolver">
+            <summary>
+             Contains logic about which bindings to use for a given service request
+             when other attempts have failed.
+            </summary>
+        </member>
+        <member name="M:Ninject.Planning.Bindings.Resolvers.IMissingBindingResolver.Resolve(Ninject.Infrastructure.Multimap{System.Type,Ninject.Planning.Bindings.IBinding},Ninject.Activation.IRequest)">
+            <summary>
+            Returns any bindings from the specified collection that match the specified request.
+            </summary>
+            <param name="bindings">The multimap of all registered bindings.</param>
+            <param name="request">The request in question.</param>
+            <returns>The series of matching bindings.</returns>
+        </member>
         <member name="T:Ninject.Planning.Bindings.Resolvers.OpenGenericBindingResolver">
             <summary>
             Resolves bindings for open generic types.
@@ -1882,6 +1896,25 @@
             <param name="bindings">The multimap of all registered bindings.</param>
             <param name="service">The service in question.</param>
             <returns>The series of matching bindings.</returns>
+        </member>
+        <member name="T:Ninject.Planning.Bindings.Resolvers.SelfBindingResolver">
+            <summary>
+            </summary>
+        </member>
+        <member name="M:Ninject.Planning.Bindings.Resolvers.SelfBindingResolver.Resolve(Ninject.Infrastructure.Multimap{System.Type,Ninject.Planning.Bindings.IBinding},Ninject.Activation.IRequest)">
+            <summary>
+            Returns any bindings from the specified collection that match the specified service.
+            </summary>
+            <param name="bindings">The multimap of all registered bindings.</param>
+            <param name="request">The service in question.</param>
+            <returns>The series of matching bindings.</returns>
+        </member>
+        <member name="M:Ninject.Planning.Bindings.Resolvers.SelfBindingResolver.TypeIsSelfBindable(System.Type)">
+            <summary>
+            Returns a value indicating whether the specified service is self-bindable.
+            </summary>
+            <param name="service">The service.</param>
+            <returns><see langword="True"/> if the type is self-bindable; otherwise <see langword="false"/>.</returns>
         </member>
         <member name="T:Ninject.Planning.Bindings.Resolvers.StandardBindingResolver">
             <summary>
@@ -2989,6 +3022,14 @@
             <param name="parent">The parent context in which the target is being injected.</param>
             <returns>A series of values that are available for injection.</returns>
         </member>
+        <member name="M:Ninject.Planning.Targets.Target`1.GetValue(System.Type,Ninject.Activation.IContext)">
+            <summary>
+            Gets the value that should be injected into the target.
+            </summary>
+            <param name="service">The service that the target is requesting.</param>
+            <param name="parent">The parent context in which the target is being injected.</param>
+            <returns>The value that is to be injected.</returns>
+        </member>
         <member name="M:Ninject.Planning.Targets.Target`1.ReadOptionalFromTarget">
             <summary>
             Reads whether the target represents an optional dependency.
@@ -3735,6 +3776,11 @@
             The base implementation of an <see cref="T:Ninject.IKernel"/>.
             </summary>
         </member>
+        <member name="F:Ninject.KernelBase.HandleMissingBindingLockObject">
+            <summary>
+            Lock used when adding missing bindings.
+            </summary>
+        </member>
         <member name="M:Ninject.KernelBase.#ctor">
             <summary>
             Initializes a new instance of the <see cref="T:Ninject.KernelBase"/> class.
@@ -3850,6 +3896,19 @@
             <param name="request">The request to resolve.</param>
             <returns>An enumerator of instances that match the request.</returns>
         </member>
+        <member name="M:Ninject.KernelBase.GetBindingPrecedenceComparer">
+            <summary>
+            Returns an IComparer that is used to determine resolution precedence.
+            </summary>
+            <returns>An IComparer that is used to determine resolution precedence.</returns>
+        </member>
+        <member name="M:Ninject.KernelBase.SatifiesRequest(Ninject.Activation.IRequest)">
+            <summary>
+            Returns a predicate that can determine if a given IBinding matches the request.
+            </summary>
+            <param name="request">The request/</param>
+            <returns>A predicate that can determine if a given IBinding matches the request.</returns>
+        </member>
         <member name="M:Ninject.KernelBase.CreateRequest(System.Type,System.Func{Ninject.Planning.Bindings.IBindingMetadata,System.Boolean},System.Collections.Generic.IEnumerable{Ninject.Parameters.IParameter},System.Boolean,System.Boolean)">
             <summary>
             Creates a request for the specified service.
@@ -3892,6 +3951,13 @@
             Attempts to handle a missing binding for a service.
             </summary>
             <param name="service">The service.</param>
+            <returns><c>True</c> if the missing binding can be handled; otherwise <c>false</c>.</returns>
+        </member>
+        <member name="M:Ninject.KernelBase.HandleMissingBinding(Ninject.Activation.IRequest)">
+            <summary>
+            Attempts to handle a missing binding for a request.
+            </summary>
+            <param name="request">The request.</param>
             <returns><c>True</c> if the missing binding can be handled; otherwise <c>false</c>.</returns>
         </member>
         <member name="M:Ninject.KernelBase.TypeIsSelfBindable(System.Type)">
