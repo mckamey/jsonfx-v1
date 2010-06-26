@@ -28,6 +28,36 @@
             Gets or sets the kernel.
             </summary>
         </member>
+        <member name="T:Ninject.Web.Mvc.NinjectControllerFactory">
+            <summary>
+            A controller factory that creates <see cref="T:System.Web.Mvc.IController"/>s via Ninject.
+            </summary>
+        </member>
+        <member name="M:Ninject.Web.Mvc.NinjectControllerFactory.#ctor(Ninject.IKernel)">
+            <summary>
+            Initializes a new instance of the <see cref="T:Ninject.Web.Mvc.NinjectControllerFactory"/> class.
+            </summary>
+            <param name="kernel">The kernel that should be used to create controllers.</param>
+        </member>
+        <member name="M:Ninject.Web.Mvc.NinjectControllerFactory.GetControllerInstance(System.Web.Routing.RequestContext,System.Type)">
+            <summary>
+            Gets a controller instance of type controllerType.
+            </summary>
+            <param name="requestContext">The request context.</param>
+            <param name="controllerType">Type of controller to create.</param>
+            <returns>The controller instance.</returns>
+        </member>
+        <member name="M:Ninject.Web.Mvc.NinjectControllerFactory.CreateActionInvoker">
+            <summary>
+            Creates the action invoker.
+            </summary>
+            <returns>The action invoker.</returns>
+        </member>
+        <member name="P:Ninject.Web.Mvc.NinjectControllerFactory.Kernel">
+            <summary>
+            Gets the kernel that will be used to create controllers.
+            </summary>
+        </member>
         <member name="T:Ninject.Web.Mvc.NinjectHttpApplication">
             <summary>
             Defines an <see cref="T:System.Web.HttpApplication"/> that is controlled by a Ninject <see cref="T:Ninject.IKernel"/>.
@@ -42,32 +72,6 @@
             <summary>
             Stops the application.
             </summary>
-        </member>
-        <member name="M:Ninject.Web.Mvc.NinjectHttpApplication.RegisterAllControllersIn(System.String)">
-            <summary>
-            Registers all controllers in the assembly with the specified name.
-            </summary>
-            <param name="assemblyName">Name of the assembly to search for controllers.</param>
-        </member>
-        <member name="M:Ninject.Web.Mvc.NinjectHttpApplication.RegisterAllControllersIn(System.String,System.Func{System.Type,System.String})">
-            <summary>
-            Registers all controllers in the assembly with the specified name.
-            </summary>
-            <param name="assemblyName">Name of the assembly to search for controllers.</param>
-            <param name="namingConvention">The naming convention to use for the controllers.</param>
-        </member>
-        <member name="M:Ninject.Web.Mvc.NinjectHttpApplication.RegisterAllControllersIn(System.Reflection.Assembly)">
-            <summary>
-            Registers all controllers in the specified assembly.
-            </summary>
-            <param name="assembly">The assembly to search for controllers.</param>
-        </member>
-        <member name="M:Ninject.Web.Mvc.NinjectHttpApplication.RegisterAllControllersIn(System.Reflection.Assembly,System.Func{System.Type,System.String})">
-            <summary>
-            Registers all controllers in the specified assembly.
-            </summary>
-            <param name="assembly">The assembly to search for controllers.</param>
-            <param name="namingConvention">The naming convention to use for the controllers.</param>
         </member>
         <member name="M:Ninject.Web.Mvc.NinjectHttpApplication.CreateKernel">
             <summary>
@@ -94,35 +98,6 @@
         <member name="P:Ninject.Web.Mvc.NinjectHttpApplication.Kernel">
             <summary>
             Gets the kernel.
-            </summary>
-        </member>
-        <member name="T:Ninject.Web.Mvc.NinjectControllerFactory">
-            <summary>
-            A controller factory that creates <see cref="T:System.Web.Mvc.IController"/>s via Ninject.
-            </summary>
-        </member>
-        <member name="M:Ninject.Web.Mvc.NinjectControllerFactory.#ctor(Ninject.IKernel)">
-            <summary>
-            Initializes a new instance of the <see cref="T:Ninject.Web.Mvc.NinjectControllerFactory"/> class.
-            </summary>
-            <param name="kernel">The kernel that should be used to create controllers.</param>
-        </member>
-        <member name="M:Ninject.Web.Mvc.NinjectControllerFactory.GetControllerInstance(System.Type)">
-            <summary>
-            Gets a controller instance of type controllerType.
-            </summary>
-            <param name="controllerType">Type of controller to create.</param>
-            <returns>The controller instance.</returns>
-        </member>
-        <member name="M:Ninject.Web.Mvc.NinjectControllerFactory.CreateActionInvoker">
-            <summary>
-            Creates the action invoker.
-            </summary>
-            <returns>The action invoker.</returns>
-        </member>
-        <member name="P:Ninject.Web.Mvc.NinjectControllerFactory.Kernel">
-            <summary>
-            Gets the kernel that will be used to create controllers.
             </summary>
         </member>
     </members>

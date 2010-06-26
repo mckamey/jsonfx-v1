@@ -75,7 +75,6 @@ namespace JbstOnline
 
 		protected override void OnApplicationStarted()
 		{
-			this.RegisterAllControllersIn(Assembly.GetExecutingAssembly());
 			this.RegisterRoutes(RouteTable.Routes);
 			this.RegisterBinders();
 
