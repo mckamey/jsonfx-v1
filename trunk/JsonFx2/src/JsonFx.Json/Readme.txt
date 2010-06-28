@@ -6,7 +6,7 @@ Improvements over v1.x
 	- IDataWriter =(objects)=> IGenerator<TokenType> =(tokens)=> IFormatter<TokenType> =(chars)=> TextWriter
 - stream based
 - cleaner / simpler interface for JsonReader/JsonWriter
-- JsonTokenizer is essentially a SAX-like generator for JSON
+- JsonTokenizer is essentially a SAX-like token generator for JSON grammar
 - more modular (separate tokenizer, parser, coercion, settings)
 - even more flexible automatic type coercion
 	- can deserialize common collection interfaces
