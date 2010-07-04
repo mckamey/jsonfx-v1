@@ -2,13 +2,13 @@ JsonFx.Json v2.0
 
 Improvements over v1.x
 - ground up rewrite for better flexibiliy, performance?, memory consumption, code clarity
-	- TextReader =(chars)=> ITokenizer<TokenType> =(tokens)=> IParser<TokenType> =(objects)=> IDataReader
-	- IDataWriter =(objects)=> IGenerator<TokenType> =(tokens)=> IFormatter<TokenType> =(chars)=> TextWriter
+	- TextReader =(chars)=> Tokenizer<TokenType> =(tokens)=> Analyzer<TokenType> =(objects)=> DataReader
+	- DataWriter =(objects)=> Walker<TokenType> =(tokens)=> Formatter<TokenType> =(chars)=> TextWriter
 - stream based
 - can support Comet-like deserialization of streamed objects
 - cleaner / simpler interface for JsonReader/JsonWriter
 - JsonTokenizer is essentially a SAX-like token generator for JSON grammar
-- more modular (separate tokenizer, parser, coercion, settings)
+- more modular (separate tokenizer, analyzer, coercion, settings)
 - even more flexible automatic type coercion
 	- can deserialize common collection interfaces
 	- IEnumerable, IList, ICollection, IDictionary, IEnumerable<T>, IList<T>, ICollection<T>, IDictionary<TKey, TVal>
