@@ -14,13 +14,11 @@ Improvements over v1.x
 	- IEnumerable, IList, ICollection, IDictionary, IEnumerable<T>, IList<T>, ICollection<T>, IDictionary<TKey, TVal>
 - optionally supports unbounded nested objects
 - interfaces extensible to other serialization formats/engines for building RESTful services
+- allows continually be deserializing objects off an open streamed socket like Comet
 
 TODO:
 - find best intermediate format to be able to cross-serialize between formats
-- evaluate ctor vs. property dependency injection for each class
 - check for graph cycles in JsonWriter using a stack while walking: [check stack, push, visit children, pop]
-- allowing trailing tokens allows this to parse a JSON stream inside other structures for example <[CDATA[ ... ]]>,
-  or to continually be deserializing objects off an open streamed socket like Comet
 
 Same as v1.x
 - fast
@@ -42,3 +40,4 @@ Same as v1.x
 	- supports unquoted keys in Object
 	- supports NaN, Infinity, undefined
 	- supports Numbers beyond IEEE-754
+- allow trailing tokens allows this to parse a JSON stream inside other structures for example <[CDATA[ ... ]]>
