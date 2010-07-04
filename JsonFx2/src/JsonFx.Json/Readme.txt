@@ -5,6 +5,7 @@ Improvements over v1.x
 	- TextReader =(chars)=> ITokenizer<TokenType> =(tokens)=> IParser<TokenType> =(objects)=> IDataReader
 	- IDataWriter =(objects)=> IGenerator<TokenType> =(tokens)=> IFormatter<TokenType> =(chars)=> TextWriter
 - stream based
+- can support Comet-like deserialization of streamed objects
 - cleaner / simpler interface for JsonReader/JsonWriter
 - JsonTokenizer is essentially a SAX-like token generator for JSON grammar
 - more modular (separate tokenizer, parser, coercion, settings)
@@ -16,10 +17,10 @@ Improvements over v1.x
 
 TODO:
 - find best intermediate format to be able to cross-serialize between formats
-- split DataReaderSettings into type coercion and settings
 - evaluate ctor vs. property dependency injection for each class
 - check for graph cycles in JsonWriter using a stack while walking: [check stack, push, visit children, pop]
-- ensure JsonFx.Json.JsonReader is threadsafe
+- allowing trailing tokens allows this to parse a JSON stream inside other structures for example <[CDATA[ ... ]]>,
+  or to continually be deserializing objects off an open streamed socket like Comet
 
 Same as v1.x
 - fast
