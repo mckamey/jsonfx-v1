@@ -73,6 +73,7 @@ namespace JsonFx.Xml
 			if (namespaces == null)
 			{
 				namespaces = new XmlSerializerNamespaces();
+				namespaces.Add(String.Empty, String.Empty);// tricks the serializer into not emitting default xmlns attributes
 			}
 			this.Namespaces = namespaces;
 		}
