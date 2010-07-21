@@ -7,7 +7,7 @@ Improvements over v1.x
 - stream based
 - can support Comet-like deserialization of streamed objects
 - cleaner / simpler interface for JsonReader/JsonWriter
-- JsonTokenizer is essentially a SAX-like token generator for JSON grammar
+- JsonTokenizer is essentially a StAX-like token generator for JSON grammar
 - more modular (separate tokenizer, analyzer, coercion, settings)
 - even more flexible automatic type coercion
 	- can deserialize common collection interfaces
