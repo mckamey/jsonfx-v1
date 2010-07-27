@@ -16,10 +16,6 @@ Improvements over v1.x
 - interfaces extensible to other serialization formats/engines for building RESTful services
 - allows continually be deserializing objects off an open streamed socket like Comet
 
-TODO:
-- find best intermediate format to be able to cross-serialize between formats
-- check for graph cycles in JsonWriter using a stack while walking: [check stack, push, visit children, pop]
-
 Same as v1.x
 - fast
 - supports .NET Framework 2.0 and above
