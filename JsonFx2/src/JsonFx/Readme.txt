@@ -5,6 +5,10 @@ Improvements over v1.x
 	- TextReader =(chars)=> Tokenizer<TokenType> =(tokens)=> Analyzer<TokenType> =(objects)=> DataReader
 	- DataWriter =(objects)=> Walker<TokenType> =(tokens)=> Formatter<TokenType> =(chars)=> TextWriter
 - stream based
+- LINQ-to-any-serialized-data
+	- true LINQ provider, not LINQ-to-objects
+	- operates on the common data token which is result of JSON, BSON, XML, etc.
+	- doesn't fully rehydrate token stream to allow filtering, only parses what it needs to from large documents
 - can support Comet-like deserialization of streamed objects
 - cleaner / simpler interface for JsonReader/JsonWriter
 - JsonTokenizer is essentially a token generator for JSON grammar
@@ -24,7 +28,7 @@ Same as v1.x
 	- supports C# 3.0 Anonymous objects
 	- supports serializing Linq queries
 - JSON is deserialized to standard BCL types (not JSON-specific types)
-	- Object => System.Collections.Generic.Dictionary<string, object>
+	- Object => ExpandoObject / System.Collections.Generic.Dictionary<string, object>
 	- Array => System.Array
 	- Boolean => System.Boolean
 	- Number => System.Int32, System.Int64, System.Double, System.Decimal
